@@ -1,0 +1,364 @@
+# CRIAR PLATAFORMA DE EVENTOS ONLINE - SITE COMPLETO
+
+## OBJETIVO
+Criar uma plataforma web completa e funcional para gerenciar, divulgar e organizar eventos (campeonatos, 
+cursos, seminários, workshops), similar ao site iLutas (ilutas.com.br).
+
+## REQUISITOS TÉCNICOS
+
+### Stack Recomendado:
+- **Frontend**: React.js / Next.js ou Vue.js
+- **Backend**: Node.js/Express.js ou Python/Django/FastAPI
+- **Banco de Dados**: PostgreSQL ou MongoDB
+- **Autenticação**: JWT
+- **Pagamento**: Stripe ou MercadoPago API
+- **Deploy**: Vercel/Netlify (Frontend), Heroku/Railway (Backend)
+
+## ESTRUTURA DO PROJETO
+
+### 1. PAGES/PÁGINAS PRINCIPAIS
+
+#### 1.1 HOME (Landing Page)
+- Header com navegação fixa
+  * Logo + tagline
+  * Menu: Início | Academias | Sistema | Filiação | Quem Somos | Acessar Conta
+  * Botões: "CRIAR EVENTO" (laranja, destaque) | "CADASTRE-SE" (secundário)
+  * WhatsApp flutuante (fixo, canto inferior direito)
+
+- Hero Section (Carousel/Slider)
+  * Imagens grandes de eventos em destaque
+  * Título sobre tipos de eventos (Campeonatos, Cursos, Seminários, Workshops, Camps)
+  * CTA: "Clique AQUI e confira!"
+  * Indicadores de navegação (3 slides)
+
+- Seção "Filtrar Eventos"
+  * 4 abas de filtro: Tipo e Esporte | Data | Local | Pesquisar
+  * Dropdown: Tipo de Evento (Todos, Campeonato, Seminário, Desafio/Confrontos, Curso/Workshop, MMA, Camp, Aulão)
+  * Dropdown: Esporte (Aikido, Capoeira, Grappling, Jiu-Jitsu, Judo, Karatê, Kickboxing, Krav Maga, Kung Fu, MuayThai, ParaJiu-Jitsu, Sambo, Submission, Taekwondo, Wrestling)
+  * Campo de busca por título
+  * Botão "limpar filtros"
+  * Layout responsivo
+
+- Grid de Eventos (Layout 2 colunas desktop, 1 coluna mobile)
+  * Cada card contém:
+    - Imagem/banner do evento
+    - Título do evento
+    - Data (ícone + "DD de Mês de YYYY - Dia da semana")
+    - Local (ícone + "Cidade/Estado")
+    - Contador de dias restantes
+    - Badges de modalidades/esportes
+    - Logos de patrocinadores/apoiadores
+  * Click no card leva aos detalhes do evento
+  * Paginação ou scroll infinito
+
+- Footer
+  * 5 colunas: Sobre iLutas | Navegação | Fale conosco | Social links | Formas de Pagamento
+  * Ícones de cartões aceitos (Visa, Mastercard, Elo, etc)
+  * Certificado de segurança
+  * Links: Termos de Uso | Política de Privacidade
+  * Copyright
+
+#### 1.2 PÁGINA DE DETALHES DO EVENTO
+- Header do Evento
+  * Imagem grande/banner
+  * Título em destaque
+  * Data formatada (09 de Novembro de 2025 - Domingo)
+  * Local (Cidade/Estado)
+  * Botão "ATLETAS INSCRITOS"
+  * Breadcrumb: "← voltar para eventos"
+
+- Menu de Abas (Tabs)
+  1. SOBRE O EVENTO
+  2. LOCAL DO EVENTO
+  3. VALORES DAS INSCRIÇÕES
+  4. FORMAS DE PAGAMENTO
+  5. PREMIAÇÃO
+  6. CATEGORIAS
+  7. ABSOLUTO
+  8. CHECAGEM
+  9. CHAVES
+  10. PESAGEM
+  11. REGRAS
+  12. DIREITO DE IMAGEM
+  13. DECLARAÇÃO DE SAÚDE
+
+- Conteúdo de Cada Aba:
+
+  **SOBRE O EVENTO**:
+  - Descrição do evento
+  - Requisitos/Entrada (ex: 02kg de alimento)
+  - Seção "Organização": Nome, email, telefone do organizador
+  - Botão "ENVIAR MENSAGEM"
+  - Seção "Datas Importantes" (com status: ✓ Ativo / ✗ Encerrado):
+    * Inscrições (status)
+    * Pagamento (status)
+    * Checagem (status)
+    * Chaves (status)
+    * Cronograma (status)
+
+  **LOCAL DO EVENTO**:
+  - Mapa Google Maps integrado
+  - Endereço completo
+  - Referências
+
+  **VALORES DAS INSCRIÇÕES**:
+  - Tabela com categorias e preços
+  - Formas de pagamento
+
+  **CHAVES**:
+  - Visualização de brackets/chaves do evento
+  - Participantes por categoria
+
+  **CHECAGEM**:
+  - Lista de inscritos com status
+  - Datas de checagem (geral, oficial, consulta)
+
+  **PESAGEM**:
+  - Horários de pesagem
+  - Instruções
+
+  **REGRAS**:
+  - Regulamento do evento
+  - Regras técnicas
+
+#### 1.3 PÁGINA "DIVULGUE SUA ACADEMIA"
+- Seção Hero
+  * "SEJA VISTO POR MILHARES DE PESSOAS"
+  * "TENHA + ALUNOS E ↗ O SEU FATURAMENTO COM [NOME DA PLATAFORMA]"
+
+- Seção "POR QUE DIVULGAR SUA ACADEMIA?" (Grid 2x4 com checkmarks)
+  * Aumenta a Sua Visibilidade
+  * Atrai Novos Alunos
+  * Aumenta seu Faturamento
+  * Mantém os Alunos
+  * Fortalece a Sua Imagem
+  * Se Diferencia do seu Concorrente
+  * Dificulta a Abertura de Novas Academias
+  * Melhora a Estima e Orgulho dos Alunos
+
+- Seção "VANTAGENS E BENEFÍCIOS" (Grid 2x4 com badges)
+  * Somos Referência para os Atletas em Todo País
+  * Somos o Maior Site do Segmento
+  * Melhor Custo-Benefício
+  * Modelo de pagamento diferenciado
+  * Visitantes são "Seu Público Alvo"
+  * Divulgação Constante e Automática
+  * Centralização e Facilidade de Busca
+  * Sem Barreiras Geográficas
+  * + Estatísticas: "Temos 9 anos de mercado, mais de 1100 eventos, mais de 140 mil atletas cadastrados"
+
+- Formulário "INICIAR CADASTRO"
+  * Nome da Equipe/Academia (input)
+  * Nome do Responsável (input)
+  * Email (input)
+  * Telefone (input)
+  * Botão "CADASTRAR" (laranja)
+
+#### 1.4 PÁGINA "SISTEMA PARA ACADEMIA"
+- Hero Section
+  * "ORGANIZE E CONTROLE MELHOR O SEU NEGÓCIO"
+  * "DISPONÍVEL 24H POR DIA, 7 DIAS NA SEMANA E ACESSÍVEL DE QUALQUER LUGAR!"
+  * Descrição do sistema
+
+- Grid de Funcionalidades (5 colunas x 2 linhas, com ícones)
+  1. Cadastros (ícone: engrenagem)
+     - Cadastro único de atletas, turmas, modalidades de lutos, horário das aulas e sistema de graduação
+  
+  2. Plano de Aulas (ícone: calendário)
+     - Monte e compartilhe o seu plano de aulas com os alunos
+  
+  3. Comunicação (ícone: chat)
+     - Envie SMS ou WhatsApp para os atletas
+  
+  4. Financeiro (ícone: dinheiro)
+     - Total controle financeiro do academia, como Controle de Caixa, Contas a Pagar e a Receber
+  
+  5. Presença (ícone: check)
+     - Check-in na academia para marcar presença
+  
+  6. Graduação (ícone: diploma)
+     - Controle da graduação
+  
+  7. Secretaria (ícone: pasta)
+     - Módulo de gestão para secretaria
+  
+  8. Sorteios (ícone: foguete)
+     - Realize sorteios com os alunos
+  
+  9. Eventos (ícone: eventos)
+     - Crie eventos como campeonatos, cursos...
+  
+  10. Avaliação (ícone: thumbs up)
+      - Recebo os feed-backs dos alunos
+
+#### 1.5 PÁGINA "QUEM SOMOS"
+- Seção "O QUE É... PARA QUE SERVE..."
+  * Descrição da plataforma
+  * Missão: "fornecer um Serviço Online que ajude o Organizador de Eventos na realização e controle dos seus eventos"
+  * Visão: "oferecer o serviço mais completo com o reconhecimento nacional do melhor portal para a Gestão Operacional dos Eventos Online"
+
+- Seção "PRINCÍPIOS ESSENCIAIS - NOSSA MISSÃO E VISÃO DE FUTURO"
+- Seção "NOSSAS CRENÇAS - NOSSOS VALORES"
+- Informações da empresa (CNPJ, endereço, ano de fundação)
+
+#### 1.6 PÁGINA DE CADASTRO (REGISTRO)
+- Formulário com campos:
+  * Email
+  * Senha
+  * Confirmar Senha
+  * Nome Completo
+  * Telefone
+  * Tipo de Cadastro (Atleta, Organizador, Academia, Federação)
+- Checkbox: Aceito os Termos de Uso
+- Botão "CADASTRAR"
+- Link: "Já possui conta? Faça login"
+
+#### 1.7 PÁGINA DE LOGIN
+- Email/Username (input)
+- Senha (input)
+- Checkbox "Lembrar de mim"
+- Botão "ACESSAR"
+- Link "Esqueci minha senha"
+- Link "Criar nova conta"
+
+#### 1.8 PAINEL DO ORGANIZADOR (CRIAR EVENTO)
+- Dashboard para criar e gerenciar eventos
+- Formulário completo para criar evento:
+  * Nome do Evento
+  * Tipo de Evento (dropdown)
+  * Esporte (dropdown)
+  * Data do Evento (date picker)
+  * Horário (time picker)
+  * Local (text + map picker)
+  * Descrição (rich text editor)
+  * Imagem/Banner (upload)
+  * Categorias (multiselect)
+  * Valores de Inscrição (tabela editável)
+  * Formas de Pagamento (checkboxes)
+  * Informações de Contato
+  * Requisitos de Entrada
+  * Datas de Inscrição, Checagem, Chaves
+- Visualização de inscritos
+- Gerenciamento de chaves/brackets
+- Geração de relatórios
+
+#### 1.9 PAINEL DO USUÁRIO/ATLETA
+- Perfil
+- Meus Eventos (inscritos)
+- Histórico
+- Certificados
+
+## 2. COMPONENTES REUTILIZÁVEIS
+
+// Components
+
+Header/Navbar (com menu responsivo)
+
+Footer
+
+EventCard (card de evento com imagem, data, local, dias restantes)
+
+FilterBar (filtros de eventos)
+
+Tabs/TabComponent (sistema de abas)
+
+Modal (para confirmações, alertas)
+
+Form/FormInput (inputs reutilizáveis)
+
+Button (botões em diferentes variações)
+
+Carousel/Slider
+
+Map (integração Google Maps)
+
+PaymentGateway (integração Stripe/MercadoPago)
+
+WhatsAppWidget (widget flutuante)
+
+Breadcrumb
+
+Pagination/Infinite Scroll
+
+LoadingSpinner
+
+ToastNotification
+
+text
+
+## 3. FUNCIONALIDADES ESSENCIAIS
+
+- [x] Listagem e filtragem de eventos por tipo, esporte, data, local
+- [x] Busca por título de evento
+- [x] Página de detalhes completa do evento com múltiplas abas
+- [x] Sistema de cadastro e login de usuários
+- [x] Dashboard do organizador para criar/gerenciar eventos
+- [x] Integração com gateway de pagamento
+- [x] Gerenciamento de inscrições
+- [x] Sistema de chaves/brackets
+- [x] Notificações por email/SMS/WhatsApp
+- [x] Responsividade (mobile, tablet, desktop)
+- [x] SEO otimizado
+- [x] Certificado SSL
+- [x] Backup automático do banco de dados
+
+## 4. BANCO DE DADOS - SCHEMA
+
+// Tables/Collections
+
+Users {
+id, email, password, name, phone, userType (athlete/organizer/academy), createdAt, updatedAt
+}
+
+Events {
+id, title, description, eventType, sport, date, time, location, address, image,
+organizerId, description, requirements, createdAt, updatedAt, status
+}
+
+Registrations {
+id, eventId, userId, category, status (pending/confirmed/checked-in), paymentStatus,
+registeredAt, checkedInAt
+}
+
+Categories {
+id, eventId, name, price, capacity, registeredCount, description
+}
+
+EventSchedule {
+id, eventId, phase (registration/payment/checkin/brackets/competition), startDate, endDate
+}
+
+Payments {
+id, registrationId, amount, method (credit/debit/boleto/transfer), status, transactionId
+}
+
+Academies {
+id, name, city, state, owner, phone, email, description, logo,
+createdAt, eventCount, athleteCount
+}
+
+text
+
+## 5. DESIGN/UI
+
+### Paleta de Cores Primária
+- Azul Escuro: #1A3A52 (navegação, backgrounds)
+- Vermelho/Rosa: #E63946 (CTAs, destaques)
+- Laranja: #FF9500 (botão primário "CRIAR EVENTO")
+- Branco: #FFFFFF
+- Cinza Claro: #F5F5F5 (backgrounds secundários)
+- Verde (WhatsApp): #25D366
+
+### Tipografia
+- Headings: Font weight 700-900
+- Body: Font weight 400-500
+- Font family: Inter, Roboto ou similar (sans-serif)
+
+### Spacing/Grid
+- Sistema de grid 12 colunas
+- Mobile: 1 coluna
+- Tablet: 2 colunas
+- Desktop: 2-3 colunas (eventos)
+
+### Icons
+- Ícones: Feather Icons ou Font Awesome
