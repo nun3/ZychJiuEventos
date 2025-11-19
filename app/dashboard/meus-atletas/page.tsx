@@ -174,14 +174,20 @@ export default function MeusAtletasPage() {
                     </div>
 
                     <div className="flex flex-col gap-2 md:flex-row md:items-center">
-                      <button className="inline-flex items-center gap-2 rounded-lg border border-primary-red px-4 py-2 text-sm font-semibold text-primary-red transition hover:bg-primary-red hover:text-white">
+                      <Link
+                        href={`/dashboard/meus-atletas/${athlete.id}/editar`}
+                        className="inline-flex items-center gap-2 rounded-lg border border-primary-red px-4 py-2 text-sm font-semibold text-primary-red transition hover:bg-primary-red hover:text-white"
+                      >
                         <FiEdit size={16} />
                         Alterar Cadastro
-                      </button>
-                      <button className="inline-flex items-center gap-2 rounded-lg bg-primary-red px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700">
+                      </Link>
+                      <Link
+                        href={`/dashboard/meus-atletas/${athlete.id}/inscricoes`}
+                        className="inline-flex items-center gap-2 rounded-lg bg-primary-red px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                      >
                         <FiCalendar size={16} />
                         Inscrições
-                      </button>
+                      </Link>
                       <button className="inline-flex items-center gap-2 rounded-lg border border-primary-red px-4 py-2 text-sm font-semibold text-primary-red transition hover:bg-primary-red hover:text-white">
                         <FiAward size={16} />
                         Filiações

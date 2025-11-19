@@ -9,8 +9,8 @@ interface LogoProps {
 export default function Logo({ showText = true, size = 'md' }: LogoProps) {
   const sizes = {
     sm: 'w-12 h-12',
-    md: 'w-16 h-16',
-    lg: 'w-24 h-24',
+    md: 'w-20 h-20',
+    lg: 'w-28 h-28',
   }
 
   const textSizes = {
@@ -20,28 +20,28 @@ export default function Logo({ showText = true, size = 'md' }: LogoProps) {
   }
 
   return (
-    <Link href="/" className="flex items-center space-x-3">
+    <Link href="/" className="flex items-center space-x-4">
       <div className={`relative ${sizes[size]}`}>
-        {/* Logo Zych Jiu-Jitsu - Usando imagem */}
+        {/* Logo Clube da Luta - Usando imagem fornecida */}
         <Image
-          src="/images/logo.png"
-          alt="Zych Jiu-Jitsu Logo"
+          src="/images/clube-da-luta-logo.png"
+          alt="Clube da Luta - Eventos de Combate"
           fill
-          className="object-contain"
+          className="object-contain drop-shadow-lg"
+          sizes="(max-width: 768px) 48px, (max-width: 1024px) 80px, 112px"
           priority
         />
       </div>
-      
+
       {showText && (
         <div className={`hidden md:block ${textSizes[size]}`}>
-          <div className="flex items-center">
-            <div className="bg-brand-red text-white px-3 py-1 font-bold">
-              ZYCH
-            </div>
-            <div className="w-1 h-8 bg-white" />
-            <div className="bg-brand-black text-white px-3 py-1 font-bold">
-              JIU-JITSU
-            </div>
+          <div className="flex flex-col leading-tight">
+            <span className="font-black tracking-[0.2em] text-white drop-shadow-[0_0_4px_rgba(0,0,0,0.6)]">
+              CLUBE DA LUTA
+            </span>
+            <span className="text-xs md:text-sm font-semibold text-primary-orange mt-1 tracking-[0.16em]">
+              SEU CAMPEONATO ONLINE
+            </span>
           </div>
         </div>
       )}

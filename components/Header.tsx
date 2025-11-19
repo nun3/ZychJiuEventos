@@ -9,27 +9,27 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
+    <header className="sticky top-0 left-0 right-0 z-40 bg-[#0C3049] shadow-md">
       <nav className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Logo showText={true} size="md" />
+          {/* Logo maior, estilo similar ao iLutas */}
+          <Logo showText={true} size="lg" />
 
           {/* Menu Desktop */}
           <div className="hidden lg:flex items-center space-x-6">
-            <Link href="/" className="text-gray-700 hover:text-primary-red font-medium">
+            <Link href="/" className="text-white/90 hover:text-white font-medium">
               Início
             </Link>
-            <Link href="/academias" className="text-gray-700 hover:text-primary-red font-medium">
+            <Link href="/academias" className="text-white/90 hover:text-white font-medium">
               Academias
             </Link>
-            <Link href="/sistema" className="text-gray-700 hover:text-primary-red font-medium">
+            <Link href="/sistema" className="text-white/90 hover:text-white font-medium">
               Sistema
             </Link>
-            <Link href="/filiacao" className="text-gray-700 hover:text-primary-red font-medium">
+            <Link href="/filiacao" className="text-white/90 hover:text-white font-medium">
               Filiação
             </Link>
-            <Link href="/quem-somos" className="text-gray-700 hover:text-primary-red font-medium">
+            <Link href="/quem-somos" className="text-white/90 hover:text-white font-medium">
               Quem Somos
             </Link>
           </div>
@@ -38,19 +38,19 @@ export default function Header() {
           <div className="hidden lg:flex items-center space-x-4">
             <Link
               href="/login"
-              className="px-4 py-2 text-gray-700 hover:text-primary-red font-medium"
+              className="px-4 py-2 text-white/90 hover:text-white font-medium"
             >
               Acessar Conta
             </Link>
             <Link
               href="/criar-evento"
-              className="px-6 py-2 bg-primary-orange text-white font-bold rounded hover:bg-orange-600 transition"
+              className="px-6 py-2 bg-primary-orange text-white font-bold rounded hover:bg-orange-500 transition"
             >
               CRIAR EVENTO
             </Link>
             <Link
               href="/cadastro"
-              className="px-6 py-2 bg-primary-red text-white font-bold rounded hover:bg-red-700 transition"
+              className="px-6 py-2 bg-primary-red text-white font-bold rounded hover:bg-red-500 transition"
             >
               CADASTRE-SE
             </Link>
@@ -58,7 +58,7 @@ export default function Header() {
 
           {/* Menu Mobile Toggle */}
           <button
-            className="lg:hidden text-gray-700"
+            className="lg:hidden text-white"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
@@ -67,27 +67,27 @@ export default function Header() {
 
         {/* Menu Mobile */}
         {isMenuOpen && (
-          <div className="lg:hidden mt-4 pb-4 border-t pt-4">
+          <div className="lg:hidden mt-4 pb-4 border-t border-white/10 pt-4">
             <div className="flex flex-col space-y-3">
-              <Link href="/" className="text-gray-700 hover:text-primary-red font-medium py-2">
+              <Link href="/" className="text-white/90 hover:text-white font-medium py-2">
                 Início
               </Link>
-              <Link href="/academias" className="text-gray-700 hover:text-primary-red font-medium py-2">
+              <Link href="/academias" className="text-white/90 hover:text-white font-medium py-2">
                 Academias
               </Link>
-              <Link href="/sistema" className="text-gray-700 hover:text-primary-red font-medium py-2">
+              <Link href="/sistema" className="text-white/90 hover:text-white font-medium py-2">
                 Sistema
               </Link>
-              <Link href="/filiacao" className="text-gray-700 hover:text-primary-red font-medium py-2">
+              <Link href="/filiacao" className="text-white/90 hover:text-white font-medium py-2">
                 Filiação
               </Link>
-              <Link href="/quem-somos" className="text-gray-700 hover:text-primary-red font-medium py-2">
+              <Link href="/quem-somos" className="text-white/90 hover:text-white font-medium py-2">
                 Quem Somos
               </Link>
-              <div className="pt-4 border-t space-y-2">
+              <div className="pt-4 border-t border-white/10 space-y-2">
                 <Link
                   href="/login"
-                  className="block px-4 py-2 text-gray-700 hover:text-primary-red font-medium"
+                  className="block px-4 py-2 text-white/90 hover:text-white font-medium"
                 >
                   Acessar Conta
                 </Link>

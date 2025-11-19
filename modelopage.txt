@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atletas Inscritos - 2º Festival Kids</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .tab-active { @apply bg-white border-b-4 border-orange-500 text-orange-600 font-bold shadow-sm; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- MENU PRINCIPAL -->
+  <div class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <nav class="flex gap-8 text-sm font-medium">
+        <a href="#" class="text-gray-600 hover:text-gray-900">INSCRIÇÕES</a>
+        <a href="#" class="text-gray-600 hover:text-gray-900">FINANCEIRO</a>
+        <a href="#" class="text-gray-600 hover:text-gray-900">TABELA DE PESO</a>
+        <a href="#" class="text-orange-600 font-bold border-b-4 border-orange-600 pb-3">ATLETAS INSCRITOS</a>
+        <a href="#" class="text-gray-600 hover:text-gray-900">INFORMAÇÕES</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-10">
+
+    <h1 class="text-4xl font-bold text-center text-gray-800 mb-3">ATLETAS INSCRITOS</h1>
+    <p class="text-center text-lg text-gray-600 mb-10">Lista de atletas inscritos no evento</p>
+
+    <!-- CONTAINER GRANDE IGUAL À ABA INFORMAÇÕES -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+
+      <!-- ABAS INTERNAS -->
+      <div class="flex flex-wrap gap-0 border-b border-gray-200 bg-gray-50/70">
+        <button class="tab-btn tab-active px-8 py-5 text-lg font-semibold flex items-center gap-3"><i data-lucide="users"></i> Geral</button>
+        <button class="tab-btn px-8 py-5 text-lg font-semibold flex items-center gap-3"><i data-lucide="weight"></i> Categoria de Peso</button>
+        <button class="tab-btn px-8 py-5 text-lg font-semibold flex items-center gap-3"><i data-lucide="flame"></i> Absoluto Jiu-Jitsu</button>
+        <button class="tab-btn px-8 py-5 text-lg font-semibold flex items-center gap-3"><i data-lucide="shield"></i> Equipe</button>
+        <button class="tab-btn px-8 py-5 text-lg font-semibold flex items-center gap-3"><i data-lucide="graduation-cap"></i> Equipe e Professor</button>
+      </div>
+
+      <div class="p-8 lg:p-12">
+
+        <!-- BUSCA -->
+        <div class="relative max-w-2xl mx-auto mb-10">
+          <i data-lucide="search" class="absolute left-5 top-5 w-6 h-6 text-gray-400"></i>
+          <input type="text" id="busca" placeholder="Buscar por nome, academia, professor, categoria..." class="w-full pl-14 pr-6 py-5 border border-gray-300 rounded-xl text-lg focus:outline-none focus:border-orange-500 transition">
+        </div>
+
+        <!-- LISTA DE ATLETAS -->
+        <div id="lista-atletas" class="space-y-5"></div>
+
+        <!-- PAGINAÇÃO -->
+        <div class="flex justify-center items-center gap-4 mt-12">
+          <button id="prev" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50" disabled>Anterior</button>
+          <span id="pagina-info" class="font-semibold text-gray-700">Página 1 de 15</span>
+          <button id="next" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50">Próximo</button>
+        </div>
+
+        <!-- CONTADOR FINAL -->
+        <div class="text-center mt-12 pt-10 border-t border-gray-200">
+          <span class="text-6xl font-black text-orange-600" id="total-atletas">152</span>
+          <p class="text-2xl text-gray-600 mt-2">atletas inscritos no evento</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const faixasCores = {
+      "Branca": "bg-gray-300 text-gray-800",
+      "Cinza": "bg-gray-500 text-white",
+      "Amarela": "bg-yellow-400 text-black",
+      "Laranja": "bg-orange-500 text-white",
+      "Verde": "bg-green-500 text-white",
+      "Azul": "bg-blue-600 text-white",
+      "Roxa": "bg-purple-600 text-white",
+      "Marrom": "bg-amber-800 text-white",
+      "Preta": "bg-black text-white"
+    };
+
+    let atletas = [];
+    const nomesExemplo = ["Ademir Antonio Frozza","Ally Francisco Varela Trevisan","Álvaro Araújo da Silva","Tomás Vicente Bonavigo","Anna Luiza Barbosa","Maria Eduarda de Melo Vieira","Aron Ferrari","Brayon Guimaraes Cavalcante"];
+    const academias = ["The Match Champ","Araújo Jiu-Jitsu Team","Gracie Barra Palmas","EDI Team","Infantil A Brancacinza"];
+
+    for (let i = 0; i < 152; i++) {
+      const nome = nomesExemplo[Math.floor(Math.random()*nomesExemplo.length)] + " " + nomesExemplo[Math.floor(Math.random()*nomesExemplo.length)].split(" ")[0];
+      const idade = 4 + Math.floor(Math.random()*14);
+      const faixa = Object.keys(faixasCores)[Math.floor(Math.random()*Object.keys(faixasCores).length)];
+      const peso = (20 + Math.random()*70).toFixed(2);
+      const academia = academias[Math.floor(Math.random()*academias.length)];
+      const pago = Math.random() > 0.25;
+      const absoluto = Math.random() > 0.8;
+
+      atletas.push({nome, idade, faixa, peso, academia, pago, absoluto});
+    }
+
+    const porPagina = 10;
+    let paginaAtual = 1;
+
+    function renderizar() {
+      const inicio = (paginaAtual-1)*porPagina;
+      const fim = inicio + porPagina;
+      const pagina = atletas.slice(inicio, fim);
+
+      document.getElementById('lista-atletas').innerHTML = pagina.map((a, i) => `
+        <div class="bg-gray-50/70 hover:bg-gray-100 rounded-2xl p-8 flex items-center gap-6 border border-gray-200 transition-shadow hover:shadow-md">
+          <div class="w-16 h-16 rounded-full bg-gray-800 text-white flex items-center justify-center font-bold text-2xl flex-shrink-0">
+            ${a.nome.split(" ").map(n=>n[0]).join("")}
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center gap-4 mb-2">
+              <p class="text-2xl font-bold text-gray-800">${a.nome.toUpperCase()}</p>
+              ${a.absoluto ? '<span class="bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold">ABSOLUTO</span>' : ''}
+            </div>
+            <p class="text-lg text-gray-600">${a.idade} anos • <span class="px-4 py-1 rounded-full font-bold text-sm ${faixasCores[a.faixa]}">${a.faixa}</span> • ${a.peso}kg</p>
+            <p class="text-gray-500 mt-1">${a.academia}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm text-gray-500">ID: 0${1234 + inicio + i}</p>
+            <p class="${a.pago ? 'text-green-600' : 'text-red-600'} font-bold text-lg flex items-center gap-2">
+              <i data-lucide="${a.pago ? 'check-circle' : 'alert-circle'}"></i>
+              ${a.pago ? 'PAGAMENTO CONFIRMADO' : 'PAGAMENTO PENDENTE'}
+            </p>
+          </div>
+        </div>
+      `).join('');
+
+      const totalPag = Math.ceil(atletas.length / porPagina);
+      document.getElementById('pagina-info').textContent = `Página ${paginaAtual} de ${totalPag}`;
+      document.getElementById('prev').disabled = paginaAtual === 1;
+      document.getElementById('next').disabled = paginaAtual === totalPag;
+
+      lucide.createIcons();
+    }
+
+    document.getElementById('prev').onclick = () => { paginaAtual--; renderizar(); };
+    document.getElementById('next').onclick = () => { paginaAtual++; renderizar(); };
+
+    document.getElementById('busca').addEventListener('input', e => {
+      const termo = e.target.value.toLowerCase();
+      const filtrados = atletas.filter(a => 
+        a.nome.toLowerCase().includes(termo) || a.academia.toLowerCase().includes(termo)
+      );
+      atletas = termo ? filtrados : atletas.slice();
+      paginaAtual = 1;
+      renderizar();
+    });
+
+    renderizar();
+  </script>
+</body>
+</html>

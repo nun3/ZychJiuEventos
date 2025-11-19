@@ -7,33 +7,10 @@ import Footer from '@/components/Footer'
 import WhatsAppWidget from '@/components/WhatsAppWidget'
 import { FiInfo } from 'react-icons/fi'
 
-const registrationTabs = [
-  {
-    id: 'cpf',
-    label: 'Por CPF',
-    placeholder: 'Digite o seu CPF',
-    mask: '123.456.789-00',
-    description:
-      'Informe o CPF do atleta ou responsável. Será utilizado para validar o cadastro e vínculos com eventos.',
-  },
-  {
-    id: 'email',
-    label: 'Por E-mail',
-    placeholder: 'Digite o seu e-mail',
-    mask: 'nome@exemplo.com',
-    description:
-      'Caso prefira, utilize um endereço de e-mail. Enviaremos um link de confirmação para ativar sua conta.',
-  },
-]
-
 type UserProfile = 'atleta' | 'responsavel'
 
 export default function RegistrationPage() {
-  const [activeTab, setActiveTab] = useState<'cpf' | 'email'>('cpf')
   const [profile, setProfile] = useState<UserProfile>('atleta')
-  const [documentValue, setDocumentValue] = useState('')
-
-  const current = registrationTabs.find((tab) => tab.id === activeTab)!
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -60,39 +37,16 @@ export default function RegistrationPage() {
             </header>
 
             <div className="px-8 py-8">
-              <div className="mb-6 inline-flex rounded-full border border-gray-200 bg-gray-100 p-1 text-sm font-semibold text-gray-500">
-                {registrationTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as 'cpf' | 'email')}
-                    className={`rounded-full px-4 py-2 transition ${
-                      tab.id === activeTab ? 'bg-white text-primary-orange shadow' : 'hover:text-primary-red'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
+              {/* Aviso inicial */}
               <div className="mb-6 flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-700">
                 <FiInfo className="mt-1 flex-shrink-0" size={16} />
-                <p>{current.description}</p>
+                <p>
+                  Informe os dados do atleta ou responsável. O <strong>CPF</strong> será utilizado como chave principal
+                  do cadastro e para vincular as inscrições e filiações ao atleta.
+                </p>
               </div>
 
               <form className="space-y-6">
-                <div className="space-y-2">
-                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    {current.placeholder}
-                  </label>
-                  <input
-                    type={activeTab === 'cpf' ? 'text' : 'email'}
-                    placeholder={current.mask}
-                    value={documentValue}
-                    onChange={(event) => setDocumentValue(event.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-800 shadow-sm focus:border-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange/40"
-                  />
-                </div>
-
                 <fieldset className="rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
                   <legend className="px-2 text-xs font-semibold uppercase tracking-wide text-gray-600">
                     Você é:
@@ -146,8 +100,8 @@ export default function RegistrationPage() {
                               Dados básicos
                             </h2>
                             <p className="text-xs text-gray-500">
-                              Informe seus dados pessoais. O CPF/E-mail informado na etapa anterior já está associado ao
-                              cadastro.
+                              Informe seus dados pessoais. O <strong>CPF</strong> será utilizado como identificador
+                              principal do seu cadastro.
                             </p>
                           </header>
                           <div className="grid gap-4 md:grid-cols-2">
@@ -168,13 +122,12 @@ export default function RegistrationPage() {
                             </div>
                             <div className="space-y-1">
                               <label className="text-xs font-semibold uppercase text-gray-600">
-                                {activeTab === 'cpf' ? 'Seu CPF' : 'Seu e-mail'}
+                                CPF do cadastro
                               </label>
                               <input
-                                type={activeTab === 'cpf' ? 'text' : 'email'}
-                                value={documentValue}
-                                readOnly
-                                className="w-full rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-sm text-gray-500"
+                                type="text"
+                                placeholder="123.456.789-00"
+                                className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-orange focus:ring-2 focus:ring-primary-orange/30"
                               />
                             </div>
                             <div className="space-y-1">
@@ -316,7 +269,8 @@ export default function RegistrationPage() {
                               Dados básicos
                             </h2>
                             <p className="text-xs text-gray-500">
-                              Preencha conforme documento oficial. O CPF/e-mail informado anteriormente já está associado ao cadastro.
+                              Preencha conforme documento oficial. O <strong>CPF</strong> será utilizado como
+                              identificador principal do seu cadastro.
                             </p>
                           </header>
                           <div className="grid gap-4 md:grid-cols-2">
@@ -337,13 +291,12 @@ export default function RegistrationPage() {
                             </div>
                             <div className="space-y-1">
                               <label className="text-xs font-semibold uppercase text-gray-600">
-                                {activeTab === 'cpf' ? 'CPF' : 'E-mail'}
+                                CPF do cadastro
                               </label>
                               <input
-                                type={activeTab === 'cpf' ? 'text' : 'email'}
-                                value={documentValue}
-                                readOnly
-                                className="w-full rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-sm text-gray-500"
+                                type="text"
+                                placeholder="123.456.789-00"
+                                className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-orange focus:ring-2 focus:ring-primary-orange/30"
                               />
                             </div>
                             <div className="space-y-1">

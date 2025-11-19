@@ -18,7 +18,7 @@ export default function DashboardHeader() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
+    <header className="sticky top-0 left-0 right-0 z-40 bg-white shadow-md">
       <nav className="container mx-auto flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-6">
           <Logo showText size="md" />

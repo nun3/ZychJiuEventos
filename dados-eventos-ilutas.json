@@ -1,0 +1,93 @@
+{
+  "evento": {
+    "titulo": "1ª Copa Gremio Industrial Kids de Jiu-Jitsu",
+    "data": "07 de Dezembro de 2025 (Domingo)",
+    "local": "Pato Branco/PR",
+    "organizador": {
+      "nome": "Ricardo Zych",
+      "email": "ricardoweb@gmail.com",
+      "telefone": "(46) 98406-4666"
+    },
+    "datasImportantes": {
+      "inscricoes": "06/11 até 04/12 (Quinta) às 23:59h",
+      "pagamento": {
+        "boleto": "até 03/12 às 23:59h",
+        "pix": "até 04/12 às 23:59h"
+      },
+      "checagem": {
+        "geral": "06/11 das 00 até 03/12 às 23:59h",
+        "oficial": "04/12 das 00 até 05/12 às 23:59h"
+      },
+      "chaves": "06/12 a partir das 12h",
+      "cronograma": "05/12 a partir das 12h"
+    }
+  },
+  "abas": {
+    "sobreOEvento": {
+      "titulo": "Sobre o Evento",
+      "conteudo": "É com imenso orgulho e entusiasmo que convidamos todos a participarem da **1ª COPA GRÊMIO INDUSTRIAL KIDS DE JIU-JITSU**, um evento totalmente voltado às categorias de base, do **pré-mirim ao juvenil (4 a 17 anos)**.\n\nMais do que uma competição, este será um dia de **celebração do futuro do nosso esporte**. Sabemos que o **Sudoeste do Paraná** é um verdadeiro berço de talentos, lar de academias reconhecidas pela excelência no ensino e pela seriedade na formação de seus alunos. Nossa região é forte não apenas em sua economia e qualidade de vida, mas principalmente pela **hospitalidade e pela força de sua comunidade**.\n\nEste campeonato representa a oportunidade perfeita para que nossos pequenos atletas demonstrem o resultado de seus treinos em um ambiente **seguro, positivo e familiar**."
+    },
+    "localDoEvento": {
+      "titulo": "Local do Evento",
+      "cidade": "Pato Branco/PR",
+      "nomeLocal": "Ginásio do Grêmio Esportivo Industrial",
+      "endereco": "R. Araucária, 883 Bairro Santa Terezinha , Pato Branco PR.",
+      "mapaUrl": "https://maps.app.goo.gl/XpTPbsmWMk2p6GdJ8",
+      "textoMapa": "Clique **AQUI** para visualizar o mapa do local do evento."
+    },
+    "valoresDasInscricoes": {
+      "titulo": "Valores das Inscrições",
+      "valores": [
+        {
+          "tipo": "Apenas Categoria de Peso",
+          "valor": "R$ 70,00"
+        },
+        {
+          "tipo": "Categoria de Peso + Absoluto",
+          "valor": "R$ 95,00"
+        }
+      ]
+    },
+    "formasDePagamento": {
+      "titulo": "Formas de Pagamento",
+      "conteudo": "As inscrições serão feitas impreterivelmente pelo **site iLutas**.\n\nPoderão ser feitas **Inscrições Individuais** e **Inscrições por Equipe**, tanto pelo próprio atleta, professor ou responsável por atletas.\n\nApenas o responsável pelo atleta de menor poderá inscrevê-lo. Antes, o responsável deve fazer o **cadastro no site**, em seguida **cadastrar o atleta** para posterior realização da inscrição do atleta menor.\n\nQualquer atleta poderá realizar a inscrição de outro atleta, desde que todos estejam devidamente cadastrados no sistema.\n\nPara informar a equipe, acesse o menu principal **\"Minha Equipe\"** ou **\"Meus Atletas\"**.\n\n**PAGAMENTO**\nO pagamento da inscrição poderá ser feito por **Pix** ou **Boleto**.\n\n**IMPORTANTE:**\nPode ser feito um único pagamento no valor total, com a possibilidade de envio do link de pagamento a terceiros (como patrocinadores).\n\n**VALORES DAS INSCRIÇÕES**\n\nApenas Categoria de Peso: **R$ 70,00**\n\nCategoria de Peso + Absoluto: **R$ 95,00**\n\n**SOBRE O REEMBOLSO**\n\nDepois de inscrito, o atleta **não terá direito à devolução do pagamento**, seja por desistência, ausência, desclassificação ou impedimento. Em casos especiais, sendo autorizado, será cobrado 10% do valor do pagamento."
+    },
+    "premiacao": {
+      "titulo": "Premiação",
+      "conteudo": "**Premiação Festival de 04 até 07 anos .**\n\nTodas as crianças que participarem do festival ganharão medalhas de ouro.\n\n**Premiações das Categorias de Peso dos 08 até 17 anos**\n\nMedalha para 1º, 2º e 3º Colocado haverá dois 3º lugares.\n\nTodas as faixas medalhas.\n\n**Premiações das Equipes Campeãs**\n\nHaverá troféu de equipe do 1º ao 5º lugar\n\n**Sistema de Pontuação** **:**\n· Campeão 9 Pontos\n· 2º Lugar 3 Pontos\n· 3º Lugar 1 Pontos\n\n**Critério de Desempate** **:**\n\n1. Maior número de Campeões"
+    },
+    "categorias": {
+      "titulo": "Categorias",
+      "conteudo": "As divisões seguem os **critérios oficiais de idade e peso adotados pela CBJJE**, assegurando padronização e transparência durante todo o evento.\n\n**Faixas Etárias e Divisões:**\nO campeonato é destinado exclusivamente às **categorias de base**, compreendendo atletas com idade entre **04 e 16 anos**, distribuídos da seguinte forma:\n\n* **Pré-Mirim**\n* **Mirim**\n* **Infantil**\n* **Infanto-Juvenil**\n* **Juvenil**\n\n**Faixas:**\nAs lutas serão separadas conforme as **graduações oficiais da CBJJ**, respeitando o nível técnico e a idade de cada competidor.\n\n**Categorias de Peso:**\nAs divisões de peso seguem a **tabela oficial da CBJJE**, considerando o peso **com kimono** no momento da pesagem.\n\nAtenção:\n\n* As faixas até 15 anos serão agrupadas da seguinte forma: Brancas/Cinza e Amarela/Laranja/Verde como Coloridas\n* A **idade é calculada pelo ano de nascimento**. Exemplo : (ano atual – ano nascimento) = 2025 – 2016 = 9 anos, independente do mês de aniversário. Se o atleta faz aniversário em janeiro considera 9 anos, se o atleta fará aniversário em dezembro também será considerado 9 anos."
+    },
+    "absoluto": {
+      "titulo": "Absoluto",
+      "conteudo": "**Critérios de Participação:**\n\n* Poderão participar **somente os atletas campeões de suas respectivas categorias de peso**.\n* O Absoluto será **dividido por faixas e idades compatíveis**, de modo a manter o equilíbrio técnico e a segurança dos competidores.\n* O atleta deverá confirmar sua participação **imediatamente após o término de sua categoria de peso**, junto à mesa organizadora.\n\n**Observações Importantes:**\n\n* O **peso do atleta no Absoluto será livre**, respeitando apenas a faixa e categoria de idade.\n* A **premiação do Absoluto** será entregue **somente se houver no mínimo 04 (quatro) atletas inscritos** na respectiva divisão.\n* **Não haverá pontuação por equipe** referente às disputas do Absoluto.\n* O atleta deverá estar **disponível e atento à chamada de sua categoria**, sob pena de **eliminação por ausência (WO)**.\n\nO Absoluto é uma categoria especial que proporciona aos jovens atletas a experiência de **testar seus limites além das divisões de peso**, promovendo o espírito de superação e o verdadeiro propósito do jiu-jitsu: **crescimento técnico e pessoal através do desafio**."
+    },
+    "checagem": {
+      "titulo": "Checagem",
+      "conteudo": "A checagem será **realizada exclusivamente de forma online**, através da página oficial do evento no site **www.ilutas.com.br**.\n\nO período de checagem estará **disponível logo após o encerramento das inscrições**, dentro do prazo estipulado pela organização.\n\nDurante este período, os **professores e responsáveis pelas equipes** deverão verificar cuidadosamente os **nomes, idades, categorias, faixas e pesos** dos atletas inscritos."
+    },
+    "chaves": {
+      "titulo": "Chaves",
+      "conteudo": "As chaves serão **divulgadas oficialmente no site www.ilutas.com.br**, após o encerramento da checagem e da conferência final de todos os dados.\n\nRecomenda-se que **professores, atletas e responsáveis** acompanhem atentamente a publicação, verificando o **horário e a ordem aproximada das lutas**."
+    },
+    "pesagem": {
+      "titulo": "Pesagem",
+      "conteudo": "**NA PESAGEM É INDISPENSÁVEL O USO DO KIMONO**\n\nA pesagem será realizada **com o kimono**, seguindo os padrões oficiais da CBJJE.\n\nO atleta deve estar dentro da faixa de peso da categoria escolhida no momento da pesagem.\n\n**IMPORTANTE:**\n\n* A idade é calculada pelo ano de nascimento. Exemplo: (ano atual – ano nascimento) = 2025 – 2016 = 9 anos, independente do mês de aniversário. Se o atleta faz aniversário em janeiro considera 9 anos, se o atleta fará aniversário em dezembro será considerado com 9 anos igualmente mesmo que não tenha feito o aniversário ainda."
+    },
+    "regras": {
+      "titulo": "Fiscalização e Regras",
+      "conteudo": "Como o nosso objetivo é sempre fazer um bom campeonato e bem organizado, para a competição, NÃO será permitido:\n\n* Kimono sujo\n* Manga mais curta do que o recomendado\n* Calça curta\n* Faixa ou Kimono rasgada\n\nO competidor que se encontrar em uma dessas situações terá um tempo para troca do kimono, senão será automaticamente desclassificado da competição sem direito a recorrer.\n\nAs regras do torneio são as estabelecidas pela **ORGANIZAÇÃO DO EVENTO**. Salvo as regras de arbitragem que segue a CBJJ podem ser visualizadas no site www.cbjj.com.br."
+    },
+    "direitoDeImagem": {
+      "titulo": "Direito de imagem",
+      "conteudo": "Ao realizar a inscrição na **1ª COPA GRÊMIO INDUSTRIAL KIDS DE JIU-JITSU**, o atleta e seus responsáveis legais **autorizam, de forma automática e irrevogável**, o uso de sua **imagem, voz e nome** para fins de **divulgação institucional e promocional** do evento.\n\nEssa autorização inclui a **captação, reprodução e publicação** de fotos, vídeos e demais registros audiovisuais realizados durante o evento, podendo ser utilizados pela **organização, patrocinadores e parceiros oficiais**, em mídias sociais, websites, materiais impressos, televisivos e demais meios de comunicação.\n\nA utilização do material será feita **sem ônus financeiro** para qualquer das partes, tendo caráter **exclusivamente informativo, esportivo e promocional**, respeitando sempre a **ética, a integridade e a boa imagem dos participantes**.\n\nOs responsáveis legais, ao confirmarem a inscrição do atleta, **concordam plenamente com os termos deste regulamento**, não cabendo qualquer tipo de reivindicação futura referente ao uso de imagem vinculado ao evento.\n\nEsta cláusula tem como finalidade **preservar a transparência e o profissionalismo** da competição, garantindo o direito da organização de **registrar e divulgar** os momentos marcantes desta celebração do jiu-jitsu infantil."
+    },
+    "declaracaoDeSaude": {
+      "titulo": "Declaração de Saúde",
+      "conteudo": "A participação no evento implica que o atleta está **em plenas condições de saúde**, devidamente **autorizado por seus responsáveis legais** e liberado para a prática esportiva.\n\nÉ de responsabilidade dos **professores e responsáveis** assegurar que o atleta esteja **preparado física e psicologicamente** para competir, respeitando seus limites individuais.\n\nA organização recomenda que todos os atletas estejam com **exames médicos e avaliações físicas atualizadas**, garantindo uma participação segura.\n\n**Atendimento Médico:**\n\nDurante todo o evento haverá **equipe médica e paramédica de plantão**, apta a prestar atendimento imediato em casos de lesão, mal-estar ou qualquer situação emergencial.\n\nCaso seja constatada qualquer condição que coloque em risco a saúde do atleta, a equipe médica poderá **impedir sua continuidade na competição**, visando sua segurança e bem-estar.\n\n**Conduta e Segurança:**\n\nA organização reforça que **golpes ilegais, atitudes antidesportivas ou condutas perigosas** não serão toleradas e poderão resultar em **desclassificação imediata** do atleta.\n\nA integridade e o respeito são princípios fundamentais do jiu-jitsu. Assim, o evento prioriza um ambiente **seguro, educativo e responsável**, em que cada atleta possa expressar seu talento com **disciplina, respeito e espírito esportivo**."
+    }
+  }
+}
+
