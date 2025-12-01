@@ -25,8 +25,8 @@ const mockEvent = {
   description: 'Um campeonato internacional de Jiu-Jitsu que reúne atletas de três países na fronteira.',
   requirements: '02kg de alimento não perecível',
   organizer: {
-    name: 'Organização Zych',
-    email: 'contato@zych.com.br',
+    name: 'Organização Meu Camp',
+    email: 'contato@meucamp.com.br',
     phone: '(27) 99945-0345',
   },
   schedule: {
@@ -167,7 +167,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* SOBRE O EVENTO */}
               {activeInfoSubTab === 0 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Sobre o Evento</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">SOBRE O EVENTO</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 mb-8">
                     <p className="text-lg leading-relaxed text-gray-700">
                       É com imenso orgulho e entusiasmo que convidamos todos a participarem da <strong>1ª COPA GRÊMIO INDUSTRIAL KIDS DE JIU-JITSU</strong>, um evento totalmente voltado às categorias de base, do <strong>pré-mirim ao juvenil (4 a 17 anos)</strong>.
@@ -185,13 +185,13 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* LOCAL DO EVENTO */}
               {activeInfoSubTab === 1 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Local do Evento</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">LOCAL DO EVENTO</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8">
                     <div className="text-center mb-6">
                     <FiMapPin className="w-16 h-16 text-orange-600 mx-auto mb-4" />
-                      <p className="text-2xl font-bold text-gray-800">Ginásio do Grêmio Esportivo Industrial</p>
-                      <p className="text-lg text-gray-700 mt-2">R. Araucária, 883 Bairro Santa Terezinha</p>
-                      <p className="text-lg font-semibold text-gray-800 mt-1">Pato Branco/PR</p>
+                      <p className="text-2xl font-bold text-gray-800 uppercase">Ginásio do Grêmio Esportivo Industrial</p>
+                      <p className="text-lg italic text-gray-700 mt-2">R. Araucária, 883 Bairro Santa Terezinha</p>
+                      <p className="text-lg font-semibold italic text-gray-800 mt-1">Pato Branco/PR</p>
                     </div>
                     <div className="text-center mt-6">
                       <a
@@ -210,16 +210,16 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* VALORES DAS INSCRIÇÕES */}
               {activeInfoSubTab === 2 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Valores das Inscrições</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">VALORES DAS INSCRIÇÕES</h2>
                   <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                     <div className="bg-white border-2 border-green-500 rounded-2xl p-8 text-center shadow-lg">
                       <p className="text-4xl font-black text-green-600 mb-2">R$ 70,00</p>
-                      <p className="text-lg font-semibold text-gray-800">Apenas Categoria de Peso</p>
+                      <p className="text-lg font-semibold italic text-gray-800">Apenas Categoria de Peso</p>
                     </div>
                     <div className="bg-white border-2 border-orange-500 rounded-2xl p-8 text-center shadow-lg transform scale-105">
                       <p className="text-4xl font-black text-orange-600 mb-2">R$ 95,00</p>
-                      <p className="text-lg font-semibold text-gray-800">Categoria de Peso + Absoluto</p>
-                      <p className="text-sm text-gray-600 mt-2">Mais popular</p>
+                      <p className="text-lg font-semibold italic text-gray-800">Categoria de Peso + Absoluto</p>
+                      <p className="text-sm italic text-gray-600 mt-2">Mais popular</p>
                     </div>
                   </div>
                 </div>
@@ -228,11 +228,11 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* FORMAS DE PAGAMENTO */}
               {activeInfoSubTab === 3 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Formas de Pagamento</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">FORMAS DE PAGAMENTO</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
                     <div>
                       <p className="text-lg leading-relaxed text-gray-700 mb-4">
-                        As inscrições serão feitas impreterivelmente pelo <strong>site Zych</strong>.
+                        As inscrições serão feitas impreterivelmente pelo <strong>site Meu Camp</strong>.
                       </p>
                       <p className="text-lg leading-relaxed text-gray-700 mb-4">
                         Poderão ser feitas <strong>Inscrições Individuais</strong> e <strong>Inscrições por Equipe</strong>, tanto pelo próprio atleta, professor ou responsável por atletas.
@@ -248,7 +248,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                       </p>
                     </div>
                     <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">PAGAMENTO</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Pagamento</h3>
                       <p className="text-lg text-gray-700 mb-4">
                         O pagamento da inscrição poderá ser feito por <strong>Pix</strong> ou <strong>Boleto</strong>.
                       </p>
@@ -258,7 +258,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                       </p>
                     </div>
                     <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-xl">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">SOBRE O REEMBOLSO</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Sobre o Reembolso</h3>
                       <p className="text-lg text-gray-700">
                         Depois de inscrito, o atleta <strong>não terá direito à devolução do pagamento</strong>, seja por desistência, ausência, desclassificação ou impedimento. Em casos especiais, sendo autorizado, será cobrado 10% do valor do pagamento.
                       </p>
@@ -270,16 +270,16 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* PREMIAÇÃO */}
               {activeInfoSubTab === 4 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Premiação</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">PREMIAÇÃO</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
                     <div className="bg-yellow-100 border-2 border-yellow-400 rounded-xl p-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-3">Premiação Festival de 04 até 07 anos</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-3">Premiação Festival de 04 até 07 anos</h3>
                       <p className="text-lg text-gray-700">
                         Todas as crianças que participarem do festival ganharão <strong>medalhas de ouro</strong>.
                       </p>
                     </div>
                     <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
-                      <h3 className="text-xl font-bold text-gray-800 mb-3">Premiações das Categorias de Peso dos 08 até 17 anos</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-3">Premiações das Categorias de Peso dos 08 até 17 anos</h3>
                       <p className="text-lg text-gray-700 mb-2">
                         Medalha para <strong>1º, 2º e 3º Colocado</strong> haverá dois 3º lugares.
                       </p>
@@ -288,20 +288,20 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                       </p>
                     </div>
                     <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
-                      <h3 className="text-xl font-bold text-gray-800 mb-3">Premiações das Equipes Campeãs</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-3">Premiações das Equipes Campeãs</h3>
                       <p className="text-lg text-gray-700">
                         Haverá troféu de equipe do <strong>1º ao 5º lugar</strong>
                       </p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-6 border border-gray-300">
-                      <h3 className="text-xl font-bold text-gray-800 mb-3">Sistema de Pontuação:</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-3">Sistema de Pontuação</h3>
                       <ul className="space-y-2 text-lg text-gray-700">
                         <li>· <strong>Campeão:</strong> 9 Pontos</li>
                         <li>· <strong>2º Lugar:</strong> 3 Pontos</li>
                         <li>· <strong>3º Lugar:</strong> 1 Ponto</li>
                       </ul>
                       <div className="mt-4">
-                        <h4 className="text-lg font-bold text-gray-800 mb-2">Critério de Desempate:</h4>
+                        <h4 className="text-lg font-semibold italic text-gray-800 mb-2">Critério de Desempate</h4>
                         <p className="text-lg text-gray-700">1. Maior número de Campeões</p>
                       </div>
                     </div>
@@ -312,13 +312,13 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* CATEGORIAS */}
               {activeInfoSubTab === 5 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Categorias</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">CATEGORIAS</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
                     <p className="text-lg leading-relaxed text-gray-700">
                       As divisões seguem os <strong>critérios oficiais de idade e peso adotados pela CBJJE</strong>, assegurando padronização e transparência durante todo o evento.
                     </p>
                     <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Faixas Etárias e Divisões:</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Faixas Etárias e Divisões</h3>
                       <p className="text-lg text-gray-700 mb-4">
                         O campeonato é destinado exclusivamente às <strong>categorias de base</strong>, compreendendo atletas com idade entre <strong>04 e 16 anos</strong>, distribuídos da seguinte forma:
                       </p>
@@ -331,19 +331,19 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                       </ul>
                     </div>
                     <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Faixas:</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Faixas</h3>
                       <p className="text-lg text-gray-700">
                         As lutas serão separadas conforme as <strong>graduações oficiais da CBJJ</strong>, respeitando o nível técnico e a idade de cada competidor.
                       </p>
                     </div>
                     <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Categorias de Peso:</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Categorias de Peso</h3>
                       <p className="text-lg text-gray-700">
                         As divisões de peso seguem a <strong>tabela oficial da CBJJE</strong>, considerando o peso <strong>com kimono</strong> no momento da pesagem.
                       </p>
                     </div>
                     <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-xl">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Atenção:</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Atenção</h3>
                       <ul className="list-disc list-inside space-y-2 text-lg text-gray-700 ml-4">
                         <li>As faixas até 15 anos serão agrupadas da seguinte forma: <strong>Brancas/Cinza</strong> e <strong>Amarela/Laranja/Verde</strong> como <strong>Coloridas</strong></li>
                         <li>A <strong>idade é calculada pelo ano de nascimento</strong>. Exemplo: (ano atual – ano nascimento) = 2025 – 2016 = 9 anos, independente do mês de aniversário. Se o atleta faz aniversário em janeiro considera 9 anos, se o atleta fará aniversário em dezembro também será considerado 9 anos.</li>
@@ -356,10 +356,10 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* ABSOLUTO */}
               {activeInfoSubTab === 6 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Absoluto</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">ABSOLUTO</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
                     <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Critérios de Participação:</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Critérios de Participação</h3>
                       <ul className="list-disc list-inside space-y-2 text-lg text-gray-700 ml-4">
                         <li>Poderão participar <strong>somente os atletas campeões de suas respectivas categorias de peso</strong>.</li>
                         <li>O Absoluto será <strong>dividido por faixas e idades compatíveis</strong>, de modo a manter o equilíbrio técnico e a segurança dos competidores.</li>
@@ -367,7 +367,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                       </ul>
                     </div>
                     <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-xl">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Observações Importantes:</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Observações Importantes</h3>
                       <ul className="list-disc list-inside space-y-2 text-lg text-gray-700 ml-4">
                         <li>O <strong>peso do atleta no Absoluto será livre</strong>, respeitando apenas a faixa e categoria de idade.</li>
                         <li>A <strong>premiação do Absoluto</strong> será entregue <strong>somente se houver no mínimo 04 (quatro) atletas inscritos</strong> na respectiva divisão.</li>
@@ -387,7 +387,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* CHECAGEM */}
               {activeInfoSubTab === 7 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Checagem</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">CHECAGEM</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8">
                     <div className="space-y-4 text-lg leading-relaxed text-gray-700">
                       <p>
@@ -407,7 +407,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* CHAVES */}
               {activeInfoSubTab === 8 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Chaves</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">CHAVES</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8">
                     <div className="space-y-4 text-lg leading-relaxed text-gray-700">
                       <p>
@@ -424,10 +424,10 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* PESAGEM */}
               {activeInfoSubTab === 9 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Pesagem</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">PESAGEM</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
                     <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-xl">
-                      <h3 className="text-xl font-bold text-gray-800 mb-3">NA PESAGEM É INDISPENSÁVEL O USO DO KIMONO</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-3">Na Pesagem é Indispensável o Uso do Kimono</h3>
                       <p className="text-lg text-gray-700">
                         A pesagem será realizada <strong>com o kimono</strong>, seguindo os padrões oficiais da CBJJE.
                       </p>
@@ -450,7 +450,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* REGRAS */}
               {activeInfoSubTab === 10 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Fiscalização e Regras</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">FISCALIZAÇÃO E REGRAS</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
                     <p className="text-lg leading-relaxed text-gray-700">
                       Como o nosso objetivo é sempre fazer um bom campeonato e bem organizado, para a competição, <strong>NÃO será permitido</strong>:
@@ -478,7 +478,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* DIREITO DE IMAGEM */}
               {activeInfoSubTab === 11 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Direito de imagem</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">DIREITO DE IMAGEM</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-4">
                     <p className="text-lg leading-relaxed text-gray-700">
                       Ao realizar a inscrição na <strong>1ª COPA GRÊMIO INDUSTRIAL KIDS DE JIU-JITSU</strong>, o atleta e seus responsáveis legais <strong>autorizam, de forma automática e irrevogável</strong>, o uso de sua <strong>imagem, voz e nome</strong> para fins de <strong>divulgação institucional e promocional</strong> do evento.
@@ -502,7 +502,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {/* DECLARAÇÃO DE SAÚDE */}
               {activeInfoSubTab === 12 && (
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Declaração de Saúde</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">DECLARAÇÃO DE SAÚDE</h2>
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
                     <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
                       <p className="text-lg leading-relaxed text-gray-700 mb-4">
@@ -516,7 +516,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                       </p>
                     </div>
                     <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-xl">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Atendimento Médico:</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Atendimento Médico</h3>
                       <p className="text-lg text-gray-700">
                         Durante todo o evento haverá <strong>equipe médica e paramédica de plantão</strong>, apta a prestar atendimento imediato em casos de lesão, mal-estar ou qualquer situação emergencial.
                       </p>
@@ -525,7 +525,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                       </p>
                     </div>
                     <div className="bg-green-50 border-l-4 border-green-400 p-6 rounded-xl">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">Conduta e Segurança:</h3>
+                      <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Conduta e Segurança</h3>
                       <p className="text-lg text-gray-700">
                         A organização reforça que <strong>golpes ilegais, atitudes antidesportivas ou condutas perigosas</strong> não serão toleradas e poderão resultar em <strong>desclassificação imediata</strong> do atleta.
                       </p>

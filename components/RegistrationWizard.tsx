@@ -380,10 +380,10 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
         {currentStep === 1 && (
           <div>
             {/* Título */}
-            <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
+            <h1 className="text-3xl font-bold text-center text-gray-800 mb-2 uppercase">
               INSCRIÇÃO – {mockEvent.title}
             </h1>
-            <p className="text-center text-gray-600 mb-10">
+            <p className="text-center italic text-gray-600 mb-10">
               Selecione quem irá competir
             </p>
 
@@ -391,7 +391,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
             <div>
               {/* Seção: Inscrição do Responsável (Professor) */}
               <div className="mb-8">
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm font-semibold italic text-gray-600 mb-3">
                   Inscrição do Responsável (Professor)
                 </p>
                 <label className="flex items-center gap-4 p-4 bg-orange-50 rounded-xl border border-orange-200 cursor-pointer hover:bg-orange-100 transition">
@@ -587,10 +587,10 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
         {/* Step 2: Configuração de Categorias */}
         {currentStep === 2 && (
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800">
+            <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800 uppercase">
               CATEGORIAS
             </h1>
-            <p className="text-center text-lg text-gray-600 mb-12">
+            <p className="text-center text-lg italic text-gray-600 mb-12">
               Configure as categorias, faixas e pesos para cada atleta
             </p>
 
@@ -603,7 +603,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold italic text-gray-900">
                           {athlete.name}, {athlete.age} anos
                         </h3>
                         <p className="text-sm text-gray-600">
@@ -745,17 +745,17 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
         {/* Step 3: Pagamento */}
         {currentStep === 3 && (
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800">
+            <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800 uppercase">
               PAGAMENTO
             </h1>
-            <p className="text-center text-lg text-gray-600 mb-12">
+            <p className="text-center text-lg italic text-gray-600 mb-12">
               Escolha a forma de pagamento
             </p>
 
             <div className="bg-white/80 backdrop-blur-xl border border-gray-200/60 rounded-2xl shadow-lg p-8 lg:p-12">
               {/* Resumo */}
               <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Resumo da Inscrição</h3>
+                <h3 className="text-lg font-semibold italic text-gray-900 mb-4">Resumo da Inscrição</h3>
                 <div className="space-y-2 text-gray-700">
                   <p>
                     <strong>N° de atleta(s) inscrito(s):</strong> {registeredCount}
@@ -768,7 +768,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
 
               {/* Forma de Pagamento */}
               <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                <h3 className="text-lg font-semibold italic text-gray-900 mb-4">
                   Forma de Pagamento: Boleto Bancário ou Pix
                 </h3>
                 <div className="space-y-3">
@@ -825,17 +825,17 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
         {/* Step 4: Confirmação */}
         {currentStep === 4 && (
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800">
+            <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800 uppercase">
               CONFIRMAÇÃO
             </h1>
-            <p className="text-center text-lg text-gray-600 mb-12">
+            <p className="text-center text-lg italic text-gray-600 mb-12">
               Revise todas as informações antes de finalizar
             </p>
 
             <div className="bg-white/80 backdrop-blur-xl border border-gray-200/60 rounded-2xl shadow-lg p-8 lg:p-12">
               {/* Resumo Completo */}
               <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Resumo da Inscrição</h3>
+                <h3 className="text-lg font-semibold italic text-gray-900 mb-4">Resumo da Inscrição</h3>
                 <div className="space-y-3 text-gray-700">
                   <p>
                     <strong>N° de atleta(s) inscrito(s):</strong> {registeredCount}
@@ -853,7 +853,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
               {/* Lista de Atletas Inscritos */}
               {selectedAthletes.filter((a) => a.willRegister).length > 0 && (
                 <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Atletas Selecionados</h3>
+                  <h3 className="text-lg font-semibold italic text-gray-900 mb-4">Atletas Selecionados</h3>
                   <div className="space-y-3">
                     {selectedAthletes
                       .filter((a) => a.willRegister)

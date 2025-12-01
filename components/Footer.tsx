@@ -6,11 +6,11 @@ export default function Footer() {
     <footer className="bg-primary-dark text-white mt-20">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-          {/* Sobre o Zych */}
+          {/* Sobre o Meu Camp */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Sobre o Zych</h3>
+            <h3 className="text-xl font-bold mb-4">Sobre o Meu Camp</h3>
             <p className="text-gray-300 text-sm mb-4">
-              O Zych é um site de Prestação de Serviços para Organização de Eventos, 
+              O Meu Camp é um site de Prestação de Serviços para Organização de Eventos, 
               Venda de Ingressos, Controle de Filiações e Serviços em Geral para 
               Federações, Associações e Organizadores Independentes.
             </p>
@@ -74,7 +74,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center space-x-2 text-gray-300">
                 <FiMail className="text-primary-orange" />
-                <span>contato@zych.com.br</span>
+                <span>contato@meucamp.com.br</span>
               </li>
             </ul>
             <p className="text-gray-300 text-xs mt-4">
@@ -135,7 +135,7 @@ export default function Footer() {
               </div>
             </div>
             <div className="text-xs text-gray-400">
-              <p>Portal Zych tem Certificado de Segurança, para proteger os dados dos atletas e dos organizadores</p>
+              <p>Portal Meu Camp tem Certificado de Segurança, para proteger os dados dos atletas e dos organizadores</p>
             </div>
           </div>
         </div>
@@ -143,7 +143,7 @@ export default function Footer() {
         {/* Links Legais */}
         <div className="border-t border-white/20 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-300">
-            <p>© 2024, Portal Zych – Todos os direitos reservados.</p>
+            <p>© 2024, Portal Meu Camp – Todos os direitos reservados.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               <Link href="/termos" className="hover:text-primary-orange">
                 Termos de Uso

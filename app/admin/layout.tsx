@@ -5,7 +5,7 @@ import Footer from '@/components/Footer'
 import WhatsAppWidget from '@/components/WhatsAppWidget'
 
 export const metadata: Metadata = {
-  title: 'Admin - Zych Eventos',
+  title: 'Admin - Meu Camp',
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

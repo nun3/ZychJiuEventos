@@ -525,10 +525,10 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
   return (
     <div className="w-full">
       {/* Título */}
-      <h1 className="text-4xl font-bold text-center text-gray-800 mb-3">
+      <h1 className="text-4xl font-bold text-center text-gray-800 mb-3 uppercase">
         ATLETAS INSCRITOS
       </h1>
-      <p className="text-center text-lg text-gray-600 mb-10">
+      <p className="text-center text-lg italic text-gray-600 mb-10">
         Lista de atletas inscritos no evento
       </p>
 
@@ -799,7 +799,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
                                       {getInitials(professor)}
                                     </div>
                                     <div className="text-left">
-                                      <h4 className="text-base font-semibold text-gray-800 mb-1">{professor}</h4>
+                                      <h4 className="text-base font-semibold italic text-gray-800 mb-1">{professor}</h4>
                                       <p className="text-sm font-medium text-gray-600">
                                         {athletes.length} {athletes.length === 1 ? 'atleta' : 'atletas'}
                                       </p>

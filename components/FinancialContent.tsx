@@ -74,8 +74,8 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Financeiro</h2>
-        <p className="text-gray-600 mb-6">
+        <h2 className="text-2xl font-bold mb-4 uppercase">FINANCEIRO</h2>
+        <p className="text-gray-600 mb-6 italic">
           Gerencie seus pagamentos e boletos relacionados a este evento.
         </p>
       </div>
@@ -112,8 +112,8 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
             <div className="p-6">
               {/* Cabeçalho */}
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Emitir 2ª Via do Boleto
+                <h2 className="text-2xl font-bold text-gray-800 uppercase">
+                  EMITIR 2ª VIA DO BOLETO
                 </h2>
                 <button
                   onClick={() => {
@@ -163,7 +163,7 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
               {/* Lista de Boletos */}
               {boletos.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-cyan-600 mb-4">Boleto</h3>
+                  <h3 className="text-lg font-semibold italic text-cyan-600 mb-4">Boleto</h3>
                   {boletos.map((boleto, index) => (
                     <div
                       key={index}

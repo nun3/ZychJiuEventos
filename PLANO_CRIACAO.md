@@ -1,8 +1,8 @@
-# Plano de Criação - Zych Jiu-Jitsu Eventos
+# Plano de Criação - Meu Camp
 
 ## 📋 Visão Geral
 
-Plataforma web completa para gerenciar, divulgar e organizar eventos de Jiu-Jitsu, similar ao iLutas (ilutas.com.br), mas adaptada para a marca Zych Jiu-Jitsu.
+Plataforma web completa para gerenciar, divulgar e organizar eventos de Jiu-Jitsu, similar ao iLutas (ilutas.com.br), mas adaptada para a marca Meu Camp.
 
 ## ✅ Status do Projeto
 

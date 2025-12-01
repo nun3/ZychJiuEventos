@@ -1,4 +1,4 @@
-# Mapa Completo de Páginas - Zych Jiu-Jitsu Eventos
+# Mapa Completo de Páginas - Meu Camp
 
 ## 📋 Visão Geral
 
@@ -119,63 +119,33 @@ Este documento lista todas as páginas existentes na aplicação, suas rotas, fu
 
 ---
 
-### 6. Atletas Inscritos no Evento
+### 6. ~~Atletas Inscritos no Evento~~ (REMOVIDA)
 **Rota:** `/eventos/[id]/inscritos`  
-**Arquivo:** `app/eventos/[id]/inscritos/page.tsx`  
-**Status:** ✅ Implementada
+**Arquivo:** ~~`app/eventos/[id]/inscritos/page.tsx`~~  
+**Status:** ❌ Removida (obsoleta)
 
-**Funcionalidades:**
-- Lista completa de atletas inscritos
-- Filtros:
-  - Busca por nome
-  - Filtro por categoria
-  - Filtro por faixa
-  - Filtro por peso
-  - Filtro por status de pagamento
-- Visualizações:
-  - **Equipe:** Agrupado por equipe com acordeão
-  - **Categoria de Peso:** Agrupado por categoria com acordeão
-- Informações exibidas:
-  - Nome, idade, gênero
-  - Categoria, faixa, peso
-  - Academia e professor
-  - Status de pagamento
-- Paginação (5 grupos por página)
-- Exportação de dados
+**Motivo da remoção:**
+- Esta funcionalidade já está integrada na aba "ATLETAS INSCRITOS" da página de Detalhes do Evento (`/eventos/[id]`)
+- A página separada estava duplicando funcionalidade
+- Acesso agora é feito através da aba "ATLETAS INSCRITOS" na página de detalhes
 
-**Componentes utilizados:**
-- `RegisteredAthletesContent`
+**Funcionalidade agora disponível em:**
+- `/eventos/[id]` → Aba "ATLETAS INSCRITOS"
 
 ---
 
-### 7. Tabela de Peso do Evento
+### 7. ~~Tabela de Peso do Evento~~ (REMOVIDA)
 **Rota:** `/eventos/[id]/tabela-peso`  
-**Arquivo:** `app/eventos/[id]/tabela-peso/page.tsx`  
-**Status:** ✅ Implementada
+**Arquivo:** ~~`app/eventos/[id]/tabela-peso/page.tsx`~~  
+**Status:** ❌ Removida (obsoleta)
 
-**Funcionalidades:**
-- Tabela de peso GI (com kimono)
-- Tabela de peso NO-GI (sem kimono)
-- Sistema de abas para alternar entre GI e NO-GI
-- Acordeão por faixa etária
-- Ferramenta de verificação de categoria:
-  - Entrada: Idade, Peso, Gênero, Com/Sem Kimono
-  - Saída: Categoria sugerida
-- Download do PDF da tabela
-- Informações importantes sobre pesagem
+**Motivo da remoção:**
+- Esta funcionalidade já está integrada na aba "TABELA DE PESO" da página de Detalhes do Evento (`/eventos/[id]`)
+- A página separada estava duplicando funcionalidade
+- Acesso agora é feito através da aba "TABELA DE PESO" na página de detalhes
 
-**Faixas etárias cobertas:**
-- Pré-Mirim (4-5 anos)
-- Mirim A (6-7 anos)
-- Mirim B (8-9 anos)
-- Infantil A (10-11 anos)
-- Infantil B (12-13 anos)
-- Infanto-Juvenil (14-15 anos) - M/F
-- Juvenil (16-17 anos) - M/F
-- Adulto/Master (18+ anos) - M/F
-
-**Componentes utilizados:**
-- `WeightTableContent`
+**Funcionalidade agora disponível em:**
+- `/eventos/[id]` → Aba "TABELA DE PESO"
 
 ---
 
@@ -198,66 +168,48 @@ Este documento lista todas as páginas existentes na aplicação, suas rotas, fu
 
 ---
 
-### 9. Inscrição Própria
+### 9. ~~Inscrição Própria~~ (REMOVIDA)
 **Rota:** `/eventos/[id]/inscricao/minha`  
-**Arquivo:** `app/eventos/[id]/inscricao/minha/page.tsx`  
-**Status:** ✅ Implementada (Wireframe)
+**Arquivo:** ~~`app/eventos/[id]/inscricao/minha/page.tsx`~~  
+**Status:** ❌ Removida (obsoleta)
 
-**Funcionalidades:**
-- Formulário de inscrição do próprio usuário
-- Dados pessoais (pré-preenchidos)
-- Dados da academia
-- Seleção de categoria do evento
-- Botão de confirmação
+**Motivo da remoção:**
+- Esta funcionalidade já está integrada na aba "INSCRIÇÕES" da página de Detalhes do Evento (`/eventos/[id]`)
+- A página separada estava duplicando funcionalidade
+- Acesso agora é feito através da aba "INSCRIÇÕES" na página de detalhes
 
-**Nota:** Página marcada como wireframe para apresentação
+**Funcionalidade agora disponível em:**
+- `/eventos/[id]` → Aba "INSCRIÇÕES"
 
 ---
 
-### 10. Seleção de Atletas para Inscrição
+### 10. ~~Seleção de Atletas para Inscrição~~ (REMOVIDA)
 **Rota:** `/eventos/[id]/inscricao/atletas`  
-**Arquivo:** `app/eventos/[id]/inscricao/atletas/page.tsx`  
-**Status:** ✅ Implementada
+**Arquivo:** ~~`app/eventos/[id]/inscricao/atletas/page.tsx`~~  
+**Status:** ❌ Removida (obsoleta)
 
-**Funcionalidades:**
-- Card do evento com informações
-- Botão "SELECIONAR MEUS ATLETAS"
-- Botão "CADASTRAR NOVO ATLETA"
-- Modal de seleção de atletas
-- Avisos:
-  - Limite de 20 inscrições por vez
-  - Cálculo de idade pelo ano de nascimento
-- Lista de atletas cadastrados
+**Motivo da remoção:**
+- Esta funcionalidade já está integrada na aba "INSCRIÇÕES" da página de Detalhes do Evento (`/eventos/[id]`)
+- A página separada estava duplicando funcionalidade
+- Acesso agora é feito através da aba "INSCRIÇÕES" na página de detalhes
 
-**Componentes utilizados:**
-- `AthleteSelectionModal`
+**Funcionalidade agora disponível em:**
+- `/eventos/[id]` → Aba "INSCRIÇÕES"
 
 ---
 
-### 11. Confirmação e Configuração de Inscrições
+### 11. ~~Confirmação e Configuração de Inscrições~~ (REMOVIDA)
 **Rota:** `/eventos/[id]/inscricao/atletas/confirmar`  
-**Arquivo:** `app/eventos/[id]/inscricao/atletas/confirmar/page.tsx`  
-**Status:** ✅ Implementada
+**Arquivo:** ~~`app/eventos/[id]/inscricao/atletas/confirmar/page.tsx`~~  
+**Status:** ❌ Removida (obsoleta)
 
-**Funcionalidades:**
-- Lista de atletas selecionados
-- Para cada atleta:
-  - Informações completas
-  - Opção de inscrever ou não
-  - Seleção de categoria
-  - Seleção de faixa
-  - Seleção de categoria de peso
-  - Tipo de inscrição (Categoria ou Categoria + Absoluto)
-  - Valor da inscrição
-- Resumo:
-  - Número de atletas
-  - Valor total
-- Forma de pagamento:
-  - Pagamento Unificado
-  - Pagamento Individual
-- Botão "FINALIZAR INSCRIÇÃO"
-- Botão para adicionar mais atletas
-- Botão para cadastrar novo atleta
+**Motivo da remoção:**
+- Esta funcionalidade já está integrada na aba "INSCRIÇÕES" da página de Detalhes do Evento (`/eventos/[id]`)
+- A página separada estava duplicando funcionalidade
+- Acesso agora é feito através da aba "INSCRIÇÕES" na página de detalhes
+
+**Funcionalidade agora disponível em:**
+- `/eventos/[id]` → Aba "INSCRIÇÕES"
 
 ---
 
@@ -277,17 +229,18 @@ Este documento lista todas as páginas existentes na aplicação, suas rotas, fu
 
 ---
 
-### 13. Emissão de Boleto
+### 13. ~~Emissão de Boleto~~ (REMOVIDA)
 **Rota:** `/eventos/[id]/boleto`  
-**Arquivo:** `app/eventos/[id]/boleto/page.tsx`  
-**Status:** ✅ Implementada (Wireframe)
+**Arquivo:** ~~`app/eventos/[id]/boleto/page.tsx`~~  
+**Status:** ❌ Removida (obsoleta)
 
-**Funcionalidades:**
-- Página para emissão de boleto
-- Link para fazer inscrição (se não inscrito)
-- Informações sobre pagamento
+**Motivo da remoção:**
+- Esta funcionalidade já está integrada na aba "FINANCEIRO" da página de Detalhes do Evento (`/eventos/[id]`)
+- A página separada estava duplicando funcionalidade
+- Acesso agora é feito através da aba "FINANCEIRO" na página de detalhes
 
-**Nota:** Página marcada como wireframe para apresentação
+**Funcionalidade agora disponível em:**
+- `/eventos/[id]` → Aba "FINANCEIRO"
 
 ---
 
@@ -411,18 +364,11 @@ Este documento lista todas as páginas existentes na aplicação, suas rotas, fu
 3. Cadastro
 4. Recuperar Senha
 
-### Páginas de Eventos: 3
-5. Detalhes do Evento
-6. Atletas Inscritos
-7. Tabela de Peso
+### Páginas de Eventos: 1
+5. Detalhes do Evento (inclui abas "INSCRIÇÕES", "ATLETAS INSCRITOS" e "TABELA DE PESO")
 
-### Páginas de Inscrição: 6
-8. Hub de Inscrição (verificar)
-9. Inscrição Própria
-10. Seleção de Atletas
-11. Confirmação de Inscrições
-12. Cadastro de Novo Atleta
-13. Emissão de Boleto
+### Páginas de Inscrição: 1
+8. Cadastro de Novo Atleta
 
 ### Páginas do Dashboard: 5
 14. Dashboard Principal
@@ -434,7 +380,9 @@ Este documento lista todas as páginas existentes na aplicação, suas rotas, fu
 ### Páginas Administrativas: 1
 19. Criar Novo Evento
 
-**Total:** 18 páginas implementadas + 1 rota não implementada
+**Total:** 12 páginas implementadas + 1 rota não implementada
+
+**Nota:** As páginas `/eventos/[id]/inscritos`, `/eventos/[id]/tabela-peso`, `/eventos/[id]/inscricao/minha`, `/eventos/[id]/inscricao/atletas`, `/eventos/[id]/inscricao/atletas/confirmar` e `/eventos/[id]/boleto` foram removidas pois suas funcionalidades estão integradas nas abas "INSCRIÇÕES", "ATLETAS INSCRITOS", "TABELA DE PESO" e "FINANCEIRO" da página de Detalhes do Evento.
 
 ---
 
@@ -474,9 +422,13 @@ Este documento lista todas as páginas existentes na aplicação, suas rotas, fu
 - [x] Login
 - [x] Cadastro
 - [x] Recuperar Senha
-- [x] Detalhes do Evento
-- [x] Atletas Inscritos
-- [x] Tabela de Peso
+- [x] Detalhes do Evento (inclui abas "INSCRIÇÕES", "ATLETAS INSCRITOS", "TABELA DE PESO" e "FINANCEIRO")
+- [x] ~~Atletas Inscritos~~ (removida - funcionalidade integrada)
+- [x] ~~Tabela de Peso~~ (removida - funcionalidade integrada)
+- [x] ~~Inscrição Própria~~ (removida - funcionalidade integrada)
+- [x] ~~Seleção de Atletas~~ (removida - funcionalidade integrada)
+- [x] ~~Confirmação de Inscrições~~ (removida - funcionalidade integrada)
+- [x] ~~Emissão de Boleto~~ (removida - funcionalidade integrada)
 - [x] Inscrição Própria
 - [x] Seleção de Atletas
 - [x] Confirmação de Inscrições

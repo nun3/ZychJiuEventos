@@ -1,4 +1,4 @@
-# Documentação da Rotina de Inscrição - Zych Jiu-Jitsu Eventos
+# Documentação da Rotina de Inscrição - Meu Camp
 
 ## 📋 Visão Geral
 

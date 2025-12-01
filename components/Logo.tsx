@@ -25,7 +25,7 @@ export default function Logo({ showText = true, size = 'md' }: LogoProps) {
         {/* Logo Clube da Luta - Usando imagem fornecida */}
         <Image
           src="/images/clube-da-luta-logo.png"
-          alt="Clube da Luta - Eventos de Combate"
+          alt="Meu Camp - Eventos de Combate"
           fill
           className="object-contain drop-shadow-lg"
           sizes="(max-width: 768px) 48px, (max-width: 1024px) 80px, 112px"
@@ -37,7 +37,7 @@ export default function Logo({ showText = true, size = 'md' }: LogoProps) {
         <div className={`hidden md:block ${textSizes[size]}`}>
           <div className="flex flex-col leading-tight">
             <span className="font-black tracking-[0.2em] text-white drop-shadow-[0_0_4px_rgba(0,0,0,0.6)]">
-              CLUBE DA LUTA
+              MEU CAMP
             </span>
             <span className="text-xs md:text-sm font-semibold text-primary-orange mt-1 tracking-[0.16em]">
               SEU CAMPEONATO ONLINE

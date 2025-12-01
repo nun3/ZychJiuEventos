@@ -388,7 +388,7 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Tabela de Peso</h2>
+        <h2 className="text-2xl font-bold text-gray-800 uppercase">TABELA DE PESO</h2>
         <a
           href="/tabela-peso.pdf"
           download
@@ -401,7 +401,7 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
 
       {/* Formulário de Verificação de Categoria */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-sm">
-        <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <h3 className="text-xl font-semibold italic text-gray-800 mb-4 flex items-center gap-2">
           <FiSearch className="text-blue-600" />
           Verificar Minha Categoria
         </h3>

@@ -1,4 +1,4 @@
-# Zych Jiu-Jitsu Eventos
+# Meu Camp
 
 Plataforma web completa para gerenciar, divulgar e organizar eventos de Jiu-Jitsu (campeonatos, cursos, seminários, workshops), similar ao site iLutas (ilutas.com.br).
 
@@ -39,7 +39,7 @@ zych-jiu-eventos/
 ├── components/            # Componentes reutilizáveis
 │   ├── Header.tsx        # Cabeçalho com navegação
 │   ├── Footer.tsx        # Rodapé
-│   ├── Logo.tsx          # Logo Zych Jiu-Jitsu
+│   ├── Logo.tsx          # Logo Meu Camp
 │   ├── HeroSection.tsx   # Hero com carousel
 │   ├── EventFilters.tsx  # Filtros de eventos
 │   ├── EventGrid.tsx     # Grid de eventos
@@ -59,11 +59,11 @@ zych-jiu-eventos/
 - **Verde WhatsApp**: #25D366
 - **Vermelho Marca**: #DC2626 (logo)
 
-### Logo Zych Jiu-Jitsu
+### Logo Meu Camp
 O logo consiste em:
 - Símbolo: Diamante com raio central (estilo yin-yang)
 - Cores: Vermelho (#DC2626), Preto (#000000), Branco (#FFFFFF)
-- Texto: "ZYCH" (vermelho) | "JIU-JITSU" (preto)
+- Texto: "MEU CAMP" (branco) | "SEU CAMPEONATO ONLINE" (laranja)
 
 ## 📄 Páginas Implementadas
 

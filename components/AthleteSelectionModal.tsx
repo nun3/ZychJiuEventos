@@ -62,8 +62,8 @@ export default function AthleteSelectionModal({
     if (selectedAthletes.length > 0) {
       onConfirmSelection(selectedAthletes)
       onClose()
-      // Redirecionar para a página de confirmação
-      router.push(`/eventos/${eventId}/inscricao/atletas/confirmar`)
+      // Redirecionar para a página de detalhes do evento com a aba de inscrições
+      router.push(`/eventos/${eventId}?tab=inscricoes`)
     }
   }
 

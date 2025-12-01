@@ -1,5 +1,5 @@
 # Fluxograma de Inscrição em Eventos
-## Plataforma Zych Jiu-Jitsu Eventos
+## Plataforma Meu Camp
 
 ---
 

@@ -5,7 +5,7 @@ import Footer from '@/components/Footer'
 import WhatsAppWidget from '@/components/WhatsAppWidget'
 
 export const metadata: Metadata = {
-  title: 'Painel do Professor - Zych Eventos',
+  title: 'Painel do Professor - Meu Camp',
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
