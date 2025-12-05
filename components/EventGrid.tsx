@@ -76,7 +76,7 @@ function EventCard({ event }: { event: typeof mockEvents[0] }) {
       {/* Imagem do evento */}
       <div className="relative h-48 bg-gradient-to-br from-primary-dark to-primary-red overflow-hidden">
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition" />
-        <div className="absolute top-4 right-4 bg-primary-orange text-white px-3 py-1 rounded-full text-sm font-bold">
+        <div className="absolute top-4 right-4 bg-primary-blue text-white px-3 py-1 rounded-full text-sm font-bold">
           {event.daysLeft} {event.daysLeft === 1 ? 'dia' : 'dias'} restantes
         </div>
         <div className="absolute bottom-4 left-4 text-white">
@@ -104,7 +104,7 @@ function EventCard({ event }: { event: typeof mockEvents[0] }) {
         </div>
 
         <div className="mt-4 pt-4 border-t">
-          <button className="w-full bg-primary-orange text-white font-bold py-2 rounded hover:bg-orange-600 transition">
+          <button className="w-full bg-primary-blue text-white font-bold py-2 rounded hover:bg-blue-700 transition">
             Ver Detalhes
           </button>
         </div>
@@ -118,7 +118,7 @@ export default function EventGrid() {
     <section>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Eventos Disponíveis</h2>
-        <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-orange focus:border-transparent">
+        <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent">
           <option>Ordenar por... Data – Próximos Eventos</option>
           <option>Data – Eventos Distantes</option>
           <option>Nome do Evento A-Z</option>
@@ -146,16 +146,16 @@ export default function EventGrid() {
       {mockEvents.length > 0 && (
         <div className="mt-8 flex justify-center">
           <div className="flex space-x-2">
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-primary-orange hover:text-white transition">
+            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-primary-blue hover:text-white transition">
               Anterior
             </button>
-            <button className="px-4 py-2 bg-primary-orange text-white rounded-lg">
+            <button className="px-4 py-2 bg-primary-blue text-white rounded-lg">
               1
             </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-primary-orange hover:text-white transition">
+            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-primary-blue hover:text-white transition">
               2
             </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-primary-orange hover:text-white transition">
+            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-primary-blue hover:text-white transition">
               Próximo
             </button>
           </div>

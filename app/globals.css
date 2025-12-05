@@ -2,16 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary-dark: #1A3A52;
-  --primary-red: #E63946;
-  --primary-orange: #FF9500;
-  --primary-green: #25D366;
-  --brand-red: #DC2626;
-  --brand-black: #000000;
-  --brand-white: #FFFFFF;
+  --primary-dark: #0a0e1a;
+  --primary-blue: #3b82f6;
+  --primary-accent: #0ea5e9;
+  --glow-primary: 0 0 20px rgba(59, 130, 246, 0.5);
+  --glow-accent: 0 0 20px rgba(14, 165, 233, 0.5);
+  --gradient-card: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(14, 165, 233, 0.1));
+  --gradient-hero: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.1), transparent);
+  --gradient-text: linear-gradient(135deg, #3b82f6, #0ea5e9);
 }
 
 * {
@@ -28,8 +30,24 @@ body {
 }
 
 body {
-  color: var(--brand-black);
-  background: var(--brand-white);
+  color: #1e293b;
+  background: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Textura noise sutil */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.03;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 a {
@@ -43,15 +61,110 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: rgba(10, 14, 26, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-dark);
+  background: rgba(59, 130, 246, 0.5);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-red);
+  background: rgba(59, 130, 246, 0.8);
+}
+
+/* Utility classes */
+.gradient-text {
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-effect {
+  background: rgba(10, 14, 26, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+/* Padrão de Tatame - Intercalação azul e vermelho */
+.tatame-pattern {
+  background-color: #1e40af;
+  background-image: 
+    /* Grid de quadrados intercalados */
+    linear-gradient(90deg, #1e40af 50%, #dc2626 50%),
+    linear-gradient(#1e40af 50%, #dc2626 50%);
+  background-size: 50px 50px;
+}
+
+.tatame-pattern-alt {
+  background-color: #dc2626;
+  background-image: 
+    /* Grid de quadrados intercalados (invertido) */
+    linear-gradient(90deg, #dc2626 50%, #1e40af 50%),
+    linear-gradient(#dc2626 50%, #1e40af 50%);
+  background-size: 50px 50px;
+}
+
+/* Textura de EVA - Porosidade e micro-grid com azul royal fosco */
+.eva-texture {
+  /* Azul royal vibrante mas fosco (matte) */
+  background-color: #4169e1;
+  background-image: 
+    /* Micro-grid para textura de porosidade */
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.04) 2px,
+      rgba(0, 0, 0, 0.04) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.04) 2px,
+      rgba(0, 0, 0, 0.04) 4px
+    ),
+    /* Ruído sutil para porosidade do EVA */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.12'/%3E%3C/svg%3E");
+  background-size: 6px 6px, 6px 6px, 200px 200px;
+  /* Efeito matte - reduzir brilho */
+  filter: saturate(0.95) contrast(1.05);
+}
+
+/* Sombra interna para efeito de profundidade e material macio */
+.eva-inner-shadow {
+  box-shadow: 
+    /* Sombra interna superior - efeito afundado */
+    inset 0 3px 6px rgba(0, 0, 0, 0.25),
+    inset 0 1px 3px rgba(0, 0, 0, 0.2),
+    /* Sombra interna nas bordas */
+    inset 2px 0 4px rgba(0, 0, 0, 0.15),
+    inset -2px 0 4px rgba(0, 0, 0, 0.15),
+    /* Sombra externa para elevação */
+    0 6px 12px rgba(0, 0, 0, 0.4),
+    0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Borda inferior grossa simulando espessura do EVA */
+.eva-thickness {
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.eva-thickness::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: linear-gradient(to bottom, #1e3a8a, #1e40af, #1e3a8a);
+  border-radius: 0 0 16px 16px;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2);
 }
 

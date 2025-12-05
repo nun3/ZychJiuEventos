@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import ModernNavbar from '@/components/ModernNavbar'
+import ModernFooter from '@/components/ModernFooter'
 import { FiArrowLeft, FiUpload, FiAlertTriangle } from 'react-icons/fi'
 
 // Dados mockados do atleta
@@ -28,7 +30,9 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
   }
 
   return (
-    <main className="container mx-auto px-4">
+    <main className="min-h-screen bg-[#f8fafc]">
+      <ModernNavbar />
+      <div className="pt-20 container mx-auto px-6 pb-12">
       <section className="rounded-2xl bg-white shadow">
         <header className="border-b border-gray-200 bg-[#0C3049] px-6 py-6 text-white">
           <div className="flex items-center space-x-4 mb-4">
@@ -252,6 +256,8 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
           </footer>
         </div>
       </section>
+      </div>
+      <ModernFooter />
     </main>
   )
 }

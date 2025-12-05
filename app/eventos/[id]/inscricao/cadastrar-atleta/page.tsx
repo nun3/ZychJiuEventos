@@ -1,13 +1,12 @@
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
-import WhatsAppWidget from '@/components/WhatsAppWidget'
+import ModernNavbar from '@/components/ModernNavbar'
+import ModernFooter from '@/components/ModernFooter'
 import Link from 'next/link'
 import { FiArrowLeft, FiUserPlus } from 'react-icons/fi'
 
 export default function NewAthletePage({ params }: { params: { id: string } }) {
   return (
-    <main className="min-h-screen bg-white">
-      <Header />
+    <main className="min-h-screen bg-[#f8fafc]">
+      <ModernNavbar />
       <div className="pt-20">
         <div className="container mx-auto px-4 py-10">
           {/* Header */}
@@ -187,8 +186,7 @@ export default function NewAthletePage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </div>
-      <Footer />
-      <WhatsAppWidget />
+      <ModernFooter />
     </main>
   )
 }

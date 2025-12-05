@@ -1,6 +1,7 @@
-import HeroSection from '@/components/HeroSection'
+import ModernNavbar from '@/components/ModernNavbar'
+import ModernFooter from '@/components/ModernFooter'
 import EventFilters from '@/components/EventFilters'
-import EventGrid from '@/components/EventGrid'
+import ModernEventGrid from '@/components/ModernEventGrid'
 
 const resultados = [
   'Aprovados Curso de Arbitragem CBJJC',
@@ -20,13 +21,14 @@ const ranking = [
 
 export default function DashboardHome() {
   return (
-    <main>
-      <HeroSection />
-      <section className="container mx-auto grid gap-8 px-4 py-10 lg:grid-cols-[2.2fr,1fr]">
-        <div>
-          <EventFilters />
-          <EventGrid />
-        </div>
+    <main className="min-h-screen bg-[#f8fafc]">
+      <ModernNavbar />
+      <div className="pt-20">
+        <section className="container mx-auto grid gap-8 px-6 py-10 lg:grid-cols-[2.2fr,1fr]">
+          <div>
+            <EventFilters />
+            <ModernEventGrid />
+          </div>
 
         <aside className="space-y-6">
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -59,6 +61,8 @@ export default function DashboardHome() {
           </div>
         </aside>
       </section>
+      </div>
+      <ModernFooter />
     </main>
   )
 }

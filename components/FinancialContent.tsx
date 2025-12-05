@@ -83,7 +83,7 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
       <div className="space-y-4">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-primary-red hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition flex items-center space-x-2"
+          className="bg-primary-blue hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition flex items-center space-x-2"
         >
           <FiFile />
           <span>EMITIR 2ª VIA DO BOLETO</span>
@@ -97,7 +97,7 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
             </p>
             <Link
               href={`/eventos/${eventId}`}
-              className="inline-block bg-primary-orange hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg transition"
+              className="inline-block bg-primary-blue hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition"
             >
               Fazer Inscrição
             </Link>
@@ -137,7 +137,7 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
 
               {/* Campo CPF */}
               <div className="mb-6">
-                <label className="block text-red-600 font-semibold mb-2">
+                <label className="block text-primary-blue font-semibold mb-2">
                   CPF DO RESPONSÁVEL PELA INSCRIÇÃO
                 </label>
                 <div className="flex gap-3">
@@ -152,7 +152,7 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
                   <button
                     onClick={handleConsultar}
                     disabled={!cpf || cpf.length < 14 || isSearching}
-                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-primary-blue hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <FiSearch size={20} />
                     <span>CONSULTAR</span>
@@ -186,20 +186,20 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
                         </div>
                         <div>
                           <span className="font-medium">Situação: </span>
-                          <span className="text-red-600">{boleto.situacao}</span>
+                          <span className={boleto.situacao === 'Pago' ? 'text-green-600' : 'text-red-600'}>{boleto.situacao}</span>
                         </div>
                       </div>
                       <div className="flex gap-3 pt-2">
                         <button
                           onClick={() => handleImprimir(boleto.numero)}
-                          className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2 text-sm"
+                          className="bg-primary-blue hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2 text-sm"
                         >
                           <FiPrinter size={16} />
                           <span>IMPRIMIR</span>
                         </button>
                         <button
                           onClick={() => handleVerAtletas(boleto.numero)}
-                          className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2 text-sm"
+                          className="bg-primary-blue hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2 text-sm"
                         >
                           <FiUsers size={16} />
                           <span>ATLETAS</span>

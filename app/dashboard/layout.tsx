@@ -1,8 +1,7 @@
 import '../globals.css'
 import type { Metadata } from 'next'
-import DashboardHeader from '@/components/DashboardHeader'
-import Footer from '@/components/Footer'
-import WhatsAppWidget from '@/components/WhatsAppWidget'
+import ModernNavbar from '@/components/ModernNavbar'
+import ModernFooter from '@/components/ModernFooter'
 
 export const metadata: Metadata = {
   title: 'Painel do Professor - Meu Camp',
@@ -11,11 +10,10 @@ export const metadata: Metadata = {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body className="bg-gray-50">
-        <DashboardHeader />
-        <div className="pt-24 pb-16 min-h-[calc(100vh-200px)]">{children}</div>
-        <Footer />
-        <WhatsAppWidget />
+      <body className="bg-[#f8fafc]">
+        <ModernNavbar />
+        <div className="pt-20">{children}</div>
+        <ModernFooter />
       </body>
     </html>
   )

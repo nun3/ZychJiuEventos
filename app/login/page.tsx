@@ -3,9 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
-import WhatsAppWidget from '@/components/WhatsAppWidget'
+import ModernNavbar from '@/components/ModernNavbar'
+import ModernFooter from '@/components/ModernFooter'
 
 const loginTabs = [
   { id: 'login', label: 'Entrar' },
@@ -28,8 +27,8 @@ export default function LoginPage() {
   const currentTab = accessTabs.find((tab) => tab.id === activeTab)!
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <Header />
+    <main className="min-h-screen bg-[#f8fafc]">
+      <ModernNavbar />
 
       <section className="container mx-auto px-4 pt-28 pb-16">
         <div className="flex flex-col items-center">
@@ -50,7 +49,7 @@ export default function LoginPage() {
                     <br />
                     <button
                       onClick={() => setMode('login')}
-                      className="mt-1 inline-flex items-center rounded-full bg-primary-orange px-4 py-1 text-sm font-semibold text-white shadow hover:bg-orange-600"
+                      className="mt-1 inline-flex items-center rounded-full bg-primary-blue px-4 py-1 text-sm font-semibold text-white shadow hover:bg-blue-700"
                     >
                       Voltar para login
                     </button>
@@ -61,7 +60,7 @@ export default function LoginPage() {
                     <br />
                     <button
                       onClick={() => setMode('register')}
-                      className="mt-1 inline-flex items-center rounded-full bg-primary-orange px-4 py-1 text-sm font-semibold text-white shadow hover:bg-orange-600"
+                      className="mt-1 inline-flex items-center rounded-full bg-primary-blue px-4 py-1 text-sm font-semibold text-white shadow hover:bg-blue-700"
                     >
                       + Novo cadastro
                     </button>
@@ -78,7 +77,7 @@ export default function LoginPage() {
                     key={tab.id}
                     onClick={() => setMode(tab.id as typeof mode)}
                     className={`rounded-full px-3 sm:px-4 py-2 transition ${
-                      mode === tab.id ? 'bg-white text-primary-orange shadow' : 'hover:text-primary-red'
+                      mode === tab.id ? 'bg-white text-primary-blue shadow' : 'hover:text-primary-blue'
                     }`}
                   >
                     {tab.label}
@@ -95,7 +94,7 @@ export default function LoginPage() {
                         onClick={() => setActiveTab(tab.id as 'cpf' | 'email')}
                         type="button"
                         className={`rounded-full px-3 sm:px-4 py-2 transition ${
-                          tab.id === activeTab ? 'bg-white text-primary-orange shadow' : 'hover:text-primary-red'
+                          tab.id === activeTab ? 'bg-white text-primary-blue shadow' : 'hover:text-primary-blue'
                         }`}
                       >
                         {tab.label}
@@ -110,7 +109,7 @@ export default function LoginPage() {
                     <input
                       type={activeTab === 'cpf' ? 'text' : 'email'}
                       placeholder={currentTab.mask}
-                      className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-800 shadow-sm focus:border-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange/40"
+                      className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
                     />
                   </div>
 
@@ -119,7 +118,7 @@ export default function LoginPage() {
                     <input
                       type="password"
                       placeholder="Digite sua senha"
-                      className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-800 shadow-sm focus:border-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange/40"
+                      className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
                     />
                   </div>
 
@@ -127,14 +126,14 @@ export default function LoginPage() {
                     <label className="flex items-center gap-2 text-gray-600">
                       <input
                         type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300 text-primary-orange focus:ring-primary-orange/60"
+                        className="h-4 w-4 rounded border-gray-300 text-primary-blue focus:ring-primary-blue/60"
                       />
                       Manter conectado
                     </label>
                     <button
                       type="button"
                       onClick={() => setMode('recover')}
-                      className="font-semibold text-primary-red hover:text-primary-orange"
+                      className="font-semibold text-primary-blue hover:text-blue-700"
                     >
                       Esqueci a senha
                     </button>
@@ -142,7 +141,7 @@ export default function LoginPage() {
 
                   <button
                     type="submit"
-                    className="w-full rounded-lg bg-primary-red py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-md hover:bg-red-700 transition"
+                    className="w-full rounded-lg bg-primary-blue py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-md hover:bg-blue-700 transition"
                   >
                     Acessar
                   </button>
@@ -155,7 +154,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setMode('register')}
-                    className="w-full rounded-lg bg-primary-orange py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-md hover:bg-orange-600 transition text-center inline-block"
+                    className="w-full rounded-lg bg-primary-blue py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-md hover:bg-blue-700 transition text-center inline-block"
                   >
                     + Novo cadastro
                   </button>
@@ -176,7 +175,7 @@ export default function LoginPage() {
                   </ul>
                   <Link
                     href="/cadastro"
-                    className="mt-2 inline-flex justify-center rounded-lg bg-primary-orange px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-md hover:bg-orange-600 transition"
+                    className="mt-2 inline-flex justify-center rounded-lg bg-primary-blue px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-md hover:bg-blue-700 transition"
                   >
                     Abrir formulário de cadastro
                   </Link>
@@ -192,7 +191,7 @@ export default function LoginPage() {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Link
                       href="/recuperar-senha"
-                      className="flex flex-col gap-1 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 hover:border-primary-orange transition"
+                      className="flex flex-col gap-1 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 hover:border-primary-blue transition"
                     >
                       <span className="text-sm font-semibold text-gray-800">Recuperar por WhatsApp</span>
                       <span className="text-xs text-gray-600">
@@ -201,7 +200,7 @@ export default function LoginPage() {
                     </Link>
                     <Link
                       href="/recuperar-senha"
-                      className="flex flex-col gap-1 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 hover:border-primary-orange transition"
+                      className="flex flex-col gap-1 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 hover:border-primary-blue transition"
                     >
                       <span className="text-sm font-semibold text-gray-800">Recuperar por e-mail</span>
                       <span className="text-xs text-gray-600">
@@ -216,8 +215,7 @@ export default function LoginPage() {
         </div>
       </section>
 
-      <Footer />
-      <WhatsAppWidget />
+      <ModernFooter />
     </main>
   )
 }

@@ -2,9 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
-import WhatsAppWidget from '@/components/WhatsAppWidget'
+import ModernNavbar from '@/components/ModernNavbar'
+import ModernFooter from '@/components/ModernFooter'
 import { FiInfo } from 'react-icons/fi'
 
 const recoveryTabs = [
@@ -29,23 +28,23 @@ export default function PasswordRecoveryPage() {
   const current = recoveryTabs.find((tab) => tab.id === activeTab)!
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <Header />
+    <main className="min-h-screen bg-[#f8fafc]">
+      <ModernNavbar />
 
       <section className="container mx-auto px-4 pt-28 pb-16">
         <div className="flex flex-col items-center">
           <div className="flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
             <header className="flex items-center justify-between border-b border-gray-200 bg-[#0C3049] px-6 py-4 text-white">
               <div>
-                <p className="text-xs uppercase tracking-[0.28em] text-orange-300">Portal do atleta</p>
+                <p className="text-xs uppercase tracking-[0.28em] text-blue-300">Portal do atleta</p>
                 <h1 className="mt-1 text-2xl font-bold">Recuperar senha</h1>
               </div>
-              <div className="text-right text-xs text-orange-100">
+              <div className="text-right text-xs text-white">
                 Lembrou da senha?
                 <br />
                 <Link
                   href="/login"
-                  className="mt-1 inline-flex items-center rounded-full bg-primary-orange px-4 py-1 text-sm font-semibold text-white shadow hover:bg-orange-600"
+                  className="mt-1 inline-flex items-center rounded-full bg-primary-blue px-4 py-1 text-sm font-semibold text-white shadow hover:bg-blue-700"
                 >
                   Voltar para login
                 </Link>
@@ -59,7 +58,7 @@ export default function PasswordRecoveryPage() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as 'whatsapp' | 'email')}
                     className={`rounded-full px-4 py-2 transition ${
-                      tab.id === activeTab ? 'bg-white text-primary-orange shadow' : 'hover:text-primary-red'
+                      tab.id === activeTab ? 'bg-white text-primary-blue shadow' : 'hover:text-primary-blue'
                     }`}
                   >
                     {tab.label}
@@ -80,20 +79,20 @@ export default function PasswordRecoveryPage() {
                   <input
                     type={activeTab === 'whatsapp' ? 'tel' : 'email'}
                     placeholder={current.mask}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-800 shadow-sm focus:border-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange/40"
+                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full rounded-lg bg-primary-red py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-md hover:bg-red-700 transition"
+                  className="w-full rounded-lg bg-primary-blue py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-md hover:bg-blue-700 transition"
                 >
                   Solicitar
                 </button>
               </form>
 
               <div className="mt-6 text-center">
-                <Link href="/login" className="text-sm font-semibold text-primary-red hover:text-primary-orange">
+                <Link href="/login" className="text-sm font-semibold text-primary-blue hover:text-blue-700">
                   &larr; Voltar para login
                 </Link>
               </div>
@@ -102,8 +101,7 @@ export default function PasswordRecoveryPage() {
         </div>
       </section>
 
-      <Footer />
-      <WhatsAppWidget />
+      <ModernFooter />
     </main>
   )
 }

@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import ModernNavbar from '@/components/ModernNavbar'
+import ModernFooter from '@/components/ModernFooter'
 import { FiUser, FiEdit, FiUsers, FiClipboard, FiAward, FiCreditCard, FiChevronRight } from 'react-icons/fi'
 
 const menuItems = [
@@ -54,7 +56,9 @@ const pastEvents = [
 
 export default function MeuPerfilPage() {
   return (
-    <main className="container mx-auto px-4">
+    <main className="min-h-screen bg-[#f8fafc]">
+      <ModernNavbar />
+      <div className="pt-20 container mx-auto px-6 pb-12">
       <section className="rounded-2xl bg-white shadow">
         <div className="border-b border-gray-200 bg-[#0C3049] px-6 py-6 text-white">
           <h1 className="text-2xl font-bold uppercase tracking-wide">Bem-vindo, Ricardo!</h1>
@@ -183,6 +187,8 @@ export default function MeuPerfilPage() {
           </div>
         </div>
       </section>
+      </div>
+      <ModernFooter />
     </main>
   )
 }

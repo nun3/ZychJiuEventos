@@ -9,10 +9,11 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          dark: '#1A3A52',
-          red: '#E63946',
-          orange: '#FF9500',
-          green: '#25D366',
+          dark: '#0a0e1a',
+          blue: '#3b82f6',
+          accent: '#0ea5e9',
+          red: '#DC2626',
+          orange: '#f97316',
         },
         brand: {
           red: '#DC2626',
@@ -21,7 +22,17 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'Roboto', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+        display: ['Space Grotesk', 'sans-serif'],
+      },
+      boxShadow: {
+        'glow-primary': '0 0 20px rgba(59, 130, 246, 0.5)',
+        'glow-accent': '0 0 20px rgba(14, 165, 233, 0.5)',
+      },
+      backgroundImage: {
+        'gradient-hero': 'radial-gradient(ellipse at top, rgba(59, 130, 246, 0.1), transparent)',
+        'gradient-card': 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(14, 165, 233, 0.1))',
+        'gradient-text': 'linear-gradient(135deg, #3b82f6, #0ea5e9)',
       },
     },
   },

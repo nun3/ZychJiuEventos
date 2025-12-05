@@ -351,7 +351,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
               <div
                 className={`${
                   currentStep >= step.num
-                    ? 'w-12 h-12 bg-orange-500 text-white text-lg'
+                    ? 'w-12 h-12 bg-primary-blue text-white text-lg'
                     : 'w-10 h-10 bg-gray-300 text-gray-600 text-sm'
                 } rounded-full flex items-center justify-center font-bold transition`}
               >
@@ -360,7 +360,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
               {index < 3 && (
                 <div
                   className={`w-24 h-1 ${
-                    currentStep > step.num ? 'bg-orange-500' : 'bg-gray-300'
+                    currentStep > step.num ? 'bg-primary-blue' : 'bg-gray-300'
                   } transition`}
                 />
               )}
@@ -394,12 +394,12 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                 <p className="text-sm font-semibold italic text-gray-600 mb-3">
                   Inscrição do Responsável (Professor)
                 </p>
-                <label className="flex items-center gap-4 p-4 bg-orange-50 rounded-xl border border-orange-200 cursor-pointer hover:bg-orange-100 transition">
+                <label className="flex items-center gap-4 p-4 bg-blue-50 rounded-xl border border-blue-200 cursor-pointer hover:bg-blue-100 transition">
                   <input
                     type="checkbox"
                     checked={selectedAthletes.some((a) => a.id === 0)}
                     onChange={handleToggleProfessor}
-                    className="w-5 h-5 text-orange-600 rounded"
+                    className="w-5 h-5 text-primary-blue rounded"
                   />
                   <div className="w-12 h-12 rounded-full bg-gray-800 text-white flex items-center justify-center font-bold">
                     JS
@@ -477,7 +477,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                           }
                         }}
                         disabled={isRegistered}
-                        className="w-5 h-5 text-orange-500 rounded"
+                        className="w-5 h-5 text-primary-blue rounded"
                       />
                       <div className="w-12 h-12 rounded-full bg-gray-800 text-white flex items-center justify-center font-bold text-sm">
                         {getInitials(athlete.name)}
@@ -529,7 +529,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                           onClick={() => setCurrentPage(page)}
                           className={`px-4 py-2 rounded-lg font-medium ${
                             page === currentPage
-                              ? 'bg-orange-500 text-white'
+                              ? 'bg-primary-blue text-white'
                               : 'border hover:bg-gray-100'
                           }`}
                         >
@@ -553,7 +553,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
               <div className="flex flex-col sm:flex-row justify-between items-center pt-8 border-t border-gray-200">
                 <Link
                   href={`/eventos/${eventId}/inscricao/cadastrar-atleta`}
-                  className="text-red-600 font-medium flex items-center gap-2 hover:gap-3 transition"
+                  className="text-primary-blue font-medium flex items-center gap-2 hover:gap-3 transition"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeWidth="2" d="M12 4v16m8-8H4" />

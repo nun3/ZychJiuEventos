@@ -488,7 +488,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
         <div className="flex items-center gap-3 mb-2">
           <p className="text-xl font-bold text-gray-800">{athlete.name.toUpperCase()}</p>
           {athlete.absolute && (
-            <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+            <span className="bg-primary-blue text-white px-3 py-1 rounded-full text-xs font-bold">
               ABSOLUTO
             </span>
           )}
@@ -543,7 +543,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
             }}
             className={`px-8 py-5 text-lg font-semibold flex items-center gap-3 transition ${
               viewMode === 'geral'
-                ? 'bg-white border-b-4 border-orange-500 text-orange-600 font-bold shadow-sm'
+                ? 'bg-white border-b-4 border-blue-500 text-blue-600 font-bold shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -557,7 +557,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
             }}
             className={`px-8 py-5 text-lg font-semibold flex items-center gap-3 transition ${
               viewMode === 'categoria-peso'
-                ? 'bg-white border-b-4 border-orange-500 text-orange-600 font-bold shadow-sm'
+                ? 'bg-white border-b-4 border-blue-500 text-blue-600 font-bold shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -571,7 +571,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
             }}
             className={`px-8 py-5 text-lg font-semibold flex items-center gap-3 transition ${
               viewMode === 'absoluto'
-                ? 'bg-white border-b-4 border-orange-500 text-orange-600 font-bold shadow-sm'
+                ? 'bg-white border-b-4 border-blue-500 text-blue-600 font-bold shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -585,7 +585,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
             }}
             className={`px-8 py-5 text-lg font-semibold flex items-center gap-3 transition ${
               viewMode === 'equipe'
-                ? 'bg-white border-b-4 border-orange-500 text-orange-600 font-bold shadow-sm'
+                ? 'bg-white border-b-4 border-blue-500 text-blue-600 font-bold shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -603,7 +603,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
               placeholder="Buscar por nome, academia, professor, categoria..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-14 pr-6 py-5 border border-gray-300 rounded-xl text-lg focus:outline-none focus:border-orange-500 transition"
+              className="w-full pl-14 pr-6 py-5 border border-gray-300 rounded-xl text-lg focus:outline-none focus:border-primary-blue transition"
             />
           </div>
 
@@ -856,7 +856,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
 
           {/* Contador Final */}
           <div className="text-center mt-12 pt-10 border-t border-gray-200">
-            <span className="text-6xl font-black text-orange-600">
+            <span className="text-6xl font-black text-primary-blue">
               {athletesForPagination.length}
             </span>
             <p className="text-2xl text-gray-600 mt-2">

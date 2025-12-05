@@ -1,23 +1,19 @@
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
-import WhatsAppWidget from '@/components/WhatsAppWidget'
-import HeroSection from '@/components/HeroSection'
+import ModernNavbar from '@/components/ModernNavbar'
+import ModernHero from '@/components/ModernHero'
 import EventFilters from '@/components/EventFilters'
-import EventGrid from '@/components/EventGrid'
+import ModernEventGrid from '@/components/ModernEventGrid'
+import ModernFooter from '@/components/ModernFooter'
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      <Header />
-      <div className="pt-20">
-        <HeroSection />
-        <div className="container mx-auto px-4 py-8">
-          <EventFilters />
-          <EventGrid />
-        </div>
+    <main className="min-h-screen bg-[#f8fafc] relative">
+      <ModernNavbar />
+      <ModernHero />
+      <div id="eventos" className="container mx-auto px-6 py-12">
+        <EventFilters />
+        <ModernEventGrid />
       </div>
-      <Footer />
-      <WhatsAppWidget />
+      <ModernFooter />
     </main>
   )
 }

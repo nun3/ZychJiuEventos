@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import ModernNavbar from '@/components/ModernNavbar'
+import ModernFooter from '@/components/ModernFooter'
 import { FiArrowLeft, FiCalendar, FiMapPin, FiEdit, FiCheck, FiAlertTriangle, FiFileText, FiX } from 'react-icons/fi'
 
 // Dados mockados do atleta
@@ -239,6 +241,8 @@ export default function AthleteRegistrationsPage({ params }: { params: { id: str
           )}
         </div>
       </section>
+      </div>
+      <ModernFooter />
     </main>
   )
 }

@@ -76,7 +76,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
           <div className="flex items-center justify-end">
             <Link
               href="/"
-              className="text-gray-600 hover:text-primary-orange flex items-center space-x-2 transition"
+              className="text-gray-600 hover:text-primary-blue flex items-center space-x-2 transition"
             >
               <FiArrowLeft />
               <span className="text-sm md:text-base">voltar para eventos</span>
@@ -106,7 +106,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                 />
               ) : (
                 <div 
-                  className="w-full h-[400px] md:h-[500px] lg:h-[600px] bg-gradient-to-br from-primary-dark via-primary-dark to-primary-orange"
+                  className="w-full h-[400px] md:h-[500px] lg:h-[600px] bg-gradient-to-br from-primary-dark via-primary-dark to-primary-blue"
                 />
               )}
             </div>
@@ -124,8 +124,8 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                 onClick={() => setActiveTab(index)}
                 className={`px-4 py-4 font-medium whitespace-nowrap border-b-2 transition ${
                   activeTab === index
-                    ? 'border-primary-orange text-primary-orange'
-                    : 'border-transparent text-gray-600 hover:text-primary-red'
+                    ? 'border-primary-blue text-primary-blue'
+                    : 'border-transparent text-gray-600 hover:text-primary-blue'
                 }`}
               >
                 {tab}
@@ -151,7 +151,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                     onClick={() => setActiveInfoSubTab(index)}
                     className={`px-6 py-5 text-lg font-semibold flex items-center gap-3 transition ${
                       activeInfoSubTab === index
-                        ? 'bg-white border-b-4 border-orange-500 text-orange-600 font-bold'
+                        ? 'bg-white border-b-4 border-blue-500 text-blue-600 font-bold'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
@@ -168,7 +168,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {activeInfoSubTab === 0 && (
                 <div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">SOBRE O EVENTO</h2>
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 mb-8">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-8 mb-8">
                     <p className="text-lg leading-relaxed text-gray-700">
                       É com imenso orgulho e entusiasmo que convidamos todos a participarem da <strong>1ª COPA GRÊMIO INDUSTRIAL KIDS DE JIU-JITSU</strong>, um evento totalmente voltado às categorias de base, do <strong>pré-mirim ao juvenil (4 a 17 anos)</strong>.
                     </p>
@@ -186,9 +186,9 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {activeInfoSubTab === 1 && (
                 <div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">LOCAL DO EVENTO</h2>
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-8">
                     <div className="text-center mb-6">
-                    <FiMapPin className="w-16 h-16 text-orange-600 mx-auto mb-4" />
+                    <FiMapPin className="w-16 h-16 text-blue-600 mx-auto mb-4" />
                       <p className="text-2xl font-bold text-gray-800 uppercase">Ginásio do Grêmio Esportivo Industrial</p>
                       <p className="text-lg italic text-gray-700 mt-2">R. Araucária, 883 Bairro Santa Terezinha</p>
                       <p className="text-lg font-semibold italic text-gray-800 mt-1">Pato Branco/PR</p>
@@ -198,7 +198,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                         href="https://maps.app.goo.gl/XpTPbsmWMk2p6GdJ8"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-block bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-xl transition"
+                        className="inline-block bg-primary-blue hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl transition"
                       >
                         Ver no Mapa
                       </a>
@@ -216,8 +216,8 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                       <p className="text-4xl font-black text-green-600 mb-2">R$ 70,00</p>
                       <p className="text-lg font-semibold italic text-gray-800">Apenas Categoria de Peso</p>
                     </div>
-                    <div className="bg-white border-2 border-orange-500 rounded-2xl p-8 text-center shadow-lg transform scale-105">
-                      <p className="text-4xl font-black text-orange-600 mb-2">R$ 95,00</p>
+                    <div className="bg-white border-2 border-blue-500 rounded-2xl p-8 text-center shadow-lg transform scale-105">
+                      <p className="text-4xl font-black text-blue-600 mb-2">R$ 95,00</p>
                       <p className="text-lg font-semibold italic text-gray-800">Categoria de Peso + Absoluto</p>
                       <p className="text-sm italic text-gray-600 mt-2">Mais popular</p>
                     </div>
@@ -229,7 +229,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {activeInfoSubTab === 3 && (
                 <div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">FORMAS DE PAGAMENTO</h2>
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-8 space-y-6">
                     <div>
                       <p className="text-lg leading-relaxed text-gray-700 mb-4">
                         As inscrições serão feitas impreterivelmente pelo <strong>site Meu Camp</strong>.
@@ -247,12 +247,12 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                         Para informar a equipe, acesse o menu principal <strong>"Minha Equipe"</strong> ou <strong>"Meus Atletas"</strong>.
                       </p>
                     </div>
-                    <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
+                    <div className="bg-white rounded-xl p-6 border-2 border-blue-300">
                       <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Pagamento</h3>
                       <p className="text-lg text-gray-700 mb-4">
                         O pagamento da inscrição poderá ser feito por <strong>Pix</strong> ou <strong>Boleto</strong>.
                       </p>
-                      <p className="text-lg font-semibold text-orange-600 mb-2">IMPORTANTE:</p>
+                      <p className="text-lg font-semibold text-blue-600 mb-2">IMPORTANTE:</p>
                       <p className="text-lg text-gray-700">
                         Pode ser feito um único pagamento no valor total, com a possibilidade de envio do link de pagamento a terceiros (como patrocinadores).
                       </p>
@@ -271,14 +271,14 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {activeInfoSubTab === 4 && (
                 <div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">PREMIAÇÃO</h2>
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-8 space-y-6">
                     <div className="bg-yellow-100 border-2 border-yellow-400 rounded-xl p-6">
                       <h3 className="text-xl font-semibold italic text-gray-800 mb-3">Premiação Festival de 04 até 07 anos</h3>
                       <p className="text-lg text-gray-700">
                         Todas as crianças que participarem do festival ganharão <strong>medalhas de ouro</strong>.
                       </p>
                     </div>
-                    <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
+                    <div className="bg-white rounded-xl p-6 border-2 border-blue-300">
                       <h3 className="text-xl font-semibold italic text-gray-800 mb-3">Premiações das Categorias de Peso dos 08 até 17 anos</h3>
                       <p className="text-lg text-gray-700 mb-2">
                         Medalha para <strong>1º, 2º e 3º Colocado</strong> haverá dois 3º lugares.
@@ -287,7 +287,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                         Todas as faixas medalhas.
                       </p>
                     </div>
-                    <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
+                    <div className="bg-white rounded-xl p-6 border-2 border-blue-300">
                       <h3 className="text-xl font-semibold italic text-gray-800 mb-3">Premiações das Equipes Campeãs</h3>
                       <p className="text-lg text-gray-700">
                         Haverá troféu de equipe do <strong>1º ao 5º lugar</strong>
@@ -313,11 +313,11 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {activeInfoSubTab === 5 && (
                 <div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">CATEGORIAS</h2>
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-8 space-y-6">
                     <p className="text-lg leading-relaxed text-gray-700">
                       As divisões seguem os <strong>critérios oficiais de idade e peso adotados pela CBJJE</strong>, assegurando padronização e transparência durante todo o evento.
                     </p>
-                    <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
+                    <div className="bg-white rounded-xl p-6 border-2 border-blue-300">
                       <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Faixas Etárias e Divisões</h3>
                       <p className="text-lg text-gray-700 mb-4">
                         O campeonato é destinado exclusivamente às <strong>categorias de base</strong>, compreendendo atletas com idade entre <strong>04 e 16 anos</strong>, distribuídos da seguinte forma:
@@ -330,13 +330,13 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                         <li><strong>Juvenil</strong></li>
                       </ul>
                     </div>
-                    <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
+                    <div className="bg-white rounded-xl p-6 border-2 border-blue-300">
                       <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Faixas</h3>
                       <p className="text-lg text-gray-700">
                         As lutas serão separadas conforme as <strong>graduações oficiais da CBJJ</strong>, respeitando o nível técnico e a idade de cada competidor.
                       </p>
                     </div>
-                    <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
+                    <div className="bg-white rounded-xl p-6 border-2 border-blue-300">
                       <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Categorias de Peso</h3>
                       <p className="text-lg text-gray-700">
                         As divisões de peso seguem a <strong>tabela oficial da CBJJE</strong>, considerando o peso <strong>com kimono</strong> no momento da pesagem.
@@ -357,8 +357,8 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {activeInfoSubTab === 6 && (
                 <div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">ABSOLUTO</h2>
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
-                    <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-8 space-y-6">
+                    <div className="bg-white rounded-xl p-6 border-2 border-blue-300">
                       <h3 className="text-xl font-semibold italic text-gray-800 mb-4">Critérios de Participação</h3>
                       <ul className="list-disc list-inside space-y-2 text-lg text-gray-700 ml-4">
                         <li>Poderão participar <strong>somente os atletas campeões de suas respectivas categorias de peso</strong>.</li>
@@ -388,7 +388,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {activeInfoSubTab === 7 && (
                 <div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">CHECAGEM</h2>
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-8">
                     <div className="space-y-4 text-lg leading-relaxed text-gray-700">
                       <p>
                         A checagem será <strong>realizada exclusivamente de forma online</strong>, através da página oficial do evento no site.
@@ -408,7 +408,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {activeInfoSubTab === 8 && (
                 <div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">CHAVES</h2>
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-8">
                     <div className="space-y-4 text-lg leading-relaxed text-gray-700">
                       <p>
                         As chaves serão <strong>divulgadas oficialmente no site</strong>, após o encerramento da checagem e da conferência final de todos os dados.
@@ -425,14 +425,14 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {activeInfoSubTab === 9 && (
                 <div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">PESAGEM</h2>
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-8 space-y-6">
                     <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-xl">
                       <h3 className="text-xl font-semibold italic text-gray-800 mb-3">Na Pesagem é Indispensável o Uso do Kimono</h3>
                       <p className="text-lg text-gray-700">
                         A pesagem será realizada <strong>com o kimono</strong>, seguindo os padrões oficiais da CBJJE.
                       </p>
                     </div>
-                    <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
+                    <div className="bg-white rounded-xl p-6 border-2 border-blue-300">
                       <p className="text-lg text-gray-700 mb-4">
                         O atleta deve estar dentro da faixa de peso da categoria escolhida no momento da pesagem.
                       </p>
@@ -451,7 +451,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {activeInfoSubTab === 10 && (
                 <div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">FISCALIZAÇÃO E REGRAS</h2>
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-8 space-y-6">
                     <p className="text-lg leading-relaxed text-gray-700">
                       Como o nosso objetivo é sempre fazer um bom campeonato e bem organizado, para a competição, <strong>NÃO será permitido</strong>:
                     </p>
@@ -463,7 +463,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                         <li>Faixa ou Kimono rasgada</li>
                       </ul>
                     </div>
-                    <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
+                    <div className="bg-white rounded-xl p-6 border-2 border-blue-300">
                       <p className="text-lg text-gray-700 mb-4">
                         O competidor que se encontrar em uma dessas situações terá um tempo para troca do kimono, senão será automaticamente desclassificado da competição sem direito a recorrer.
                       </p>
@@ -479,7 +479,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {activeInfoSubTab === 11 && (
                 <div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">DIREITO DE IMAGEM</h2>
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-4">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-8 space-y-4">
                     <p className="text-lg leading-relaxed text-gray-700">
                       Ao realizar a inscrição na <strong>1ª COPA GRÊMIO INDUSTRIAL KIDS DE JIU-JITSU</strong>, o atleta e seus responsáveis legais <strong>autorizam, de forma automática e irrevogável</strong>, o uso de sua <strong>imagem, voz e nome</strong> para fins de <strong>divulgação institucional e promocional</strong> do evento.
                     </p>
@@ -503,8 +503,8 @@ export default function EventDetails({ eventId }: { eventId: string }) {
               {activeInfoSubTab === 12 && (
                 <div>
                   <h2 className="text-3xl font-bold text-gray-800 mb-6 uppercase">DECLARAÇÃO DE SAÚDE</h2>
-                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-8 space-y-6">
-                    <div className="bg-white rounded-xl p-6 border-2 border-orange-300">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-8 space-y-6">
+                    <div className="bg-white rounded-xl p-6 border-2 border-blue-300">
                       <p className="text-lg leading-relaxed text-gray-700 mb-4">
                         A participação no evento implica que o atleta está <strong>em plenas condições de saúde</strong>, devidamente <strong>autorizado por seus responsáveis legais</strong> e liberado para a prática esportiva.
                       </p>

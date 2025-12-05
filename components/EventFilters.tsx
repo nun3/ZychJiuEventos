@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { FiX, FiSearch, FiCalendar, FiMapPin } from 'react-icons/fi'
 
 const eventTypes = [
@@ -101,13 +102,19 @@ export default function EventFilters() {
 
   return (
     <section className="mb-8">
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="bg-white rounded-lg shadow-md p-6"
+      >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Filtrar eventos</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Filtrar eventos</h2>
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="text-primary-red hover:underline flex items-center space-x-1 text-sm"
+              className="text-primary-blue hover:underline flex items-center space-x-1 text-sm"
             >
               <FiX size={16} />
               <span>limpar filtros</span>
@@ -121,8 +128,8 @@ export default function EventFilters() {
             onClick={() => setActiveTab('tipo')}
             className={`px-4 py-2 font-medium transition ${
               activeTab === 'tipo'
-                ? 'border-b-2 border-primary-orange text-primary-orange'
-                : 'text-gray-600 hover:text-primary-red'
+                ? 'border-b-2 border-primary-blue text-primary-blue'
+                : 'text-gray-600 hover:text-primary-blue'
             }`}
           >
             Tipo e Esporte
@@ -131,8 +138,8 @@ export default function EventFilters() {
             onClick={() => setActiveTab('data')}
             className={`px-4 py-2 font-medium transition ${
               activeTab === 'data'
-                ? 'border-b-2 border-primary-orange text-primary-orange'
-                : 'text-gray-600 hover:text-primary-red'
+                ? 'border-b-2 border-primary-blue text-primary-blue'
+                : 'text-gray-600 hover:text-primary-blue'
             }`}
           >
             <FiCalendar className="inline mr-1" />
@@ -142,8 +149,8 @@ export default function EventFilters() {
             onClick={() => setActiveTab('local')}
             className={`px-4 py-2 font-medium transition ${
               activeTab === 'local'
-                ? 'border-b-2 border-primary-orange text-primary-orange'
-                : 'text-gray-600 hover:text-primary-red'
+                ? 'border-b-2 border-primary-blue text-primary-blue'
+                : 'text-gray-600 hover:text-primary-blue'
             }`}
           >
             <FiMapPin className="inline mr-1" />
@@ -153,8 +160,8 @@ export default function EventFilters() {
             onClick={() => setActiveTab('pesquisar')}
             className={`px-4 py-2 font-medium transition ${
               activeTab === 'pesquisar'
-                ? 'border-b-2 border-primary-orange text-primary-orange'
-                : 'text-gray-600 hover:text-primary-red'
+                ? 'border-b-2 border-primary-blue text-primary-blue'
+                : 'text-gray-600 hover:text-primary-blue'
             }`}
           >
             <FiSearch className="inline mr-1" />
@@ -173,7 +180,7 @@ export default function EventFilters() {
                 <select
                   value={filters.eventType}
                   onChange={(e) => handleFilterChange('eventType', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-orange focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
                 >
                   {eventTypes.map((type) => (
                     <option key={type} value={type}>
@@ -189,7 +196,7 @@ export default function EventFilters() {
                 <select
                   value={filters.sport}
                   onChange={(e) => handleFilterChange('sport', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-orange focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
                 >
                   {sports.map((sport) => (
                     <option key={sport} value={sport}>
@@ -210,7 +217,7 @@ export default function EventFilters() {
                 <select
                   value={filters.period}
                   onChange={(e) => handleFilterChange('period', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-orange focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
                 >
                   <option value="todos">Todos</option>
                   <option value="este-mes">Este mês</option>
@@ -228,7 +235,7 @@ export default function EventFilters() {
                     type="date"
                     value={filters.startDate}
                     onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-orange focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -239,7 +246,7 @@ export default function EventFilters() {
                     type="date"
                     value={filters.endDate}
                     onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-orange focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
                   />
                 </div>
               </div>
@@ -254,7 +261,7 @@ export default function EventFilters() {
               <select
                 value={filters.state}
                 onChange={(e) => handleFilterChange('state', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-orange focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
               >
                 {states.map((state) => (
                   <option key={state} value={state}>
@@ -283,7 +290,7 @@ export default function EventFilters() {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }

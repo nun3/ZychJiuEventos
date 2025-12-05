@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import ModernNavbar from '@/components/ModernNavbar'
+import ModernFooter from '@/components/ModernFooter'
 import { FiEdit, FiUsers, FiCalendar, FiAward, FiTrash2, FiSearch, FiPlus } from 'react-icons/fi'
 import dynamic from 'next/dynamic'
 
@@ -85,7 +87,9 @@ export default function MeusAtletasPage() {
   const [openModal, setOpenModal] = useState(false)
 
   return (
-    <main className="container mx-auto px-4">
+    <main className="min-h-screen bg-[#f8fafc]">
+      <ModernNavbar />
+      <div className="pt-20 container mx-auto px-6 pb-12">
       <section className="rounded-2xl bg-white shadow">
         <header className="border-b border-gray-200 bg-[#0C3049] px-6 py-6 text-white">
           <h1 className="text-2xl font-bold uppercase tracking-wide">Bem-vindo, Ricardo!</h1>
@@ -234,6 +238,8 @@ export default function MeusAtletasPage() {
       </section>
 
       <NewAthleteModal open={openModal} onClose={() => setOpenModal(false)} />
+      </div>
+      <ModernFooter />
     </main>
   )
 }
