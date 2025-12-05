@@ -21,7 +21,7 @@ const mockEvent = {
   location: 'Clevelândia/PR',
   fullLocation: 'Centro Esportivo Municipal Idevaldo Zardo',
   time: 'AS 9:00 H',
-  image: '/images/2-festival-kids-2025.jpg',
+  image: '/images/2-festival-kids-2025.png',
   description: 'Um campeonato internacional de Jiu-Jitsu que reúne atletas de três países na fronteira.',
   requirements: '02kg de alimento não perecível',
   organizer: {
