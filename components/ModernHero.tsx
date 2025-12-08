@@ -85,51 +85,19 @@ export default function ModernHero() {
   }
 
   return (
-    <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden pt-20 bg-gradient-to-b from-blue-50/30 to-transparent">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-hero opacity-30" />
-
-      {/* Grid Decorativo */}
-      <div className="absolute inset-0 opacity-10">
-        <div
-          className="w-full h-full"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px',
-          }}
-        />
+    <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden pt-20">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(/images/home1.png)',
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
       </div>
 
-      {/* Orbs Flutuantes */}
-      <motion.div
-        className="absolute top-20 right-20 w-72 h-72 bg-primary-blue rounded-full blur-3xl opacity-20"
-        animate={{
-          x: mousePosition.x,
-          y: mousePosition.y,
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      />
-      <motion.div
-        className="absolute bottom-20 left-20 w-96 h-96 bg-primary-accent rounded-full blur-3xl opacity-20"
-        animate={{
-          x: -mousePosition.x * 0.5,
-          y: -mousePosition.y * 0.5,
-          scale: [1, 1.3, 1],
-        }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      />
+      {/* Overlay escuro para melhorar legibilidade */}
+      <div className="absolute inset-0 bg-black/30" />
 
       {/* Content - Carousel */}
       <div className="relative z-10 container mx-auto px-6 text-center">
@@ -147,18 +115,18 @@ export default function ModernHero() {
             }`}
           >
             {/* Title */}
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold gradient-text">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold text-white drop-shadow-2xl">
               {slide.title}
             </h1>
 
             {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-gray-700 font-semibold max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-white font-semibold max-w-2xl mx-auto drop-shadow-lg">
               {slide.subtitle}
             </p>
 
             {/* Description */}
             {slide.description && (
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="text-lg text-white/90 max-w-2xl mx-auto drop-shadow-md">
                 {slide.description}
               </p>
             )}
@@ -214,7 +182,7 @@ export default function ModernHero() {
 
       {/* Linha Decorativa */}
       <motion.div
-        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-blue to-transparent"
+        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent z-20"
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
         transition={{ delay: 1.5, duration: 1 }}
@@ -222,17 +190,17 @@ export default function ModernHero() {
 
       {/* Scroll Indicator */}
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2, duration: 0.8 }}
       >
-        <span className="text-xs text-gray-400 uppercase tracking-widest">Scroll</span>
+        <span className="text-xs text-white/80 uppercase tracking-widest drop-shadow-md">Scroll</span>
         <motion.div
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          <ChevronDown size={20} className="text-gray-400" />
+          <ChevronDown size={20} className="text-white/80 drop-shadow-md" />
         </motion.div>
       </motion.div>
     </section>
