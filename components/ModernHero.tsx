@@ -85,7 +85,7 @@ export default function ModernHero() {
   }
 
   return (
-    <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden pt-20">
+    <section className="relative min-h-[50vh] sm:min-h-[60vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -115,28 +115,28 @@ export default function ModernHero() {
             }`}
           >
             {/* Title */}
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold text-white drop-shadow-2xl">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-display font-bold text-white drop-shadow-2xl px-4">
               {slide.title}
             </h1>
 
             {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-white font-semibold max-w-2xl mx-auto drop-shadow-lg">
+            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl text-white font-semibold max-w-3xl mx-auto drop-shadow-lg px-4">
               {slide.subtitle}
             </p>
 
             {/* Description */}
             {slide.description && (
-              <p className="text-lg text-white/90 max-w-2xl mx-auto drop-shadow-md">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-white/90 max-w-3xl mx-auto drop-shadow-md px-4">
                 {slide.description}
               </p>
             )}
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 px-4">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
                   href={slide.cta === 'Explorar Eventos' ? '#eventos' : slide.cta === 'Criar Evento' ? '/criar-evento' : '#eventos'}
-                  className="px-8 py-4 bg-gradient-to-r from-primary-blue to-primary-accent text-white rounded-lg font-medium text-lg flex items-center gap-2 hover:shadow-glow-primary transition-all duration-300"
+                  className="px-6 py-3 sm:px-8 sm:py-4 md:px-10 md:py-5 bg-gradient-to-r from-primary-blue to-primary-accent text-white rounded-lg font-medium text-base sm:text-lg md:text-xl lg:text-2xl flex items-center gap-2 hover:shadow-glow-primary transition-all duration-300"
                   onClick={(e) => {
                     if (slide.cta === 'Explorar Eventos') {
                       e.preventDefault()
@@ -148,13 +148,13 @@ export default function ModernHero() {
                   }}
                 >
                   {slide.cta}
-                  {slide.cta === 'Explorar Eventos' && <ArrowRight size={20} />}
+                  {slide.cta === 'Explorar Eventos' && <ArrowRight size={20} className="sm:w-6 sm:h-6" />}
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
                   href={slide.ctaSecondary === 'Criar Evento' ? '/criar-evento' : slide.ctaSecondary === 'Cadastre-se' ? '/cadastro' : slide.ctaSecondary === 'Saiba Mais' ? '/sistema' : '/cadastro'}
-                  className="px-8 py-4 bg-white text-primary-blue rounded-lg font-medium text-lg border-2 border-primary-blue hover:bg-primary-blue hover:text-white transition-all duration-300 shadow-sm"
+                  className="px-6 py-3 sm:px-8 sm:py-4 md:px-10 md:py-5 bg-white text-primary-blue rounded-lg font-medium text-base sm:text-lg md:text-xl lg:text-2xl border-2 border-primary-blue hover:bg-primary-blue hover:text-white transition-all duration-300 shadow-sm"
                 >
                   {slide.ctaSecondary}
                 </Link>

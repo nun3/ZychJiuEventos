@@ -73,12 +73,72 @@ a {
   background: rgba(59, 130, 246, 0.8);
 }
 
+/* Scroll horizontal estilo Netflix - esconder scrollbar */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Container de carousel para permitir expansão dos cards */
+.netflix-carousel-container {
+  overflow-x: auto;
+  overflow-y: visible !important;
+  /* Garantir que os cards expandidos não sejam cortados */
+  padding-top: 50px;
+  padding-bottom: 100px;
+  margin-top: -50px;
+  margin-bottom: -100px;
+  /* Suavizar o scroll */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.netflix-carousel-container > * {
+  isolation: isolate;
+}
+
+/* Wrapper dos cards para permitir expansão no hover - estilo Netflix */
+.netflix-card-wrapper {
+  transition: all 0.3s ease;
+  /* Espaço para expansão no hover (8% de scale em card de 460px = ~37px em cada lado) */
+  padding-top: 50px;
+  padding-bottom: 50px;
+  padding-left: 40px;
+  padding-right: 40px;
+  margin-top: -50px;
+  margin-bottom: -50px;
+  margin-left: -40px;
+  margin-right: -40px;
+  /* Garantir que o wrapper não corte o conteúdo */
+  overflow: visible;
+}
+
 /* Utility classes */
 .gradient-text {
   background: var(--gradient-text);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Navbar Layout Fixes */
+nav {
+  width: 100%;
+}
+
+nav > div {
+  width: 100%;
+}
+
+/* Garantir que os elementos do navbar não quebrem */
+nav a,
+nav button {
+  display: inline-flex;
+  align-items: center;
 }
 
 .glass-effect {

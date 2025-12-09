@@ -15,19 +15,19 @@ export default function ModernFooter() {
 
   return (
     <>
-      <footer className="bg-gray-900 text-white mt-20">
-        <div className="container mx-auto px-6 py-12">
+      <footer className="bg-gray-900 text-white mt-12 sm:mt-16 md:mt-20">
+        <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 md:py-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8"
           >
             {/* Sobre o Meu Camp */}
-            <div>
-              <h3 className="text-xl font-bold mb-4">Sobre o Meu Camp</h3>
-              <p className="text-gray-300 text-sm mb-4">
+            <div className="sm:col-span-2 md:col-span-1">
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Sobre o Meu Camp</h3>
+              <p className="text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4">
                 O Meu Camp é um site de Prestação de Serviços para Organização de Eventos, 
                 Venda de Ingressos, Controle de Filiações e Serviços em Geral para 
                 Federações, Associações e Organizadores Independentes.
@@ -43,8 +43,8 @@ export default function ModernFooter() {
 
             {/* Navegação */}
             <div>
-              <h3 className="text-xl font-bold mb-4">Navegação</h3>
-              <ul className="space-y-2 text-sm">
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Navegação</h3>
+              <ul className="space-y-2 text-xs sm:text-sm">
                 <li>
                   <Link href="/academias" className="text-gray-300 hover:text-primary-blue transition-colors">
                     Para Organizadores de Eventos
@@ -80,8 +80,8 @@ export default function ModernFooter() {
 
             {/* Fale conosco */}
             <div>
-              <h3 className="text-xl font-bold mb-4">Fale conosco</h3>
-              <ul className="space-y-3 text-sm">
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Fale conosco</h3>
+              <ul className="space-y-3 text-xs sm:text-sm">
                 <li className="flex items-center space-x-2 text-gray-300">
                   <Phone size={18} className="text-primary-blue" />
                   <span>Suporte Operacional - (27) 99945-0345</span>
@@ -104,7 +104,7 @@ export default function ModernFooter() {
 
             {/* Social Links */}
             <div>
-              <h3 className="text-xl font-bold mb-4">Redes Sociais</h3>
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Redes Sociais</h3>
               <div className="flex space-x-4">
                 <a
                   href="https://facebook.com"
@@ -135,7 +135,7 @@ export default function ModernFooter() {
 
             {/* Formas de Pagamento */}
             <div>
-              <h3 className="text-xl font-bold mb-4">Formas de Pagamento</h3>
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Formas de Pagamento</h3>
               <p className="text-gray-300 text-sm mb-4">
                 Boleto, Depósito Bancário ou Transferência Eletrônica
                 <br />

@@ -86,7 +86,7 @@ export default function ModernEventCard({ event, index }: EventCardProps) {
       className="relative group"
     >
       <Link href={`/eventos/${event.id}`}>
-        <div className="relative bg-white rounded-2xl p-6 border border-gray-200 hover:border-primary-blue/60 hover:shadow-lg transition-all duration-300 cursor-pointer h-full shadow-sm">
+        <div className="relative bg-white rounded-lg p-6 border border-gray-200 hover:border-primary-blue/60 hover:shadow-2xl transition-all duration-300 cursor-pointer shadow-sm group-hover:scale-110 group-hover:z-20" style={{ height: '100%', transformOrigin: 'center center' }}>
           {/* Corner Glow */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary-blue/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 

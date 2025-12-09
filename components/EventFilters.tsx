@@ -101,22 +101,25 @@ export default function EventFilters() {
     filters.period !== 'todos'
 
   return (
-    <section className="mb-8">
+    <section className="mb-8 relative z-10" style={{ marginTop: '-80px' }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="bg-white rounded-lg shadow-md p-6"
+        className="bg-white rounded-xl p-4 sm:p-5 md:p-6"
+        style={{
+          boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+        }}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-900">Filtrar eventos</h2>
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">Filtrar eventos</h2>
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="text-primary-blue hover:underline flex items-center space-x-1 text-sm"
+              className="text-primary-blue hover:underline flex items-center space-x-1 text-base lg:text-lg"
             >
-              <FiX size={16} />
+              <FiX size={18} />
               <span>limpar filtros</span>
             </button>
           )}
@@ -126,7 +129,7 @@ export default function EventFilters() {
         <div className="flex flex-wrap gap-2 mb-6 border-b">
           <button
             onClick={() => setActiveTab('tipo')}
-            className={`px-4 py-2 font-medium transition ${
+            className={`px-3 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-sm sm:text-base md:text-lg font-medium transition ${
               activeTab === 'tipo'
                 ? 'border-b-2 border-primary-blue text-primary-blue'
                 : 'text-gray-600 hover:text-primary-blue'
@@ -136,35 +139,35 @@ export default function EventFilters() {
           </button>
           <button
             onClick={() => setActiveTab('data')}
-            className={`px-4 py-2 font-medium transition ${
+            className={`px-3 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-sm sm:text-base md:text-lg font-medium transition ${
               activeTab === 'data'
                 ? 'border-b-2 border-primary-blue text-primary-blue'
                 : 'text-gray-600 hover:text-primary-blue'
             }`}
           >
-            <FiCalendar className="inline mr-1" />
+            <FiCalendar className="inline mr-1" size={18} />
             Data
           </button>
           <button
             onClick={() => setActiveTab('local')}
-            className={`px-4 py-2 font-medium transition ${
+            className={`px-3 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-sm sm:text-base md:text-lg font-medium transition ${
               activeTab === 'local'
                 ? 'border-b-2 border-primary-blue text-primary-blue'
                 : 'text-gray-600 hover:text-primary-blue'
             }`}
           >
-            <FiMapPin className="inline mr-1" />
+            <FiMapPin className="inline mr-1" size={18} />
             Local
           </button>
           <button
             onClick={() => setActiveTab('pesquisar')}
-            className={`px-4 py-2 font-medium transition ${
+            className={`px-3 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 text-sm sm:text-base md:text-lg font-medium transition ${
               activeTab === 'pesquisar'
                 ? 'border-b-2 border-primary-blue text-primary-blue'
                 : 'text-gray-600 hover:text-primary-blue'
             }`}
           >
-            <FiSearch className="inline mr-1" />
+            <FiSearch className="inline mr-1" size={18} />
             Pesquisar
           </button>
         </div>
@@ -174,13 +177,13 @@ export default function EventFilters() {
           {activeTab === 'tipo' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm sm:text-base md:text-lg font-medium text-gray-700 mb-2">
                   Tipo de evento
                 </label>
                 <select
                   value={filters.eventType}
                   onChange={(e) => handleFilterChange('eventType', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-2.5 md:px-4 md:py-3 text-sm sm:text-base md:text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
                 >
                   {eventTypes.map((type) => (
                     <option key={type} value={type}>
@@ -190,13 +193,13 @@ export default function EventFilters() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm sm:text-base md:text-lg font-medium text-gray-700 mb-2">
                   Esporte
                 </label>
                 <select
                   value={filters.sport}
                   onChange={(e) => handleFilterChange('sport', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-2.5 md:px-4 md:py-3 text-sm sm:text-base md:text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
                 >
                   {sports.map((sport) => (
                     <option key={sport} value={sport}>
@@ -284,7 +287,7 @@ export default function EventFilters() {
                   value={filters.search}
                   onChange={(e) => handleFilterChange('search', e.target.value)}
                   placeholder="Digite o nome do evento..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-orange focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
                 />
               </div>
             </div>
