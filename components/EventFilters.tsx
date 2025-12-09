@@ -65,7 +65,19 @@ const states = [
   'TO - Tocantins',
 ]
 
-export default function EventFilters() {
+interface EventFiltersProps {
+  onFilterChange?: (filters: {
+    eventType: string
+    sport: string
+    state: string
+    search: string
+    period: string
+    startDate: string
+    endDate: string
+  }) => void
+}
+
+export default function EventFilters({ onFilterChange }: EventFiltersProps) {
   const [activeTab, setActiveTab] = useState('tipo')
   const [filters, setFilters] = useState({
     eventType: 'Todos',
@@ -78,11 +90,13 @@ export default function EventFilters() {
   })
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }))
+    const newFilters = { ...filters, [key]: value }
+    setFilters(newFilters)
+    onFilterChange?.(newFilters)
   }
 
   const clearFilters = () => {
-    setFilters({
+    const clearedFilters = {
       eventType: 'Todos',
       sport: 'Todas',
       state: 'Todos',
@@ -90,7 +104,9 @@ export default function EventFilters() {
       period: 'todos',
       startDate: '',
       endDate: '',
-    })
+    }
+    setFilters(clearedFilters)
+    onFilterChange?.(clearedFilters)
   }
 
   const hasActiveFilters = 

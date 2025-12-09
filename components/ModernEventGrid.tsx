@@ -5,14 +5,40 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import NetflixEventCard from './NetflixEventCard'
 import EventModal from './EventModal'
 
+// Tipo para os eventos
+export interface Event {
+  id: number
+  title: string
+  type: string
+  date: string
+  dateFull: string
+  location: string
+  daysLeft: number
+  image?: string
+  description?: string
+  organizer?: {
+    name: string
+    email: string
+    phone: string
+  }
+  eventType?: string // Tipo específico: 'Campeonato', 'Seminário', etc.
+  sport?: string // Esporte específico: 'Jiu-Jitsu', 'Judo', etc.
+  state?: string // Estado: 'SC', 'MG', etc.
+  dateObj?: Date // Data como objeto Date para comparação
+}
+
 // Dados mockados - muitos eventos para o carousel
-const mockEvents = [
+const mockEvents: Event[] = [
   {
     id: 1,
     title: '2ª Copa Internacional Tri Fronteira',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'SC - Santa Catarina',
     date: '09 de Novembro',
     dateFull: '09/11/2025',
+    dateObj: new Date('2025-11-09'),
     location: 'Dionísio Cerqueira/SC',
     daysLeft: 3,
     image: '/images/2-festival-kids-2025.png',
@@ -27,8 +53,12 @@ const mockEvents = [
     id: 2,
     title: '11ª Copa Espera Feliz de Jiu-Jitsu',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'MG - Minas Gerais',
     date: '09 de Novembro',
     dateFull: '09/11/2025',
+    dateObj: new Date('2025-11-09'),
     location: 'Espera Feliz/MG',
     daysLeft: 3,
     description: 'A maior competição de Jiu-Jitsu de Minas Gerais. Participe e mostre seu talento!',
@@ -37,8 +67,12 @@ const mockEvents = [
     id: 3,
     title: '2ª Copa Seven bjj',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'SC - Santa Catarina',
     date: '15 de Novembro',
     dateFull: '15/11/2025',
+    dateObj: new Date('2025-11-15'),
     location: 'Palhoça/SC',
     daysLeft: 9,
     description: 'Competição estadual com atletas de todo Santa Catarina.',
@@ -47,8 +81,12 @@ const mockEvents = [
     id: 4,
     title: 'Copa King de Jiu-Jitsu',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'SC - Santa Catarina',
     date: '16 de Novembro',
     dateFull: '16/11/2025',
+    dateObj: new Date('2025-11-16'),
     location: 'Joinville/SC',
     daysLeft: 10,
     description: 'O maior campeonato do norte de Santa Catarina.',
@@ -57,8 +95,12 @@ const mockEvents = [
     id: 5,
     title: 'Campeonato Neropolino de Jiu-Jitsu',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'GO - Goiás',
     date: '16 de Novembro',
     dateFull: '16/11/2025',
+    dateObj: new Date('2025-11-16'),
     location: 'Nerópolis Goiás/GO',
     daysLeft: 10,
     description: 'Competição tradicional de Goiás reunindo os melhores atletas.',
@@ -67,8 +109,12 @@ const mockEvents = [
     id: 6,
     title: '2º Festival Kids de Jiu-Jitsu',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'PR - Paraná',
     date: '16 de Novembro',
     dateFull: '16/11/2025',
+    dateObj: new Date('2025-11-16'),
     location: 'Clevelândia/PR',
     daysLeft: 10,
     image: '/images/2-festival-kids-2025.png',
@@ -78,8 +124,12 @@ const mockEvents = [
     id: 7,
     title: 'Campeonato Regional de Jiu-Jitsu',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'PR - Paraná',
     date: '23 de Novembro',
     dateFull: '23/11/2025',
+    dateObj: new Date('2025-11-23'),
     location: 'Curitiba/PR',
     daysLeft: 17,
     description: 'Competição regional com participação de várias academias do Paraná.',
@@ -88,8 +138,12 @@ const mockEvents = [
     id: 8,
     title: '3ª Copa Estadual de Jiu-Jitsu',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'SC - Santa Catarina',
     date: '30 de Novembro',
     dateFull: '30/11/2025',
+    dateObj: new Date('2025-11-30'),
     location: 'Florianópolis/SC',
     daysLeft: 24,
     description: 'A maior competição estadual de Santa Catarina.',
@@ -98,8 +152,12 @@ const mockEvents = [
     id: 9,
     title: 'Campeonato Nacional de Jiu-Jitsu',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'SP - São Paulo',
     date: '07 de Dezembro',
     dateFull: '07/12/2025',
+    dateObj: new Date('2025-12-07'),
     location: 'São Paulo/SP',
     daysLeft: 31,
     description: 'O maior campeonato nacional do ano. Não perca!',
@@ -108,8 +166,12 @@ const mockEvents = [
     id: 10,
     title: 'Copa Interestadual Sul',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'RS - Rio Grande do Sul',
     date: '14 de Dezembro',
     dateFull: '14/12/2025',
+    dateObj: new Date('2025-12-14'),
     location: 'Porto Alegre/RS',
     daysLeft: 38,
     description: 'Competição que reúne atletas de SC, PR e RS.',
@@ -118,8 +180,12 @@ const mockEvents = [
     id: 11,
     title: 'Copa Master de Jiu-Jitsu',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'MG - Minas Gerais',
     date: '21 de Dezembro',
     dateFull: '21/12/2025',
+    dateObj: new Date('2025-12-21'),
     location: 'Belo Horizonte/MG',
     daysLeft: 45,
     description: 'Exclusivo para atletas master. Uma competição especial para veteranos.',
@@ -128,8 +194,12 @@ const mockEvents = [
     id: 12,
     title: 'Campeonato Feminino de Jiu-Jitsu',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'RJ - Rio de Janeiro',
     date: '28 de Dezembro',
     dateFull: '28/12/2025',
+    dateObj: new Date('2025-12-28'),
     location: 'Rio de Janeiro/RJ',
     daysLeft: 52,
     description: 'Competição exclusiva para mulheres. Empoderamento através do esporte.',
@@ -138,8 +208,12 @@ const mockEvents = [
     id: 13,
     title: 'Copa de Inverno de Jiu-Jitsu',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'DF - Distrito Federal',
     date: '04 de Janeiro',
     dateFull: '04/01/2026',
+    dateObj: new Date('2026-01-04'),
     location: 'Brasília/DF',
     daysLeft: 59,
     description: 'Inicie o ano com uma competição de alto nível na capital federal.',
@@ -148,8 +222,12 @@ const mockEvents = [
     id: 14,
     title: 'Campeonato Litoral de Jiu-Jitsu',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'SC - Santa Catarina',
     date: '11 de Janeiro',
     dateFull: '11/01/2026',
+    dateObj: new Date('2026-01-11'),
     location: 'Florianópolis/SC',
     daysLeft: 66,
     description: 'Competição à beira-mar com vista deslumbrante.',
@@ -158,17 +236,112 @@ const mockEvents = [
     id: 15,
     title: 'Copa Metropolitana de Jiu-Jitsu',
     type: 'Campeonato Jiu-Jitsu',
+    eventType: 'Campeonato',
+    sport: 'Jiu-Jitsu',
+    state: 'PR - Paraná',
     date: '18 de Janeiro',
     dateFull: '18/01/2026',
+    dateObj: new Date('2026-01-18'),
     location: 'Curitiba/PR',
     daysLeft: 73,
     description: 'A maior competição da região metropolitana.',
   },
 ]
 
+interface FilterState {
+  eventType: string
+  sport: string
+  state: string
+  search: string
+  period: string
+  startDate: string
+  endDate: string
+}
+
 interface NetflixCarouselProps {
-  events: typeof mockEvents
-  onEventClick: (event: typeof mockEvents[0]) => void
+  events: Event[]
+  onEventClick: (event: Event) => void
+}
+
+// Função para filtrar eventos
+export function filterEvents(events: Event[], filters: FilterState): Event[] {
+  return events.filter((event) => {
+    // Filtro por tipo de evento
+    if (filters.eventType !== 'Todos' && event.eventType !== filters.eventType) {
+      return false
+    }
+
+    // Filtro por esporte
+    if (filters.sport !== 'Todas' && event.sport !== filters.sport) {
+      return false
+    }
+
+    // Filtro por estado
+    if (filters.state !== 'Todos' && event.state !== filters.state) {
+      return false
+    }
+
+    // Filtro por busca de texto
+    if (filters.search && !event.title.toLowerCase().includes(filters.search.toLowerCase())) {
+      return false
+    }
+
+    // Filtro por período
+    if (filters.period !== 'todos' && event.dateObj) {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const eventDate = new Date(event.dateObj)
+      eventDate.setHours(0, 0, 0, 0)
+
+      switch (filters.period) {
+        case 'este-mes':
+          if (eventDate.getMonth() !== today.getMonth() || eventDate.getFullYear() !== today.getFullYear()) {
+            return false
+          }
+          break
+        case 'proximo-mes':
+          const nextMonth = new Date(today)
+          nextMonth.setMonth(nextMonth.getMonth() + 1)
+          if (eventDate.getMonth() !== nextMonth.getMonth() || eventDate.getFullYear() !== nextMonth.getFullYear()) {
+            return false
+          }
+          break
+        case 'este-ano':
+          if (eventDate.getFullYear() !== today.getFullYear()) {
+            return false
+          }
+          break
+        case 'proximo-ano':
+          if (eventDate.getFullYear() !== today.getFullYear() + 1) {
+            return false
+          }
+          break
+      }
+    }
+
+    // Filtro por data específica (range)
+    if (filters.startDate && event.dateObj) {
+      const startDate = new Date(filters.startDate)
+      startDate.setHours(0, 0, 0, 0)
+      const eventDate = new Date(event.dateObj)
+      eventDate.setHours(0, 0, 0, 0)
+      if (eventDate < startDate) {
+        return false
+      }
+    }
+
+    if (filters.endDate && event.dateObj) {
+      const endDate = new Date(filters.endDate)
+      endDate.setHours(23, 59, 59, 999)
+      const eventDate = new Date(event.dateObj)
+      eventDate.setHours(0, 0, 0, 0)
+      if (eventDate > endDate) {
+        return false
+      }
+    }
+
+    return true
+  })
 }
 
 function NetflixCarouselRow({ events, onEventClick }: NetflixCarouselProps) {
@@ -181,9 +354,6 @@ function NetflixCarouselRow({ events, onEventClick }: NetflixCarouselProps) {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
@@ -352,11 +522,30 @@ function NetflixCarouselRow({ events, onEventClick }: NetflixCarouselProps) {
   )
 }
 
-export default function ModernEventGrid() {
-  const [selectedEvent, setSelectedEvent] = useState<typeof mockEvents[0] | null>(null)
+interface FilterState {
+  eventType: string
+  sport: string
+  state: string
+  search: string
+  period: string
+  startDate: string
+  endDate: string
+}
+
+interface ModernEventGridProps {
+  filters?: FilterState
+}
+
+export default function ModernEventGrid({ filters }: ModernEventGridProps) {
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const handleEventClick = (event: typeof mockEvents[0]) => {
+  // Filtrar eventos baseado nos filtros
+  const filteredEvents = filters
+    ? filterEvents(mockEvents, filters)
+    : mockEvents
+
+  const handleEventClick = (event: Event) => {
     setSelectedEvent(event)
     setIsModalOpen(true)
   }
@@ -369,10 +558,17 @@ export default function ModernEventGrid() {
   return (
     <>
       <section className="mt-8">
-        <NetflixCarouselRow 
-          events={mockEvents.slice(0, 10)} 
-          onEventClick={handleEventClick}
-        />
+        {filteredEvents.length > 0 ? (
+          <NetflixCarouselRow 
+            events={filteredEvents} 
+            onEventClick={handleEventClick}
+          />
+        ) : (
+          <div className="text-center py-16">
+            <p className="text-xl text-gray-600">Nenhum evento encontrado com os filtros selecionados.</p>
+            <p className="text-sm text-gray-500 mt-2">Tente ajustar os filtros para ver mais resultados.</p>
+          </div>
+        )}
       </section>
 
       <EventModal
