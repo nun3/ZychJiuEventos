@@ -539,6 +539,7 @@ interface ModernEventGridProps {
 export default function ModernEventGrid({ filters }: ModernEventGridProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
 
   // Filtrar eventos baseado nos filtros
   const filteredEvents = filters
@@ -555,14 +556,57 @@ export default function ModernEventGrid({ filters }: ModernEventGridProps) {
     setTimeout(() => setSelectedEvent(null), 300)
   }
 
+  // Intersection Observer para animação scroll reveal
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px',
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.remove('card-hidden')
+          entry.target.classList.add('card-visible')
+        }
+      })
+    }, observerOptions)
+
+    cardRefs.current.forEach((card) => {
+      if (card) {
+        card.classList.add('card-hidden')
+        observer.observe(card)
+      }
+    })
+
+    return () => {
+      cardRefs.current.forEach((card) => {
+        if (card) observer.unobserve(card)
+      })
+    }
+  }, [filteredEvents])
+
   return (
     <>
-      <section className="mt-8">
+      <section className="mt-8 relative z-10">
         {filteredEvents.length > 0 ? (
-          <NetflixCarouselRow 
-            events={filteredEvents} 
-            onEventClick={handleEventClick}
-          />
+          <div className="lista-cards">
+            {filteredEvents.map((event, index) => (
+              <div
+                key={event.id}
+                ref={(el) => {
+                  cardRefs.current[index] = el
+                }}
+                className="card-item"
+              >
+                <NetflixEventCard
+                  event={event}
+                  index={index}
+                  onClick={() => handleEventClick(event)}
+                />
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="text-center py-16">
             <p className="text-xl text-gray-600">Nenhum evento encontrado com os filtros selecionados.</p>

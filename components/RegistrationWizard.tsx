@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import AthleteSelectionModal from '@/components/AthleteSelectionModal'
+import NewAthleteModal from '@/components/Modals/NewAthleteModal'
 import { FiUser, FiUsers, FiCheck, FiChevronRight, FiChevronLeft, FiSearch, FiUserPlus } from 'react-icons/fi'
 
 // Dados mockados do evento
@@ -122,6 +123,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
   const [currentStep, setCurrentStep] = useState<Step>(1)
   const [selectedAthletes, setSelectedAthletes] = useState<SelectedAthlete[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isNewAthleteModalOpen, setIsNewAthleteModalOpen] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'unified' | 'individual'>('unified')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -551,15 +553,13 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
 
               {/* Rodapé */}
               <div className="flex flex-col sm:flex-row justify-between items-center pt-8 border-t border-gray-200">
-                <Link
-                  href={`/eventos/${eventId}/inscricao/cadastrar-atleta`}
+                <button
+                  onClick={() => setIsNewAthleteModalOpen(true)}
                   className="text-primary-blue font-medium flex items-center gap-2 hover:gap-3 transition"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeWidth="2" d="M12 4v16m8-8H4" />
-                  </svg>
+                  <FiUserPlus size={24} />
                   Cadastrar Novo Atleta
-                </Link>
+                </button>
 
                 <div className="text-center my-4">
                   <span className="text-3xl font-bold text-gray-800">
@@ -909,6 +909,20 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
         athletes={mockAthletes}
         eventId={eventId}
         onConfirmSelection={handleConfirmSelection}
+      />
+
+      {/* Modal de Cadastro de Novo Atleta */}
+      <NewAthleteModal
+        open={isNewAthleteModalOpen}
+        onClose={() => setIsNewAthleteModalOpen(false)}
+        onSubmit={(data) => {
+          // Aqui você pode adicionar lógica para salvar o atleta e atualizar a lista
+          console.log('Novo atleta cadastrado:', data)
+          setIsNewAthleteModalOpen(false)
+          // Recarregar a lista de atletas ou adicionar o novo atleta à lista
+        }}
+        mode="create"
+        showPasswordFields={false}
       />
     </div>
   )

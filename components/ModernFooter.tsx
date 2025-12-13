@@ -183,80 +183,13 @@ export default function ModernFooter() {
       </footer>
 
       {/* WhatsApp Widget */}
-      <motion.div
-        className="fixed bottom-6 right-6 z-40"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.5, type: 'spring', stiffness: 200, damping: 15 }}
+      <button
+        onClick={handleWhatsApp}
+        className="fixed bottom-6 right-6 w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 bg-[#25D366] text-white rounded-full shadow-lg hover:bg-[#20BA5A] transition-all duration-300 flex items-center justify-center z-40 hover:scale-110"
+        aria-label="Fale conosco no WhatsApp"
       >
-        {/* Efeito de pulso animado */}
-        <motion.div
-          className="absolute inset-0 bg-[#25D366] rounded-full"
-          animate={{
-            scale: [1, 1.4, 1.4],
-            opacity: [0.5, 0, 0],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: 'easeOut',
-          }}
-        />
-        <motion.div
-          className="absolute inset-0 bg-[#25D366] rounded-full"
-          animate={{
-            scale: [1, 1.6, 1.6],
-            opacity: [0.3, 0, 0],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: 'easeOut',
-            delay: 0.5,
-          }}
-        />
-        
-        {/* Botão principal */}
-        <motion.button
-          onClick={handleWhatsApp}
-          className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-[#25D366] to-[#20BA5A] text-white rounded-full shadow-2xl flex items-center justify-center group overflow-hidden"
-          aria-label="Fale conosco no WhatsApp"
-          whileHover={{ scale: 1.1, boxShadow: '0 20px 40px rgba(37, 211, 102, 0.4)' }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-        >
-          {/* Efeito de brilho no hover */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-full"
-            initial={{ opacity: 0 }}
-            whileHover={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          />
-          
-          {/* Ícone do WhatsApp */}
-          <motion.div
-            initial={{ rotate: 0 }}
-            whileHover={{ rotate: [0, -10, 10, -10, 0] }}
-            transition={{ duration: 0.5 }}
-          >
-            <MessageCircle 
-              size={28} 
-              className="sm:w-8 sm:h-8 md:w-10 md:h-10 relative z-10 drop-shadow-lg" 
-              strokeWidth={2.5}
-            />
-          </motion.div>
-          
-          {/* Badge de notificação (opcional) */}
-          <motion.div
-            className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 rounded-full flex items-center justify-center shadow-lg"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 1, type: 'spring', stiffness: 200 }}
-          >
-            <span className="text-white text-xs font-bold">1</span>
-          </motion.div>
-        </motion.button>
-      </motion.div>
+        <MessageCircle size={24} className="sm:w-7 sm:h-7 md:w-8 md:h-8" />
+      </button>
     </>
   )
 }

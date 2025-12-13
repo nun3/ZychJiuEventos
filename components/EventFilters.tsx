@@ -117,7 +117,7 @@ export default function EventFilters({ onFilterChange }: EventFiltersProps) {
     filters.period !== 'todos'
 
   return (
-    <section className="mb-8 relative z-10" style={{ marginTop: '-80px' }}>
+    <section className="mb-8 relative z-30">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -126,6 +126,8 @@ export default function EventFilters({ onFilterChange }: EventFiltersProps) {
         className="bg-white rounded-xl p-4 sm:p-5 md:p-6"
         style={{
           boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+          maxWidth: '1920px',
+          margin: '0 auto',
         }}
       >
         <div className="flex items-center justify-between mb-4">

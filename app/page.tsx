@@ -27,7 +27,7 @@ export default function Home() {
       <ModernNavbar />
       <ModernHero />
       <div id="eventos" className="w-full bg-white min-h-screen" style={{ overflow: 'visible' }}>
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-5 md:px-6 lg:px-8 py-8 sm:py-10 md:py-12" style={{ overflow: 'visible' }}>
+        <div className="max-w-[1920px] mx-auto px-4 sm:px-5 md:px-6 lg:px-8 py-8 sm:py-10 md:py-12" style={{ overflow: 'visible' }}>
           <EventFilters onFilterChange={handleFilterChange} />
           <ModernEventGrid filters={filters} />
         </div>

@@ -267,7 +267,7 @@ Este documento lista todas as páginas existentes na aplicação, suas rotas, fu
 ---
 
 ### 15. Meu Perfil
-**Rota:** `/dashboard/meu-perfil`  
+**Rota:** ``  
 **Arquivo:** `app/dashboard/meu-perfil/page.tsx`  
 **Status:** ✅ Implementada
 

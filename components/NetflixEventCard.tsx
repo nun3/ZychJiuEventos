@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Calendar, MapPin } from 'lucide-react'
 
@@ -21,39 +20,23 @@ interface EventCardProps {
 
 export default function NetflixEventCard({ event, index, onClick }: EventCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      transition={{
-        delay: index * 0.05,
-        duration: 0.3,
-      }}
-      className="relative group cursor-pointer flex-shrink-0"
+    <div
+      className="relative group cursor-pointer w-full h-full"
       onClick={onClick}
-      whileHover={{ 
-        scale: 1.03, 
-        zIndex: 50,
-        transition: { duration: 0.3, ease: 'easeOut' }
-      }}
-      style={{ 
-        transformOrigin: 'center center',
-        willChange: 'transform',
+      style={{
         overflow: 'visible',
       }}
     >
-      {/* Card Container - Tamanho responsivo */}
+      {/* Card Container - Tamanho responsivo para grid - Mais quadrado */}
       <div 
-        className="relative bg-white rounded-lg border border-gray-200 overflow-hidden transition-all duration-300 shadow-sm hover:border-primary-blue/60 hover:shadow-2xl flex flex-col"
-        style={{ 
-          width: 'clamp(280px, 90vw, 460px)',
-          height: 'clamp(420px, 80vh, 680px)',
-          flexShrink: 0,
+        className="relative bg-white rounded-lg border border-gray-200 overflow-hidden transition-all duration-300 shadow-sm hover:border-primary-blue/60 hover:shadow-2xl flex flex-col h-full hover:scale-[1.02]"
+        style={{
+          minHeight: 'clamp(350px, 45vw, 480px)', // Mais quadrado em todas as telas
         }}
       >
         {/* Imagem do Evento no topo */}
         {event.image ? (
-          <div className="relative h-48 sm:h-64 md:h-72 lg:h-80 w-full flex-shrink-0 overflow-hidden">
+          <div className="relative h-36 sm:h-44 md:h-56 lg:h-64 xl:h-72 w-full flex-shrink-0 overflow-hidden">
             <Image
               src={event.image}
               alt={event.title}
@@ -65,27 +48,9 @@ export default function NetflixEventCard({ event, index, onClick }: EventCardPro
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
         ) : (
-          <div className="relative h-48 sm:h-64 md:h-72 lg:h-80 w-full flex-shrink-0 bg-gradient-to-br from-primary-dark to-primary-red" />
+          <div className="relative h-36 sm:h-44 md:h-56 lg:h-64 xl:h-72 w-full flex-shrink-0 bg-gradient-to-br from-primary-blue to-primary-accent" />
         )}
 
-        {/* Badge de ranking (para eventos em alta) - Estilo Netflix Top 10 - Responsivo */}
-        {index < 10 && (
-          <span 
-            aria-hidden="true" 
-            className="absolute font-bold tracking-tight z-20 pointer-events-none hidden sm:block"
-            style={{ 
-              fontSize: 'clamp(80px, 15vw, 160px)',
-              lineHeight: '1',
-              color: 'rgba(0, 0, 0, 0.08)',
-              fontWeight: '900',
-              bottom: 'clamp(60px, 15vh, 100px)',
-              left: 'clamp(10px, 2vw, 20px)',
-              letterSpacing: '-8px',
-            }}
-          >
-            {index + 1}
-          </span>
-        )}
 
         {/* Badge de dias restantes - Responsivo */}
         <div className="absolute top-2 right-2 sm:top-4 sm:right-4 md:top-5 md:right-5 px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2.5 bg-primary-blue rounded-md z-20 shadow-lg">
@@ -95,32 +60,32 @@ export default function NetflixEventCard({ event, index, onClick }: EventCardPro
         </div>
 
         {/* Conteúdo do card - Responsivo */}
-        <div className="p-4 sm:p-6 md:p-7 lg:p-8 flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="p-3 sm:p-4 md:p-6 lg:p-7 xl:p-8 flex flex-col flex-1 min-h-0 overflow-hidden">
           {/* Badge de Categoria - Responsivo */}
-          <div className="inline-block px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 lg:px-6 lg:py-3 bg-primary-accent/10 text-primary-accent rounded-lg text-sm sm:text-base md:text-lg lg:text-xl font-medium mb-3 sm:mb-4 md:mb-5 lg:mb-6 w-fit">
+          <div className="inline-block px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 lg:px-5 lg:py-2.5 xl:px-6 xl:py-3 bg-primary-accent/10 text-primary-accent rounded-lg text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl font-medium mb-2 sm:mb-3 md:mb-4 lg:mb-5 xl:mb-6 w-fit">
             {event.type}
           </div>
 
           {/* Título do evento - Responsivo */}
-          <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 md:mb-5 lg:mb-7 group-hover:text-primary-blue transition-colors duration-300 line-clamp-2 leading-tight">
+          <h3 className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-gray-900 mb-2 sm:mb-3 md:mb-4 lg:mb-5 xl:mb-7 group-hover:text-primary-blue transition-colors duration-300 line-clamp-2 leading-tight">
             {event.title}
           </h3>
 
           {/* Informações - Responsivo */}
-          <div className="space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6 mt-auto">
-            <div className="flex items-start gap-2 sm:gap-3 md:gap-4">
-              <div className="p-1.5 sm:p-2 md:p-2.5 lg:p-3 bg-primary-blue/10 rounded flex-shrink-0">
-                <Calendar size={16} className="sm:w-[18px] sm:h-[18px] md:w-[20px] md:h-[20px] lg:w-[22px] lg:h-[22px] text-primary-blue" />
+          <div className="space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-5 xl:space-y-6 mt-auto">
+            <div className="flex items-start gap-1.5 sm:gap-2 md:gap-3 lg:gap-4">
+              <div className="p-1 sm:p-1.5 md:p-2 lg:p-2.5 xl:p-3 bg-primary-blue/10 rounded flex-shrink-0">
+                <Calendar size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5 lg:w-[20px] lg:h-[20px] xl:w-[22px] xl:h-[22px] text-primary-blue" />
               </div>
-              <span className="text-xs sm:text-sm md:text-base lg:text-xl text-gray-700 leading-relaxed break-words flex-1 line-clamp-1">
+              <span className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-700 leading-relaxed break-words flex-1 line-clamp-1">
                 {event.date} - {event.dateFull}
               </span>
             </div>
-            <div className="flex items-start gap-2 sm:gap-3 md:gap-4">
-              <div className="p-1.5 sm:p-2 md:p-2.5 lg:p-3 bg-primary-accent/10 rounded flex-shrink-0">
-                <MapPin size={16} className="sm:w-[18px] sm:h-[18px] md:w-[20px] md:h-[20px] lg:w-[22px] lg:h-[22px] text-primary-accent" />
+            <div className="flex items-start gap-1.5 sm:gap-2 md:gap-3 lg:gap-4">
+              <div className="p-1 sm:p-1.5 md:p-2 lg:p-2.5 xl:p-3 bg-primary-accent/10 rounded flex-shrink-0">
+                <MapPin size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5 lg:w-[20px] lg:h-[20px] xl:w-[22px] xl:h-[22px] text-primary-accent" />
               </div>
-              <span className="text-xs sm:text-sm md:text-base lg:text-xl text-gray-700 leading-relaxed break-words flex-1 line-clamp-1">
+              <span className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-700 leading-relaxed break-words flex-1 line-clamp-1">
                 {event.location}
               </span>
             </div>
@@ -132,7 +97,7 @@ export default function NetflixEventCard({ event, index, onClick }: EventCardPro
           <div className="absolute inset-0 bg-gradient-to-br from-primary-blue/5 to-transparent rounded-lg" />
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
