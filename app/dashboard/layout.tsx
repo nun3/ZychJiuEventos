@@ -12,7 +12,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <html lang="pt-BR">
       <body className="bg-[#f8fafc]">
         <ModernNavbar />
-        <div className="pt-20">{children}</div>
+        <div className="pt-32 pb-12">{children}</div>
         <ModernFooter />
       </body>
     </html>

@@ -1,5 +1,3 @@
-import ModernNavbar from '@/components/ModernNavbar'
-import ModernFooter from '@/components/ModernFooter'
 import EventFilters from '@/components/EventFilters'
 import ModernEventGrid from '@/components/ModernEventGrid'
 
@@ -21,9 +19,7 @@ const ranking = [
 
 export default function DashboardHome() {
   return (
-    <main className="min-h-screen bg-[#f8fafc]">
-      <ModernNavbar />
-      <div className="pt-20">
+    <div className="pt-20">
         <section className="container mx-auto grid gap-8 px-6 py-10 lg:grid-cols-[2.2fr,1fr]">
           <div>
             <EventFilters />
@@ -33,7 +29,7 @@ export default function DashboardHome() {
         <aside className="space-y-6">
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
             <div className="border-b border-gray-100 px-5 py-4">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-primary-red">Resultados</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-primary-blue">Resultados</h2>
             </div>
             <ul className="space-y-3 px-5 py-4 text-sm text-gray-700">
               {resultados.map((item) => (
@@ -46,7 +42,7 @@ export default function DashboardHome() {
 
           <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
             <div className="border-b border-gray-100 px-5 py-4">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-primary-red">Ranking</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-primary-blue">Ranking</h2>
             </div>
             <ul className="space-y-2 px-5 py-4 text-sm text-gray-700">
               {ranking.map((item) => (
@@ -61,9 +57,7 @@ export default function DashboardHome() {
           </div>
         </aside>
       </section>
-      </div>
-      <ModernFooter />
-    </main>
+    </div>
   )
 }
 

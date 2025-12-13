@@ -486,34 +486,34 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-3 mb-2">
-          <p className="text-xl font-bold text-gray-800">{athlete.name.toUpperCase()}</p>
+          <p className="text-2xl font-bold text-gray-800">{athlete.name}</p>
           {athlete.absolute && (
-            <span className="bg-primary-blue text-white px-3 py-1 rounded-full text-xs font-bold">
+            <span className="bg-primary-blue text-white px-3 py-1 rounded-full text-base font-bold">
               ABSOLUTO
             </span>
           )}
         </div>
-        <p className="text-base font-medium text-gray-600 mb-1">
+        <p className="text-xl font-medium text-gray-600 mb-1">
           {athlete.age ? `${athlete.age} anos • ` : ''}
-          <span className={`px-3 py-1 rounded-full font-semibold text-xs ${getBeltColorClass(athlete.belt)}`}>
+          <span className={`px-3 py-1 rounded-full font-semibold text-base ${getBeltColorClass(athlete.belt)}`}>
             {athlete.belt}
           </span>
           {' • '}
           {athlete.weight}kg
         </p>
-        <p className="text-sm font-medium text-gray-500">{athlete.academy}</p>
+        <p className="text-lg font-medium text-gray-500">{athlete.academy}</p>
       </div>
       <div className="text-right">
-        <p className="text-xs font-medium text-gray-500 mb-2">ID: 0{athlete.id}</p>
-        <p className={`${athlete.paymentStatus === 'confirmed' ? 'text-green-600' : 'text-red-600'} font-semibold text-sm flex items-center gap-2`}>
+        <p className="text-lg font-medium text-gray-500 mb-2">ID: 0{athlete.id}</p>
+        <p className={`${athlete.paymentStatus === 'confirmed' ? 'text-green-600' : 'text-red-600'} font-semibold text-lg flex items-center gap-2`}>
           {athlete.paymentStatus === 'confirmed' ? (
             <>
-              <FiCheck size={18} />
+              <FiCheck size={20} />
               PAGAMENTO CONFIRMADO
             </>
           ) : (
             <>
-              <FiAlertTriangle size={18} />
+              <FiAlertTriangle size={20} />
               PAGAMENTO PENDENTE
             </>
           )}
@@ -525,15 +525,15 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
   return (
     <div className="w-full">
       {/* Título */}
-      <h1 className="text-4xl font-bold text-center text-gray-800 mb-3 uppercase">
+      <h1 className="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-3 uppercase">
         ATLETAS INSCRITOS
       </h1>
-      <p className="text-center text-lg italic text-gray-600 mb-10">
+      <p className="text-center text-xl text-gray-600 mb-10">
         Lista de atletas inscritos no evento
       </p>
 
       {/* Card Principal */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
         {/* Abas Internas */}
         <div className="flex flex-wrap gap-0 border-b border-gray-200 bg-gray-50/70">
           <button
@@ -541,13 +541,13 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
               setViewMode('geral')
               setCurrentPage(1)
             }}
-            className={`px-8 py-5 text-lg font-semibold flex items-center gap-3 transition ${
+            className={`px-8 py-5 text-xl md:text-2xl font-semibold flex items-center gap-3 transition uppercase ${
               viewMode === 'geral'
                 ? 'bg-white border-b-4 border-blue-500 text-blue-600 font-bold shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <FiUsers size={20} />
+            <FiUsers size={28} />
             Geral
           </button>
           <button
@@ -555,13 +555,13 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
               setViewMode('categoria-peso')
               setCurrentPage(1)
             }}
-            className={`px-8 py-5 text-lg font-semibold flex items-center gap-3 transition ${
+            className={`px-8 py-5 text-xl md:text-2xl font-semibold flex items-center gap-3 transition uppercase ${
               viewMode === 'categoria-peso'
                 ? 'bg-white border-b-4 border-blue-500 text-blue-600 font-bold shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <FiActivity size={20} />
+            <FiActivity size={28} />
             Categoria de Peso
           </button>
           <button
@@ -569,13 +569,13 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
               setViewMode('absoluto')
               setCurrentPage(1)
             }}
-            className={`px-8 py-5 text-lg font-semibold flex items-center gap-3 transition ${
+            className={`px-8 py-5 text-xl md:text-2xl font-semibold flex items-center gap-3 transition uppercase ${
               viewMode === 'absoluto'
                 ? 'bg-white border-b-4 border-blue-500 text-blue-600 font-bold shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <FiZap size={20} />
+            <FiZap size={28} />
             Absoluto Jiu-Jitsu
           </button>
           <button
@@ -583,13 +583,13 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
               setViewMode('equipe')
               setCurrentPage(1)
             }}
-            className={`px-8 py-5 text-lg font-semibold flex items-center gap-3 transition ${
+            className={`px-8 py-5 text-xl md:text-2xl font-semibold flex items-center gap-3 transition uppercase ${
               viewMode === 'equipe'
                 ? 'bg-white border-b-4 border-blue-500 text-blue-600 font-bold shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <FiShield size={20} />
+            <FiShield size={28} />
             Equipe
           </button>
         </div>
@@ -603,7 +603,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
               placeholder="Buscar por nome, academia, professor, categoria..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-14 pr-6 py-5 border border-gray-300 rounded-xl text-lg focus:outline-none focus:border-primary-blue transition"
+              className="w-full pl-14 pr-6 py-5 border border-gray-300 rounded-xl text-xl focus:outline-none focus:border-primary-blue transition"
             />
           </div>
 
@@ -614,7 +614,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
                 <select
                   value={filters.category}
                   onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
+                  className="px-4 py-3 text-xl border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
                 >
                   <option value="">Categoria</option>
                   <option>Infantil A</option>
@@ -626,7 +626,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
                 <select
                   value={filters.belt}
                   onChange={(e) => setFilters({ ...filters, belt: e.target.value })}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
+                  className="px-4 py-3 text-xl border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
                 >
                   <option value="">Faixa</option>
                   <option>Branca/Cinza</option>
@@ -637,7 +637,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
                 <select
                   value={filters.weight}
                   onChange={(e) => setFilters({ ...filters, weight: e.target.value })}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
+                  className="px-4 py-3 text-xl border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
                 >
                   <option value="">Peso</option>
                   <option>Galo</option>
@@ -650,7 +650,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
                 <select
                   value={filters.gender}
                   onChange={(e) => setFilters({ ...filters, gender: e.target.value })}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
+                  className="px-4 py-3 text-xl border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
                 >
                   <option value="">Sexo</option>
                   <option value="M">Masculino</option>
@@ -692,7 +692,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
                   const isCategoryExpanded = expandedCategories.has(category)
                   
                   return (
-                    <div key={category} className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                    <div key={category} className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-md">
                       {/* Cabeçalho da Categoria */}
                       <button
                         onClick={() => toggleCategory(category)}
@@ -703,10 +703,10 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
                             {athletes[0]?.weightCategory?.substring(0, 2).toUpperCase() || 'KG'}
                           </div>
                           <div className="text-left">
-                            <h3 className="text-xl font-bold text-gray-800 mb-1">
+                            <h3 className="text-2xl font-bold text-gray-800 mb-1 uppercase">
                               {category}
                             </h3>
-                            <p className="text-sm font-medium text-gray-600">
+                            <p className="text-xl font-medium text-gray-600">
                               {athletes.length} {athletes.length === 1 ? 'atleta inscrito' : 'atletas inscritos'} • Até {athletes[0]?.weight || 'N/A'} KG
                             </p>
                           </div>
@@ -749,7 +749,7 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
                   const isTeamExpanded = expandedTeams.has(team)
                   
                   return (
-                    <div key={team} className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                    <div key={team} className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-md">
                       {/* Cabeçalho da Equipe */}
                       <button
                         onClick={() => toggleTeam(team)}
@@ -760,8 +760,8 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
                             {getInitials(team)}
                           </div>
                           <div className="text-left">
-                            <h3 className="text-xl font-bold text-gray-800 mb-1">{team}</h3>
-                            <p className="text-sm font-medium text-gray-600">
+                            <h3 className="text-2xl font-bold text-gray-800 mb-1">{team}</h3>
+                            <p className="text-xl font-medium text-gray-600">
                               {totalAthletes} {totalAthletes === 1 ? 'atleta inscrito' : 'atletas inscritos'} • {Object.keys(professors).length} {Object.keys(professors).length === 1 ? 'professor' : 'professores'}
                             </p>
                           </div>
@@ -799,8 +799,8 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
                                       {getInitials(professor)}
                                     </div>
                                     <div className="text-left">
-                                      <h4 className="text-base font-semibold italic text-gray-800 mb-1">{professor}</h4>
-                                      <p className="text-sm font-medium text-gray-600">
+                                      <h4 className="text-xl font-semibold text-gray-800 mb-1">{professor}</h4>
+                                      <p className="text-lg font-medium text-gray-600">
                                         {athletes.length} {athletes.length === 1 ? 'atleta' : 'atletas'}
                                       </p>
                                     </div>
@@ -837,17 +837,17 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
               <button
                 onClick={() => setCurrentPage(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 text-xl border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Anterior
               </button>
-              <span className="font-semibold text-gray-700">
+              <span className="text-xl font-semibold text-gray-700">
                 Página {currentPage} de {totalPages}
               </span>
               <button
                 onClick={() => setCurrentPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 text-xl border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Próximo
               </button>
@@ -856,10 +856,10 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
 
           {/* Contador Final */}
           <div className="text-center mt-12 pt-10 border-t border-gray-200">
-            <span className="text-6xl font-black text-primary-blue">
+            <span className="text-6xl md:text-7xl font-black text-primary-blue">
               {athletesForPagination.length}
             </span>
-            <p className="text-2xl text-gray-600 mt-2">
+            <p className="text-3xl text-gray-600 mt-2">
               atletas inscritos no evento
             </p>
           </div>

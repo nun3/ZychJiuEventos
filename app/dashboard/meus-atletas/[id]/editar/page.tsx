@@ -2,8 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import ModernNavbar from '@/components/ModernNavbar'
-import ModernFooter from '@/components/ModernFooter'
 import { FiArrowLeft, FiUpload, FiAlertTriangle } from 'react-icons/fi'
 
 // Dados mockados do atleta
@@ -30,15 +28,13 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
   }
 
   return (
-    <main className="min-h-screen bg-[#f8fafc]">
-      <ModernNavbar />
-      <div className="pt-20 container mx-auto px-6 pb-12">
+    <div className="container mx-auto px-6 pb-12">
       <section className="rounded-2xl bg-white shadow">
         <header className="border-b border-gray-200 bg-[#0C3049] px-6 py-6 text-white">
           <div className="flex items-center space-x-4 mb-4">
             <Link
               href="/dashboard/meus-atletas"
-              className="text-white hover:text-primary-orange transition"
+              className="text-white hover:text-blue-300 transition"
             >
               <FiArrowLeft size={20} />
             </Link>
@@ -52,7 +48,7 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
         <div className="px-6 py-8">
           <div className="space-y-6">
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-primary-red">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-primary-blue">
                 Informações do atleta
               </h3>
 
@@ -61,17 +57,17 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
                 <div className="flex h-20 w-20 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-400">
                   <FiUpload size={32} />
                 </div>
-                <button className="text-sm font-semibold text-primary-orange hover:text-orange-600">
+                <button className="text-sm font-semibold text-primary-blue hover:text-blue-600">
                   Alterar foto
                 </button>
               </div>
 
               {/* Alerta */}
-              <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
                 <FiAlertTriangle className="mt-1 flex-shrink-0" size={18} />
                 <div>
                   <strong className="uppercase tracking-wide">Atenção</strong>
-                  <p className="text-xs text-red-600">
+                  <p className="text-xs text-blue-600">
                     Essa ficha é apenas do cadastro do atleta. Após o cadastro será necessário fazer a inscrição do atleta.
                   </p>
                 </div>
@@ -88,7 +84,7 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
                     placeholder="Digite o nome completo"
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-orange focus:ring-2 focus:ring-primary-orange/30"
+                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/30"
                   />
                 </div>
                 <div className="space-y-1">
@@ -100,7 +96,7 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
                     value={formData.cpf}
                     onChange={(e) => handleChange('cpf', e.target.value)}
                     placeholder="000.000.000-00"
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-orange focus:ring-2 focus:ring-primary-orange/30"
+                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/30"
                   />
                 </div>
                 <div className="space-y-1">
@@ -110,7 +106,7 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
                   <select
                     value={formData.gender}
                     onChange={(e) => handleChange('gender', e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-orange focus:ring-2 focus:ring-primary-orange/30"
+                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/30"
                   >
                     <option value="F">Feminino</option>
                     <option value="M">Masculino</option>
@@ -125,7 +121,7 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
                     type="date"
                     value={formData.birthDate}
                     onChange={(e) => handleChange('birthDate', e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-orange focus:ring-2 focus:ring-primary-orange/30"
+                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/30"
                   />
                 </div>
                 <div className="space-y-1 md:col-span-2">
@@ -139,7 +135,7 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
                         name="necessidade"
                         checked={formData.specialNeeds}
                         onChange={() => handleChange('specialNeeds', true)}
-                        className="h-4 w-4 border-gray-300 text-primary-orange focus:ring-primary-orange/60"
+                        className="h-4 w-4 border-gray-300 text-primary-blue focus:ring-primary-blue/60"
                       />
                       Sim
                     </label>
@@ -149,7 +145,7 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
                         name="necessidade"
                         checked={!formData.specialNeeds}
                         onChange={() => handleChange('specialNeeds', false)}
-                        className="h-4 w-4 border-gray-300 text-primary-orange focus:ring-primary-orange/60"
+                        className="h-4 w-4 border-gray-300 text-primary-blue focus:ring-primary-blue/60"
                       />
                       Não
                     </label>
@@ -168,9 +164,9 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
                   value={formData.team}
                   onChange={(e) => handleChange('team', e.target.value)}
                   placeholder="Digite, aguarde e selecione..."
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-orange focus:ring-2 focus:ring-primary-orange/30"
+                  className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/30"
                 />
-                <p className="text-xs text-primary-orange">
+                <p className="text-xs text-primary-blue">
                   Caso não localize, cadastre-a <a href="#" className="underline">aqui</a>.
                 </p>
               </div>
@@ -185,9 +181,9 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
                     value={formData.coach}
                     onChange={(e) => handleChange('coach', e.target.value)}
                     placeholder="Digite o nome do professor"
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-orange focus:ring-2 focus:ring-primary-orange/30"
+                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/30"
                   />
-                  <p className="text-xs text-primary-orange">
+                  <p className="text-xs text-primary-blue">
                     Caso não localize, cadastre-o <a href="#" className="underline">aqui</a>.
                   </p>
                 </div>
@@ -198,7 +194,7 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
                   <select
                     value={formData.sport}
                     onChange={(e) => handleChange('sport', e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-orange focus:ring-2 focus:ring-primary-orange/30"
+                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/30"
                   >
                     <option>Jiu-Jitsu</option>
                     <option>No-Gi</option>
@@ -213,7 +209,7 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
                   <select
                     value={formData.belt}
                     onChange={(e) => handleChange('belt', e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-orange focus:ring-2 focus:ring-primary-orange/30"
+                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/30"
                   >
                     <option>Faixa branca</option>
                     <option>Faixa cinza</option>
@@ -235,7 +231,7 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
                     value={formData.weight}
                     onChange={(e) => handleChange('weight', e.target.value)}
                     placeholder="Ex.: 74,8 ou 81,2"
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-orange focus:ring-2 focus:ring-primary-orange/30"
+                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/30"
                   />
                 </div>
               </div>
@@ -246,19 +242,17 @@ export default function EditAthletePage({ params }: { params: { id: string } }) 
           <footer className="mt-8 flex items-center justify-between border-t pt-6">
             <Link
               href="/dashboard/meus-atletas"
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-gray-500 hover:border-primary-red hover:text-primary-red transition"
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-gray-500 hover:border-primary-blue hover:text-primary-blue transition"
             >
               Cancelar
             </Link>
-            <button className="rounded-lg bg-primary-red px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow hover:bg-red-700 transition">
+            <button className="rounded-lg bg-primary-blue px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow hover:bg-blue-700 transition">
               Salvar Alterações
             </button>
           </footer>
         </div>
       </section>
-      </div>
-      <ModernFooter />
-    </main>
+    </div>
   )
 }
 

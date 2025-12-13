@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion'
-import { Menu, X, User, FileText, Calendar, Users, Award, Ticket, LogOut, ChevronDown, ChevronUp } from 'lucide-react'
+import { Menu, X, User, FileText, Calendar, Users, Award, Ticket, LogOut, ChevronDown, ChevronUp, Plus } from 'lucide-react'
 
 const accountLinks = [
   { href: '/dashboard/meu-perfil', label: 'Meu Perfil', icon: User },
@@ -12,6 +13,7 @@ const accountLinks = [
   { href: '/dashboard/meus-atletas', label: 'Meus Atletas', icon: Users },
   { href: '/dashboard/minhas-filiacoes', label: 'Filiações Registradas', icon: Award },
   { href: '/dashboard/meus-ingressos', label: 'Meus Ingressos', icon: Ticket },
+  { href: '/cadastro', label: 'Criar Evento', icon: Plus },
 ]
 
 export default function ModernNavbar() {
@@ -19,6 +21,8 @@ export default function ModernNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  // Simulando usuário logado - em produção, isso viria de um contexto/auth
+  const [isLoggedIn] = useState(true) // true porque o perfil está sendo mostrado
   const { scrollY } = useScroll()
   
   useEffect(() => {
@@ -62,29 +66,39 @@ export default function ModernNavbar() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="fixed top-0 left-0 right-0 z-50 bg-white transition-all duration-300"
+      className={`fixed top-0 left-0 right-0 z-50 bg-white transition-all duration-300 ${
+        isScrolled ? 'shadow-lg' : 'shadow-sm'
+      }`}
     >
       <div className="w-full" style={{ maxWidth: '1600px', margin: '0 auto' }}>
-        <div className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-5 xl:py-6">
+        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6">
           <div className="flex items-center justify-between w-full">
             {/* Logo */}
-            <Link href="/" className="flex items-center" style={{ marginRight: isMobile ? '20px' : '40px', flexShrink: 0 }}>
-              <motion.span
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold text-gray-900"
+            <Link href="/" className="flex items-center flex-shrink-0" style={{ marginRight: isMobile ? '20px' : '40px' }}>
+              <motion.div
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: 'spring', stiffness: 400 }}
+                className="relative"
+                style={{ width: isMobile ? '180px' : '240px', height: isMobile ? '90px' : '120px' }}
               >
-                Meu Camp
-              </motion.span>
+                <Image
+                  src="/images/meucamp-logo.png"
+                  alt="Meu Camp"
+                  fill
+                  className="object-contain"
+                  priority
+                  sizes="(max-width: 768px) 180px, 240px"
+                />
+              </motion.div>
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center" style={{ gap: '32px', flex: '1', justifyContent: 'center' }}>
+            <div className="hidden md:flex items-center" style={{ gap: '40px', flex: '1', justifyContent: 'center' }}>
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-base sm:text-lg md:text-lg lg:text-xl xl:text-xl font-medium text-gray-900 hover:text-gray-700 transition-colors relative group whitespace-nowrap"
+                  className="text-lg sm:text-xl md:text-xl lg:text-2xl font-semibold text-gray-900 hover:text-gray-700 transition-colors relative group whitespace-nowrap uppercase tracking-wide py-2"
                 >
                   {link.label}
                   <motion.span
@@ -93,65 +107,78 @@ export default function ModernNavbar() {
                   />
                 </Link>
               ))}
-              {/* Minha Conta no centro */}
-              <div className="relative account-menu-container">
-                <button
-                  onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                  className="text-base sm:text-lg md:text-lg lg:text-xl xl:text-xl font-medium text-gray-900 hover:text-gray-700 transition-colors relative group whitespace-nowrap flex items-center gap-1"
-                >
-                  Minha Conta
-                  {isAccountMenuOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                  <motion.span
-                    className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 group-hover:w-full transition-all duration-300"
-                    initial={false}
-                  />
-                </button>
-                {isAccountMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-gray-800 bg-gray-900 overflow-hidden z-50">
-                    <div className="border-b border-gray-700 bg-gray-900 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-white">
-                      Minha conta
-                    </div>
-                    <ul className="py-2 text-sm">
-                      {accountLinks.map((item) => (
-                        <li key={item.href}>
-                          <Link
-                            href={item.href}
-                            className="flex items-center gap-3 px-4 py-3 text-white hover:bg-gray-800 transition"
-                            onClick={() => setIsAccountMenuOpen(false)}
-                          >
-                            <item.icon size={18} className="text-white" />
-                            {item.label}
-                          </Link>
-                        </li>
-                      ))}
-                      <li className="border-t border-gray-700 mt-2">
-                        <button className="flex w-full items-center gap-3 px-4 py-3 text-left text-white hover:bg-gray-800 transition">
-                          <LogOut size={18} className="text-white" />
-                          Sair
-                        </button>
-                      </li>
-                    </ul>
-                  </div>
-                )}
-              </div>
             </div>
 
-            {/* CTA Button */}
-            <div className="hidden md:flex items-center" style={{ gap: '24px', marginLeft: 'auto', flexShrink: 0 }}>
-              <Link
-                href="/login"
-                className="text-base sm:text-lg md:text-lg lg:text-xl xl:text-xl font-medium text-gray-900 hover:text-gray-700 transition-colors whitespace-nowrap"
-              >
-                Entrar
-              </Link>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            {/* Right Side Actions - Ícones e Botões */}
+            <div className="hidden md:flex items-center gap-6 ml-auto flex-shrink-0">
+              {/* Link Entrar - Só mostra se não estiver logado */}
+              {!isLoggedIn && (
                 <Link
-                  href="/cadastro"
-                  className="px-6 py-2.5 sm:px-6 sm:py-2.5 md:px-6 md:py-2.5 lg:px-8 lg:py-3 xl:px-8 xl:py-3 bg-gray-900 text-white rounded-lg font-medium text-base sm:text-base md:text-base lg:text-lg xl:text-lg hover:bg-gray-800 transition-all duration-300 whitespace-nowrap"
+                  href="/login"
+                  className="text-lg sm:text-xl md:text-xl lg:text-2xl font-semibold text-gray-900 hover:text-gray-700 transition-colors whitespace-nowrap uppercase tracking-wide"
                 >
-                  Criar Evento
+                  Entrar
                 </Link>
-              </motion.div>
+              )}
+
+              {/* Perfil no Navbar - Estilo do exemplo - Só mostra se estiver logado */}
+              {isLoggedIn && (
+                <div className="relative account-menu-container">
+                  <motion.button
+                    onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+                    className="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all duration-200"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    aria-label="Minha Conta"
+                  >
+                    <div className="relative flex-shrink-0">
+                      <div className="w-14 h-14 rounded-full bg-gray-900 flex items-center justify-center border-2 border-gray-300 overflow-hidden">
+                        <span className="text-white font-semibold text-xl">R</span>
+                      </div>
+                    </div>
+                    <span className="text-lg font-semibold text-gray-900 whitespace-nowrap">Ricardo</span>
+                    {isAccountMenuOpen ? (
+                      <ChevronUp size={22} className="text-gray-600 flex-shrink-0" />
+                    ) : (
+                      <ChevronDown size={22} className="text-gray-600 flex-shrink-0" />
+                    )}
+                  </motion.button>
+                  {isAccountMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-xl overflow-hidden z-50"
+                    >
+                      <div className="border-b border-gray-200 bg-gray-50 px-5 py-4">
+                        <div className="text-base font-semibold uppercase tracking-wide text-gray-900">
+                          Meu Perfil
+                        </div>
+                      </div>
+                      <ul className="py-2">
+                        {accountLinks.map((item) => (
+                          <li key={item.href}>
+                            <Link
+                              href={item.href}
+                              className="flex items-center gap-4 px-5 py-4 text-gray-900 hover:bg-gray-100 transition text-lg"
+                              onClick={() => setIsAccountMenuOpen(false)}
+                            >
+                              <item.icon size={24} className="text-gray-600" />
+                              {item.label}
+                            </Link>
+                          </li>
+                        ))}
+                        <li className="border-t border-gray-200 mt-2">
+                          <button className="flex w-full items-center gap-4 px-5 py-4 text-left text-gray-900 hover:bg-gray-100 transition text-lg">
+                            <LogOut size={24} className="text-gray-600" />
+                            Sair
+                          </button>
+                        </li>
+                      </ul>
+                    </motion.div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -159,7 +186,7 @@ export default function ModernNavbar() {
               className="md:hidden text-gray-900"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
           </div>
 
@@ -178,27 +205,71 @@ export default function ModernNavbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="block text-gray-900 hover:text-gray-700 transition-colors py-2"
+                  className="block text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors py-3 uppercase tracking-wide"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
-              <div className="pt-4 space-y-2 border-t border-gray-200">
-                <Link
-                  href="/login"
-                  className="block text-gray-900 hover:text-gray-700 transition-colors py-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Entrar
-                </Link>
-                <Link
-                  href="/cadastro"
-                  className="block px-6 py-2.5 bg-gray-900 text-white rounded-lg font-medium text-center hover:bg-gray-800 transition"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Criar Evento
-                </Link>
+              <div className="pt-4 space-y-3 border-t border-gray-200">
+                {!isLoggedIn && (
+                  <Link
+                    href="/login"
+                    className="block text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors py-3 uppercase tracking-wide"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Entrar
+                  </Link>
+                )}
+                {isLoggedIn && (
+                  <div className="w-full">
+                    <button
+                      onClick={() => {
+                        setIsAccountMenuOpen(!isAccountMenuOpen)
+                        setIsMobileMenuOpen(false)
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 text-gray-900 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all w-full"
+                      aria-label="Minha Conta"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center border-2 border-gray-300">
+                        <span className="text-white font-semibold text-lg">R</span>
+                      </div>
+                      <span className="text-lg font-semibold text-gray-900">Ricardo</span>
+                    </button>
+                    {isAccountMenuOpen && (
+                      <div className="mt-2 rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden">
+                        <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
+                          <div className="text-base font-semibold uppercase tracking-wide text-gray-900">
+                            Meu Perfil
+                          </div>
+                        </div>
+                        <ul className="py-2">
+                          {accountLinks.map((item) => (
+                            <li key={item.href}>
+                              <Link
+                                href={item.href}
+                                className="flex items-center gap-4 px-5 py-4 text-gray-900 hover:bg-gray-100 transition text-lg"
+                                onClick={() => {
+                                  setIsAccountMenuOpen(false)
+                                  setIsMobileMenuOpen(false)
+                                }}
+                              >
+                                <item.icon size={24} className="text-gray-600" />
+                                {item.label}
+                              </Link>
+                            </li>
+                          ))}
+                          <li className="border-t border-gray-200 mt-2">
+                            <button className="flex w-full items-center gap-4 px-5 py-4 text-left text-gray-900 hover:bg-gray-100 transition text-lg">
+                              <LogOut size={24} className="text-gray-600" />
+                              Sair
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>

@@ -339,41 +339,40 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
 
   return (
     <div className="w-full">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="p-8 lg:p-12">
           {/* Progress Indicator */}
-          <div className="flex items-center justify-center gap-8 mb-12">
+          <div className="flex items-center justify-center gap-6 md:gap-12 lg:gap-16 mb-16">
           {[
             { num: 1, label: 'Atletas' },
             { num: 2, label: 'Categorias' },
             { num: 3, label: 'Pagamento' },
             { num: 4, label: 'Confirmação' },
           ].map((step, index) => (
-            <div key={step.num} className="flex items-center">
-              <div
-                className={`${
-                  currentStep >= step.num
-                    ? 'w-12 h-12 bg-primary-blue text-white text-lg'
-                    : 'w-10 h-10 bg-gray-300 text-gray-600 text-sm'
-                } rounded-full flex items-center justify-center font-bold transition`}
-              >
-                {currentStep > step.num ? <FiCheck size={16} /> : step.num}
-              </div>
-              {index < 3 && (
+            <div key={step.num} className="flex flex-col items-center">
+              <div className="flex items-center">
                 <div
-                  className={`w-24 h-1 ${
-                    currentStep > step.num ? 'bg-primary-blue' : 'bg-gray-300'
-                  } transition`}
-                />
-              )}
+                  className={`${
+                    currentStep >= step.num
+                      ? 'w-16 h-16 bg-primary-blue text-white text-2xl'
+                      : 'w-14 h-14 bg-gray-300 text-gray-600 text-xl'
+                  } rounded-full flex items-center justify-center font-bold transition`}
+                >
+                  {currentStep > step.num ? <FiCheck size={24} /> : step.num}
+                </div>
+                {index < 3 && (
+                  <div
+                    className={`w-20 md:w-32 lg:w-40 h-1 ${
+                      currentStep > step.num ? 'bg-primary-blue' : 'bg-gray-300'
+                    } transition`}
+                  />
+                )}
+              </div>
+              <span className="mt-3 text-xl md:text-2xl text-gray-600 font-semibold uppercase whitespace-nowrap">
+                {step.num} {step.label}
+              </span>
             </div>
           ))}
-        </div>
-        <div className="text-center text-xs text-gray-500 -mt-6 mb-10">
-          <span className="inline-block w-20">1 Atletas</span>
-          <span className="inline-block w-24">2 Categorias</span>
-          <span className="inline-block w-24">3 Pagamento</span>
-          <span className="inline-block w-24">4 Confirmação</span>
         </div>
 
       {/* Step Content */}
@@ -382,10 +381,10 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
         {currentStep === 1 && (
           <div>
             {/* Título */}
-            <h1 className="text-3xl font-bold text-center text-gray-800 mb-2 uppercase">
+            <h1 className="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-2 uppercase">
               INSCRIÇÃO – {mockEvent.title}
             </h1>
-            <p className="text-center italic text-gray-600 mb-10">
+            <p className="text-center text-xl text-gray-600 mb-10">
               Selecione quem irá competir
             </p>
 
@@ -393,22 +392,22 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
             <div>
               {/* Seção: Inscrição do Responsável (Professor) */}
               <div className="mb-8">
-                <p className="text-sm font-semibold italic text-gray-600 mb-3">
+                <p className="text-xl font-semibold text-gray-600 mb-3 uppercase">
                   Inscrição do Responsável (Professor)
                 </p>
-                <label className="flex items-center gap-4 p-4 bg-blue-50 rounded-xl border border-blue-200 cursor-pointer hover:bg-blue-100 transition">
+                <label className="flex items-center gap-4 p-5 bg-blue-50 rounded-lg border border-blue-200 cursor-pointer hover:bg-blue-100 transition">
                   <input
                     type="checkbox"
                     checked={selectedAthletes.some((a) => a.id === 0)}
                     onChange={handleToggleProfessor}
-                    className="w-5 h-5 text-primary-blue rounded"
+                    className="w-6 h-6 text-primary-blue rounded"
                   />
-                  <div className="w-12 h-12 rounded-full bg-gray-800 text-white flex items-center justify-center font-bold">
+                  <div className="w-14 h-14 rounded-full bg-gray-800 text-white flex items-center justify-center font-bold text-lg">
                     JS
                   </div>
                   <div>
-                    <p className="font-medium">Eu, Professor José Silva</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-2xl font-medium">Eu, Professor José Silva</p>
+                    <p className="text-xl text-gray-600">
                       Professor faixa preta • Competirá na categoria Master (opcional)
                     </p>
                   </div>
@@ -422,11 +421,11 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                   placeholder="Buscar por nome, faixa ou peso..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1 px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
+                  className="flex-1 px-5 py-4 text-xl border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
                 />
                 <button
                   onClick={handleSelectAll}
-                  className="px-6 py-3 bg-gray-800 text-white rounded-lg font-medium hover:bg-black transition"
+                  className="px-6 py-4 bg-gray-800 text-white rounded-lg font-medium text-xl hover:bg-black transition"
                 >
                   SELECIONAR TODOS
                 </button>
@@ -441,7 +440,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                   return (
                     <label
                       key={athlete.id}
-                      className={`flex items-center gap-4 p-4 rounded-xl border transition cursor-pointer ${
+                      className={`flex items-center gap-4 p-5 rounded-lg border transition cursor-pointer ${
                         isRegistered
                           ? 'bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed'
                           : 'bg-white border-gray-200 hover:border-gray-400'
@@ -479,17 +478,17 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                           }
                         }}
                         disabled={isRegistered}
-                        className="w-5 h-5 text-primary-blue rounded"
+                        className="w-6 h-6 text-primary-blue rounded"
                       />
-                      <div className="w-12 h-12 rounded-full bg-gray-800 text-white flex items-center justify-center font-bold text-sm">
+                      <div className="w-14 h-14 rounded-full bg-gray-800 text-white flex items-center justify-center font-bold text-xl">
                         {getInitials(athlete.name)}
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium">{athlete.name}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-2xl font-medium">{athlete.name}</p>
+                        <p className="text-xl text-gray-600">
                           {athlete.age} anos • {athlete.belt} • {athlete.weight}kg{' '}
                           {isRegistered && (
-                            <em className="text-gray-500">(já inscrito neste evento)</em>
+                            <span className="text-gray-500">(já inscrito neste evento)</span>
                           )}
                         </p>
                       </div>
@@ -504,7 +503,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                   {currentPage > 1 && (
                     <button
                       onClick={() => setCurrentPage(currentPage - 1)}
-                      className="px-4 py-2 border rounded-lg hover:bg-gray-100"
+                      className="px-6 py-3 text-xl border rounded-lg hover:bg-gray-100"
                     >
                       Anterior
                     </button>
@@ -520,7 +519,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                     .map((page, index, array) => {
                       if (index > 0 && page - array[index - 1] > 1) {
                         return (
-                          <span key={`ellipsis-${page}`} className="px-2">
+                          <span key={`ellipsis-${page}`} className="px-2 text-xl">
                             ...
                           </span>
                         )
@@ -529,7 +528,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                         <button
                           key={page}
                           onClick={() => setCurrentPage(page)}
-                          className={`px-4 py-2 rounded-lg font-medium ${
+                          className={`px-6 py-3 text-xl rounded-lg font-medium ${
                             page === currentPage
                               ? 'bg-primary-blue text-white'
                               : 'border hover:bg-gray-100'
@@ -543,7 +542,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                   {currentPage < totalPages && (
                     <button
                       onClick={() => setCurrentPage(currentPage + 1)}
-                      className="px-4 py-2 border rounded-lg hover:bg-gray-100"
+                      className="px-6 py-3 text-xl border rounded-lg hover:bg-gray-100"
                     >
                       Próximo
                     </button>
@@ -555,27 +554,27 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
               <div className="flex flex-col sm:flex-row justify-between items-center pt-8 border-t border-gray-200">
                 <button
                   onClick={() => setIsNewAthleteModalOpen(true)}
-                  className="text-primary-blue font-medium flex items-center gap-2 hover:gap-3 transition"
+                  className="text-primary-blue font-medium text-xl flex items-center gap-2 hover:gap-3 transition"
                 >
-                  <FiUserPlus size={24} />
+                  <FiUserPlus size={28} />
                   Cadastrar Novo Atleta
                 </button>
 
                 <div className="text-center my-4">
-                  <span className="text-3xl font-bold text-gray-800">
+                  <span className="text-4xl md:text-5xl font-bold text-gray-800">
                     {selectedAthletes.length}
                   </span>
                   <br />
-                  <span className="text-gray-600">atletas selecionados</span>
+                  <span className="text-2xl text-gray-600">atletas selecionados</span>
                 </div>
 
                 <button
                   onClick={handleNext}
                   disabled={!canProceedToStep2}
-                  className="px-8 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-8 py-4 bg-gray-200 text-gray-700 rounded-lg font-medium text-xl hover:bg-gray-300 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Continuar
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeWidth="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
@@ -590,11 +589,11 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
             <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800 uppercase">
               CATEGORIAS
             </h1>
-            <p className="text-center text-lg italic text-gray-600 mb-12">
+            <p className="text-center text-xl text-gray-600 mb-12">
               Configure as categorias, faixas e pesos para cada atleta
             </p>
 
-            <div className="bg-white/80 backdrop-blur-xl border border-gray-200/60 rounded-2xl shadow-lg p-8 lg:p-12">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-md p-8 lg:p-12">
               <div className="space-y-6">
                 {selectedAthletes.map((athlete) => (
                   <div
@@ -603,15 +602,15 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-lg font-semibold italic text-gray-900">
+                        <h3 className="text-2xl font-semibold text-gray-900">
                           {athlete.name}, {athlete.age} anos
                         </h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-xl text-gray-600">
                           {athlete.academy} • {athlete.belt} • {athlete.weight} kg
                         </p>
                       </div>
                       <div className="flex items-center space-x-4">
-                        <span className="text-sm text-gray-600">Inscrição:</span>
+                        <span className="text-xl text-gray-600 uppercase">Inscrição:</span>
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
                             type="radio"
@@ -620,7 +619,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                             onChange={() => handleToggleRegister(athlete.id)}
                             className="w-4 h-4 text-amber-600 focus:ring-amber-600"
                           />
-                          <span className="text-gray-700">NÃO</span>
+                          <span className="text-xl text-gray-700">NÃO</span>
                         </label>
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
@@ -628,9 +627,9 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                             name={`register-${athlete.id}`}
                             checked={athlete.willRegister}
                             onChange={() => handleToggleRegister(athlete.id)}
-                            className="w-4 h-4 text-amber-600 focus:ring-amber-600"
+                            className="w-5 h-5 text-amber-600 focus:ring-amber-600"
                           />
-                          <span className="text-gray-700">SIM</span>
+                          <span className="text-xl text-gray-700">SIM</span>
                         </label>
                       </div>
                     </div>
@@ -638,7 +637,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                     {athlete.willRegister && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
-                          <label className="block text-gray-700 font-medium mb-2">
+                          <label className="block text-xl text-gray-700 font-medium mb-2 uppercase">
                             Categoria
                           </label>
                           <select
@@ -655,7 +654,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                         </div>
 
                         <div>
-                          <label className="block text-gray-700 font-medium mb-2">Faixa</label>
+                          <label className="block text-xl text-gray-700 font-medium mb-2 uppercase">Faixa</label>
                           <select
                             value={athlete.beltCategory || ''}
                             onChange={(e) =>
@@ -672,7 +671,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                         </div>
 
                         <div>
-                          <label className="block text-gray-700 font-medium mb-2">
+                          <label className="block text-xl text-gray-700 font-medium mb-2 uppercase">
                             Categoria de Peso
                           </label>
                           <select
@@ -692,7 +691,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                         </div>
 
                         <div>
-                          <label className="block text-gray-700 font-medium mb-2">
+                          <label className="block text-xl text-gray-700 font-medium mb-2 uppercase">
                             Tipo de Inscrição
                           </label>
                           <select
@@ -712,8 +711,8 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                 ))}
 
                 <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-xl">
-                  <p className="text-gray-700">
-                    <strong className="text-gray-800">ATENÇÃO:</strong> Para o campeonato, a
+                  <p className="text-xl text-gray-700">
+                    <strong className="text-gray-800 uppercase">ATENÇÃO:</strong> Para o campeonato, a
                     idade é calculada com base no ano de nascimento.{' '}
                     <strong>Exemplo:</strong> O atleta nasceu em 2015, então em 2025 ele tem 10
                     anos.
@@ -748,19 +747,19 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
             <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800 uppercase">
               PAGAMENTO
             </h1>
-            <p className="text-center text-lg italic text-gray-600 mb-12">
+            <p className="text-center text-xl text-gray-600 mb-12">
               Escolha a forma de pagamento
             </p>
 
-            <div className="bg-white/80 backdrop-blur-xl border border-gray-200/60 rounded-2xl shadow-lg p-8 lg:p-12">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-md p-8 lg:p-12">
               {/* Resumo */}
               <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
-                <h3 className="text-lg font-semibold italic text-gray-900 mb-4">Resumo da Inscrição</h3>
-                <div className="space-y-2 text-gray-700">
+                <h3 className="text-2xl font-semibold text-gray-900 mb-4 uppercase">Resumo da Inscrição</h3>
+                <div className="space-y-2 text-xl text-gray-700">
                   <p>
                     <strong>N° de atleta(s) inscrito(s):</strong> {registeredCount}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-3xl font-bold text-gray-900">
                     Valor Total: R$ {totalValue.toFixed(2).replace('.', ',')}
                   </p>
                 </div>
@@ -768,7 +767,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
 
               {/* Forma de Pagamento */}
               <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold italic text-gray-900 mb-4">
+                <h3 className="text-2xl font-semibold text-gray-900 mb-4 uppercase">
                   Forma de Pagamento: Boleto Bancário ou Pix
                 </h3>
                 <div className="space-y-3">
@@ -781,7 +780,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                       onChange={() => setPaymentMethod('unified')}
                       className="w-5 h-5 text-amber-600 focus:ring-amber-600"
                     />
-                    <span className="text-gray-700 font-medium">
+                    <span className="text-xl text-gray-700 font-medium">
                       Pagamento Unificado: Todas as inscrições juntas
                     </span>
                   </label>
@@ -794,7 +793,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                       onChange={() => setPaymentMethod('individual')}
                       className="w-5 h-5 text-amber-600 focus:ring-amber-600"
                     />
-                    <span className="text-gray-700 font-medium">
+                    <span className="text-xl text-gray-700 font-medium">
                       Pagamento Individual: Cada inscrição terá o seu pagamento
                     </span>
                   </label>
@@ -828,19 +827,19 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
             <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800 uppercase">
               CONFIRMAÇÃO
             </h1>
-            <p className="text-center text-lg italic text-gray-600 mb-12">
+            <p className="text-center text-xl text-gray-600 mb-12">
               Revise todas as informações antes de finalizar
             </p>
 
-            <div className="bg-white/80 backdrop-blur-xl border border-gray-200/60 rounded-2xl shadow-lg p-8 lg:p-12">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-md p-8 lg:p-12">
               {/* Resumo Completo */}
               <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
-                <h3 className="text-lg font-semibold italic text-gray-900 mb-4">Resumo da Inscrição</h3>
-                <div className="space-y-3 text-gray-700">
+                <h3 className="text-2xl font-semibold text-gray-900 mb-4 uppercase">Resumo da Inscrição</h3>
+                <div className="space-y-3 text-xl text-gray-700">
                   <p>
                     <strong>N° de atleta(s) inscrito(s):</strong> {registeredCount}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-3xl font-bold text-gray-900">
                     Valor Total: R$ {totalValue.toFixed(2).replace('.', ',')}
                   </p>
                   <p>
@@ -853,7 +852,7 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
               {/* Lista de Atletas Inscritos */}
               {selectedAthletes.filter((a) => a.willRegister).length > 0 && (
                 <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm mb-6">
-                  <h3 className="text-lg font-semibold italic text-gray-900 mb-4">Atletas Selecionados</h3>
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-4 uppercase">Atletas Selecionados</h3>
                   <div className="space-y-3">
                     {selectedAthletes
                       .filter((a) => a.willRegister)
@@ -866,12 +865,12 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
                             {getInitials(athlete.name)}
                           </div>
                           <div className="flex-1">
-                            <p className="font-semibold text-gray-900">{athlete.name}</p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-2xl font-semibold text-gray-900">{athlete.name}</p>
+                            <p className="text-xl text-gray-600">
                               {athlete.category} • {athlete.beltCategory} • {athlete.weightCategory}
                             </p>
                           </div>
-                          <p className="text-lg font-bold text-gray-900">
+                          <p className="text-2xl font-bold text-gray-900">
                             R$ {athlete.price?.toFixed(2).replace('.', ',') || '0,00'}
                           </p>
                         </div>

@@ -2,8 +2,6 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import ModernNavbar from '@/components/ModernNavbar'
-import ModernFooter from '@/components/ModernFooter'
 import { FiEdit, FiUsers, FiCalendar, FiAward, FiTrash2, FiSearch, FiPlus } from 'react-icons/fi'
 import dynamic from 'next/dynamic'
 
@@ -89,15 +87,13 @@ export default function MeusAtletasPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   return (
-    <main className="min-h-screen bg-[#f8fafc]">
-      <ModernNavbar />
-      <div className="pt-20 container mx-auto px-6 pb-12">
-      <section className="rounded-3xl border border-gray-200 bg-white shadow overflow-hidden">
-        <header className="border-b border-gray-200 bg-[#0C3049] px-6 py-8 text-white rounded-t-3xl">
+    <div className="container mx-auto px-6 pb-12">
+      <section className="border border-gray-200 bg-white shadow overflow-hidden">
+        <header className="border-b border-gray-200 bg-[#0C3049] px-6 py-8 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold uppercase tracking-wide">Bem-vindo, Ricardo!</h1>
-              <p className="mt-2 text-base text-blue-100">Gerencie seus atletas, inscrições e filiações.</p>
+              <h1 className="text-5xl font-bold uppercase tracking-wide">Bem-vindo, Ricardo!</h1>
+              <p className="mt-2 text-xl text-blue-100 lowercase first-letter:uppercase">Gerencie seus atletas, inscrições e filiações.</p>
             </div>
           </div>
         </header>
@@ -106,37 +102,37 @@ export default function MeusAtletasPage() {
           <aside className="space-y-3">
             <Link
               href="/dashboard/meu-perfil"
-              className="flex items-center gap-3 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:border-primary-blue hover:text-primary-blue transition"
+              className="flex items-center gap-3 rounded-lg border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:border-primary-blue hover:text-primary-blue transition"
             >
               Meu Perfil
             </Link>
             <Link
               href="/dashboard/alterar-cadastro"
-              className="flex items-center gap-3 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:border-primary-blue hover:text-primary-blue transition"
+              className="flex items-center gap-3 rounded-lg border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:border-primary-blue hover:text-primary-blue transition"
             >
               Alterar Meu Cadastro
             </Link>
             <Link
               href="/dashboard/meus-atletas"
-              className="flex items-center gap-3 rounded-2xl border border-primary-blue bg-primary-blue px-4 py-3 text-sm font-semibold text-white shadow"
+              className="flex items-center gap-3 rounded-lg border border-primary-blue bg-primary-blue px-4 py-3 text-sm font-semibold text-white shadow"
             >
               Meus Atletas
             </Link>
             <Link
               href="/dashboard/inscricoes"
-              className="flex items-center gap-3 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:border-primary-blue hover:text-primary-blue transition"
+              className="flex items-center gap-3 rounded-lg border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:border-primary-blue hover:text-primary-blue transition"
             >
               Inscrições Realizadas
             </Link>
             <Link
               href="/dashboard/minhas-filiacoes"
-              className="flex items-center gap-3 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:border-primary-blue hover:text-primary-blue transition"
+              className="flex items-center gap-3 rounded-lg border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:border-primary-blue hover:text-primary-blue transition"
             >
               Minhas Filiações
             </Link>
             <Link
               href="/dashboard/meus-ingressos"
-              className="flex items-center gap-3 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:border-primary-blue hover:text-primary-blue transition"
+              className="flex items-center gap-3 rounded-lg border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:border-primary-blue hover:text-primary-blue transition"
             >
               Meus Ingressos
             </Link>
@@ -145,39 +141,39 @@ export default function MeusAtletasPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-gray-200 pb-4">
               <div>
-                <h2 className="text-lg font-semibold uppercase tracking-wide text-primary-blue">Meus Atletas</h2>
-                <p className="text-xs text-gray-500">
+                <h2 className="text-2xl font-semibold uppercase tracking-wide text-primary-blue">Meus Atletas</h2>
+                <p className="text-base text-gray-500">
                   <span className="font-semibold text-primary-blue">{athletes.length}</span> atletas cadastrados
                 </p>
               </div>
               <button
                 onClick={() => setOpenModal(true)}
-                className="inline-flex items-center gap-2 rounded-2xl bg-primary-blue px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow hover:bg-blue-600 transition"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-blue px-5 py-3 text-lg font-semibold uppercase tracking-wide text-white shadow hover:bg-blue-600 transition"
               >
-                <FiPlus size={16} />
+                <FiPlus size={20} />
                 Novo Atleta
               </button>
             </div>
 
             <ul className="space-y-4">
               {athletes.map((athlete) => (
-                <li key={athlete.id} className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <li key={athlete.id} className="rounded-lg border border-gray-200 bg-white shadow-sm">
                   <div className="flex flex-col gap-4 px-5 py-4 md:flex-row md:items-center md:justify-between">
                     <div className="flex flex-1 items-center gap-4">
                       <div className="hidden h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 md:inline-flex">
                         <FiUsers size={24} />
                       </div>
                       <div>
-                        <h3 className="text-base font-semibold text-gray-900 uppercase tracking-wide">
+                        <h3 className="text-xl font-semibold text-gray-900 lowercase first-letter:uppercase">
                           {athlete.name}
-                          <span className="ml-2 text-xs text-gray-500">{athlete.age} anos</span>
+                          <span className="ml-2 text-base text-gray-500">{athlete.age} anos</span>
                         </h3>
-                        <div className="mt-1 text-xs text-gray-600">
-                          <p>Equipe: {athlete.team}</p>
-                          <p>Professor: {athlete.coach}</p>
+                        <div className="mt-1 text-base text-gray-600">
+                          <p>Equipe: <span className="lowercase first-letter:uppercase">{athlete.team}</span></p>
+                          <p>Professor: <span className="lowercase first-letter:uppercase">{athlete.coach}</span></p>
                         </div>
-                        <div className="mt-2 flex items-center gap-4 text-xs font-medium text-gray-500">
-                          <span>Faixa {athlete.belt}</span>
+                        <div className="mt-2 flex items-center gap-4 text-base font-medium text-gray-500">
+                          <span>Faixa <span className="lowercase first-letter:uppercase">{athlete.belt}</span></span>
                           <span>Peso {athlete.weight}</span>
                         </div>
                       </div>
@@ -189,24 +185,24 @@ export default function MeusAtletasPage() {
                           setEditingAthlete(athlete)
                           setIsEditModalOpen(true)
                         }}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-primary-blue px-4 py-2 text-sm font-semibold text-primary-blue transition hover:bg-primary-blue hover:text-white"
+                        className="inline-flex items-center gap-2 rounded-lg border border-primary-blue px-5 py-3 text-lg font-semibold text-primary-blue transition hover:bg-primary-blue hover:text-white"
                       >
-                        <FiEdit size={16} />
+                        <FiEdit size={20} />
                         Alterar Cadastro
                       </button>
                       <Link
                         href={`/dashboard/meus-atletas/${athlete.id}/inscricoes`}
-                        className="inline-flex items-center gap-2 rounded-2xl bg-primary-blue px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                        className="inline-flex items-center gap-2 rounded-lg bg-primary-blue px-5 py-3 text-lg font-semibold text-white transition hover:bg-blue-700"
                       >
-                        <FiCalendar size={16} />
+                        <FiCalendar size={20} />
                         Inscrições
                       </Link>
-                      <button className="inline-flex items-center gap-2 rounded-2xl border border-primary-blue px-4 py-2 text-sm font-semibold text-primary-blue transition hover:bg-primary-blue hover:text-white">
-                        <FiAward size={16} />
+                      <button className="inline-flex items-center gap-2 rounded-lg border border-primary-blue px-5 py-3 text-lg font-semibold text-primary-blue transition hover:bg-primary-blue hover:text-white">
+                        <FiAward size={20} />
                         Filiações
                       </button>
-                      <button className="inline-flex items-center gap-2 rounded-2xl border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50">
-                        <FiTrash2 size={16} />
+                      <button className="inline-flex items-center gap-2 rounded-lg border border-blue-200 px-5 py-3 text-lg font-semibold text-blue-600 transition hover:bg-blue-50">
+                        <FiTrash2 size={20} />
                         Excluir Atleta
                       </button>
                     </div>
@@ -215,29 +211,29 @@ export default function MeusAtletasPage() {
               ))}
             </ul>
 
-            <footer className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4">
+            <footer className="mt-8 rounded-lg border border-gray-200 bg-gray-50 px-5 py-4">
               <form className="grid gap-4 md:grid-cols-[1fr_auto_auto] md:items-center">
-                <label className="flex flex-col text-xs font-semibold uppercase tracking-wide text-gray-600 md:flex-row md:items-center md:gap-3">
+                <label className="flex flex-col text-base font-semibold uppercase tracking-wide text-gray-600 md:flex-row md:items-center md:gap-3">
                   <span>Atletas cadastrados</span>
                   <input
                     type="text"
                     placeholder="Nome do atleta"
-                    className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/30 md:mt-0 md:min-w-[280px]"
+                    className="mt-2 w-full rounded-lg border border-gray-200 px-4 py-3 text-lg focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/30 md:mt-0 md:min-w-[280px]"
                   />
                 </label>
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-blue px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-blue-700"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-blue px-6 py-3 text-lg font-semibold uppercase tracking-wide text-white transition hover:bg-blue-700"
                 >
-                  <FiSearch size={16} />
+                  <FiSearch size={20} />
                   Pesquisar
                 </button>
                 <button
                   type="button"
                   onClick={() => setOpenModal(true)}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-blue px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-blue-700"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-blue px-6 py-3 text-lg font-semibold uppercase tracking-wide text-white transition hover:bg-blue-700"
                 >
-                  <FiPlus size={16} />
+                  <FiPlus size={20} />
                   Novo Atleta
                 </button>
               </form>
@@ -286,9 +282,7 @@ export default function MeusAtletasPage() {
           }}
         />
       )}
-      </div>
-      <ModernFooter />
-    </main>
+    </div>
   )
 }
 

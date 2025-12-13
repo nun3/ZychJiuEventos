@@ -1,6 +1,4 @@
 import Link from 'next/link'
-import ModernNavbar from '@/components/ModernNavbar'
-import ModernFooter from '@/components/ModernFooter'
 import { FiUser, FiEdit, FiUsers, FiClipboard, FiAward, FiCreditCard, FiChevronRight } from 'react-icons/fi'
 
 const menuItems = [
@@ -56,9 +54,7 @@ const pastEvents = [
 
 export default function MeuPerfilPage() {
   return (
-    <main className="min-h-screen bg-[#f8fafc]">
-      <ModernNavbar />
-      <div className="pt-20 container mx-auto px-6 pb-12">
+    <div className="container mx-auto px-6 pt-6 pb-12">
       <section className="rounded-2xl bg-white shadow">
         <div className="border-b border-gray-200 bg-[#0C3049] px-6 py-6 text-white">
           <h1 className="text-2xl font-bold uppercase tracking-wide">Bem-vindo, Ricardo!</h1>
@@ -75,8 +71,8 @@ export default function MeuPerfilPage() {
                   href={item.href}
                   className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm font-semibold transition ${
                     item.active
-                      ? 'border-primary-red bg-primary-red text-white shadow'
-                      : 'border-gray-200 text-gray-600 hover:border-primary-red hover:text-primary-red'
+                      ? 'border-primary-blue bg-primary-blue text-white shadow'
+                      : 'border-gray-200 text-gray-600 hover:border-primary-blue hover:text-primary-blue'
                   }`}
                 >
                   <Icon size={16} />
@@ -156,7 +152,7 @@ export default function MeuPerfilPage() {
 
               <div className="space-y-4">
                 <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-primary-red">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-primary-blue">
                     Últimos eventos que participei
                   </h3>
                   <ul className="mt-4 space-y-3 text-sm text-gray-600">
@@ -170,7 +166,7 @@ export default function MeuPerfilPage() {
                 </div>
 
                 <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-primary-red">Veja os próximos eventos</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-primary-blue">Veja os próximos eventos</h3>
                   <ul className="mt-4 space-y-3 text-sm text-gray-600">
                     {upcomingEvents.map((event) => (
                       <li key={event.title} className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
@@ -187,9 +183,7 @@ export default function MeuPerfilPage() {
           </div>
         </div>
       </section>
-      </div>
-      <ModernFooter />
-    </main>
+    </div>
   )
 }
 

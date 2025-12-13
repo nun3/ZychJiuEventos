@@ -388,27 +388,27 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800 uppercase">TABELA DE PESO</h2>
+        <h2 className="text-4xl md:text-5xl font-bold text-gray-800 uppercase">TABELA DE PESO</h2>
         <a
           href="/tabela-peso.pdf"
           download
-          className="bg-primary-red hover:bg-red-700 text-white font-bold py-2 px-5 rounded-lg transition flex items-center space-x-2"
+          className="bg-primary-red hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition flex items-center space-x-2 text-xl"
         >
-          <FiDownload size={18} />
+          <FiDownload size={20} />
           <span>BAIXAR PDF</span>
         </a>
       </div>
 
       {/* Formulário de Verificação de Categoria */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-sm">
-          <h3 className="text-xl font-semibold italic text-gray-800 mb-4 flex items-center gap-2">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 shadow-md">
+          <h3 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-4 flex items-center gap-2 uppercase">
           <FiSearch className="text-blue-600" />
           Verificar Minha Categoria
         </h3>
         <form onSubmit={handleCheck} className="space-y-4">
           <div className="grid md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-xl font-semibold text-gray-700 mb-2 uppercase">
                 Idade
               </label>
               <input
@@ -417,12 +417,12 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
                 value={checkAge}
                 onChange={(e) => setCheckAge(e.target.value)}
                 placeholder="Ex: 4"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 text-xl border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-xl font-semibold text-gray-700 mb-2 uppercase">
                 Peso (kg)
               </label>
               <input
@@ -430,27 +430,27 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
                 value={checkWeight}
                 onChange={(e) => setCheckWeight(e.target.value.replace(/[^0-9,.]/g, ''))}
                 placeholder="Ex: 18 ou 18,5"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 text-xl border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-xl font-semibold text-gray-700 mb-2 uppercase">
                 Gênero
               </label>
               <select
                 value={checkGender}
                 onChange={(e) => setCheckGender(e.target.value as 'M' | 'F' | '')}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 text-xl border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Selecione</option>
                 <option value="M">Masculino</option>
                 <option value="F">Feminino</option>
               </select>
-              <p className="text-xs text-gray-500 mt-1">Obrigatório para 14+ anos</p>
+              <p className="text-lg text-gray-500 mt-1">Obrigatório para 14+ anos</p>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-xl font-semibold text-gray-700 mb-2 uppercase">
                 Com Kimono
               </label>
               <div className="flex items-center h-[48px]">
@@ -459,9 +459,9 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
                     type="checkbox"
                     checked={withKimono}
                     onChange={(e) => setWithKimono(e.target.checked)}
-                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-6 h-6 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-gray-700 font-medium">
+                  <span className="ml-2 text-xl text-gray-700 font-medium">
                     {withKimono ? 'Sim' : 'Não'}
                   </span>
                 </label>
@@ -470,9 +470,9 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
           </div>
           <button
             type="submit"
-            className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition flex items-center justify-center gap-2"
+            className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 text-xl rounded-lg transition flex items-center justify-center gap-2"
           >
-            <FiSearch size={18} />
+            <FiSearch size={24} />
             Verificar Categoria
           </button>
         </form>
@@ -485,12 +485,12 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
               : 'bg-green-50 border-green-300'
           }`}>
             <div className="flex items-center gap-2">
-              <FiCheckCircle className={`text-lg ${
+              <FiCheckCircle size={28} className={`${
                 resultCategory.includes('não encontrada') || resultCategory.includes('fora da faixa') || resultCategory.includes('necessário')
                   ? 'text-red-600'
                   : 'text-green-600'
               }`} />
-              <p className={`font-bold text-lg ${
+              <p className={`font-bold text-2xl ${
                 resultCategory.includes('não encontrada') || resultCategory.includes('fora da faixa') || resultCategory.includes('necessário')
                   ? 'text-red-800'
                   : 'text-green-800'
@@ -509,7 +509,7 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
       <div className="flex gap-2 border-b border-gray-200">
         <button
           onClick={() => handleTableChange('GI')}
-          className={`px-6 py-3 font-semibold transition ${
+          className={`px-6 py-3 text-xl font-semibold transition ${
             activeTable === 'GI'
               ? 'border-b-4 border-blue-600 text-blue-600 bg-blue-50'
               : 'text-gray-600 hover:text-gray-800'
@@ -519,7 +519,7 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
         </button>
         <button
           onClick={() => handleTableChange('NOGI')}
-          className={`px-6 py-3 font-semibold transition ${
+          className={`px-6 py-3 text-xl font-semibold transition ${
             activeTable === 'NOGI'
               ? 'border-b-4 border-blue-600 text-blue-600 bg-blue-50'
               : 'text-gray-600 hover:text-gray-800'
@@ -529,8 +529,8 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
         </button>
       </div>
 
-      <div className="bg-gray-50 p-3 rounded-lg">
-        <p className="text-gray-600">
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <p className="text-xl text-gray-600">
           Consulte a tabela de peso para verificar em qual categoria você se enquadra. Clique no grupo de idade para expandir/recolher.
         </p>
       </div>
@@ -540,18 +540,18 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
         {Object.entries(groupedTable).map(([key, group], groupIndex) => {
           const isExpanded = expandedGroups.has(key)
           return (
-            <div key={key} className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+            <div key={key} className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-md">
               <button
                 onClick={() => toggleGroup(key)}
                 className="w-full bg-primary-dark text-white px-6 py-4 flex items-center justify-between hover:bg-opacity-90 transition"
               >
-                <h3 className="text-lg font-bold">
+                <h3 className="text-xl md:text-2xl font-bold">
                   {getGroupLabel(group)}
                 </h3>
                 {isExpanded ? (
-                  <FiChevronUp size={20} className="flex-shrink-0" />
+                  <FiChevronUp size={24} className="flex-shrink-0" />
                 ) : (
-                  <FiChevronDown size={20} className="flex-shrink-0" />
+                  <FiChevronDown size={24} className="flex-shrink-0" />
                 )}
               </button>
               {isExpanded && (
@@ -559,25 +559,25 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
                   <table className="w-full">
                     <thead className="bg-gray-100">
                       <tr>
-                        <th className="px-6 py-3 text-left font-bold text-gray-700">Categoria</th>
-                        <th className="px-6 py-3 text-left font-bold text-gray-700">Peso Mínimo</th>
-                        <th className="px-6 py-3 text-left font-bold text-gray-700">Peso Máximo</th>
-                        <th className="px-6 py-3 text-left font-bold text-gray-700">Gênero</th>
+                        <th className="px-6 py-3 text-left text-xl font-bold text-gray-700 uppercase">Categoria</th>
+                        <th className="px-6 py-3 text-left text-xl font-bold text-gray-700 uppercase">Peso Mínimo</th>
+                        <th className="px-6 py-3 text-left text-xl font-bold text-gray-700 uppercase">Peso Máximo</th>
+                        <th className="px-6 py-3 text-left text-xl font-bold text-gray-700 uppercase">Gênero</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {group.categories.map((row, index) => (
                         <tr key={index} className="hover:bg-gray-50 transition">
-                          <td className="px-6 py-4 text-gray-800 font-medium">
+                          <td className="px-6 py-4 text-xl text-gray-800 font-medium italic">
                             {row.category}
                           </td>
-                          <td className="px-6 py-4 text-gray-600">
+                          <td className="px-6 py-4 text-xl text-gray-600">
                             {row.minWeight}
                           </td>
-                          <td className="px-6 py-4 text-gray-600">
+                          <td className="px-6 py-4 text-xl text-gray-600">
                             {row.maxWeight}
                           </td>
-                          <td className="px-6 py-4 text-gray-600">
+                          <td className="px-6 py-4 text-xl text-gray-600">
                             {row.gender === 'M' ? 'Masculino' : row.gender === 'F' ? 'Feminino' : 'M/F'}
                           </td>
                         </tr>
@@ -592,14 +592,14 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
       </div>
 
       <div className="bg-gray-50 p-4 rounded-lg">
-        <h3 className="font-bold text-gray-800 mb-2">Importante:</h3>
-        <ul className="list-disc list-inside space-y-1 text-gray-600">
+        <h3 className="text-2xl font-bold text-gray-800 mb-2 uppercase">Importante:</h3>
+        <ul className="list-disc list-inside space-y-1 text-xl text-gray-600">
           <li>A pesagem será realizada no dia do evento</li>
           <li>O atleta deve estar dentro da faixa de peso da categoria escolhida</li>
           <li>Em caso de não estar dentro da faixa, o atleta poderá ser reclassificado</li>
           <li>A idade é calculada com base no ano de nascimento</li>
-          <li>Para GI: a pesagem é realizada com o kimono</li>
-          <li>Para NO-GI: a pesagem é realizada sem o kimono</li>
+          <li>Para GI: a pesagem é realizada com o <span className="italic">kimono</span></li>
+          <li>Para NO-GI: a pesagem é realizada sem o <span className="italic">kimono</span></li>
           <li>Para idades a partir de 14 anos, é necessário informar o gênero</li>
           <li>Para mais detalhes, consulte a tabela oficial em PDF</li>
         </ul>

@@ -1,8 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import ModernNavbar from '@/components/ModernNavbar'
-import ModernFooter from '@/components/ModernFooter'
 import { FiArrowLeft, FiCalendar, FiMapPin, FiEdit, FiCheck, FiAlertTriangle, FiFileText, FiX } from 'react-icons/fi'
 
 // Dados mockados do atleta
@@ -47,13 +45,13 @@ export default function AthleteRegistrationsPage({ params }: { params: { id: str
   const concludedRegistrations = mockRegistrations.filter((r) => r.eventStatus === 'concluded')
 
   return (
-    <main className="container mx-auto px-4">
+    <div className="container mx-auto px-4">
       <section className="rounded-2xl bg-white shadow">
         <header className="border-b border-gray-200 bg-[#0C3049] px-6 py-6 text-white">
           <div className="flex items-center space-x-4 mb-4">
             <Link
               href="/dashboard/meus-atletas"
-              className="text-white hover:text-primary-orange transition"
+              className="text-white hover:text-blue-300 transition"
             >
               <FiArrowLeft size={20} />
             </Link>
@@ -73,7 +71,7 @@ export default function AthleteRegistrationsPage({ params }: { params: { id: str
                 {activeRegistrations.map((registration) => (
                   <div
                     key={registration.id}
-                    className="border-t-2 border-primary-red rounded-lg bg-white shadow-sm"
+                    className="border-t-2 border-primary-blue rounded-lg bg-white shadow-sm"
                   >
                     <div className="p-6">
                       <h3 className="text-lg font-bold text-gray-800 mb-4">
@@ -82,19 +80,19 @@ export default function AthleteRegistrationsPage({ params }: { params: { id: str
 
                       <div className="space-y-2 text-gray-600 mb-4">
                         <div className="flex items-center space-x-2">
-                          <FiCalendar className="text-primary-red" />
+                          <FiCalendar className="text-primary-blue" />
                           <span>{registration.date}, {registration.location}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <FiMapPin className="text-primary-red" />
+                          <FiMapPin className="text-primary-blue" />
                           <span>{registration.location}</span>
                         </div>
                       </div>
 
                       <div className="space-y-2 text-sm text-gray-600 mb-4">
                         <p>
-                          <span className="text-primary-orange cursor-pointer">Categoria de Peso Jiu-Jitsu</span>
-                          <span className="ml-2 text-primary-red cursor-pointer">
+                          <span className="text-primary-blue cursor-pointer">Categoria de Peso Jiu-Jitsu</span>
+                          <span className="ml-2 text-primary-blue cursor-pointer">
                             <FiEdit size={14} className="inline" />
                           </span>
                         </p>
@@ -135,23 +133,23 @@ export default function AthleteRegistrationsPage({ params }: { params: { id: str
 
                       {/* Botões de Ação */}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-6">
-                        <button className="bg-primary-red hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
+                        <button className="bg-primary-blue hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
                           <span className="text-xl">💎</span>
                           <span>Pagar com Pix</span>
                         </button>
-                        <button className="bg-primary-red hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
+                        <button className="bg-primary-blue hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
                           <FiFileText />
                           <span>Pagar em Boleto</span>
                         </button>
-                        <button className="bg-primary-red hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
+                        <button className="bg-primary-blue hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
                           <FiCheck />
                           <span>Checagem</span>
                         </button>
-                        <button className="bg-primary-red hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
+                        <button className="bg-primary-blue hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
                           <FiEdit />
                           <span>Alterar Inscrição</span>
                         </button>
-                        <button className="border-2 border-primary-red text-primary-red hover:bg-red-50 font-bold py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
+                        <button className="border-2 border-primary-blue text-primary-blue hover:bg-blue-50 font-bold py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
                           <FiX />
                           <span>Cancelar Inscrição</span>
                         </button>
@@ -180,14 +178,14 @@ export default function AthleteRegistrationsPage({ params }: { params: { id: str
 
                       <div className="space-y-2 text-gray-600 mb-4">
                         <div className="flex items-center space-x-2">
-                          <FiCalendar className="text-primary-red" />
+                          <FiCalendar className="text-primary-blue" />
                           <span>{registration.date}, {registration.location}</span>
                         </div>
                       </div>
 
                       <div className="space-y-2 text-sm text-gray-600 mb-4">
                         <p>
-                          <span className="text-primary-orange cursor-pointer">Categoria de Peso Jiu-Jitsu</span>
+                          <span className="text-primary-blue cursor-pointer">Categoria de Peso Jiu-Jitsu</span>
                         </p>
                         <p className="font-medium text-gray-800">{registration.category}</p>
                         <p>{registration.team}</p>
@@ -220,7 +218,7 @@ export default function AthleteRegistrationsPage({ params }: { params: { id: str
                           <FiFileText />
                           <span>Emitir Recibo de Pagamento</span>
                         </button>
-                        <button className="bg-primary-red hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
+                        <button className="bg-primary-blue hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center space-x-2">
                           <FiFileText />
                           <span>Emitir Declaração de Participação</span>
                         </button>
@@ -241,9 +239,7 @@ export default function AthleteRegistrationsPage({ params }: { params: { id: str
           )}
         </div>
       </section>
-      </div>
-      <ModernFooter />
-    </main>
+    </div>
   )
 }
 

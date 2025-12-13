@@ -74,8 +74,8 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-4 uppercase">FINANCEIRO</h2>
-        <p className="text-gray-600 mb-6 italic">
+        <h2 className="text-4xl md:text-5xl font-bold mb-4 uppercase">FINANCEIRO</h2>
+        <p className="text-2xl text-gray-600 mb-6 italic">
           Gerencie seus pagamentos e boletos relacionados a este evento.
         </p>
       </div>
@@ -83,21 +83,21 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
       <div className="space-y-4">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-primary-blue hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition flex items-center space-x-2"
+          className="bg-primary-blue hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg transition flex items-center space-x-2 text-xl"
         >
-          <FiFile />
+          <FiFile size={24} />
           <span>EMITIR 2ª VIA DO BOLETO</span>
         </button>
 
         <div className="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-300">
           <div className="text-center">
             <FiFile className="mx-auto text-6xl text-gray-400 mb-4" />
-            <p className="text-gray-600 mb-4">
+            <p className="text-xl text-gray-600 mb-4">
               Para emitir o boleto, você precisa estar inscrito no evento.
             </p>
             <Link
               href={`/eventos/${eventId}`}
-              className="inline-block bg-primary-blue hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition"
+              className="inline-block bg-primary-blue hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition text-xl"
             >
               Fazer Inscrição
             </Link>
@@ -112,7 +112,7 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
             <div className="p-6">
               {/* Cabeçalho */}
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 uppercase">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-800 uppercase">
                   EMITIR 2ª VIA DO BOLETO
                 </h2>
                 <button
@@ -129,15 +129,15 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
 
               {/* Mensagem de Atenção */}
               <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-                <p className="text-gray-800">
-                  <strong>ATENÇÃO:</strong> Boletos vencidos não são aceitos pelos bancos. Devem ser
+                <p className="text-xl text-gray-800">
+                  <strong className="uppercase">ATENÇÃO:</strong> Boletos vencidos não são aceitos pelos bancos. Devem ser
                   solicitados uma nova via do boleto.
                 </p>
               </div>
 
               {/* Campo CPF */}
               <div className="mb-6">
-                <label className="block text-primary-blue font-semibold mb-2">
+                <label className="block text-xl text-primary-blue font-semibold mb-2 uppercase">
                   CPF DO RESPONSÁVEL PELA INSCRIÇÃO
                 </label>
                 <div className="flex gap-3">
@@ -163,29 +163,29 @@ export default function FinancialContent({ eventId }: FinancialContentProps) {
               {/* Lista de Boletos */}
               {boletos.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold italic text-cyan-600 mb-4">Boleto</h3>
+                  <h3 className="text-2xl font-semibold text-cyan-600 mb-4 uppercase">Boleto</h3>
                   {boletos.map((boleto, index) => (
                     <div
                       key={index}
                       className="border border-gray-200 rounded-lg p-4 space-y-3"
                     >
-                      <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="grid grid-cols-2 gap-2 text-xl">
                         <div>
-                          <span className="font-medium">Nº: </span>
+                          <span className="font-medium uppercase">Nº: </span>
                           <span className="text-gray-700">{boleto.numero}</span>
                         </div>
                         <div>
-                          <span className="font-medium">Valor: </span>
+                          <span className="font-medium uppercase">Valor: </span>
                           <span className="text-gray-700">
                             R$ {boleto.valor.toFixed(2).replace('.', ',')}
                           </span>
                         </div>
                         <div>
-                          <span className="font-medium">Vencimento: </span>
+                          <span className="font-medium uppercase">Vencimento: </span>
                           <span className="text-gray-700">{boleto.vencimento}</span>
                         </div>
                         <div>
-                          <span className="font-medium">Situação: </span>
+                          <span className="font-medium uppercase">Situação: </span>
                           <span className={boleto.situacao === 'Pago' ? 'text-green-600' : 'text-red-600'}>{boleto.situacao}</span>
                         </div>
                       </div>
