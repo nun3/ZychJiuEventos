@@ -87,7 +87,7 @@ export default function TarefasPage() {
               Nenhuma tarefa cadastrada ainda.
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              Clique em "NOVA TAREFA" para criar sua primeira tarefa.
+              Clique em &quot;NOVA TAREFA&quot; para criar sua primeira tarefa.
             </p>
           </div>
         </div>

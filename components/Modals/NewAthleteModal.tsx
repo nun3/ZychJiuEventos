@@ -16,6 +16,62 @@ interface NewAthleteModalProps {
   registerType?: 'atleta' | 'organizador' | 'responsavel'
 }
 
+function buildInitialFormData(mode: 'create' | 'edit', initialData?: any) {
+  if (mode === 'edit' && initialData) {
+    return {
+      nomeCompleto: initialData.name || '',
+      cpf: initialData.cpf || '',
+      dataNascimento: initialData.birthDate || '',
+      sexo: initialData.gender === 'F' ? 'Feminino' : initialData.gender === 'M' ? 'Masculino' : '',
+      necessidadeEspecial: initialData.specialNeeds ? 'Sim' : 'NÃ£o',
+      cep: initialData.cep || '',
+      estado: initialData.estado || '',
+      cidade: initialData.cidade || '',
+      bairro: initialData.bairro || '',
+      endereco: initialData.endereco || '',
+      complemento: initialData.complemento || '',
+      email: initialData.email || '',
+      celular: initialData.celular || '',
+      equipe: initialData.team || '',
+      professor: initialData.coach || '',
+      esporte: initialData.sport || 'Jiu-Jitsu',
+      graduacao: initialData.belt || '',
+      peso: initialData.weight || '',
+      altura: initialData.altura || '',
+      nomeResponsavel: initialData.nomeResponsavel || '',
+      telefoneResponsavel: initialData.telefoneResponsavel || '',
+      senha: '',
+      confirmarSenha: '',
+    }
+  }
+
+  return {
+    nomeCompleto: '',
+    cpf: '',
+    dataNascimento: '',
+    sexo: '',
+    necessidadeEspecial: 'NÃ£o',
+    cep: '',
+    estado: '',
+    cidade: '',
+    bairro: '',
+    endereco: '',
+    complemento: '',
+    email: '',
+    celular: '',
+    equipe: '',
+    professor: '',
+    esporte: 'Jiu-Jitsu',
+    graduacao: '',
+    peso: '',
+    altura: '',
+    nomeResponsavel: '',
+    telefoneResponsavel: '',
+    senha: '',
+    confirmarSenha: '',
+  }
+}
+
 export default function NewAthleteModal({
   open,
   onClose,
@@ -118,7 +174,7 @@ export default function NewAthleteModal({
 
   useEffect(() => {
     if (open && mode === 'edit' && initialData) {
-      setFormData(getInitialFormData())
+      setFormData(buildInitialFormData(mode, initialData))
     } else if (open && mode === 'create') {
       setFormData({
         nomeCompleto: '',

@@ -578,7 +578,9 @@ export default function ModernEventGrid({ filters, onEventClick }: ModernEventGr
       })
     }, observerOptions)
 
-    cardRefs.current.forEach((card) => {
+    const cards = [...cardRefs.current]
+
+    cards.forEach((card) => {
       if (card) {
         card.classList.add('card-hidden')
         observer.observe(card)
@@ -586,7 +588,7 @@ export default function ModernEventGrid({ filters, onEventClick }: ModernEventGr
     })
 
     return () => {
-      cardRefs.current.forEach((card) => {
+      cards.forEach((card) => {
         if (card) observer.unobserve(card)
       })
     }

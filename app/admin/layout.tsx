@@ -9,12 +9,10 @@ export const metadata: Metadata = {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
-      <body className="bg-[#f8fafc]">
-        <ModernNavbar />
-        <div className="pt-44 pb-12">{children}</div>
-        <ModernFooter />
-      </body>
-    </html>
+    <>
+      <ModernNavbar />
+      <div className="bg-[#f8fafc] pt-44 pb-12">{children}</div>
+      <ModernFooter />
+    </>
   )
 }

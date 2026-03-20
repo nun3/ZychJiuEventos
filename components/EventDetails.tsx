@@ -334,7 +334,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
                         Qualquer atleta poderá realizar a inscrição de outro atleta, desde que todos estejam devidamente cadastrados no sistema.
                       </p>
                       <p className="text-xs sm:text-sm md:text-base leading-relaxed text-gray-700 mb-3 sm:mb-4">
-                        Para informar a equipe, acesse o menu principal <strong className="italic">"Minha Equipe"</strong> ou <strong className="italic">"Meus Atletas"</strong>.
+                        Para informar a equipe, acesse o menu principal <strong className="italic">&quot;Minha Equipe&quot;</strong> ou <strong className="italic">&quot;Meus Atletas&quot;</strong>.
                       </p>
                     </div>
                     <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-blue-300">
@@ -663,4 +663,3 @@ export default function EventDetails({ eventId }: { eventId: string }) {
     </div>
   )
 }
-

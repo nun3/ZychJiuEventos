@@ -254,7 +254,7 @@ export default function OrganizerEventsPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          router.push(`/admin/eventos/${event.id}/editar`)
+                          router.push(`/admin/eventos/${event.id}/configuracao`)
                         }}
                         className="inline-flex items-center justify-center gap-2 border-2 border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm hover:bg-gray-50 transition-colors"
                       >
