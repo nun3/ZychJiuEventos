@@ -85,7 +85,7 @@ export default function ModernHero() {
   }
 
   return (
-    <section className="relative min-h-[50vh] sm:min-h-[60vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20">
+    <section className="relative min-h-[36vh] sm:min-h-[40vh] flex items-center justify-center overflow-hidden pt-11 sm:pt-14">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -100,7 +100,7 @@ export default function ModernHero() {
       <div className="absolute inset-0 bg-black/30" />
 
       {/* Content - Carousel */}
-      <div className="relative z-10 container mx-auto px-6 text-center">
+      <div className="relative z-10 container mx-auto px-4 sm:px-5 max-w-7xl text-center">
         {slides.map((slide, index) => (
           <motion.div
             key={slide.id}
@@ -110,33 +110,33 @@ export default function ModernHero() {
               y: index === currentSlide ? 0 : 30,
             }}
             transition={{ duration: 0.6 }}
-            className={`absolute inset-0 flex flex-col items-center justify-center space-y-8 ${
+            className={`absolute inset-0 flex flex-col items-center justify-center space-y-2 sm:space-y-3 ${
               index === currentSlide ? 'relative' : 'absolute'
             }`}
           >
             {/* Title */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-display font-bold text-white drop-shadow-2xl px-4">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-bold text-white drop-shadow-2xl px-4">
               {slide.title}
             </h1>
 
             {/* Subtitle */}
-            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl text-white font-semibold max-w-3xl mx-auto drop-shadow-lg px-4">
+            <p className="text-sm sm:text-base md:text-lg text-gray-300 font-semibold max-w-3xl mx-auto drop-shadow-lg px-4">
               {slide.subtitle}
             </p>
 
             {/* Description */}
             {slide.description && (
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-white/90 max-w-3xl mx-auto drop-shadow-md px-4">
+              <p className="text-xs sm:text-sm text-white/80 max-w-3xl mx-auto drop-shadow-md px-4">
                 {slide.description}
               </p>
             )}
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 px-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2 pt-2 px-4">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
-                  href={slide.cta === 'Explorar Eventos' ? '#eventos' : slide.cta === 'Criar Evento' ? '/criar-evento' : '#eventos'}
-                  className="px-6 py-3 sm:px-8 sm:py-4 md:px-10 md:py-5 bg-gradient-to-r from-primary-blue to-primary-accent text-white rounded-lg font-medium text-base sm:text-lg md:text-xl lg:text-2xl flex items-center gap-2 hover:shadow-glow-primary transition-all duration-300"
+                  href={slide.cta === 'Explorar Eventos' ? '#eventos' : slide.cta === 'Criar Evento' ? '/admin/autenticacao' : '#eventos'}
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2 bg-gradient-to-r from-primary-blue to-primary-accent text-white rounded-lg font-medium text-xs sm:text-sm flex items-center gap-2 hover:shadow-glow-primary transition-all duration-300"
                   onClick={(e) => {
                     if (slide.cta === 'Explorar Eventos') {
                       e.preventDefault()
@@ -148,13 +148,13 @@ export default function ModernHero() {
                   }}
                 >
                   {slide.cta}
-                  {slide.cta === 'Explorar Eventos' && <ArrowRight size={20} className="sm:w-6 sm:h-6" />}
+                  {slide.cta === 'Explorar Eventos' && <ArrowRight size={14} className="sm:w-4 sm:h-4" />}
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
-                  href={slide.ctaSecondary === 'Criar Evento' ? '/criar-evento' : slide.ctaSecondary === 'Cadastre-se' ? '/cadastro' : slide.ctaSecondary === 'Saiba Mais' ? '/sistema' : '/cadastro'}
-                  className="px-6 py-3 sm:px-8 sm:py-4 md:px-10 md:py-5 bg-white text-primary-blue rounded-lg font-medium text-base sm:text-lg md:text-xl lg:text-2xl border-2 border-primary-blue hover:bg-primary-blue hover:text-white transition-all duration-300 shadow-sm"
+                  href={slide.ctaSecondary === 'Criar Evento' ? '/admin/autenticacao' : slide.ctaSecondary === 'Cadastre-se' ? '/cadastro' : slide.ctaSecondary === 'Saiba Mais' ? '/sistema' : '/cadastro'}
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2 bg-white text-primary-blue rounded-lg font-medium text-xs sm:text-sm border-2 border-primary-blue hover:bg-primary-blue hover:text-white transition-all duration-300 shadow-sm"
                 >
                   {slide.ctaSecondary}
                 </Link>
@@ -165,14 +165,14 @@ export default function ModernHero() {
       </div>
 
       {/* Indicadores do Carousel */}
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
+      <div className="absolute bottom-10 sm:bottom-14 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
             className={`rounded-full transition-all duration-300 ${
               index === currentSlide
-                ? 'bg-primary-blue w-10 h-3 shadow-lg'
+                ? 'bg-primary-blue w-9 h-3 shadow-lg'
                 : 'bg-gray-300 hover:bg-gray-400 w-3 h-3'
             }`}
             aria-label={`Ir para slide ${index + 1}`}

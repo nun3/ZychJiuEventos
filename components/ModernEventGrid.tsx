@@ -1,9 +1,9 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import NetflixEventCard from './NetflixEventCard'
-import EventModal from './EventModal'
+import { getPublishedEvents, storedEventToEvent } from '@/lib/eventStorage'
 
 // Tipo para os eventos
 export interface Event {
@@ -263,6 +263,11 @@ interface NetflixCarouselProps {
   onEventClick: (event: Event) => void
 }
 
+interface ModernEventGridProps {
+  filters?: FilterState
+  onEventClick?: (event: Event) => void
+}
+
 // Função para filtrar eventos
 export function filterEvents(events: Event[], filters: FilterState): Event[] {
   return events.filter((event) => {
@@ -459,7 +464,7 @@ function NetflixCarouselRow({ events, onEventClick }: NetflixCarouselProps) {
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 overflow-x-auto overflow-y-visible hide-scrollbar scroll-smooth py-4 sm:py-5 md:py-6 netflix-carousel-container"
+          className="flex gap-2.5 sm:gap-3 md:gap-4 lg:gap-5 overflow-x-auto overflow-y-visible hide-scrollbar scroll-smooth py-3 sm:py-4 md:py-5 netflix-carousel-container"
           style={{
             scrollSnapType: 'x proximity',
             scrollPaddingLeft: isMobile ? '16px' : '85px',
@@ -532,28 +537,29 @@ interface FilterState {
   endDate: string
 }
 
-interface ModernEventGridProps {
-  filters?: FilterState
-}
-
-export default function ModernEventGrid({ filters }: ModernEventGridProps) {
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+export default function ModernEventGrid({ filters, onEventClick }: ModernEventGridProps) {
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [publishedEvents, setPublishedEvents] = useState<any[]>([])
+
+  // Carregar eventos publicados do localStorage
+  useEffect(() => {
+    const stored = getPublishedEvents()
+    const converted = stored.map(storedEventToEvent)
+    setPublishedEvents(converted)
+  }, [])
+
+  // Combinar eventos mockados com eventos publicados
+  const allEvents = [...mockEvents, ...publishedEvents]
 
   // Filtrar eventos baseado nos filtros
   const filteredEvents = filters
-    ? filterEvents(mockEvents, filters)
-    : mockEvents
+    ? filterEvents(allEvents, filters)
+    : allEvents
 
   const handleEventClick = (event: Event) => {
-    setSelectedEvent(event)
-    setIsModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setTimeout(() => setSelectedEvent(null), 300)
+    if (onEventClick) {
+      onEventClick(event)
+    }
   }
 
   // Intersection Observer para animação scroll reveal
@@ -588,7 +594,7 @@ export default function ModernEventGrid({ filters }: ModernEventGridProps) {
 
   return (
     <>
-      <section className="mt-8 relative z-10">
+      <section className="mt-6 relative z-10">
         {filteredEvents.length > 0 ? (
           <div className="lista-cards">
             {filteredEvents.map((event, index) => (
@@ -614,12 +620,6 @@ export default function ModernEventGrid({ filters }: ModernEventGridProps) {
           </div>
         )}
       </section>
-
-      <EventModal
-        event={selectedEvent}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
     </>
   )
 }

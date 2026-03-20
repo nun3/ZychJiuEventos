@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import ModernNavbar from '@/components/ModernNavbar'
-import ModernFooter from '@/components/ModernFooter'
 import { FiArrowLeft, FiInfo, FiImage, FiUpload, FiSave, FiSend, FiX, FiCheckSquare, FiClipboard, FiSettings, FiAward } from 'react-icons/fi'
+import { saveEvent, publishEvent, fileToBase64, type StoredEvent } from '@/lib/eventStorage'
 
 interface UploadedImage {
   file?: File
@@ -13,10 +13,13 @@ interface UploadedImage {
 }
 
 export default function NewEventPage() {
+  const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [banner, setBanner] = useState<UploadedImage>({})
   const [destaque, setDestaque] = useState<UploadedImage>({})
+  const [isPublishing, setIsPublishing] = useState(false)
   const [activeSection, setActiveSection] = useState<'sobre' | 'inscricoes' | 'pagamento' | 'checagem' | 'chaves' | 'pesagem' | 'premiacao' | 'cronograma' | 'avaliacao'>('sobre')
-
   const [form, setForm] = useState({
     organizer: 'Ricardo Zych',
     codigo: '',
@@ -79,9 +82,85 @@ export default function NewEventPage() {
     const error = await validateImage(file, maxW, maxH)
 
     const preview = URL.createObjectURL(file)
-    const data = { file, preview, error: error || undefined }
+    // Converter para base64 para salvar no localStorage
+    let base64 = ''
+    if (!error) {
+      try {
+        base64 = await fileToBase64(file)
+      } catch (err) {
+        console.error('Erro ao converter imagem:', err)
+      }
+    }
+    
+    const data = { file, preview, error: error || undefined, base64 }
     if (isBanner) setBanner(data)
     else setDestaque(data)
+  }
+
+  async function handlePublish() {
+    if (!form.titulo.trim()) {
+      alert('Por favor, preencha o título do evento')
+      return
+    }
+
+    setIsPublishing(true)
+    try {
+      // Preparar dados do evento
+      const eventData: Partial<StoredEvent> = {
+        ...form,
+        bannerImage: (banner as any).base64 || banner.preview,
+        destaqueImage: (destaque as any).base64 || destaque.preview,
+        status: 'published',
+        type: 'Campeonato Jiu-Jitsu',
+        eventType: 'Campeonato',
+        sport: 'Jiu-Jitsu',
+        // Extrair informações básicas para exibição
+        location: form.titulo.includes('Clevelândia') ? 'Clevelândia/PR' : 
+                 form.titulo.includes('Pato Branco') ? 'Pato Branco/PR' : 'Local não informado',
+        state: 'PR - Paraná', // Pode ser extraído do formulário no futuro
+        description: form.apresentacao,
+        // Gerar data padrão (pode ser adicionado campo de data no futuro)
+        date: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' }),
+        dateFull: new Date().toLocaleDateString('pt-BR'),
+        dateObj: new Date(),
+      }
+
+      // Salvar e publicar
+      const savedEvent = saveEvent(eventData)
+      const publishedEvent = publishEvent(savedEvent.id)
+
+      if (publishedEvent) {
+        alert('Evento publicado com sucesso!')
+        router.push(`/eventos/${publishedEvent.id}`)
+      }
+    } catch (error) {
+      console.error('Erro ao publicar evento:', error)
+      alert('Erro ao publicar evento. Tente novamente.')
+    } finally {
+      setIsPublishing(false)
+    }
+  }
+
+  async function handleSaveDraft() {
+    if (!form.titulo.trim()) {
+      alert('Por favor, preencha o título do evento')
+      return
+    }
+
+    try {
+      const eventData: Partial<StoredEvent> = {
+        ...form,
+        bannerImage: (banner as any).base64 || banner.preview,
+        destaqueImage: (destaque as any).base64 || destaque.preview,
+        status: 'draft',
+      }
+
+      saveEvent(eventData)
+      alert('Rascunho salvo com sucesso!')
+    } catch (error) {
+      console.error('Erro ao salvar rascunho:', error)
+      alert('Erro ao salvar rascunho. Tente novamente.')
+    }
   }
 
   function SectionHeader({ icon: Icon, title, id }: { icon: any; title: string; id: typeof activeSection }) {
@@ -104,11 +183,10 @@ export default function NewEventPage() {
 
   return (
     <main className="min-h-screen bg-[#f8fafc]">
-      <ModernNavbar />
-      <div className="pt-20 container mx-auto px-6 pb-12">
+      <div className="container mx-auto px-6">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-gray-600 hover:text-primary-blue transition-colors">
+            <Link href="/admin/eventos" className="text-gray-600 hover:text-primary-blue transition-colors">
               <FiArrowLeft size={20} />
             </Link>
             <h1 className="text-2xl md:text-3xl font-display font-bold text-gray-900">Criar Evento</h1>
@@ -329,21 +407,27 @@ export default function NewEventPage() {
 
         {/* Ações Finais */}
         <div className="mt-8 flex justify-between">
-          <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 hover:border-primary-blue hover:text-primary-blue transition-colors">
+          <Link href="/admin/eventos" className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 hover:border-primary-blue hover:text-primary-blue transition-colors">
             <FiX size={16} /> Cancelar
           </Link>
           <div className="flex gap-2">
-            <button className="inline-flex items-center gap-2 rounded-lg border border-primary-blue px-4 py-2 text-sm font-semibold text-primary-blue hover:bg-primary-blue hover:text-white transition-colors">
+            <button 
+              onClick={handleSaveDraft}
+              className="inline-flex items-center gap-2 rounded-lg border border-primary-blue px-4 py-2 text-sm font-semibold text-primary-blue hover:bg-primary-blue hover:text-white transition-colors"
+            >
               <FiSave size={16} /> Salvar rascunho
             </button>
-            <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary-blue to-primary-accent px-4 py-2 text-sm font-semibold text-white hover:shadow-lg transition-all">
-              <FiSend size={16} /> Publicar
+            <button 
+              onClick={handlePublish}
+              disabled={isPublishing}
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary-blue to-primary-accent px-4 py-2 text-sm font-semibold text-white hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <FiSend size={16} /> {isPublishing ? 'Publicando...' : 'Publicar'}
             </button>
           </div>
         </div>
       </section>
       </div>
-      <ModernFooter />
     </main>
   )
 }

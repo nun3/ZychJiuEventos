@@ -43,7 +43,7 @@ export default function Header() {
               Acessar Conta
             </Link>
             <Link
-              href="/criar-evento"
+              href="/admin/autenticacao"
               className="px-6 py-2 bg-primary-orange text-white font-bold rounded hover:bg-orange-500 transition"
             >
               CRIAR EVENTO
@@ -92,7 +92,7 @@ export default function Header() {
                   Acessar Conta
                 </Link>
                 <Link
-                  href="/criar-evento"
+                  href="/admin/autenticacao"
                   className="block px-4 py-2 bg-primary-orange text-white font-bold rounded text-center"
                 >
                   CRIAR EVENTO

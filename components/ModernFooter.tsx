@@ -26,13 +26,13 @@ export default function ModernFooter() {
           >
             {/* Sobre o Meu Camp */}
             <div className="sm:col-span-2 md:col-span-1">
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 md:mb-5">Sobre o Meu Camp</h3>
-              <p className="text-gray-300 text-sm sm:text-base md:text-lg mb-3 sm:mb-4 md:mb-5">
+              <h3 className="text-base sm:text-lg font-bold mb-3">Sobre o Meu Camp</h3>
+              <p className="text-gray-300 text-xs sm:text-sm mb-3">
                 O Meu Camp é um site de Prestação de Serviços para Organização de Eventos, 
                 Venda de Ingressos, Controle de Filiações e Serviços em Geral para 
                 Federações, Associações e Organizadores Independentes.
               </p>
-              <p className="text-gray-300 text-sm sm:text-base md:text-lg">
+              <p className="text-gray-300 text-xs sm:text-sm">
                 Saiba mais sobre os nossos serviços{' '}
                 <Link href="/servicos" className="text-primary-blue hover:underline">
                   AQUI
@@ -43,8 +43,8 @@ export default function ModernFooter() {
 
             {/* Navegação */}
             <div>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 md:mb-5">Navegação</h3>
-              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base md:text-lg">
+              <h3 className="text-base sm:text-lg font-bold mb-3">Navegação</h3>
+              <ul className="space-y-2 text-xs sm:text-sm">
                 <li>
                   <Link href="/academias" className="text-gray-300 hover:text-primary-blue transition-colors">
                     Para Organizadores de Eventos
@@ -80,22 +80,22 @@ export default function ModernFooter() {
 
             {/* Fale conosco */}
             <div>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 md:mb-5">Fale conosco</h3>
-              <ul className="space-y-3 sm:space-y-4 text-sm sm:text-base md:text-lg">
-                <li className="flex items-center space-x-2 sm:space-x-3 text-gray-300">
-                  <Phone size={20} className="sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary-blue flex-shrink-0" />
+              <h3 className="text-base sm:text-lg font-bold mb-3">Fale conosco</h3>
+              <ul className="space-y-2 text-xs sm:text-sm">
+                <li className="flex items-center space-x-2 text-gray-300">
+                  <Phone size={16} className="text-primary-blue flex-shrink-0" />
                   <span>Suporte Operacional - (27) 99945-0345</span>
                 </li>
-                <li className="flex items-center space-x-2 sm:space-x-3 text-gray-300">
-                  <Phone size={20} className="sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary-blue flex-shrink-0" />
+                <li className="flex items-center space-x-2 text-gray-300">
+                  <Phone size={16} className="text-primary-blue flex-shrink-0" />
                   <span>Comercial - (27) 99660-0345</span>
                 </li>
-                <li className="flex items-center space-x-2 sm:space-x-3 text-gray-300">
-                  <Mail size={20} className="sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary-blue flex-shrink-0" />
+                <li className="flex items-center space-x-2 text-gray-300">
+                  <Mail size={16} className="text-primary-blue flex-shrink-0" />
                   <span>contato@meucamp.com.br</span>
                 </li>
               </ul>
-              <p className="text-gray-300 text-sm sm:text-base md:text-lg mt-4 sm:mt-5 md:mt-6">
+              <p className="text-gray-300 text-xs sm:text-sm mt-4">
                 <strong>Atendimento on-line:</strong><br />
                 Acesse o ícone do WhatsApp no rodapé para falar conosco.<br />
                 Horário: Seg à Sex das 09 às 19h (dias úteis)
@@ -104,55 +104,55 @@ export default function ModernFooter() {
 
             {/* Social Links */}
             <div>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 md:mb-5">Redes Sociais</h3>
-              <div className="flex space-x-3 sm:space-x-4">
+              <h3 className="text-base sm:text-lg font-bold mb-3">Redes Sociais</h3>
+              <div className="flex space-x-3">
                 <a
                   href="https://facebook.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary-blue transition-colors"
+                  className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary-blue transition-colors"
                 >
-                  <Facebook size={24} className="sm:w-6 sm:h-6 md:w-7 md:h-7" />
+                  <Facebook size={18} />
                 </a>
                 <a
                   href="https://instagram.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary-blue transition-colors"
+                  className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary-blue transition-colors"
                 >
-                  <Instagram size={24} className="sm:w-6 sm:h-6 md:w-7 md:h-7" />
+                  <Instagram size={18} />
                 </a>
                 <a
                   href="https://youtube.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary-blue transition-colors"
+                  className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary-blue transition-colors"
                 >
-                  <Youtube size={24} className="sm:w-6 sm:h-6 md:w-7 md:h-7" />
+                  <Youtube size={18} />
                 </a>
               </div>
             </div>
 
             {/* Formas de Pagamento */}
             <div>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 md:mb-5">Formas de Pagamento</h3>
-              <p className="text-gray-300 text-sm sm:text-base md:text-lg mb-4 sm:mb-5">
+              <h3 className="text-base sm:text-lg font-bold mb-3">Formas de Pagamento</h3>
+              <p className="text-gray-300 text-xs sm:text-sm mb-3">
                 Boleto, Depósito Bancário ou Transferência Eletrônica
                 <br />
-                <span className="text-xs sm:text-sm md:text-base">(informações na página do evento)</span>
+                <span className="text-xs">(informações na página do evento)</span>
               </p>
-              <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-5">
-                <div className="w-14 h-9 sm:w-16 sm:h-10 md:w-20 md:h-12 bg-white rounded flex items-center justify-center text-xs sm:text-sm md:text-base font-bold text-gray-800">
+              <div className="flex flex-wrap gap-2 mb-3">
+                <div className="w-14 h-9 bg-white rounded flex items-center justify-center text-xs font-bold text-gray-800">
                   Visa
                 </div>
-                <div className="w-14 h-9 sm:w-16 sm:h-10 md:w-20 md:h-12 bg-white rounded flex items-center justify-center text-xs sm:text-sm md:text-base font-bold text-gray-800">
+                <div className="w-14 h-9 bg-white rounded flex items-center justify-center text-xs font-bold text-gray-800">
                   MC
                 </div>
-                <div className="w-14 h-9 sm:w-16 sm:h-10 md:w-20 md:h-12 bg-white rounded flex items-center justify-center text-xs sm:text-sm md:text-base font-bold text-gray-800">
+                <div className="w-14 h-9 bg-white rounded flex items-center justify-center text-xs font-bold text-gray-800">
                   Elo
                 </div>
               </div>
-              <div className="text-xs sm:text-sm md:text-base text-gray-400">
+              <div className="text-xs text-gray-400">
                 <p>Portal Meu Camp tem Certificado de Segurança, para proteger os dados dos atletas e dos organizadores</p>
               </div>
             </div>
@@ -166,9 +166,9 @@ export default function ModernFooter() {
             transition={{ delay: 0.2, duration: 0.6 }}
             className="border-t border-white/20 mt-8 pt-8"
           >
-            <div className="flex flex-col md:flex-row justify-between items-center text-sm sm:text-base md:text-lg text-gray-300">
+            <div className="flex flex-col md:flex-row justify-between items-center text-xs sm:text-sm text-gray-300">
               <p>© {new Date().getFullYear()}, Portal Meu Camp – Todos os direitos reservados.</p>
-              <div className="flex space-x-4 sm:space-x-5 md:space-x-6 mt-4 md:mt-0">
+              <div className="flex space-x-4 mt-4 md:mt-0">
                 <Link href="/termos" className="hover:text-primary-blue transition-colors">
                   Termos de Uso
                 </Link>

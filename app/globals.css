@@ -232,12 +232,12 @@ nav button {
 .lista-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
+  gap: 1.35rem;
   width: 100%;
   max-width: 1920px; /* Aumentado para acomodar 4 cards maiores */
   margin: 0 auto;
-  padding: 0 1rem;
-  margin-top: 2rem; /* Espaçamento após o filtro */
+  padding: 0 0.675rem;
+  margin-top: 1.35rem; /* Espaçamento após o filtro */
   position: relative;
   z-index: 0; /* Abaixo do filtro */
 }
@@ -258,14 +258,14 @@ nav button {
 @media (max-width: 768px) {
   .lista-cards {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    gap: 1.125rem;
   }
 }
 
 @media (max-width: 640px) {
   .lista-cards {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1.125rem;
   }
 }
 
@@ -358,5 +358,95 @@ nav button {
 /* Classe para aplicar animação quando visível */
 .card-animate {
   animation: fadeUp 0.6s ease-out forwards;
+}
+
+/* Correção de responsividade para iframes - corrige problemas de zoom */
+iframe {
+  /* Garantir que iframes sejam responsivos */
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+  /* Remover qualquer transform que possa estar causando problemas */
+  transform: none !important;
+  /* Garantir que o iframe respeite o container */
+  box-sizing: border-box;
+  /* Evitar problemas de escala */
+  zoom: 1 !important;
+  -webkit-transform: scale(1) !important;
+  -moz-transform: scale(1) !important;
+  -ms-transform: scale(1) !important;
+  -o-transform: scale(1) !important;
+}
+
+/* Container responsivo para iframes */
+.iframe-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* Proporção 16:9 padrão */
+  height: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.iframe-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  transform: none !important;
+  zoom: 1 !important;
+}
+
+/* Container para iframes com altura fixa (quando necessário) */
+.iframe-container-fixed {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+.iframe-container-fixed iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  transform: none !important;
+  zoom: 1 !important;
+  display: block;
+}
+
+/* Proporções específicas para diferentes tipos de conteúdo */
+.iframe-container-4-3 {
+  padding-bottom: 75%; /* Proporção 4:3 */
+}
+
+.iframe-container-16-9 {
+  padding-bottom: 56.25%; /* Proporção 16:9 */
+}
+
+.iframe-container-21-9 {
+  padding-bottom: 42.857%; /* Proporção 21:9 */
+}
+
+/* Responsividade para diferentes tamanhos de tela */
+@media (max-width: 768px) {
+  iframe {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+    zoom: 1 !important;
+  }
+  
+  .iframe-container {
+    padding-bottom: 75%; /* Proporção mais adequada para mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .iframe-container {
+    padding-bottom: 100%; /* Proporção quadrada para telas muito pequenas */
+  }
 }
 

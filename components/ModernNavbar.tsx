@@ -13,7 +13,7 @@ const accountLinks = [
   { href: '/dashboard/meus-atletas', label: 'Meus Atletas', icon: Users },
   { href: '/dashboard/minhas-filiacoes', label: 'Filiações Registradas', icon: Award },
   { href: '/dashboard/meus-ingressos', label: 'Meus Ingressos', icon: Ticket },
-  { href: '/cadastro', label: 'Criar Evento', icon: Plus },
+  { href: '/admin/autenticacao', label: 'Criar Evento', icon: Plus },
 ]
 
 export default function ModernNavbar() {
@@ -71,7 +71,7 @@ export default function ModernNavbar() {
       }`}
     >
       <div className="w-full" style={{ maxWidth: '1600px', margin: '0 auto' }}>
-        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6">
+        <div className="px-3 sm:px-5 lg:px-6 py-3 sm:py-4 lg:py-5">
           <div className="flex items-center justify-between w-full">
             {/* Logo */}
             <Link href="/" className="flex items-center flex-shrink-0" style={{ marginRight: isMobile ? '20px' : '40px' }}>
@@ -79,7 +79,7 @@ export default function ModernNavbar() {
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: 'spring', stiffness: 400 }}
                 className="relative"
-                style={{ width: isMobile ? '180px' : '240px', height: isMobile ? '90px' : '120px' }}
+                style={{ width: isMobile ? '126px' : '162px', height: isMobile ? '63px' : '81px' }}
               >
                 <Image
                   src="/images/meucamp-logo.png"
@@ -93,12 +93,12 @@ export default function ModernNavbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center" style={{ gap: '40px', flex: '1', justifyContent: 'center' }}>
+            <div className="hidden md:flex items-center" style={{ gap: '29px', flex: '1', justifyContent: 'center' }}>
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-lg sm:text-xl md:text-xl lg:text-2xl font-semibold text-gray-900 hover:text-gray-700 transition-colors relative group whitespace-nowrap uppercase tracking-wide py-2"
+                  className="text-xs sm:text-sm md:text-sm lg:text-base font-semibold text-gray-900 hover:text-gray-700 transition-colors relative group whitespace-nowrap uppercase tracking-wide py-1.5"
                 >
                   {link.label}
                   <motion.span
@@ -110,12 +110,12 @@ export default function ModernNavbar() {
             </div>
 
             {/* Right Side Actions - Ícones e Botões */}
-            <div className="hidden md:flex items-center gap-6 ml-auto flex-shrink-0">
+            <div className="hidden md:flex items-center gap-5 ml-auto flex-shrink-0">
               {/* Link Entrar - Só mostra se não estiver logado */}
               {!isLoggedIn && (
                 <Link
                   href="/login"
-                  className="text-lg sm:text-xl md:text-xl lg:text-2xl font-semibold text-gray-900 hover:text-gray-700 transition-colors whitespace-nowrap uppercase tracking-wide"
+                  className="text-xs sm:text-sm md:text-sm lg:text-base font-semibold text-gray-900 hover:text-gray-700 transition-colors whitespace-nowrap uppercase tracking-wide"
                 >
                   Entrar
                 </Link>
@@ -126,21 +126,21 @@ export default function ModernNavbar() {
                 <div className="relative account-menu-container">
                   <motion.button
                     onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                    className="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all duration-200"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     aria-label="Minha Conta"
                   >
                     <div className="relative flex-shrink-0">
-                      <div className="w-14 h-14 rounded-full bg-gray-900 flex items-center justify-center border-2 border-gray-300 overflow-hidden">
-                        <span className="text-white font-semibold text-xl">R</span>
+                      <div className="w-11 h-11 rounded-full bg-gray-900 flex items-center justify-center border-2 border-gray-300 overflow-hidden">
+                        <span className="text-white font-semibold text-base">R</span>
                       </div>
                     </div>
-                    <span className="text-lg font-semibold text-gray-900 whitespace-nowrap">Ricardo</span>
+                    <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">Ricardo</span>
                     {isAccountMenuOpen ? (
-                      <ChevronUp size={22} className="text-gray-600 flex-shrink-0" />
+                      <ChevronUp size={20} className="text-gray-600 flex-shrink-0" />
                     ) : (
-                      <ChevronDown size={22} className="text-gray-600 flex-shrink-0" />
+                      <ChevronDown size={20} className="text-gray-600 flex-shrink-0" />
                     )}
                   </motion.button>
                   {isAccountMenuOpen && (
@@ -160,7 +160,7 @@ export default function ModernNavbar() {
                           <li key={item.href}>
                             <Link
                               href={item.href}
-                              className="flex items-center gap-4 px-5 py-4 text-gray-900 hover:bg-gray-100 transition text-lg"
+                              className="flex items-center gap-4 px-5 py-4 text-gray-900 hover:bg-gray-100 transition text-xs sm:text-sm md:text-base"
                               onClick={() => setIsAccountMenuOpen(false)}
                             >
                               <item.icon size={24} className="text-gray-600" />
@@ -169,7 +169,7 @@ export default function ModernNavbar() {
                           </li>
                         ))}
                         <li className="border-t border-gray-200 mt-2">
-                          <button className="flex w-full items-center gap-4 px-5 py-4 text-left text-gray-900 hover:bg-gray-100 transition text-lg">
+                          <button className="flex w-full items-center gap-4 px-5 py-4 text-left text-gray-900 hover:bg-gray-100 transition text-sm sm:text-base md:text-lg">
                             <LogOut size={24} className="text-gray-600" />
                             Sair
                           </button>
@@ -205,7 +205,7 @@ export default function ModernNavbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="block text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors py-3 uppercase tracking-wide"
+                  className="block text-xs sm:text-sm md:text-base font-semibold text-gray-900 hover:text-gray-700 transition-colors py-3 uppercase tracking-wide"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}
@@ -215,7 +215,7 @@ export default function ModernNavbar() {
                 {!isLoggedIn && (
                   <Link
                     href="/login"
-                    className="block text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors py-3 uppercase tracking-wide"
+                    className="block text-xs sm:text-sm md:text-base font-semibold text-gray-900 hover:text-gray-700 transition-colors py-3 uppercase tracking-wide"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Entrar
@@ -248,7 +248,7 @@ export default function ModernNavbar() {
                             <li key={item.href}>
                               <Link
                                 href={item.href}
-                                className="flex items-center gap-4 px-5 py-4 text-gray-900 hover:bg-gray-100 transition text-lg"
+                                className="flex items-center gap-4 px-5 py-4 text-gray-900 hover:bg-gray-100 transition text-xs sm:text-sm md:text-base"
                                 onClick={() => {
                                   setIsAccountMenuOpen(false)
                                   setIsMobileMenuOpen(false)
@@ -260,7 +260,7 @@ export default function ModernNavbar() {
                             </li>
                           ))}
                           <li className="border-t border-gray-200 mt-2">
-                            <button className="flex w-full items-center gap-4 px-5 py-4 text-left text-gray-900 hover:bg-gray-100 transition text-lg">
+                            <button className="flex w-full items-center gap-4 px-5 py-4 text-left text-gray-900 hover:bg-gray-100 transition text-sm sm:text-base md:text-lg">
                               <LogOut size={24} className="text-gray-600" />
                               Sair
                             </button>

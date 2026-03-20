@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, User, MapPin, Mail, Lock, Users, Award } from 'lucide-react'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -11,8 +12,8 @@ interface NewAthleteModalProps {
   onSubmit?: (data: any) => void
   mode?: 'create' | 'edit'
   showPasswordFields?: boolean
-  initialData?: any // Dados iniciais para edição
-  registerType?: 'atleta' | 'organizador' | 'responsavel' // Tipo de cadastro
+  initialData?: any
+  registerType?: 'atleta' | 'organizador' | 'responsavel'
 }
 
 export default function NewAthleteModal({
@@ -26,15 +27,38 @@ export default function NewAthleteModal({
 }: NewAthleteModalProps) {
   const isMobile = useMediaQuery('(max-width: 768px)')
   const [activeSection, setActiveSection] = useState<'dados' | 'endereco' | 'esporte' | 'responsavel' | 'organizacao'>('dados')
+  const [mounted, setMounted] = useState(false)
 
-  // Resetar seção ativa quando o tipo de registro mudar
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   useEffect(() => {
     if (open) {
       setActiveSection('dados')
     }
   }, [open, registerType])
+
+  useEffect(() => {
+    if (open) {
+      const scrollY = window.scrollY
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
+      document.documentElement.style.overflow = 'hidden'
+      
+      return () => {
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.width = ''
+        document.documentElement.style.overflow = ''
+        window.scrollTo(0, scrollY)
+      }
+    }
+  }, [open])
   
-  // Inicializar formData com dados iniciais se estiver editando
   const getInitialFormData = () => {
     if (mode === 'edit' && initialData) {
       return {
@@ -92,12 +116,10 @@ export default function NewAthleteModal({
 
   const [formData, setFormData] = useState(getInitialFormData())
 
-  // Atualizar formData quando o modal abrir ou initialData mudar
   useEffect(() => {
     if (open && mode === 'edit' && initialData) {
       setFormData(getInitialFormData())
     } else if (open && mode === 'create') {
-      // Resetar formulário quando abrir para criar novo
       setFormData({
         nomeCompleto: '',
         cpf: '',
@@ -138,7 +160,6 @@ export default function NewAthleteModal({
     onClose()
   }
 
-  // Definir seções baseado no tipo de registro
   const getSections = () => {
     const baseSections = [
       { id: 'dados', label: 'Dados Básicos', icon: User },
@@ -157,14 +178,12 @@ export default function NewAthleteModal({
         { id: 'organizacao', label: 'Organização', icon: Award },
       ]
     } else {
-      // Responsável
       return baseSections
     }
   }
 
   const sections = getSections()
 
-  // Título do modal baseado no tipo
   const getModalTitle = () => {
     if (mode === 'edit') {
       return 'Editar Atleta'
@@ -179,7 +198,6 @@ export default function NewAthleteModal({
     }
   }
 
-  // Texto do portal baseado no tipo
   const getPortalText = () => {
     switch (registerType) {
       case 'organizador':
@@ -191,100 +209,91 @@ export default function NewAthleteModal({
     }
   }
 
-  if (!open) return null
+  if (!mounted || !open) return null
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/80 z-50 backdrop-blur-sm"
-          />
+        <div className="fixed inset-0 z-[9999] overflow-y-auto">
+          {/* Container de Scroll da Viewport */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            {/* Centralizador Flexível */}
 
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6"
-            onClick={onClose}
-          >
+            {/* Overlay Escuro (Fundo) */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onClose}
+              className="fixed inset-0 bg-black/60 transition-opacity"
+              aria-hidden="true"
+            />
+
+            {/* Card do Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-4xl md:max-w-5xl lg:max-w-6xl max-h-[90vh] bg-white rounded-2xl overflow-hidden shadow-xl flex flex-col"
               onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl flex flex-col"
             >
-              {/* Header - Estilo igual à página de login */}
-              <header className="flex items-center justify-between border-b border-gray-200 bg-[#0C3049] px-6 sm:px-8 md:px-10 lg:px-12 py-5 sm:py-6 md:py-7 lg:py-8 text-white">
-                <div>
-                  <p className="text-xs sm:text-sm md:text-base uppercase tracking-[0.28em] text-orange-300">
+              {/* Header Compacto */}
+              <header className="flex items-center justify-between border-b border-gray-200 bg-[#0C3049] px-4 py-3 text-white flex-shrink-0">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs uppercase tracking-wide text-orange-300 truncate">
                     {getPortalText()}
                   </p>
-                  <h1 className="mt-1 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold">
+                  <h1 className="mt-1 text-lg font-bold truncate">
                     {getModalTitle()}
                   </h1>
-                  <p className="mt-2 text-sm sm:text-base text-blue-100">
-                    Preencha os dados do atleta para {mode === 'edit' ? 'atualizar' : 'criar'} o cadastro
-                  </p>
                 </div>
                 <button
                   onClick={onClose}
-                  className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all"
+                  className="ml-3 w-8 h-8 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all flex-shrink-0"
                   aria-label="Fechar"
                 >
-                  <X size={isMobile ? 20 : 24} strokeWidth={2.5} />
+                  <X size={18} strokeWidth={2.5} />
                 </button>
               </header>
 
-              {/* Conteúdo */}
-              <div className="px-6 sm:px-8 md:px-10 lg:px-12 py-8 sm:py-10 md:py-12 lg:py-14 overflow-y-auto flex-1">
-                {/* Tabs de navegação - Estilo do dashboard */}
-                <div className="mb-6 sm:mb-8 md:mb-10 inline-flex rounded-full border border-gray-200 bg-gray-100 p-1 sm:p-1.5 text-xs sm:text-sm md:text-base font-semibold text-gray-500 w-full overflow-x-auto">
-                  {sections.map((section) => {
-                    const Icon = section.icon
-                    return (
-                      <button
-                        key={section.id}
-                        onClick={() => setActiveSection(section.id as any)}
-                        type="button"
-                        className={`flex items-center gap-2 rounded-full px-3 sm:px-4 md:px-5 py-2 transition whitespace-nowrap ${
-                          activeSection === section.id
-                            ? 'bg-white text-primary-blue shadow'
-                            : 'hover:text-primary-blue'
-                        }`}
-                      >
-                        <Icon size={16} className="sm:w-5 sm:h-5" />
-                        <span>{section.label}</span>
-                      </button>
-                    )
-                  })}
-                </div>
+              {/* Tabs Compactas */}
+              <div className="border-b border-gray-200 bg-gray-50 px-4 py-2 flex gap-1 overflow-x-auto flex-shrink-0">
+                {sections.map((section) => {
+                  const Icon = section.icon
+                  return (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveSection(section.id as any)}
+                      type="button"
+                      className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition whitespace-nowrap ${
+                        activeSection === section.id
+                          ? 'bg-white text-primary-blue shadow-sm'
+                          : 'text-gray-600 hover:text-primary-blue hover:bg-gray-100'
+                      }`}
+                    >
+                      <Icon size={14} />
+                      <span>{section.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+              {/* Conteúdo */}
+              <div className="flex-1 px-4 py-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Seção: Dados Básicos */}
                   {activeSection === 'dados' && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="space-y-6 sm:space-y-8"
-                    >
+                    <div className="space-y-4">
+                      {/* Dados Pessoais */}
                       <div>
-                        <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
-                          <User size={20} className="text-primary-blue" />
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <User size={16} className="text-primary-blue" />
                           Dados Pessoais
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="md:col-span-2">
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Nome Completo *
                             </label>
                             <input
@@ -293,11 +302,11 @@ export default function NewAthleteModal({
                               value={formData.nomeCompleto}
                               onChange={(e) => handleInputChange('nomeCompleto', e.target.value)}
                               placeholder="Digite o nome completo"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               CPF {showPasswordFields ? '*' : '(não obrigatório)'}
                             </label>
                             <input
@@ -306,11 +315,11 @@ export default function NewAthleteModal({
                               value={formData.cpf}
                               onChange={(e) => handleInputChange('cpf', e.target.value)}
                               placeholder="000.000.000-00"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Data de Nascimento *
                             </label>
                             <input
@@ -318,19 +327,18 @@ export default function NewAthleteModal({
                               required
                               value={formData.dataNascimento}
                               onChange={(e) => handleInputChange('dataNascimento', e.target.value)}
-                              placeholder="dd/mm/aaaa"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Sexo *
                             </label>
                             <select
                               required
                               value={formData.sexo}
                               onChange={(e) => handleInputChange('sexo', e.target.value)}
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             >
                               <option value="">Selecione</option>
                               <option value="Feminino">Feminino</option>
@@ -339,13 +347,13 @@ export default function NewAthleteModal({
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Possui necessidade especial?
                             </label>
                             <select
                               value={formData.necessidadeEspecial}
                               onChange={(e) => handleInputChange('necessidadeEspecial', e.target.value)}
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             >
                               <option value="Não">Não</option>
                               <option value="Sim">Sim</option>
@@ -356,13 +364,13 @@ export default function NewAthleteModal({
 
                       {/* Informações de Contato */}
                       <div>
-                        <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
-                          <Mail size={20} className="text-primary-blue" />
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <Mail size={16} className="text-primary-blue" />
                           Informações de Contato
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               E-mail *
                             </label>
                             <input
@@ -371,11 +379,11 @@ export default function NewAthleteModal({
                               value={formData.email}
                               onChange={(e) => handleInputChange('email', e.target.value)}
                               placeholder="nome@exemplo.com"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Celular/WhatsApp *
                             </label>
                             <input
@@ -384,7 +392,7 @@ export default function NewAthleteModal({
                               value={formData.celular}
                               onChange={(e) => handleInputChange('celular', e.target.value)}
                               placeholder="(00) 00000-0000"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                         </div>
@@ -393,13 +401,13 @@ export default function NewAthleteModal({
                       {/* Informações de Acesso */}
                       {showPasswordFields && (
                         <div>
-                          <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
-                            <Lock size={20} className="text-primary-blue" />
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <Lock size={16} className="text-primary-blue" />
                             Informações de Acesso
                           </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Senha *
                               </label>
                               <input
@@ -408,11 +416,11 @@ export default function NewAthleteModal({
                                 value={formData.senha}
                                 onChange={(e) => handleInputChange('senha', e.target.value)}
                                 placeholder="Crie uma senha forte"
-                                className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                                className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Confirme a Senha *
                               </label>
                               <input
@@ -421,30 +429,26 @@ export default function NewAthleteModal({
                                 value={formData.confirmarSenha}
                                 onChange={(e) => handleInputChange('confirmarSenha', e.target.value)}
                                 placeholder="Repita a senha"
-                                className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                                className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                               />
                             </div>
                           </div>
                         </div>
                       )}
-                    </motion.div>
+                    </div>
                   )}
 
                   {/* Seção: Endereço */}
                   {activeSection === 'endereco' && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="space-y-6 sm:space-y-8"
-                    >
+                    <div className="space-y-4">
                       <div>
-                        <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
-                          <MapPin size={20} className="text-primary-blue" />
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <MapPin size={16} className="text-primary-blue" />
                           Informações de Endereço
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               CEP
                             </label>
                             <input
@@ -452,11 +456,11 @@ export default function NewAthleteModal({
                               value={formData.cep}
                               onChange={(e) => handleInputChange('cep', e.target.value)}
                               placeholder="00000-000"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Estado
                             </label>
                             <input
@@ -464,11 +468,11 @@ export default function NewAthleteModal({
                               value={formData.estado}
                               onChange={(e) => handleInputChange('estado', e.target.value)}
                               placeholder="Ex.: ES"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Cidade
                             </label>
                             <input
@@ -476,11 +480,11 @@ export default function NewAthleteModal({
                               value={formData.cidade}
                               onChange={(e) => handleInputChange('cidade', e.target.value)}
                               placeholder="Vitória"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Bairro
                             </label>
                             <input
@@ -488,11 +492,11 @@ export default function NewAthleteModal({
                               value={formData.bairro}
                               onChange={(e) => handleInputChange('bairro', e.target.value)}
                               placeholder="Centro"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
-                          <div className="md:col-span-2 lg:col-span-3">
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Endereço
                             </label>
                             <input
@@ -500,11 +504,11 @@ export default function NewAthleteModal({
                               value={formData.endereco}
                               onChange={(e) => handleInputChange('endereco', e.target.value)}
                               placeholder="Rua, avenida, número"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Nº/Complemento
                             </label>
                             <input
@@ -512,28 +516,24 @@ export default function NewAthleteModal({
                               value={formData.complemento}
                               onChange={(e) => handleInputChange('complemento', e.target.value)}
                               placeholder="Apto, bloco..."
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   )}
 
-                  {/* Seção: Organização (apenas para organizadores) */}
+                  {/* Seção: Organização */}
                   {activeSection === 'organizacao' && registerType === 'organizador' && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="space-y-6 sm:space-y-8"
-                    >
+                    <div className="space-y-4">
                       <div>
-                        <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3">
                           Informações da Organização
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="md:col-span-2">
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Nome da Organização/Academia *
                             </label>
                             <input
@@ -542,11 +542,11 @@ export default function NewAthleteModal({
                               value={formData.equipe || ''}
                               onChange={(e) => handleInputChange('equipe', e.target.value)}
                               placeholder="Digite o nome da organização"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               CNPJ
                             </label>
                             <input
@@ -554,11 +554,11 @@ export default function NewAthleteModal({
                               value={formData.cpf || ''}
                               onChange={(e) => handleInputChange('cpf', e.target.value)}
                               placeholder="00.000.000/0000-00"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Telefone Comercial
                             </label>
                             <input
@@ -566,29 +566,25 @@ export default function NewAthleteModal({
                               value={formData.celular || ''}
                               onChange={(e) => handleInputChange('celular', e.target.value)}
                               placeholder="(00) 0000-0000"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   )}
 
-                  {/* Seção: Esporte (apenas para atletas) */}
+                  {/* Seção: Esporte */}
                   {activeSection === 'esporte' && registerType === 'atleta' && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="space-y-6 sm:space-y-8"
-                    >
+                    <div className="space-y-4">
                       <div>
-                        <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
-                          <Award size={20} className="text-primary-blue" />
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <Award size={16} className="text-primary-blue" />
                           Informações do Esporte
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                          <div className="md:col-span-2 lg:col-span-3">
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Equipe/Academia
                             </label>
                             <input
@@ -596,14 +592,14 @@ export default function NewAthleteModal({
                               value={formData.equipe}
                               onChange={(e) => handleInputChange('equipe', e.target.value)}
                               placeholder="Digite ou selecione a equipe"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
-                            <p className="text-xs sm:text-sm text-primary-blue mt-1">
+                            <p className="text-xs text-primary-blue mt-1">
                               Caso não localize, cadastre-a <a href="#" className="underline hover:text-blue-700">aqui</a>.
                             </p>
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Professor
                             </label>
                             <input
@@ -611,20 +607,20 @@ export default function NewAthleteModal({
                               value={formData.professor}
                               onChange={(e) => handleInputChange('professor', e.target.value)}
                               placeholder="Nome do professor"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
-                            <p className="text-xs sm:text-sm text-primary-blue mt-1">
+                            <p className="text-xs text-primary-blue mt-1">
                               Caso não localize, cadastre-o <a href="#" className="underline hover:text-blue-700">aqui</a>.
                             </p>
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Esporte
                             </label>
                             <select
                               value={formData.esporte}
                               onChange={(e) => handleInputChange('esporte', e.target.value)}
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             >
                               <option>Jiu-Jitsu</option>
                               <option>Grappling</option>
@@ -634,13 +630,13 @@ export default function NewAthleteModal({
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Graduação/Faixa
                             </label>
                             <select
                               value={formData.graduacao}
                               onChange={(e) => handleInputChange('graduacao', e.target.value)}
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             >
                               <option value="">Selecione</option>
                               <option>Faixa branca</option>
@@ -655,7 +651,7 @@ export default function NewAthleteModal({
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Peso (kg) <span className="text-xs text-gray-500">(com kimono)</span>
                             </label>
                             <input
@@ -664,11 +660,11 @@ export default function NewAthleteModal({
                               value={formData.peso}
                               onChange={(e) => handleInputChange('peso', e.target.value)}
                               placeholder="Ex: 75.5"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Altura (cm)
                             </label>
                             <input
@@ -676,34 +672,30 @@ export default function NewAthleteModal({
                               value={formData.altura}
                               onChange={(e) => handleInputChange('altura', e.target.value)}
                               placeholder="Ex: 175"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   )}
 
                   {/* Seção: Responsável */}
                   {activeSection === 'responsavel' && registerType === 'atleta' && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="space-y-6 sm:space-y-8"
-                    >
+                    <div className="space-y-4">
                       <div>
-                        <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
-                          <Users size={20} className="text-primary-blue" />
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <Users size={16} className="text-primary-blue" />
                           Responsável (se menor de idade)
                         </h3>
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 sm:p-5 mb-4 sm:mb-6">
-                          <p className="text-sm sm:text-base text-yellow-800">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                          <p className="text-xs text-yellow-800">
                             <strong>Atenção:</strong> Preencha apenas se o atleta for menor de 18 anos.
                           </p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Nome do Responsável
                             </label>
                             <input
@@ -711,11 +703,11 @@ export default function NewAthleteModal({
                               value={formData.nomeResponsavel}
                               onChange={(e) => handleInputChange('nomeResponsavel', e.target.value)}
                               placeholder="Nome completo do responsável"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Telefone do Responsável
                             </label>
                             <input
@@ -723,26 +715,26 @@ export default function NewAthleteModal({
                               value={formData.telefoneResponsavel}
                               onChange={(e) => handleInputChange('telefoneResponsavel', e.target.value)}
                               placeholder="(00) 00000-0000"
-                              className="w-full rounded-lg border border-gray-200 px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-sm sm:text-base md:text-lg font-medium text-gray-800 shadow-sm focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/40"
+                              className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-800 focus:border-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue/20"
                             />
                           </div>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   )}
                 </form>
               </div>
 
-              {/* Footer com botões - Estilo igual à página de login */}
-              <div className="border-t border-gray-200 bg-gray-50 px-6 sm:px-8 md:px-10 lg:px-12 py-4 sm:py-5 md:py-6 flex items-center justify-between gap-4">
+              {/* Footer com Botões Compactos */}
+              <div className="border-t border-gray-200 bg-gray-50 px-4 py-3 flex items-center justify-between gap-3 flex-shrink-0">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition-colors text-sm sm:text-base md:text-lg"
+                  className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition-colors h-10"
                 >
                   Cancelar
                 </button>
-                <div className="flex gap-3 sm:gap-4">
+                <div className="flex gap-2">
                   {activeSection !== sections[0].id && (
                     <button
                       type="button"
@@ -753,7 +745,7 @@ export default function NewAthleteModal({
                           setActiveSection(sectionsArray[currentIndex - 1] as any)
                         }
                       }}
-                      className="px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 border border-primary-blue text-primary-blue rounded-lg font-medium hover:bg-primary-blue hover:text-white transition-colors text-sm sm:text-base md:text-lg"
+                      className="px-4 py-2 text-sm border border-primary-blue text-primary-blue rounded-lg font-medium hover:bg-primary-blue hover:text-white transition-colors h-10"
                     >
                       Anterior
                     </button>
@@ -768,7 +760,7 @@ export default function NewAthleteModal({
                           setActiveSection(sectionsArray[currentIndex + 1] as any)
                         }
                       }}
-                      className="px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm sm:text-base md:text-lg"
+                      className="px-6 py-2 text-sm bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-700 transition-colors h-10"
                     >
                       Próximo
                     </button>
@@ -776,7 +768,7 @@ export default function NewAthleteModal({
                     <button
                       type="submit"
                       onClick={handleSubmit}
-                      className="px-6 sm:px-8 md:px-10 lg:px-12 py-3 sm:py-4 md:py-5 bg-primary-blue text-white rounded-lg font-semibold uppercase tracking-wide hover:bg-blue-700 transition text-sm sm:text-base md:text-lg lg:text-xl shadow-md"
+                      className="px-6 py-2 text-sm bg-primary-blue text-white rounded-lg font-semibold hover:bg-blue-700 transition h-10"
                     >
                       {mode === 'edit' 
                         ? 'Salvar Alterações' 
@@ -790,9 +782,10 @@ export default function NewAthleteModal({
                 </div>
               </div>
             </motion.div>
-          </motion.div>
-        </>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

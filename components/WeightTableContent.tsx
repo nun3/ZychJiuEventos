@@ -387,129 +387,156 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-4xl md:text-5xl font-bold text-gray-800 uppercase">TABELA DE PESO</h2>
+      <div className="flex justify-end items-center mb-4">
         <a
           href="/tabela-peso.pdf"
           download
-          className="bg-primary-red hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition flex items-center space-x-2 text-xl"
+          className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2 text-base transform hover:scale-[1.02]"
         >
           <FiDownload size={20} />
           <span>BAIXAR PDF</span>
         </a>
       </div>
 
-      {/* Formulário de Verificação de Categoria */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 shadow-md">
-          <h3 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-4 flex items-center gap-2 uppercase">
-          <FiSearch className="text-blue-600" />
-          Verificar Minha Categoria
-        </h3>
-        <form onSubmit={handleCheck} className="space-y-4">
-          <div className="grid md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-xl font-semibold text-gray-700 mb-2 uppercase">
-                Idade
-              </label>
-              <input
-                type="number"
-                min="4"
-                value={checkAge}
-                onChange={(e) => setCheckAge(e.target.value)}
-                placeholder="Ex: 4"
-                className="w-full px-4 py-3 text-xl border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
+      {/* Formulário de Verificação de Categoria - Design Moderno */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        {/* Header com gradiente */}
+        <div className="bg-gradient-to-r from-primary-blue to-blue-700 px-6 py-4">
+          <h3 className="text-xl md:text-2xl font-bold text-white flex items-center gap-3 uppercase">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <FiSearch className="text-white" size={20} />
             </div>
-            <div>
-              <label className="block text-xl font-semibold text-gray-700 mb-2 uppercase">
-                Peso (kg)
-              </label>
-              <input
-                type="text"
-                value={checkWeight}
-                onChange={(e) => setCheckWeight(e.target.value.replace(/[^0-9,.]/g, ''))}
-                placeholder="Ex: 18 ou 18,5"
-                className="w-full px-4 py-3 text-xl border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xl font-semibold text-gray-700 mb-2 uppercase">
-                Gênero
-              </label>
-              <select
-                value={checkGender}
-                onChange={(e) => setCheckGender(e.target.value as 'M' | 'F' | '')}
-                className="w-full px-4 py-3 text-xl border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Selecione</option>
-                <option value="M">Masculino</option>
-                <option value="F">Feminino</option>
-              </select>
-              <p className="text-lg text-gray-500 mt-1">Obrigatório para 14+ anos</p>
-            </div>
-            <div>
-              <label className="block text-xl font-semibold text-gray-700 mb-2 uppercase">
-                Com Kimono
-              </label>
-              <div className="flex items-center h-[48px]">
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={withKimono}
-                    onChange={(e) => setWithKimono(e.target.checked)}
-                    className="w-6 h-6 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-xl text-gray-700 font-medium">
-                    {withKimono ? 'Sim' : 'Não'}
-                  </span>
+            Verificar Minha Categoria
+          </h3>
+        </div>
+
+        {/* Corpo do Formulário */}
+        <div className="p-6 bg-gray-50">
+          <form onSubmit={handleCheck} className="space-y-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Campo Idade */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Idade
                 </label>
+                <input
+                  type="number"
+                  min="4"
+                  value={checkAge}
+                  onChange={(e) => setCheckAge(e.target.value)}
+                  placeholder="Ex: 4"
+                  className="w-full px-4 py-3 text-base border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue transition bg-white"
+                  required
+                />
+              </div>
+
+              {/* Campo Peso */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Peso (kg)
+                </label>
+                <input
+                  type="text"
+                  value={checkWeight}
+                  onChange={(e) => setCheckWeight(e.target.value.replace(/[^0-9,.]/g, ''))}
+                  placeholder="Ex: 18 ou 18,5"
+                  className="w-full px-4 py-3 text-base border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue transition bg-white"
+                  required
+                />
+              </div>
+
+              {/* Campo Gênero */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Gênero
+                </label>
+                <select
+                  value={checkGender}
+                  onChange={(e) => setCheckGender(e.target.value as 'M' | 'F' | '')}
+                  className="w-full px-4 py-3 text-base border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue transition bg-white"
+                >
+                  <option value="">Selecione</option>
+                  <option value="M">Masculino</option>
+                  <option value="F">Feminino</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Obrigatório para 14+ anos
+                </p>
+              </div>
+
+              {/* Campo Com Kimono */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Com Kimono
+                </label>
+                <div className="flex items-center h-[50px] bg-white border-2 border-gray-200 rounded-lg px-4">
+                  <label className="flex items-center cursor-pointer w-full">
+                    <input
+                      type="checkbox"
+                      checked={withKimono}
+                      onChange={(e) => setWithKimono(e.target.checked)}
+                      className="w-5 h-5 text-primary-blue border-gray-300 rounded focus:ring-primary-blue focus:ring-2"
+                    />
+                    <span className="ml-3 text-base text-gray-700 font-medium">
+                      {withKimono ? 'Sim' : 'Não'}
+                    </span>
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
-          <button
-            type="submit"
-            className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 text-xl rounded-lg transition flex items-center justify-center gap-2"
-          >
-            <FiSearch size={24} />
-            Verificar Categoria
-          </button>
-        </form>
 
-        {/* Resultado */}
-        {resultCategory && (
-          <div className={`mt-4 p-4 rounded-lg border-2 ${
-            resultCategory.includes('não encontrada') || resultCategory.includes('fora da faixa') || resultCategory.includes('necessário')
-              ? 'bg-red-50 border-red-300'
-              : 'bg-green-50 border-green-300'
-          }`}>
-            <div className="flex items-center gap-2">
-              <FiCheckCircle size={28} className={`${
-                resultCategory.includes('não encontrada') || resultCategory.includes('fora da faixa') || resultCategory.includes('necessário')
-                  ? 'text-red-600'
-                  : 'text-green-600'
-              }`} />
-              <p className={`font-bold text-2xl ${
-                resultCategory.includes('não encontrada') || resultCategory.includes('fora da faixa') || resultCategory.includes('necessário')
-                  ? 'text-red-800'
-                  : 'text-green-800'
-              }`}>
-                {resultCategory.includes('não encontrada') || resultCategory.includes('fora da faixa') || resultCategory.includes('necessário')
-                  ? resultCategory
-                  : `Sua categoria é: ${resultCategory}`
-                }
-              </p>
+            {/* Botão de Verificação */}
+            <button
+              type="submit"
+              className="w-full md:w-auto bg-gradient-to-r from-primary-blue to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-8 text-base rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform hover:scale-[1.02]"
+            >
+              <FiSearch size={20} />
+              Verificar Categoria
+            </button>
+          </form>
+
+          {/* Resultado - Design Melhorado */}
+          {resultCategory && (
+            <div className={`mt-4 p-4 rounded-lg border-2 shadow-sm ${
+              resultCategory.includes('não encontrada') || resultCategory.includes('fora da faixa') || resultCategory.includes('necessário')
+                ? 'bg-red-50 border-red-400'
+                : 'bg-green-50 border-green-400'
+            }`}>
+              <div className="flex items-start gap-3">
+                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                  resultCategory.includes('não encontrada') || resultCategory.includes('fora da faixa') || resultCategory.includes('necessário')
+                    ? 'bg-red-100'
+                    : 'bg-green-100'
+                }`}>
+                  <FiCheckCircle size={20} className={`${
+                    resultCategory.includes('não encontrada') || resultCategory.includes('fora da faixa') || resultCategory.includes('necessário')
+                      ? 'text-red-600'
+                      : 'text-green-600'
+                  }`} />
+                </div>
+                <div className="flex-1">
+                  <p className={`font-bold text-base ${
+                    resultCategory.includes('não encontrada') || resultCategory.includes('fora da faixa') || resultCategory.includes('necessário')
+                      ? 'text-red-800'
+                      : 'text-green-800'
+                  }`}>
+                    {resultCategory.includes('não encontrada') || resultCategory.includes('fora da faixa') || resultCategory.includes('necessário')
+                      ? resultCategory
+                      : `Sua categoria é: ${resultCategory}`
+                    }
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Abas para alternar entre GI e NO-GI */}
       <div className="flex gap-2 border-b border-gray-200">
         <button
           onClick={() => handleTableChange('GI')}
-          className={`px-6 py-3 text-xl font-semibold transition ${
+          className={`px-5 py-2 text-lg font-semibold transition ${
             activeTable === 'GI'
               ? 'border-b-4 border-blue-600 text-blue-600 bg-blue-50'
               : 'text-gray-600 hover:text-gray-800'
@@ -519,7 +546,7 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
         </button>
         <button
           onClick={() => handleTableChange('NOGI')}
-          className={`px-6 py-3 text-xl font-semibold transition ${
+          className={`px-5 py-2 text-lg font-semibold transition ${
             activeTable === 'NOGI'
               ? 'border-b-4 border-blue-600 text-blue-600 bg-blue-50'
               : 'text-gray-600 hover:text-gray-800'
@@ -529,8 +556,8 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
         </button>
       </div>
 
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <p className="text-xl text-gray-600">
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <p className="text-base text-gray-600">
           Consulte a tabela de peso para verificar em qual categoria você se enquadra. Clique no grupo de idade para expandir/recolher.
         </p>
       </div>
@@ -543,15 +570,15 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
             <div key={key} className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-md">
               <button
                 onClick={() => toggleGroup(key)}
-                className="w-full bg-primary-dark text-white px-6 py-4 flex items-center justify-between hover:bg-opacity-90 transition"
+                className="w-full bg-primary-dark text-white px-5 py-3 flex items-center justify-between hover:bg-opacity-90 transition"
               >
-                <h3 className="text-xl md:text-2xl font-bold">
+                <h3 className="text-base md:text-lg font-bold">
                   {getGroupLabel(group)}
                 </h3>
                 {isExpanded ? (
-                  <FiChevronUp size={24} className="flex-shrink-0" />
+                  <FiChevronUp size={22} className="flex-shrink-0" />
                 ) : (
-                  <FiChevronDown size={24} className="flex-shrink-0" />
+                  <FiChevronDown size={22} className="flex-shrink-0" />
                 )}
               </button>
               {isExpanded && (
@@ -559,25 +586,25 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
                   <table className="w-full">
                     <thead className="bg-gray-100">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xl font-bold text-gray-700 uppercase">Categoria</th>
-                        <th className="px-6 py-3 text-left text-xl font-bold text-gray-700 uppercase">Peso Mínimo</th>
-                        <th className="px-6 py-3 text-left text-xl font-bold text-gray-700 uppercase">Peso Máximo</th>
-                        <th className="px-6 py-3 text-left text-xl font-bold text-gray-700 uppercase">Gênero</th>
+                        <th className="px-5 py-2 text-left text-lg font-bold text-gray-700 uppercase">Categoria</th>
+                        <th className="px-5 py-2 text-left text-lg font-bold text-gray-700 uppercase">Peso Mínimo</th>
+                        <th className="px-5 py-2 text-left text-lg font-bold text-gray-700 uppercase">Peso Máximo</th>
+                        <th className="px-5 py-2 text-left text-lg font-bold text-gray-700 uppercase">Gênero</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {group.categories.map((row, index) => (
                         <tr key={index} className="hover:bg-gray-50 transition">
-                          <td className="px-6 py-4 text-xl text-gray-800 font-medium italic">
+                          <td className="px-5 py-3 text-lg text-gray-800 font-medium italic">
                             {row.category}
                           </td>
-                          <td className="px-6 py-4 text-xl text-gray-600">
+                          <td className="px-5 py-3 text-lg text-gray-600">
                             {row.minWeight}
                           </td>
-                          <td className="px-6 py-4 text-xl text-gray-600">
+                          <td className="px-5 py-3 text-lg text-gray-600">
                             {row.maxWeight}
                           </td>
-                          <td className="px-6 py-4 text-xl text-gray-600">
+                          <td className="px-5 py-3 text-lg text-gray-600">
                             {row.gender === 'M' ? 'Masculino' : row.gender === 'F' ? 'Feminino' : 'M/F'}
                           </td>
                         </tr>
@@ -591,9 +618,9 @@ export default function WeightTableContent({ eventId }: WeightTableContentProps)
         })}
       </div>
 
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <h3 className="text-2xl font-bold text-gray-800 mb-2 uppercase">Importante:</h3>
-        <ul className="list-disc list-inside space-y-1 text-xl text-gray-600">
+      <div className="bg-gray-50 p-3 rounded-lg">
+        <h3 className="text-lg font-bold text-gray-800 mb-2 uppercase">Importante:</h3>
+        <ul className="list-disc list-inside space-y-1 text-lg text-gray-600">
           <li>A pesagem será realizada no dia do evento</li>
           <li>O atleta deve estar dentro da faixa de peso da categoria escolhida</li>
           <li>Em caso de não estar dentro da faixa, o atleta poderá ser reclassificado</li>

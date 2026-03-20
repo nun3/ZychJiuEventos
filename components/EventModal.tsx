@@ -56,11 +56,11 @@ export default function EventModal({ event, isOpen, onClose }: EventModalProps) 
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-7xl bg-gray-900 rounded-lg overflow-hidden shadow-2xl"
+              className="relative w-full max-w-4xl bg-gray-900 rounded-lg overflow-hidden shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Imagem grande no topo - Estilo Netflix - Responsivo */}
-              <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[75vh] min-h-[300px] sm:min-h-[400px] md:min-h-[500px] max-h-[600px] sm:max-h-[700px] md:max-h-[800px] bg-gradient-to-br from-primary-dark via-primary-blue to-primary-accent overflow-hidden">
+              <div className="relative h-[40vh] sm:h-[45vh] md:h-[50vh] min-h-[200px] sm:min-h-[250px] md:min-h-[300px] max-h-[400px] sm:max-h-[450px] md:max-h-[500px] bg-gradient-to-br from-primary-dark via-primary-blue to-primary-accent overflow-hidden">
                 {event.image ? (
                   <>
                     <div className="absolute inset-0">
@@ -90,17 +90,17 @@ export default function EventModal({ event, isOpen, onClose }: EventModalProps) 
                 </button>
 
                 {/* Título sobre a imagem - Estilo Netflix - Responsivo */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 z-10">
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white mb-2 sm:mb-4 md:mb-6 drop-shadow-2xl">
+                <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-5 lg:p-6 z-10">
+                  <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white mb-1 sm:mb-2 md:mb-3 drop-shadow-2xl">
                     {event.title}
                   </h2>
                 </div>
               </div>
 
               {/* Conteúdo abaixo da imagem - Estilo Netflix - Responsivo */}
-              <div className="p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 bg-gray-900">
+              <div className="p-4 sm:p-5 md:p-6 lg:p-8 bg-gray-900">
                 {/* Tags/Metadados - Estilo Netflix - Responsivo */}
-                <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-5 md:mb-6">
+                <div className="flex flex-wrap gap-2 sm:gap-2 md:gap-3 mb-3 sm:mb-4 md:mb-5">
                   <span className="px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 bg-gray-800/80 text-gray-300 rounded text-xs sm:text-sm md:text-base font-medium">
                     {new Date().getFullYear()}
                   </span>
@@ -122,7 +122,7 @@ export default function EventModal({ event, isOpen, onClose }: EventModalProps) 
 
                 {/* Descrição/Sinopse - Estilo Netflix - Responsivo */}
                 {event.description && (
-                  <p className="text-white text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl leading-relaxed mb-4 sm:mb-6 md:mb-8 max-w-4xl">
+                  <p className="text-white text-xs sm:text-sm md:text-base leading-relaxed mb-3 sm:mb-4 md:mb-5 max-w-3xl">
                     {event.description}
                   </p>
                 )}
@@ -131,7 +131,7 @@ export default function EventModal({ event, isOpen, onClose }: EventModalProps) 
                 <div className="flex items-center gap-4">
                   <Link
                     href={`/eventos/${event.id}`}
-                    className="inline-flex items-center gap-2 sm:gap-3 bg-primary-blue hover:bg-blue-600 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 md:py-4 md:px-10 rounded text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl transition-colors"
+                    className="inline-flex items-center gap-2 sm:gap-2 md:gap-3 bg-primary-blue hover:bg-blue-600 text-white font-bold py-2 px-4 sm:py-2.5 sm:px-5 md:py-3 md:px-8 rounded text-xs sm:text-sm md:text-base transition-colors"
                     onClick={onClose}
                   >
                     Ver Detalhes Completos

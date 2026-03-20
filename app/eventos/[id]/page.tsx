@@ -7,7 +7,9 @@ export default function EventPage({ params }: { params: { id: string } }) {
     <main className="min-h-screen bg-[#f8fafc]">
       <ModernNavbar />
       <div className="pt-20">
-        <EventDetails eventId={params.id} />
+        <div style={{ transform: 'scale(0.9)', transformOrigin: 'top center' }}>
+          <EventDetails eventId={params.id} />
+        </div>
       </div>
       <ModernFooter />
     </main>

@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { FiUser, FiEdit, FiUsers, FiClipboard, FiAward, FiCreditCard, FiChevronRight } from 'react-icons/fi'
+import { FiUser, FiEdit, FiUsers, FiClipboard, FiAward, FiCreditCard, FiChevronRight, FiMapPin, FiFlag, FiTrendingUp, FiCalendar, FiStar } from 'react-icons/fi'
+import { FaFacebook, FaInstagram, FaYoutube, FaLinkedin, FaTwitter } from 'react-icons/fa'
 
 const menuItems = [
   { href: '/dashboard/meu-perfil', label: 'Meu Perfil', icon: FiUser, active: true },
@@ -12,24 +13,28 @@ const menuItems = [
 
 const profile = {
   name: 'Ricardo Zych',
-  age: 42,
+  age: 43,
   belt: 'Preta',
-  weight: '77.0 kg',
-  city: 'Pato Branco – PR, Brasil',
+  weight: '77.00',
+  city: 'Pato Branco',
+  state: 'PR',
+  country: 'Brasil',
   team: 'Zych Jiu Jitsu',
   professor: 'Ricardo Zych',
-  victories: [
-    { label: 'taxa de vitórias', value: '4 / 100.00%' },
-    { label: 'taxa de vitórias', value: '1 / 25.00%' },
+  medals: [
+    { type: 'gold', label: 'Ouro', wins: 0, total: 0, percentage: 0 },
+    { type: 'silver', label: 'Prata', wins: 4, total: 4, percentage: 100 },
+    { type: 'bronze', label: 'Bronze', wins: 1, total: 4, percentage: 25 },
   ],
   stats: {
     championships: 4,
   },
   social: [
-    { label: 'facebook', href: '#' },
-    { label: 'instagram', href: '#' },
-    { label: 'youtube', href: '#' },
-    { label: 'linkedin', href: '#' },
+    { label: 'facebook', href: '#', icon: FaFacebook },
+    { label: 'instagram', href: '#', icon: FaInstagram },
+    { label: 'youtube', href: '#', icon: FaYoutube },
+    { label: 'linkedin', href: '#', icon: FaLinkedin },
+    { label: 'twitter', href: '#', icon: FaTwitter },
   ],
 }
 
@@ -55,10 +60,13 @@ const pastEvents = [
 export default function MeuPerfilPage() {
   return (
     <div className="container mx-auto px-6 pt-6 pb-12">
-      <section className="rounded-2xl bg-white shadow">
-        <div className="border-b border-gray-200 bg-[#0C3049] px-6 py-6 text-white">
-          <h1 className="text-2xl font-bold uppercase tracking-wide">Bem-vindo, Ricardo!</h1>
-          <p className="text-sm text-blue-100">Acompanhe suas estatísticas e próximas competições.</p>
+      <section className="rounded-2xl bg-white shadow-xl overflow-hidden">
+        <div className="relative bg-gradient-to-r from-[#0C3049] via-blue-800 to-[#0C3049] px-6 py-8 text-white">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
+          <div className="relative">
+            <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-wide mb-2">Meu Perfil</h1>
+            <p className="text-base text-blue-100">Bem-vindo, Ricardo! Acompanhe suas estatísticas e próximas competições.</p>
+          </div>
         </div>
 
         <div className="grid gap-6 px-6 py-8 lg:grid-cols-[220px,1fr]">
@@ -88,95 +96,182 @@ export default function MeuPerfilPage() {
 
           <div className="space-y-6">
             <div className="grid gap-6 lg:grid-cols-[1.6fr,1fr]">
-              <div className="rounded-xl border border-gray-200 bg-sky-50/80 px-6 py-6 shadow-sm">
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div>
-                    <h2 className="text-lg font-bold text-[#0C3049] uppercase tracking-wide">{profile.name}</h2>
-                    <p className="text-sm text-sky-900/80">
-                      {profile.age} anos · Atleta de Jiu-Jitsu
-                      <br />
-                      {profile.city}
-                    </p>
-                  </div>
-                  <div className="rounded-full border border-white/30 bg-white/60 px-4 py-2 text-sm font-semibold text-[#0C3049] shadow">
-                    {profile.belt} · {profile.weight}
-                  </div>
-                </div>
-
-                <div className="mt-6 grid gap-4 md:grid-cols-2">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#0C3049]">Equipe</p>
-                    <p className="text-sm text-sky-900/80">{profile.team}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#0C3049]">Professor</p>
-                    <p className="text-sm text-sky-900/80">{profile.professor}</p>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#0C3049]">
-                    Participações em campeonatos
-                  </p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-[#0C3049] shadow">
-                      {profile.stats.championships} eventos
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-6 grid gap-4 md:grid-cols-2">
-                  {profile.victories.map((item, index) => (
-                    <div key={index} className="rounded-lg border border-white/70 bg-white/70 px-4 py-3 text-sm text-[#0C3049] shadow-sm">
-                      <p className="text-xs uppercase tracking-wide text-[#0C3049]/70">{item.label}</p>
-                      <p className="text-sm font-semibold">{item.value}</p>
+              {/* Card Principal do Perfil - Design Premium */}
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-500 via-teal-600 to-teal-700 shadow-xl">
+                {/* Decoração de fundo */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
+                
+                <div className="relative px-8 py-8">
+                  {/* Header do Perfil */}
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex-1">
+                      <h2 className="text-3xl font-bold text-white uppercase tracking-wide mb-2">
+                        {profile.name}
+                      </h2>
+                      <p className="text-teal-100 text-base mb-3">
+                        ({profile.age} anos)
+                      </p>
+                      <p className="text-white/90 text-sm font-medium mb-4">
+                        Atleta de Jiu-Jitsu
+                      </p>
+                      <div className="flex items-center gap-4 text-white/90 text-sm">
+                        <div className="flex items-center gap-2">
+                          <FiMapPin size={16} />
+                          <span>{profile.city} - {profile.state}, {profile.country}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 mt-3">
+                        <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                          <FiFlag size={16} className="text-white" />
+                          <span className="text-white font-semibold">{profile.belt}</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                          <FiTrendingUp size={16} className="text-white" />
+                          <span className="text-white font-semibold">{profile.weight} Kg</span>
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                </div>
+                    {/* Avatar Placeholder */}
+                    <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/30 flex items-center justify-center flex-shrink-0">
+                      <FiUser size={40} className="text-white" />
+                    </div>
+                  </div>
 
-                <div className="mt-6">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#0C3049]">Perfis sociais</p>
-                  <div className="mt-2 flex flex-wrap gap-2 text-sm text-sky-900/80">
-                    {profile.social.map((social) => (
-                      <a
-                        key={social.label}
-                        href={social.href}
-                        className="rounded-full border border-white/60 bg-white/80 px-4 py-1 capitalize text-[#0C3049] transition hover:bg-white"
-                      >
-                        {social.label}
-                      </a>
-                    ))}
+                  {/* Equipe e Professor */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                      <p className="text-xs font-bold uppercase tracking-wider text-white/80 mb-1">Equipe</p>
+                      <p className="text-lg font-bold text-white">{profile.team}</p>
+                    </div>
+                    <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                      <p className="text-xs font-bold uppercase tracking-wider text-white/80 mb-1">Professor</p>
+                      <p className="text-lg font-bold text-white">{profile.professor}</p>
+                    </div>
+                  </div>
+
+                  {/* Participações em Campeonatos */}
+                  <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20 mb-6">
+                    <p className="text-xs font-bold uppercase tracking-wider text-white/80 mb-3">
+                      Participações em Campeonatos: {profile.stats.championships}
+                    </p>
+                    
+                    {/* Medalhas com Progress Bars */}
+                    <div className="space-y-4">
+                      {profile.medals.map((medal, index) => (
+                        <div key={index} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <FiStar 
+                                size={20} 
+                                className={
+                                  medal.type === 'gold' ? 'text-yellow-300' :
+                                  medal.type === 'silver' ? 'text-gray-300' :
+                                  'text-amber-600'
+                                }
+                              />
+                              <span className="text-white font-semibold text-sm">{medal.label}</span>
+                            </div>
+                            <span className="text-white/90 text-sm font-medium">
+                              taxa de vitórias: {medal.wins} / {medal.percentage.toFixed(2)}%
+                            </span>
+                          </div>
+                          {/* Progress Bar */}
+                          <div className="w-full h-2.5 bg-white/20 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                medal.type === 'gold' ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
+                                medal.type === 'silver' ? 'bg-gradient-to-r from-gray-300 to-gray-400' :
+                                'bg-gradient-to-r from-amber-600 to-amber-700'
+                              }`}
+                              style={{ width: `${medal.percentage}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Perfis Sociais */}
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-white/80 mb-3">
+                      Perfis Sociais de {profile.name}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.social.map((social) => {
+                        const Icon = social.icon
+                        return (
+                          <a
+                            key={social.label}
+                            href={social.href}
+                            className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/30 transition-all hover:scale-110"
+                            title={social.label}
+                          >
+                            <Icon size={18} />
+                          </a>
+                        )
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-primary-blue">
-                    Últimos eventos que participei
-                  </h3>
-                  <ul className="mt-4 space-y-3 text-sm text-gray-600">
-                    {pastEvents.map((event) => (
-                      <li key={event.title} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
-                        <p className="font-semibold text-gray-800">{event.title}</p>
-                        <p className="text-xs text-gray-500">{event.date}</p>
-                      </li>
-                    ))}
-                  </ul>
+              <div className="space-y-6">
+                {/* Últimos Eventos - Design Premium */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0C3049] to-blue-900 shadow-xl">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
+                  <div className="relative px-6 py-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-base font-bold uppercase tracking-wide text-white flex items-center gap-2">
+                        <FiAward className="text-yellow-400" size={20} />
+                        Últimos eventos que participei
+                      </h3>
+                    </div>
+                    <ul className="space-y-3">
+                      {pastEvents.map((event, index) => (
+                        <li 
+                          key={event.title} 
+                          className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 p-4 hover:bg-white/15 transition-all"
+                        >
+                          <p className="font-semibold text-white text-sm mb-1 line-clamp-2">{event.title}</p>
+                          <div className="flex items-center gap-2 text-white/70 text-xs">
+                            <FiCalendar size={12} />
+                            <span>{event.date}</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
 
-                <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-primary-blue">Veja os próximos eventos</h3>
-                  <ul className="mt-4 space-y-3 text-sm text-gray-600">
+                {/* Próximos Eventos - Design Premium */}
+                <div className="rounded-2xl border-2 border-primary-blue bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg overflow-hidden">
+                  <div className="bg-gradient-to-r from-primary-blue to-blue-600 px-6 py-4">
+                    <h3 className="text-base font-bold uppercase tracking-wide text-white flex items-center gap-2">
+                      <FiCalendar className="text-white" size={18} />
+                      Veja os nossos próximos eventos
+                    </h3>
+                  </div>
+                  <div className="p-6 space-y-4">
                     {upcomingEvents.map((event) => (
-                      <li key={event.title} className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
-                        <p className="font-semibold text-gray-800">{event.title}</p>
-                        <p className="text-xs text-gray-500">
-                          {event.date} · {event.city}
+                      <Link
+                        key={event.title}
+                        href="#"
+                        className="block bg-white rounded-xl border-2 border-gray-200 p-4 hover:border-primary-blue hover:shadow-md transition-all group"
+                      >
+                        <p className="font-bold text-gray-900 text-sm mb-2 group-hover:text-primary-blue transition">
+                          {event.title}
                         </p>
-                      </li>
+                        <div className="flex items-center gap-2 text-gray-600 text-xs">
+                          <FiCalendar size={12} />
+                          <span>{event.date}</span>
+                          <span className="text-gray-400">·</span>
+                          <FiMapPin size={12} />
+                          <span>{event.city}</span>
+                        </div>
+                      </Link>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               </div>
             </div>

@@ -31,7 +31,7 @@ export default function PasswordRecoveryPage() {
     <main className="min-h-screen bg-[#f8fafc]">
       <ModernNavbar />
 
-      <section className="container mx-auto px-4 pt-28 pb-16">
+      <section className="container mx-auto px-4 pt-32 pb-16">
         <div className="flex flex-col items-center">
           <div className="flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
             <header className="flex items-center justify-between border-b border-gray-200 bg-[#0C3049] px-6 py-4 text-white">
