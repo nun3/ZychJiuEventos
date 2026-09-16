@@ -18,6 +18,7 @@ import { StatusBadge, type StatusBadgeProps } from '@/components/ui/StatusBadge'
 import { createClient } from '@/lib/supabase/server'
 import type { Json } from '@/lib/supabase/database.types'
 import PaymentCheckout, { type CheckoutRegistration } from './PaymentCheckout'
+import CategoryChangeRequest from './CategoryChangeRequest'
 
 function snapshotName(value: Json, key: string) {
   return value && typeof value === 'object' && !Array.isArray(value) && typeof value[key] === 'string' ? String(value[key]) : 'Não informado'
@@ -96,7 +97,12 @@ export default async function RegistrationsPage() {
     {
       key: 'actions',
       header: 'Ação',
-      render: (registration) => <Link href={`/dashboard/meus-atletas/${registration.athlete_id}/inscricoes`} className="inline-flex min-h-10 items-center font-semibold text-mc-action hover:underline">Histórico do atleta</Link>,
+      render: (registration) => (
+        <div className="min-w-56 space-y-mc-8">
+          <Link href={`/dashboard/meus-atletas/${registration.athlete_id}/inscricoes`} className="inline-flex min-h-10 items-center font-semibold text-mc-action hover:underline">Histórico do atleta</Link>
+          {registration.status === 'efetivada' ? <CategoryChangeRequest registrationId={registration.id} /> : null}
+        </div>
+      ),
     },
   ]
 
@@ -134,7 +140,10 @@ export default async function RegistrationsPage() {
                       <div><dt className="text-mc-text-secondary">Valor</dt><dd className="mt-mc-4 font-semibold text-mc-text-primary">{registration.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</dd></div>
                     </dl>
                     <MobileRecordStatus><RegistrationStatus status={registration.status} /></MobileRecordStatus>
-                    <MobileRecordActions><Link href={`/dashboard/meus-atletas/${registration.athlete_id}/inscricoes`} className="inline-flex min-h-11 items-center rounded-mc-medium border border-mc-border px-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary hover:bg-mc-surface-secondary">Histórico do atleta</Link></MobileRecordActions>
+                    <MobileRecordActions>
+                      <Link href={`/dashboard/meus-atletas/${registration.athlete_id}/inscricoes`} className="inline-flex min-h-11 items-center rounded-mc-medium border border-mc-border px-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary hover:bg-mc-surface-secondary">Histórico do atleta</Link>
+                      {registration.status === 'efetivada' ? <CategoryChangeRequest registrationId={registration.id} /> : null}
+                    </MobileRecordActions>
                   </MobileRecord>
                 ))}
               </div>
