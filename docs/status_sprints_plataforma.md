@@ -495,11 +495,14 @@ Automacao: inscricao pendente/expirada/estornada ausente da lista, filtros, atle
 - trigger impede escrita direta e reabertura de `checagem_travada_em`;
 - UI administrativa com confirmação explícita antes de gravar o timestamp;
 - auditoria `checagem_locked`; bloqueios de solicitação/decisão já existentes permanecem;
-- sem RPC de reabertura; migration ainda não aplicada no Sandbox neste fechamento local.
+- sem RPC de reabertura;
+- migration `202609160002_lock_event_checagem.sql` aplicada no Sandbox `kfvypacjzlzwwblsbpwj` pelo SQL Editor;
+- smoke SQL `supabase/tests/checagem_lock_smoke.sql` aprovado (sucesso sem linhas; rollback da massa): outsider e organizador cruzado recusados, escrita direta bloqueada, owner trava, segundo travamento recusado, reabertura recusada, auditoria gravada;
+- UI de travamento não validada por clique: hidratação do login E2E no Playwright permanece falha preexistente de infraestrutura.
 
 #### Fechamento do lote 2
 
-Aprovado no nível de domínio, persistência, RLS e RPC. Próximo incremento: travamento operacional (`checagem_travada_em`). Sem reabertura neste lote 3. Sem lista pública, check-in, pesagem ou chaves.
+Aprovado no nível de domínio, persistência, RLS e RPC. Travamento operacional (lote 3) aplicado no Sandbox e aprovado em smoke SQL. Sem reabertura, lista pública, check-in, pesagem ou chaves.
 
 ### Sprint 8 - Chaves e operacao esportiva
 

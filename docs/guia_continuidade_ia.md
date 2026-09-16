@@ -249,7 +249,7 @@ A Sprint 5 protege o snapshot por trigger. Não desabilite essa proteção para 
 
 Implemente uma alocação vigente separada ou solução equivalente que preserve a fotografia original e registre cada decisão. A checagem e as chaves devem consumir a alocação vigente aprovada e travada.
 
-Lote 2 (alocação vigente e RPCs de categoria) está aplicado no Sandbox e aprovado em smoke SQL e RPC autenticada. Lote 3 é o travamento operacional de `checagem_travada_em`, sem reabertura. Não contornar a hidratação quebrada do login E2E no Playwright: é infraestrutura separada.
+Lote 2 (alocação vigente e RPCs de categoria) está aplicado no Sandbox e aprovado em smoke SQL e RPC autenticada. Lote 3 (travamento operacional de `checagem_travada_em`) está aplicado no Sandbox e aprovado em smoke SQL, sem reabertura. Não contornar a hidratação quebrada do login E2E no Playwright: é infraestrutura separada.
 
 A identidade pública dos inscritos ainda depende da decisão do PRD. Não publicar CPF, nascimento completo, contatos, dados de menores ou pagamentos por reutilização de consultas internas.
 
