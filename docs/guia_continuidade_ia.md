@@ -4,7 +4,7 @@
 
 Este arquivo é o ponto de entrada para uma IA ou pessoa continuar o projeto sem depender do histórico da conversa. Leia-o antes de implementar.
 
-**Objetivo atual:** concluir a Sprint 6 no Asaas Sandbox, com testes automatizados, e avançar pelas Sprints 7 a 10 conforme suas dependências e decisões de negócio.
+**Objetivo atual:** avançar a Sprint 7 (checagem e alterações). A Sprint 6 de pagamentos Sandbox está concluída no plano operacional. Não inventar check-in, pesagem, chaves ou identidade pública ainda pendente no PRD.
 
 O usuário pediu continuidade e automação acompanhando as entregas. Execute trabalho técnico autorizado e reversível sem pedir a mesma confirmação a cada passo. A autorização para desenvolvimento não equivale a autorização para produção, movimentação financeira real, envio de mensagens a terceiros, exclusão de dados ou decisões comerciais.
 
@@ -248,6 +248,8 @@ A ausência de uma chave bloqueia homologação externa, mas não bloqueia imple
 A Sprint 5 protege o snapshot por trigger. Não desabilite essa proteção para mudar uma categoria.
 
 Implemente uma alocação vigente separada ou solução equivalente que preserve a fotografia original e registre cada decisão. A checagem e as chaves devem consumir a alocação vigente aprovada e travada.
+
+Lote 2 (alocação vigente e RPCs de categoria) está aplicado no Sandbox e aprovado em smoke SQL e RPC autenticada. Lote 3 é o travamento operacional de `checagem_travada_em`, sem reabertura. Não contornar a hidratação quebrada do login E2E no Playwright: é infraestrutura separada.
 
 A identidade pública dos inscritos ainda depende da decisão do PRD. Não publicar CPF, nascimento completo, contatos, dados de menores ou pagamentos por reutilização de consultas internas.
 

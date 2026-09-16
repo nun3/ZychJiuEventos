@@ -843,6 +843,7 @@ export type Database = {
           category_id: string
           category_snapshot: Json
           created_at: string
+          current_category_id: string | null
           event_id: string
           id: string
           numero: number
@@ -860,6 +861,7 @@ export type Database = {
           category_id: string
           category_snapshot: Json
           created_at?: string
+          current_category_id?: string | null
           event_id: string
           id?: string
           numero?: never
@@ -877,6 +879,7 @@ export type Database = {
           category_id?: string
           category_snapshot?: Json
           created_at?: string
+          current_category_id?: string | null
           event_id?: string
           id?: string
           numero?: never
@@ -899,6 +902,13 @@ export type Database = {
           {
             foreignKeyName: "registrations_category_id_fkey"
             columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "event_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registrations_current_category_id_fkey"
+            columns: ["current_category_id"]
             isOneToOne: false
             referencedRelation: "event_categories"
             referencedColumns: ["id"]
@@ -1075,6 +1085,14 @@ export type Database = {
         Args: { target_athlete_id: string }
         Returns: undefined
       }
+      list_eligible_category_changes: {
+        Args: { target_registration_id: string }
+        Returns: {
+          id: string
+          nome: string
+        }[]
+      }
+      lock_event_checagem: { Args: { target_event_id: string }; Returns: Json }
       manages_athlete: { Args: { target_athlete_id: string }; Returns: boolean }
       process_payment_webhook: {
         Args: { target_event_id: string }
@@ -1083,6 +1101,14 @@ export type Database = {
       release_payment_issuance_claim: {
         Args: { claim_token: string; target_payment_id: string }
         Returns: undefined
+      }
+      request_category_change: {
+        Args: {
+          reason_text: string
+          requested_category_id: string
+          target_registration_id: string
+        }
+        Returns: Json
       }
       reserve_payment_batch: {
         Args: {
@@ -1096,6 +1122,10 @@ export type Database = {
           registration_count: number
           total: number
         }[]
+      }
+      review_category_change: {
+        Args: { approve_request: boolean; target_request_id: string }
+        Returns: Json
       }
       settle_payment_manually: {
         Args: { reason_text: string; target_payment_id: string }

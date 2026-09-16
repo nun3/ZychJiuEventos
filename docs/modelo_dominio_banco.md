@@ -70,7 +70,10 @@ Relaciona professores e responsaveis aos atletas que podem administrar.
 - `created_by` FK para `profiles.id`
 - `organization_id` FK obrigatoria para `organizations.id`
 - `timezone` no formato IANA, por exemplo `America/Sao_Paulo`
+- `checagem_travada_em` timestamptz nulo: lista oficial aberta; preenchido somente pela RPC de travamento, com auditoria
 - `created_at`, `updated_at`
+
+Travamento operacional grava `checagem_travada_em` uma vez. Reabertura nao faz parte deste contrato. Escritas diretas na coluna sao bloqueadas.
 
 ### event_phases
 
@@ -97,13 +100,14 @@ Relaciona professores e responsaveis aos atletas que podem administrar.
 - `numero` unico por evento
 - `athlete_id` FK
 - `event_id` FK
-- `category_id` FK
+- `category_id` FK (alocacao original, imutavel com o snapshot)
+- `current_category_id` FK opcional: override da alocacao vigente; nulo significa que a vigente e `category_id`
 - `registered_by` FK para `profiles.id`
 - `status`: `rascunho`, `pendente_pagamento`, `efetivada`, `expirada`, `cancelada`, `estornada`
 - `valor`
 - `created_at`, `updated_at`
 
-A inscricao preserva um snapshot imutavel dos dados usados no aceite: nome, nascimento, genero, faixa, peso, equipe, categoria, valor, versao das regras e versao dos termos. Mudancas futuras no perfil do atleta nao alteram o historico.
+A inscricao preserva um snapshot imutavel dos dados usados no aceite: nome, nascimento, genero, faixa, peso, equipe, categoria, valor, versao das regras e versao dos termos. Mudancas futuras no perfil do atleta nao alteram o historico. A posicao operacional na checagem usa a alocacao vigente (`coalesce(current_category_id, category_id)`), alterada somente por solicitacao aprovada.
 
 Restricao unica: um atleta nao pode possuir duas inscricoes ativas no mesmo evento.
 
@@ -141,6 +145,8 @@ Regra: todas as inscricoes ligadas ao mesmo pagamento devem pertencer ao mesmo e
 - `status`: `pendente`, `aprovada`, `recusada`
 - `reviewed_by`, `reviewed_at`
 - `created_at`
+
+Uma inscricao efetivada pode ter no maximo uma solicitacao `pendente`. Insert/update direto pelo cliente e bloqueado; criacao e decisao passam por RPC.
 
 ### brackets, matches e weigh_ins
 

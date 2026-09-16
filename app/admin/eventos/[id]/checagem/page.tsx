@@ -10,6 +10,8 @@ import { StatusBadge } from '@/components/ui/StatusBadge'
 import { createClient } from '@/lib/supabase/server'
 import type { Json } from '@/lib/supabase/database.types'
 import EventRegistrationsList, { type EventRegistrationItem } from './EventRegistrationsList'
+import ReviewCategoryChange from './ReviewCategoryChange'
+import LockChecagem from './LockChecagem'
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -19,12 +21,17 @@ function snapshotRecord(snapshot: Json) {
     : {}
 }
 
-function textValue(value: Json | undefined, fallback = 'Não informado') {
+function textValue(value: Json | undefined | string | null, fallback = 'Não informado') {
   return typeof value === 'string' && value.trim() ? value : fallback
 }
 
 function numberValue(value: Json | undefined) {
-  return typeof value === 'number' ? value : null
+  if (typeof value === 'number') return value
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+  return null
 }
 
 export default async function EventRegistrationsPage({ params }: { params: { id: string } }) {
@@ -36,7 +43,7 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
 
   const { data: event } = await supabase
     .from('events')
-    .select('id, nome, organization_id, status')
+    .select('id, nome, organization_id, status, checagem_travada_em')
     .eq('id', params.id)
     .maybeSingle()
 
@@ -51,13 +58,33 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
 
   const { data, error } = await supabase
     .from('registrations')
-    .select('id, numero, status, athlete_snapshot, category_snapshot, created_at, payment_registrations(payments(status))')
+    .select('id, numero, status, category_id, current_category_id, athlete_snapshot, category_snapshot, created_at, payment_registrations(payments(status))')
     .eq('event_id', event.id)
+    .eq('status', 'efetivada')
     .order('numero', { ascending: true })
 
-  const registrations: EventRegistrationItem[] = (data || []).map((registration) => {
+  const { data: ruleSets } = await supabase
+    .from('category_rule_sets')
+    .select('event_categories(id, nome)')
+    .eq('event_id', event.id)
+
+  const categoryNames = new Map(
+    (ruleSets || []).flatMap((ruleSet) => (ruleSet.event_categories || []).map((category) => [category.id, category.nome] as const)),
+  )
+
+  const { data: pendingRequests } = await supabase
+    .from('category_change_requests')
+    .select('id, reason, created_at, current_category_id, requested_category_id, registrations!inner(id, numero, event_id, athlete_snapshot)')
+    .eq('status', 'pendente')
+    .eq('registrations.event_id', event.id)
+    .order('created_at', { ascending: true })
+
+  const mapped: EventRegistrationItem[] = (data || []).map((registration) => {
     const athlete = snapshotRecord(registration.athlete_snapshot)
     const category = snapshotRecord(registration.category_snapshot)
+    const currentCategoryId = registration.current_category_id || registration.category_id
+    const currentCategoryName = categoryNames.get(currentCategoryId) || textValue(category.nome, 'Categoria não informada')
+    const originalCategoryName = textValue(category.nome, 'Categoria não informada')
     const paymentStatuses = registration.payment_registrations
       .map((link) => link.payments?.status)
       .filter((status): status is NonNullable<typeof status> => Boolean(status))
@@ -67,14 +94,27 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
       number: registration.numero,
       athleteName: textValue(athlete.nome_completo, 'Atleta não informado'),
       teamName: textValue(athlete.team_name),
-      categoryName: textValue(category.nome, 'Categoria não informada'),
+      categoryName: currentCategoryName,
+      originalCategoryName: currentCategoryId === registration.category_id ? undefined : originalCategoryName,
       belt: textValue(athlete.faixa),
       registeredWeight: numberValue(athlete.peso_kg),
-      registrationStatus: registration.status,
       paymentStatus: paymentStatuses.at(-1) || null,
       createdAt: registration.created_at,
+      isAloneInCategory: false,
     }
   })
+
+  const categoryCounts = mapped.reduce<Record<string, number>>((counts, registration) => {
+    counts[registration.categoryName] = (counts[registration.categoryName] || 0) + 1
+    return counts
+  }, {})
+
+  const registrations = mapped.map((registration) => ({
+    ...registration,
+    isAloneInCategory: categoryCounts[registration.categoryName] === 1,
+  }))
+
+  const locked = Boolean(event.checagem_travada_em)
 
   return (
     <div className="-mt-24 min-h-screen bg-mc-background">
@@ -82,25 +122,52 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
       <main className="py-mc-32 sm:py-mc-48">
         <PageContainer>
           <PageHeader
-            title={`Inscritos — ${event.nome}`}
-            description="Consulta operacional das inscrições reais deste evento. Use a busca para localizar atletas, equipes, categorias ou números de inscrição."
+            title={`Checagem — ${event.nome}`}
+            description="Lista oficial das inscrições efetivadas deste evento. Pendentes, expiradas, canceladas e estornadas não entram na checagem."
             breadcrumb={
               <Link href={`/admin/eventos/${event.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
                 <ArrowLeft aria-hidden="true" size={18} />
                 Voltar para gestão
               </Link>
             }
-            actions={<StatusBadge variant="info">Evento: {event.status.replaceAll('_', ' ')}</StatusBadge>}
+            actions={<StatusBadge variant={locked ? 'warning' : 'info'}>{locked ? 'Checagem travada' : `Evento: ${event.status.replaceAll('_', ' ')}`}</StatusBadge>}
           />
 
-          <Alert className="mt-mc-24" variant="info" icon={<Info size={20} />} title="Operação somente para consulta">
-            Check-in e pesagem ainda não possuem persistência no modelo atual. Nenhuma ação operacional foi simulada nesta tela.
+          <Alert className="mt-mc-24" variant="info" icon={<Info size={20} />} title={locked ? 'Lista travada' : 'Lista oficial'}>
+            {locked
+              ? 'A checagem está travada. Solicitações e decisões de categoria ficam bloqueadas.'
+              : 'A categoria exibida é a alocação vigente. O snapshot original permanece congelado. Professores e responsáveis solicitam mudança quando o atleta está sozinho; a organização aprova ou recusa.'}
           </Alert>
 
+          {!locked && event.status === 'checagem' ? <LockChecagem eventId={event.id} /> : null}
+
+          {pendingRequests?.length ? (
+            <section aria-labelledby="pending-category-changes-title" className="mt-mc-24">
+              <h2 id="pending-category-changes-title" className="font-mc-display text-mc-h3 text-mc-text-primary">Solicitações pendentes</h2>
+              <ul className="mt-mc-16 space-y-mc-12">
+                {pendingRequests.map((request) => {
+                  const linked = request.registrations
+                  const registration = Array.isArray(linked) ? linked[0] : linked
+                  const athlete = snapshotRecord(registration?.athlete_snapshot ?? {})
+                  return (
+                    <li key={request.id} className="rounded-mc-medium border border-mc-border bg-mc-surface p-mc-16">
+                      <p className="font-semibold text-mc-text-primary">{textValue(athlete.nome_completo)} · inscrição #{registration?.numero}</p>
+                      <p className="mt-mc-8 text-sm text-mc-text-secondary">
+                        {categoryNames.get(request.current_category_id) || 'Categoria atual'} → {categoryNames.get(request.requested_category_id) || 'Categoria solicitada'}
+                      </p>
+                      <p className="mt-mc-8 text-sm text-mc-text-primary">{request.reason}</p>
+                      <ReviewCategoryChange requestId={request.id} eventId={event.id} locked={locked} />
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          ) : null}
+
           <section aria-labelledby="event-registrations-title" className="mt-mc-24">
-            <h2 id="event-registrations-title" className="sr-only">Inscrições do evento</h2>
+            <h2 id="event-registrations-title" className="sr-only">Inscrições efetivadas do evento</h2>
             {error ? (
-              <Alert role="alert" variant="error" title="Não foi possível carregar os inscritos">
+              <Alert role="alert" variant="error" title="Não foi possível carregar a checagem">
                 Tente novamente. Nenhum dado foi alterado.
               </Alert>
             ) : registrations.length ? (
@@ -108,8 +175,8 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
             ) : (
               <EmptyState
                 icon={<ClipboardList size={34} />}
-                title="Nenhuma inscrição neste evento"
-                description="As inscrições reais aparecerão aqui assim que forem cadastradas."
+                title="Nenhuma inscrição efetivada"
+                description="A checagem só lista atletas com pagamento confirmado ou baixa manual."
                 className="rounded-mc-medium border border-mc-border bg-mc-surface"
               />
             )}

@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprint 6 concluida em 2026-09-11. Proximo marco: Sprint 7, checagem e alteracoes.
+Sprint 6 concluida em 2026-09-11. Sprint 7 em andamento: primeiro incremento da lista oficial de efetivados.
 
 ## 5. Backlog ordenado por sprints
 
@@ -455,7 +455,7 @@ Pré-requisitos: migrações de reserva já aplicadas; URL/chaves públicas e `S
 
 ### Sprint 7 - Checagem e alteracoes
 
-- Status: planejada
+- Status: em andamento
 - Dependencia: Sprint 6.
 - Objetivo: publicar a lista oficial e reduzir atendimento manual.
 - Escopo:
@@ -469,6 +469,37 @@ Pré-requisitos: migrações de reserva já aplicadas; URL/chaves públicas e `S
 Revisao: criar uma alocacao vigente separada do snapshot original da inscricao (hoje protegido por trigger). A aprovacao deve alterar essa alocacao em transacao, registrar antes/depois e respeitar travamento. A identidade publica ainda depende da decisao registrada no PRD; CPF, nascimento completo e dados de pagamento nunca entram na consulta publica.
 
 Automacao: inscricao pendente/expirada/estornada ausente da lista, filtros, atleta sozinho, solicitacao cruzada negada, aprovacao auditada, duas aprovacoes concorrentes e bloqueio apos travamento.
+
+#### Incremento de 2026-09-15
+
+- lista autenticada de checagem passou a consultar somente `registrations.status = efetivada`;
+- filtros operacionais por categoria e equipe a partir do snapshot;
+- detecção de atleta sozinho na categoria, sem abrir solicitação de mudança;
+- filtro por professor, lista pública, alocação vigente, aprovação e travamento permanecem para os próximos incrementos.
+
+#### Incremento de 2026-09-15 (lote 2)
+
+- alocação vigente por `registrations.current_category_id` (override nulo = categoria original);
+- RPCs `list_eligible_category_changes`, `request_category_change` e `review_category_change`;
+- uma pendência por inscrição; snapshot e `category_id` original imutáveis;
+- UI mínima: solicitação em `/dashboard/inscricoes` e decisão na checagem administrativa.
+- migration `202609160001_category_change_allocation.sql` aplicada no Sandbox `kfvypacjzlzwwblsbpwj` pelo SQL Editor;
+- smoke SQL `supabase/tests/category_change_smoke.sql` aprovado (sucesso sem linhas; rollback da massa);
+- smoke autenticado das RPCs aprovado com JWT do owner E2E: elegibilidade, solicitação, decisão, `current_category_id` atualizado, `category_id`/snapshot preservados, segunda decisão bloqueada; massa removida;
+- fixture BDD de checagem alinhada ao snapshot real da RPC de inscrição (`data_nascimento`, `genero` e demais campos de elegibilidade);
+- UI de solicitação/decisão não validada por clique: hidratação do login E2E no Playwright permanece falha preexistente de infraestrutura, fora deste lote.
+
+#### Incremento de 2026-09-15 (lote 3)
+
+- RPC `lock_event_checagem`: owner/organizer/admin, evento em `checagem`, recusa segundo travamento;
+- trigger impede escrita direta e reabertura de `checagem_travada_em`;
+- UI administrativa com confirmação explícita antes de gravar o timestamp;
+- auditoria `checagem_locked`; bloqueios de solicitação/decisão já existentes permanecem;
+- sem RPC de reabertura; migration ainda não aplicada no Sandbox neste fechamento local.
+
+#### Fechamento do lote 2
+
+Aprovado no nível de domínio, persistência, RLS e RPC. Próximo incremento: travamento operacional (`checagem_travada_em`). Sem reabertura neste lote 3. Sem lista pública, check-in, pesagem ou chaves.
 
 ### Sprint 8 - Chaves e operacao esportiva
 
