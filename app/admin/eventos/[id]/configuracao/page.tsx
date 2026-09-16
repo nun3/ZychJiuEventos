@@ -1,164 +1,91 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { FiArrowLeft, FiSave, FiX, FiInfo, FiClipboard, FiDollarSign, FiCheckSquare, FiKey, FiActivity, FiCalendar, FiThumbsUp } from 'react-icons/fi'
-import { getEventById, saveEvent } from '@/lib/eventStorage'
+import { notFound } from 'next/navigation'
+import { ArrowLeft, Layers3 } from 'lucide-react'
+import InternalNavigation from '@/components/InternalNavigation'
+import { Card } from '@/components/ui/Card'
+import { DataTable, type DataTableColumn } from '@/components/ui/DataTable'
+import { EmptyState } from '@/components/ui/EmptyState'
+import {
+  MobileRecord,
+  MobileRecordMeta,
+  MobileRecordTitle,
+} from '@/components/ui/MobileRecord'
+import { PageContainer } from '@/components/ui/PageContainer'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import { createClient } from '@/lib/supabase/server'
+import CategoryManager from './CategoryManager'
 
-interface ConfigSection {
+type CategoryItem = {
   id: string
-  label: string
-  icon: any
+  nome: string
+  genero: string
+  idade_min: number
+  idade_max: number
+  peso_min_kg: number
+  peso_max_kg: number
 }
 
-const configSections: ConfigSection[] = [
-  { id: 'sobre', label: 'Sobre o Evento', icon: FiInfo },
-  { id: 'inscricoes', label: 'Das Inscrições', icon: FiClipboard },
-  { id: 'pagamento', label: 'Do Pagamento', icon: FiDollarSign },
-  { id: 'checagem', label: 'Da Checagem', icon: FiCheckSquare },
-  { id: 'chaves', label: 'Das Chaves', icon: FiKey },
-  { id: 'resultados', label: 'Dos Resultados', icon: FiActivity },
-  { id: 'cronograma', label: 'Do Cronograma', icon: FiCalendar },
-  { id: 'avaliacao', label: 'Da Avaliação', icon: FiThumbsUp },
+const categoryColumns: Array<DataTableColumn<CategoryItem>> = [
+  { key: 'name', header: 'Categoria', render: (category) => <span className="font-semibold text-mc-text-primary">{category.nome}</span> },
+  { key: 'gender', header: 'Gênero', render: (category) => category.genero },
+  { key: 'age', header: 'Idade', render: (category) => `${category.idade_min}–${category.idade_max} anos` },
+  { key: 'weight', header: 'Peso', render: (category) => `${category.peso_min_kg}–${category.peso_max_kg} kg` },
 ]
 
-export default function ConfiguracaoPage() {
-  const router = useRouter()
-  const params = useParams()
-  const eventId = params?.id as string
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [eventData, setEventData] = useState<any>(null)
-  const [activeSection, setActiveSection] = useState<string>('pagamento')
-
-  useEffect(() => {
-    const authStatus = localStorage.getItem('admin_authenticated')
-    if (authStatus === 'true') {
-      setIsAuthenticated(true)
-      
-      const id = parseInt(eventId)
-      if (!isNaN(id)) {
-        const stored = getEventById(id)
-        if (stored) {
-          setEventData({
-            id: stored.id,
-            title: stored.titulo,
-            ...stored,
-          })
-        }
-      }
-      
-      setIsLoading(false)
-    } else {
-      router.push('/admin/autenticacao')
-    }
-  }, [router, eventId])
-
-  const handleSave = () => {
-    if (eventData) {
-      saveEvent(eventData)
-      alert('Configurações salvas com sucesso!')
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#0C3049] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!isAuthenticated) return null
-
+export default async function EventConfigurationPage({ params }: { params: { id: string } }) {
+  const supabase = createClient()
+  const { data: event } = await supabase.from('events').select('id, nome').eq('id', params.id).maybeSingle()
+  if (!event) notFound()
+  const { data: ruleSets } = await supabase.from('category_rule_sets').select('id, nome, versao, ativo, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg)').eq('event_id', event.id).order('versao', { ascending: false })
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm -mt-44 pt-44">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-between mb-4">
-            <Link
-              href={`/admin/eventos/${eventId}/gerenciar`}
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-[#0C3049] transition-colors"
-            >
-              <FiArrowLeft size={20} />
-              <span className="font-semibold">Voltar para Gestão</span>
-            </Link>
-          </div>
-          
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 uppercase tracking-wide">
-            Configuração do Evento
-          </h1>
-        </div>
-      </div>
+    <div className="-mt-24 min-h-screen bg-mc-background">
+      <InternalNavigation />
+      <main className="py-mc-32 sm:py-mc-48">
+        <PageContainer>
+          <PageHeader
+            title={`Categorias — ${event.nome}`}
+            description="Configure as regras usadas para determinar a categoria de cada inscrição. Cada inclusão cria uma nova versão imutável."
+            breadcrumb={<Link href="/admin/eventos" className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline"><ArrowLeft aria-hidden="true" size={18} />Voltar para eventos</Link>}
+          />
 
-      {/* Conteúdo */}
-      <div className="container mx-auto px-6 py-8">
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Dados</h2>
-            
-            {/* Lista de Seções */}
-            <div className="space-y-2">
-              {configSections.map((section) => {
-                const Icon = section.icon
-                const isActive = activeSection === section.id
-                
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => setActiveSection(section.id)}
-                    className={`w-full flex items-center justify-between rounded-lg border-2 px-4 py-3 text-left transition ${
-                      isActive
-                        ? 'border-[#0C3049] bg-blue-50'
-                        : 'border-gray-200 bg-gray-50 hover:bg-white hover:border-gray-300'
-                    }`}
-                  >
-                    <span className="flex items-center gap-3 text-gray-800 font-semibold">
-                      <Icon className={isActive ? 'text-[#0C3049]' : 'text-gray-600'} size={18} />
-                      {section.label}
-                    </span>
-                    <span className="text-gray-400">›</span>
-                  </button>
-                )
-              })}
-            </div>
+          <div className="mt-mc-32 grid items-start gap-mc-24 xl:grid-cols-[minmax(22rem,0.75fr)_minmax(0,1.25fr)]">
+            <CategoryManager eventId={event.id} />
+            <section aria-labelledby="category-versions-title">
+              <div className="border-b border-mc-border pb-mc-16">
+                <h2 id="category-versions-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Versões cadastradas</h2>
+                <p className="mt-mc-4 font-mc-interface text-sm text-mc-text-secondary">A versão ativa é aplicada às novas inscrições.</p>
+              </div>
+              {!ruleSets?.length ? (
+                <EmptyState icon={<Layers3 size={34} />} title="Nenhuma versão cadastrada" description="Crie a primeira versão de categorias para preparar as inscrições." className="mt-mc-16 rounded-mc-medium border border-mc-border bg-mc-surface" />
+              ) : (
+                <div className="mt-mc-16 space-y-mc-16">
+                  {ruleSets.map((rule) => (
+                    <Card key={rule.id} className="overflow-hidden">
+                      <header className="flex flex-col gap-mc-8 border-b border-mc-border bg-mc-surface-secondary p-mc-16 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <h3 className="font-mc-display text-lg font-semibold text-mc-text-primary">Versão {rule.versao} — {rule.nome}</h3>
+                          <p className="mt-mc-4 font-mc-interface text-xs text-mc-text-secondary">{rule.event_categories.length} {rule.event_categories.length === 1 ? 'categoria' : 'categorias'}</p>
+                        </div>
+                        <StatusBadge variant={rule.ativo ? 'success' : 'neutral'}>{rule.ativo ? 'Ativa' : 'Inativa'}</StatusBadge>
+                      </header>
+                      <DataTable rows={rule.event_categories as CategoryItem[]} columns={categoryColumns} getRowKey={(category) => category.id} caption={`Categorias da versão ${rule.versao}`} className="hidden rounded-none border-0 md:block" />
+                      <div className="space-y-mc-8 p-mc-12 md:hidden">
+                        {(rule.event_categories as CategoryItem[]).map((category) => (
+                          <MobileRecord key={category.id} className="bg-mc-surface-secondary p-mc-12">
+                            <MobileRecordTitle className="text-base leading-5">{category.nome}</MobileRecordTitle>
+                            <MobileRecordMeta className="mt-mc-8">{category.genero} · {category.idade_min}–{category.idade_max} anos · {category.peso_min_kg}–{category.peso_max_kg} kg</MobileRecordMeta>
+                          </MobileRecord>
+                        ))}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
-
-          {/* Conteúdo da Seção Ativa */}
-          {activeSection === 'pagamento' && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Configurações de Pagamento</h3>
-              <p className="text-gray-600">
-                Aqui você pode configurar as opções de pagamento do evento, formas de pagamento aceitas, prazos, etc.
-              </p>
-            </div>
-          )}
-
-          {/* Botões */}
-          <div className="flex justify-end gap-4 mt-6 pt-6 border-t border-gray-200">
-            <button
-              onClick={() => router.push(`/admin/eventos/${eventId}/gerenciar`)}
-              className="inline-flex items-center gap-2 bg-gray-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-600 transition"
-            >
-              <FiX size={20} />
-              Fechar
-            </button>
-            <button
-              onClick={handleSave}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0C3049] to-blue-800 text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition"
-            >
-              <FiSave size={20} />
-              Salvar
-            </button>
-          </div>
-        </div>
-      </div>
-    </main>
+        </PageContainer>
+      </main>
+    </div>
   )
 }
-

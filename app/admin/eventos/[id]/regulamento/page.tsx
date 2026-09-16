@@ -16,7 +16,7 @@ export default function RegulamentoPage() {
   const [regulamento, setRegulamento] = useState('')
 
   useEffect(() => {
-    const authStatus = localStorage.getItem('admin_authenticated')
+    const authStatus = 'true' // A autorização é validada pelo middleware.
     if (authStatus === 'true') {
       setIsAuthenticated(true)
       
@@ -117,4 +117,3 @@ export default function RegulamentoPage() {
     </main>
   )
 }
-

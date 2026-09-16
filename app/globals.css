@@ -2,10 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
 :root {
+  /* MEU CAMP: opt-in semantic tokens. Legacy palette below stays unchanged. */
+  --mc-action: 37 99 235;
+  --mc-structure: 12 48 73;
+  --mc-background: 248 250 252;
+  --mc-surface: 255 255 255;
+  --mc-surface-secondary: 241 245 249;
+  --mc-border: 226 232 240;
+  --mc-text-primary: 15 23 42;
+  --mc-text-secondary: 71 85 105;
+  --mc-success: 22 163 74;
+  --mc-warning: 217 119 6;
+  --mc-error: 220 38 38;
+  --mc-info: var(--mc-action);
+  --mc-focus: var(--mc-action);
+  --mc-radius-small: 6px;
+  --mc-radius-medium: 10px;
+  --mc-radius-large: 14px;
+  --mc-radius-full: 9999px;
+  --mc-space-4: 4px;
+  --mc-space-8: 8px;
+  --mc-space-12: 12px;
+  --mc-space-16: 16px;
+  --mc-space-24: 24px;
+  --mc-space-32: 32px;
+  --mc-space-48: 48px;
+  --mc-space-64: 64px;
+  --mc-shadow-none: 0 0 #0000;
+  --mc-shadow-subtle: 0 1px 3px rgba(15, 23, 42, 0.08);
+  --mc-shadow-elevated: 0 10px 30px rgba(15, 23, 42, 0.12);
+  --mc-motion-fast: 150ms;
+  --mc-motion-normal: 200ms;
+  --mc-motion-slow: 250ms;
   --primary-dark: #0a0e1a;
   --primary-blue: #3b82f6;
   --primary-accent: #0ea5e9;
@@ -26,7 +55,7 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-inter), 'Inter', sans-serif;
 }
 
 body {
@@ -34,6 +63,21 @@ body {
   background: #f8fafc;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Keyboard focus for native controls; never erase an existing alternative. */
+:root :where(a[href], button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid rgb(var(--mc-focus));
+  outline-offset: 3px;
+}
+
+/* Only future consumers of motion tokens are affected. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mc-motion-fast: 0ms;
+    --mc-motion-normal: 0ms;
+    --mc-motion-slow: 0ms;
+  }
 }
 
 /* Textura noise sutil */
@@ -449,4 +493,3 @@ iframe {
     padding-bottom: 100%; /* Proporção quadrada para telas muito pequenas */
   }
 }
-

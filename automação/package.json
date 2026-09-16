@@ -1,0 +1,27 @@
+{
+  "name": "automacao-meu-camp",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test:unit": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register --test tests/*.test.ts",
+    "test:bdd": "bddgen && playwright test",
+    "test:payments": "bddgen && playwright test --grep @payments",
+    "test:payments:asaas": "bddgen && E2E_ALLOW_ASAAS=true playwright test --grep @asaas",
+    "test:payments:asaas:boleto": "bddgen && E2E_ALLOW_ASAAS=true playwright test --grep @asaas_boleto",
+    "test:payments:asaas:pix": "bddgen && E2E_ALLOW_ASAAS=true playwright test --grep @asaas_pix",
+    "test:payments:webhook": "bddgen && playwright test --grep @webhook",
+    "test:payments:manual": "bddgen && playwright test --grep @manual-settlement",
+    "test:generate": "bddgen",
+    "test:smoke": "bddgen && playwright test --grep @smoke",
+    "test:write": "bddgen && playwright test --grep @write"
+  },
+  "dependencies": {
+    "playwright": "1.51.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.51.1",
+    "playwright-bdd": "8.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.2.2"
+  }
+}

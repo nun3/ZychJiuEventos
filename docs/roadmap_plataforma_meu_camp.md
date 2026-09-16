@@ -1,184 +1,186 @@
-# Roadmap da Plataforma Meu Camp
+# PRD do MVP - Plataforma Meu Camp
 
-## Objetivo
+## 1. Controle do documento
 
-Este roadmap organiza a evolucao da plataforma em fases de entrega, priorizando fundacao tecnica, regras de negocio, operacao do evento e preparacao para producao.
+- Produto: Meu Camp
+- Versao: 1.0
+- Status: aprovado para refinamento e execucao tecnica
+- Fonte primaria: PDFs de projeto e benchmarking fornecidos pelo cliente
+- Escopo detalhado: `docs/escopo_funcional_plataforma.md`
+- Criterios verificaveis: `docs/criterios_aceite_mvp.md`
+- Regras normativas: `docs/maquinas_de_estado.md`, `docs/matriz_permissoes.md`, `docs/modelo_dominio_banco.md` e `docs/regras_categorizacao_pagamentos.md`
 
-## Fase 1 - Saneamento da Base Atual
+Este e o documento principal de produto. Em caso de divergencia, uma decisao confirmada pelo cliente deve primeiro ser registrada aqui e depois refletida nos documentos tecnicos.
 
-### Objetivo
-Remover fragilidades tecnicas do projeto atual e preparar a aplicacao para crescimento estruturado.
+## 2. Problema
 
-### Entregas
-- correcao de layouts do App Router
-- correcao de erros de lint
-- ajuste de rotas quebradas
-- consolidacao de componentes duplicados
-- revisao de mocks e centralizacao de dados temporarios
+Organizadores de campeonatos de Jiu-Jitsu precisam coordenar eventos, atletas, categorias, inscricoes, pagamentos e checagem em processos hoje sujeitos a retrabalho e inconsistencias. Professores e responsaveis precisam reutilizar o cadastro de seus atletas em varios eventos, pagar inscricoes em conjunto e solicitar correcoes sem depender de atendimento manual.
 
-### Resultado esperado
-Aplicacao estavel, coerente e pronta para receber backend real.
+## 3. Objetivo do MVP
 
-## Fase 2 - Consolidacao Funcional e Modelagem
+Entregar um fluxo confiavel desde o cadastro da conta ate a checagem do evento:
 
-### Objetivo
-Transformar os requisitos aprovados em modelo funcional e modelo de dados.
+1. organizador configura e publica um evento;
+2. professor, responsavel ou atleta gerencia seu cadastro esportivo;
+3. usuario inscreve um ou mais atletas elegiveis;
+4. sistema calcula e congela a categoria;
+5. usuario paga individualmente ou em grupo;
+6. webhook confirma o pagamento sem duplicidade;
+7. atletas efetivados aparecem na checagem publica;
+8. solicitacoes de categoria sao aprovadas ou recusadas com auditoria.
 
-### Entregas
-- consolidacao dos requisitos validados
-- definicao das entidades principais
-- definicao dos estados do sistema
-- definicao das regras de negocio
-- definicao das permissoes por perfil
+Chaves, pesagem, resultados e fechamento financeiro completo permanecem no produto, mas entram depois que esse fluxo estiver validado.
 
-### Resultado esperado
-Base funcional e conceitual pronta para implementacao em banco relacional.
+## 4. Publicos e papeis
 
-## Fase 3 - Fundacao com Supabase
+- Administrador da plataforma: administra clientes, parametros globais, suporte e auditoria.
+- Organizador: opera apenas organizacoes e eventos em que possui vinculo.
+- Professor: gerencia equipe e atletas vinculados.
+- Responsavel: gerencia atletas dependentes, especialmente menores.
+- Atleta maior: administra o proprio perfil e inscricoes.
+- Publico: consulta somente eventos e informacoes publicadas.
 
-### Objetivo
-Implantar a infraestrutura principal da aplicacao usando Supabase.
+Uma conta pode acumular papeis. A autorizacao depende do recurso, da organizacao e do vinculo com o atleta; nao existe um unico perfil mutuamente exclusivo.
 
-### Entregas
-- configuracao do projeto Supabase
-- configuracao de autenticacao
-- configuracao de banco PostgreSQL
-- configuracao de armazenamento de arquivos
-- configuracao inicial de politicas de acesso
+## 5. Escopo funcional do MVP
 
-### Resultado esperado
-Infraestrutura principal disponivel para persistencia, autenticacao e arquivos.
+### 5.1 Fundacao e acesso
 
-## Fase 4 - Contas, Perfis e Meus Atletas
+- Supabase Auth com e-mail e senha.
+- Recuperacao de senha por e-mail.
+- Perfil criado automaticamente no cadastro.
+- Organizacoes, membros e papeis acumulaveis.
+- Isolamento entre organizacoes por RLS.
+- Auditoria de operacoes sensiveis.
 
-### Objetivo
-Entregar o nucleo de usuarios e atletas gerenciados.
+### 5.2 Equipes e Meus Atletas
 
-### Entregas
-- cadastro e login
-- recuperacao de senha
-- perfis por tipo de usuario
-- CRUD de atletas vinculados
-- painel de meus atletas
+- Cadastro e edicao de atleta gerenciado.
+- Um atleta pertence a exatamente uma equipe por vez.
+- Professor e responsavel acessam somente atletas autorizados.
+- Menor nao possui login proprio.
+- Troca de equipe preserva historico auditavel.
+- Historico de inscricoes por atleta.
 
-### Resultado esperado
-Usuarios autenticados com capacidade real de gerenciar atletas e perfis.
+### 5.3 Eventos e categorias
 
-## Fase 5 - Eventos e Publicacao
+- CRUD, publicacao, cancelamento e conclusao de eventos.
+- Fuso IANA por evento e fases com inicio e fim.
+- Upload de banner, regulamento e tabela de peso.
+- Conjuntos versionados de categorias por idade, genero, faixa e peso.
+- Lista publica ordenada por data e pagina de detalhes.
 
-### Objetivo
-Entregar o modulo de criacao e publicacao de eventos com persistencia real.
+### 5.4 Inscricoes
 
-### Entregas
-- CRUD de eventos
-- upload de banner e regulamento
-- configuracao de fases
-- configuracao de categorias
-- listagem publica de eventos
-- pagina de detalhes do evento com dados reais
+- Inscricao propria ou de varios atletas gerenciados.
+- Validacao da fase do evento e prevencao de duplicidade.
+- Idade calculada pela data completa de nascimento na data do evento.
+- Categorizacao automatica explicavel.
+- Snapshot imutavel de atleta, equipe, categoria, preco, regra e termo aceito.
+- Estado inicial confirmado como `pendente_pagamento`.
 
-### Resultado esperado
-Organizadores conseguem publicar e administrar eventos reais.
+### 5.5 Pagamentos
 
-## Fase 6 - Inscricoes e Pagamentos
+- PIX e boleto, individual ou unificado no mesmo evento.
+- Adaptador inicial para Asaas Sandbox, sem acoplamento do dominio ao fornecedor.
+- Webhook autenticado, persistido, idempotente e reprocessavel.
+- Efetivacao transacional de todas as inscricoes vinculadas.
+- Baixa manual exclusivamente autorizada e auditada.
+- Historico de tentativas sem apagar cobrancas anteriores.
 
-### Objetivo
-Entregar o fluxo transacional principal da plataforma.
+Implementacao incremental da Sprint 6:
 
-### Entregas
-- inscricao propria
-- inscricao de multiplos atletas
-- alocacao automatica de categoria
-- pagamento individual
-- pagamento unificado
-- integracao com Pix
-- integracao com boleto
-- webhook de confirmacao
+- host externo limitado ao Asaas Sandbox e credenciais apenas no servidor;
+- total calculado a partir dos registros autorizados; centavos inteiros na aplicacao e `numeric` no banco;
+- referencia interna para conciliacao; ela nao substitui uma trava transacional de criacao;
+- resultado desconhecido de uma criacao deve ser consultado antes de reenviar;
+- recebimento definitivo e validado libera efetivacao; estados em analise, recebimento tardio e estorno parcial permanecem para conciliacao;
+- conta Sandbox ainda deve ser criada pelo cliente. Testes contratuais com transporte simulado nao representam homologacao do gateway.
 
-### Resultado esperado
-Fluxo completo de inscricao e pagamento operando de forma real.
+Referencias tecnicas: [criacao de cobranca](https://docs.asaas.com/reference/create-new-payment), [eventos de pagamento](https://docs.asaas.com/docs/payment-events), [instrucoes PIX](https://docs.asaas.com/reference/get-qr-code-for-pix-payments) e [autenticacao do webhook](https://docs.asaas.com/docs/receive-asaas-events-at-your-webhook-endpoint).
 
-## Fase 7 - Checagem e Ajustes
+### 5.6 Checagem
 
-### Objetivo
-Diminuir operacao manual e dar autonomia aos usuarios.
+- Lista publica somente com inscricoes efetivadas.
+- Filtros sem exposicao de dados pessoais indevidos.
+- Deteccao de atleta sozinho na categoria.
+- Solicitacao, aprovacao e recusa de mudanca com historico.
+- Travamento da checagem antes da geracao de chaves.
 
-### Entregas
-- lista publica de checagem
-- filtros por categoria e evento
-- solicitacao de alteracao de dados
-- identificacao de atleta sozinho na categoria
-- travamento da lista ao final da fase
+## 6. Fora do primeiro incremento operacional
 
-### Resultado esperado
-Checagem publica estruturada, com menos retrabalho para o organizador.
+- Aplicativo mobile nativo.
+- Marketplace, venda de ingressos ou streaming.
+- Filiacao federativa completa.
+- Certificados e notificacoes por SMS/WhatsApp.
+- Multiplos gateways ativos simultaneamente.
+- Algoritmo definitivo de chaves antes da aprovacao das regras de 3 e 5 atletas.
+- Split automatico ou repasse financeiro antes da definicao comercial.
 
-## Fase 8 - Chaves, Pesagem e Resultados
+Telas existentes desses assuntos podem continuar como prototipo, mas nao devem ser apresentadas como funcionalidades operacionais.
 
-### Objetivo
-Entregar a operacao esportiva do campeonato.
+## 7. Requisitos nao funcionais
 
-### Entregas
-- pesagem
-- geracao de chaves
-- regras de distribuicao de atletas
-- confrontos
-- resultados
-- publicacao de brackets e resultados
+- Seguranca: autorizacao server-side, RLS, segredos apenas no servidor e verificacao de webhook.
+- Privacidade: minimizacao de dados publicos, consentimento e tratamento de dados de menores conforme LGPD.
+- Integridade: operacoes financeiras em transacao, valores em `numeric` e eventos externos idempotentes.
+- Tempo: persistencia em UTC e exibicao no fuso do evento.
+- Acessibilidade: navegacao por teclado, contraste adequado, rotulos e textos alternativos.
+- Qualidade: testes unitarios do dominio, integracao do banco e fluxos E2E prioritarios.
+- Observabilidade: erros, webhooks e operacoes administrativas rastreaveis.
+- Desempenho: paginas publicas responsivas e imagens otimizadas.
 
-### Resultado esperado
-Plataforma apta a operar o campeonato alem da inscricao.
+## 8. Indicadores de sucesso
 
-## Fase 9 - Financeiro e Fechamento
+As metas numericas precisam de linha de base real. O MVP deve ao menos medir:
 
-### Objetivo
-Entregar visao gerencial e fechamento do evento.
+- taxa de conclusao de cadastro;
+- taxa de conclusao da inscricao;
+- pagamentos confirmados automaticamente versus baixas manuais;
+- webhooks recebidos, repetidos e com falha;
+- inscricoes que exigiram categorizacao manual;
+- solicitacoes de mudanca e tempo ate decisao;
+- erros por etapa do funil;
+- tempo gasto pelo organizador na checagem.
 
-### Entregas
-- relatorio financeiro sintetico
-- relatorio analitico de inscricoes
-- totais de inscritos, cancelados e pagos
-- receita bruta, taxa da plataforma e receita liquida
-- encerramento do evento com historico publico
+## 9. Decisoes confirmadas
 
-### Resultado esperado
-Organizador e administracao com controle financeiro claro e auditavel.
+- foco inicial em Jiu-Jitsu;
+- cada atleta pertence a uma equipe por vez;
+- menor e gerenciado por responsavel, sem login proprio;
+- idade usa a data completa de nascimento e a data oficial do evento;
+- categoria e calculada e congelada na inscricao;
+- mudanca durante a checagem exige aprovacao;
+- pagamento unificado mistura somente inscricoes do mesmo evento;
+- eventos concluidos preservam historico publico;
+- Supabase e a fundacao prevista;
+- Asaas deve ser avaliado primeiro em Sandbox; a contratacao definitiva ainda nao esta aprovada.
 
-## Fase 10 - Qualidade, Seguranca e Producao
+## 10. Decisoes pendentes e bloqueios
 
-### Objetivo
-Preparar a plataforma para operacao confiavel em ambiente real.
+- tarifa da plataforma, incidencia e responsavel pelo custo do gateway;
+- modelo de recebimento e eventual split/repasse;
+- cancelamento, estorno parcial, chargeback e prazos;
+- regras definitivas das chaves, especialmente grupos de 3 e 5;
+- formato final dos relatorios e fechamento;
+- politica de retencao, exclusao e direitos de imagem;
+- identidade publica dos inscritos: nome completo ou nome reduzido;
+- metas numericas dos indicadores de sucesso.
 
-### Entregas
-- testes automatizados
-- logs e auditoria
-- tratamento de erros
-- politicas de seguranca
-- monitoramento
-- rotina de backup
-- pipeline de deploy
+Essas pendencias nao bloqueiam o teste local da migracao nem contas/eventos. Pagamentos reais, chaves e producao dependem das respectivas decisoes.
 
-### Resultado esperado
-Plataforma pronta para uso real com confiabilidade e previsibilidade operacional.
+## 11. Criterio de liberacao do MVP
 
-## Prioridade Recomendada
+O MVP somente pode ser liberado quando:
 
-### Curto prazo
-- Fase 1
-- Fase 2
-- Fase 3
+- todos os itens aplicaveis de `criterios_aceite_mvp.md` estiverem aprovados;
+- isolamento entre duas organizacoes tiver teste automatizado;
+- nenhum acesso administrativo depender de `localStorage`;
+- o fluxo cadastro -> atleta -> evento -> inscricao -> pagamento Sandbox -> checagem passar E2E;
+- webhook repetido nao duplicar baixa nem inscricao;
+- backup, logs, monitoramento e procedimento de rollback estiverem documentados;
+- dados mockados nao forem misturados a dados reais no fluxo publicado.
 
-### Medio prazo
-- Fase 4
-- Fase 5
-- Fase 6
+## 12. Governanca de escopo
 
-### Longo prazo
-- Fase 7
-- Fase 8
-- Fase 9
-- Fase 10
-
-## Observacao Final
-
-O roadmap deve ser tratado como guia evolutivo. As fases podem ser refinadas em sprints menores conforme validacao com o cliente, disponibilidade de integracoes externas e prioridade comercial da operacao.
+Cada nova necessidade deve ser classificada como requisito do MVP, pos-MVP ou decisao pendente. Mudancas que afetem pagamento, permissao, dados pessoais ou regras esportivas exigem atualizacao deste PRD e dos criterios de aceite antes da implementacao.

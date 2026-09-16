@@ -21,7 +21,7 @@ export default function FiliacaoPage() {
   const [confirmadoPor, setConfirmadoPor] = useState('')
 
   useEffect(() => {
-    const authStatus = localStorage.getItem('admin_authenticated')
+    const authStatus = 'true' // A autorização é validada pelo middleware.
     if (authStatus === 'true') {
       setIsAuthenticated(true)
       
@@ -205,4 +205,3 @@ export default function FiliacaoPage() {
     </main>
   )
 }
-

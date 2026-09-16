@@ -1,11 +1,11 @@
 'use client'
 
 import Image from 'next/image'
-import { Calendar, MapPin } from 'lucide-react'
+import { ArrowRight, Calendar, MapPin, Trophy } from 'lucide-react'
 
 interface EventCardProps {
   event: {
-    id: number
+    id: string
     title: string
     type: string
     date: string
@@ -14,90 +14,63 @@ interface EventCardProps {
     daysLeft: number
     image?: string
   }
-  index: number
   onClick: () => void
 }
 
-export default function NetflixEventCard({ event, index, onClick }: EventCardProps) {
+export default function NetflixEventCard({ event, onClick }: EventCardProps) {
   return (
-    <div
-      className="relative group cursor-pointer w-full h-full"
-      onClick={onClick}
-      style={{
-        overflow: 'visible',
-      }}
-    >
-      {/* Card Container - Tamanho responsivo para grid - Mais quadrado */}
-      <div 
-        className="relative bg-white rounded-lg border border-gray-200 overflow-hidden transition-all duration-300 shadow-sm hover:border-primary-blue/60 hover:shadow-2xl flex flex-col h-full hover:scale-[1.02]"
-        style={{
-          minHeight: 'clamp(350px, 45vw, 480px)', // Mais quadrado em todas as telas
-        }}
+    <article className="h-full overflow-hidden rounded-mc-large border border-mc-border bg-mc-surface shadow-mc-subtle transition-shadow duration-mc-normal hover:shadow-mc-elevated">
+      <button
+        type="button"
+        onClick={onClick}
+        className="group flex h-full w-full flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus"
+        aria-label={`Ver detalhes de ${event.title}`}
       >
-        {/* Imagem do Evento no topo */}
-        {event.image ? (
-          <div className="relative h-36 sm:h-44 md:h-56 lg:h-64 xl:h-72 w-full flex-shrink-0 overflow-hidden">
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-mc-structure">
+          {event.image ? (
             <Image
               src={event.image}
-              alt={event.title}
+              alt=""
               fill
-              className="object-cover group-hover:scale-110 transition-transform duration-300"
-              sizes="(max-width: 640px) 280px, (max-width: 1024px) 380px, 460px"
+              className="object-cover transition-transform duration-mc-slow group-hover:scale-[1.02]"
+              sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
             />
-            {/* Overlay gradiente no hover */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </div>
-        ) : (
-          <div className="relative h-36 sm:h-44 md:h-56 lg:h-64 xl:h-72 w-full flex-shrink-0 bg-gradient-to-br from-primary-blue to-primary-accent" />
-        )}
-
-
-        {/* Badge de dias restantes - Responsivo */}
-        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 md:top-4 md:right-4 px-2 py-1 sm:px-2.5 sm:py-1 md:px-3 md:py-1.5 bg-primary-blue rounded-md z-20 shadow-lg">
-          <span className="text-white text-xs sm:text-sm md:text-base lg:text-lg font-bold">
-            {event.daysLeft}d
-          </span>
+          ) : (
+            <div className="flex h-full items-center justify-center text-blue-200" aria-hidden="true">
+              <Trophy size={44} strokeWidth={1.5} />
+            </div>
+          )}
         </div>
 
-        {/* Conteúdo do card - Responsivo */}
-        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 xl:p-6 flex flex-col flex-1 min-h-0 overflow-hidden">
-          {/* Badge de Categoria - Responsivo */}
-          <div className="inline-block px-2 py-1 sm:px-2.5 sm:py-1 md:px-3 md:py-1.5 lg:px-4 lg:py-2 xl:px-5 xl:py-2.5 bg-primary-accent/10 text-primary-accent rounded-lg text-xs sm:text-sm md:text-sm lg:text-base xl:text-lg font-medium mb-1.5 sm:mb-2 md:mb-3 lg:mb-4 xl:mb-5 w-fit">
-            {event.type}
-          </div>
-
-          {/* Título do evento - Responsivo */}
-          <h3 className="text-sm sm:text-base md:text-base lg:text-lg xl:text-xl font-bold text-gray-900 mb-1.5 sm:mb-2 md:mb-3 lg:mb-4 xl:mb-5 group-hover:text-primary-blue transition-colors duration-300 line-clamp-2 leading-tight">
+        <div className="flex flex-1 flex-col p-mc-24">
+          <p className="font-mc-interface text-xs font-semibold uppercase tracking-[0.12em] text-mc-action">{event.type}</p>
+          <h3 className="mt-mc-8 font-mc-display text-xl font-semibold leading-7 text-mc-text-primary transition-colors duration-mc-normal group-hover:text-mc-action">
             {event.title}
           </h3>
 
-          {/* Informações - Responsivo */}
-          <div className="space-y-1.5 sm:space-y-2 md:space-y-2.5 lg:space-y-3 xl:space-y-4 mt-auto">
-            <div className="flex items-start gap-1 sm:gap-1.5 md:gap-2 lg:gap-2.5">
-              <div className="p-1 sm:p-1 md:p-1.5 lg:p-2 xl:p-2.5 bg-primary-blue/10 rounded flex-shrink-0">
-                <Calendar size={12} className="sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 lg:w-[18px] lg:h-[18px] xl:w-[20px] xl:h-[20px] text-primary-blue" />
+          <dl className="mt-mc-24 space-y-mc-12 border-t border-mc-border pt-mc-16 font-mc-interface text-sm text-mc-text-secondary">
+            <div className="flex items-start gap-mc-8">
+              <Calendar aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-mc-action" />
+              <div>
+                <dt className="sr-only">Data</dt>
+                <dd>{event.date} <span className="text-mc-text-secondary/70">· {event.dateFull}</span></dd>
               </div>
-              <span className="text-xs sm:text-sm md:text-sm lg:text-base xl:text-lg text-gray-700 leading-relaxed break-words flex-1 line-clamp-1">
-                {event.date} - {event.dateFull}
-              </span>
             </div>
-            <div className="flex items-start gap-1 sm:gap-1.5 md:gap-2 lg:gap-2.5">
-              <div className="p-1 sm:p-1 md:p-1.5 lg:p-2 xl:p-2.5 bg-primary-accent/10 rounded flex-shrink-0">
-                <MapPin size={12} className="sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 lg:w-[18px] lg:h-[18px] xl:w-[20px] xl:h-[20px] text-primary-accent" />
+            <div className="flex items-start gap-mc-8">
+              <MapPin aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-mc-action" />
+              <div>
+                <dt className="sr-only">Local</dt>
+                <dd>{event.location}</dd>
               </div>
-              <span className="text-xs sm:text-sm md:text-sm lg:text-base xl:text-lg text-gray-700 leading-relaxed break-words flex-1 line-clamp-1">
-                {event.location}
-              </span>
             </div>
-          </div>
-        </div>
+          </dl>
 
-        {/* Efeito de brilho no hover */}
-        <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-blue/5 to-transparent rounded-lg" />
+          <span className="mt-mc-24 inline-flex items-center gap-mc-8 font-mc-interface text-sm font-semibold text-mc-action">
+            Ver detalhes
+            <ArrowRight aria-hidden="true" size={17} className="transition-transform duration-mc-normal group-hover:translate-x-0.5" />
+          </span>
         </div>
-      </div>
-    </div>
+      </button>
+    </article>
   )
 }
-

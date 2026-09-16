@@ -3,13 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FiLock, FiUser, FiLogIn, FiEye, FiEyeOff } from 'react-icons/fi'
+import { createClient } from '@/lib/supabase/client'
 
 export default function AdminAuthPage() {
   const router = useRouter()
   const [usuario, setUsuario] = useState('')
   const [senha, setSenha] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
-  const [lembrarMe, setLembrarMe] = useState(false)
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(false)
 
@@ -18,20 +18,14 @@ export default function AdminAuthPage() {
     setErro('')
     setCarregando(true)
 
-    // Simulação de autenticação - em produção, isso seria uma chamada à API
-    // Para desenvolvimento, aceita qualquer usuário/senha (desde que não estejam vazios)
-    // ou use as credenciais padrão: admin / admin123
-    setTimeout(() => {
-      // Salvar token de autenticação (em produção, usar JWT ou session)
-      if (usuario && senha) {
-        localStorage.setItem('admin_authenticated', 'true')
-        localStorage.setItem('admin_usuario', usuario)
-        router.push('/admin/eventos')
-      } else {
-        setErro('Por favor, preencha usuário e senha')
-        setCarregando(false)
-      }
-    }, 500)
+    const { error } = await createClient().auth.signInWithPassword({ email: usuario.trim(), password: senha })
+    if (error) {
+      setErro('E-mail ou senha inválidos')
+      setCarregando(false)
+      return
+    }
+    router.replace('/admin/eventos')
+    router.refresh()
   }
 
   return (
@@ -57,7 +51,7 @@ export default function AdminAuthPage() {
             {/* Campo Usuário */}
             <div className="space-y-2">
               <label htmlFor="usuario" className="block text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Usuário ou E-mail
+                E-mail
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -65,13 +59,13 @@ export default function AdminAuthPage() {
                 </div>
                 <input
                   id="usuario"
-                  type="text"
+                  type="email"
                   value={usuario}
                   onChange={(e) => setUsuario(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 text-base border-2 border-gray-200 rounded-lg focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition-colors bg-white"
-                  placeholder="Digite seu usuário ou e-mail"
+                  placeholder="Digite seu e-mail"
                   required
-                  autoComplete="username"
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -107,16 +101,8 @@ export default function AdminAuthPage() {
 
             {/* Lembrar-me e Esqueci senha */}
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={lembrarMe}
-                  onChange={(e) => setLembrarMe(e.target.checked)}
-                  className="w-4 h-4 text-primary-blue border-gray-300 rounded focus:ring-primary-blue"
-                />
-                <span className="text-sm text-gray-600">Lembrar de mim</span>
-              </label>
-              <a href="#" className="text-sm text-primary-blue hover:underline font-medium">
+              <span className="text-sm text-gray-500">Sessão protegida</span>
+              <a href="/recuperar-senha" className="text-sm text-primary-blue hover:underline font-medium">
                 Esqueci minha senha
               </a>
             </div>
@@ -127,13 +113,6 @@ export default function AdminAuthPage() {
                 <p className="text-red-700 text-sm font-medium">{erro}</p>
               </div>
             )}
-
-            {/* Mensagem de Ajuda (Desenvolvimento) */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
-              <p className="text-blue-700 text-xs font-medium">
-                <strong>Desenvolvimento:</strong> Use qualquer usuário e senha para fazer login.
-              </p>
-            </div>
 
             {/* Botão Entrar */}
             <button
@@ -176,4 +155,3 @@ export default function AdminAuthPage() {
     </main>
   )
 }
-

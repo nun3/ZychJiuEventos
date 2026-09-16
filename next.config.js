@@ -9,9 +9,13 @@ const nextConfig = {
         port: '3000',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'kfvypacjzlzwwblsbpwj.supabase.co',
+        pathname: '/storage/v1/object/public/event-assets/**',
+      },
     ],
   },
 }
 
 module.exports = nextConfig
-

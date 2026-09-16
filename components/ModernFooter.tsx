@@ -1,195 +1,98 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Facebook, Instagram, Youtube, Mail, Phone, MessageCircle } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Facebook, Instagram, Mail, MessageCircle, Phone, Youtube } from 'lucide-react'
+
+const navigationLinks = [
+  { href: '/academias', label: 'Para Organizadores de Eventos' },
+  { href: '/sistema', label: 'Sistema de Gestão de Academia' },
+  { href: '/quem-somos', label: 'Quem Somos' },
+  { href: '#eventos', label: 'Nossos Eventos' },
+  { href: '/cadastro', label: 'Cadastre-se' },
+  { href: '/login', label: 'Acessar Conta' },
+]
+
+const socialLinks = [
+  { href: 'https://facebook.com', label: 'Facebook do Meu Camp', icon: Facebook },
+  { href: 'https://instagram.com', label: 'Instagram do Meu Camp', icon: Instagram },
+  { href: 'https://youtube.com', label: 'YouTube do Meu Camp', icon: Youtube },
+]
 
 export default function ModernFooter() {
+  const pathname = usePathname()
   const phoneNumber = '5541991526177'
   const message = 'Olá! Gostaria de mais informações sobre os eventos.'
+  const isOperationalEventScreen = /^\/admin\/eventos\/[^/]+\/(checagem|pesagem)$/.test(pathname)
 
   const handleWhatsApp = () => {
-    const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
-    window.open(url, '_blank')
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank')
   }
 
   return (
     <>
-      <footer className="bg-gray-900 text-white mt-12 sm:mt-16 md:mt-20">
-        <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 md:py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8"
-          >
-            {/* Sobre o Meu Camp */}
-            <div className="sm:col-span-2 md:col-span-1">
-              <h3 className="text-base sm:text-lg font-bold mb-3">Sobre o Meu Camp</h3>
-              <p className="text-gray-300 text-xs sm:text-sm mb-3">
-                O Meu Camp é um site de Prestação de Serviços para Organização de Eventos, 
-                Venda de Ingressos, Controle de Filiações e Serviços em Geral para 
-                Federações, Associações e Organizadores Independentes.
-              </p>
-              <p className="text-gray-300 text-xs sm:text-sm">
-                Saiba mais sobre os nossos serviços{' '}
-                <Link href="/servicos" className="text-primary-blue hover:underline">
-                  AQUI
-                </Link>
-                .
-              </p>
-            </div>
+      <footer className="mt-mc-48 bg-mc-structure text-white">
+        <div className="mx-auto max-w-7xl px-4 py-mc-32 sm:px-6 sm:py-mc-48 lg:px-8">
+          <div className="grid gap-x-mc-32 gap-y-mc-32 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <section className="sm:col-span-2 lg:col-span-1" aria-labelledby="footer-about-title">
+              <h2 id="footer-about-title" className="font-mc-display text-mc-h3 text-white">Sobre o Meu Camp</h2>
+              <p className="mt-mc-12 font-mc-interface text-sm leading-6 text-slate-300">O Meu Camp é um site de Prestação de Serviços para Organização de Eventos, Venda de Ingressos, Controle de Filiações e Serviços em Geral para Federações, Associações e Organizadores Independentes.</p>
+              <p className="mt-mc-12 font-mc-interface text-sm leading-6 text-slate-300">Saiba mais sobre os nossos serviços <Link href="/servicos" className="font-semibold text-white underline decoration-mc-action underline-offset-4 hover:text-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">AQUI</Link>.</p>
+            </section>
 
-            {/* Navegação */}
-            <div>
-              <h3 className="text-base sm:text-lg font-bold mb-3">Navegação</h3>
-              <ul className="space-y-2 text-xs sm:text-sm">
-                <li>
-                  <Link href="/academias" className="text-gray-300 hover:text-primary-blue transition-colors">
-                    Para Organizadores de Eventos
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/sistema" className="text-gray-300 hover:text-primary-blue transition-colors">
-                    Sistema de Gestão de Academia
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/quem-somos" className="text-gray-300 hover:text-primary-blue transition-colors">
-                    Quem Somos
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#eventos" className="text-gray-300 hover:text-primary-blue transition-colors">
-                    Nossos Eventos
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/cadastro" className="text-gray-300 hover:text-primary-blue transition-colors">
-                    Cadastre-se
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/login" className="text-gray-300 hover:text-primary-blue transition-colors">
-                    Acessar Conta
-                  </Link>
-                </li>
+            <nav aria-labelledby="footer-navigation-title">
+              <h2 id="footer-navigation-title" className="font-mc-display text-mc-h3 text-white">Navegação</h2>
+              <ul className="mt-mc-12 space-y-mc-8">
+                {navigationLinks.map((link) => (
+                  <li key={link.href}><Link href={link.href} className="font-mc-interface text-sm leading-6 text-slate-300 transition-colors duration-mc-normal hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">{link.label}</Link></li>
+                ))}
               </ul>
-            </div>
+            </nav>
 
-            {/* Fale conosco */}
-            <div>
-              <h3 className="text-base sm:text-lg font-bold mb-3">Fale conosco</h3>
-              <ul className="space-y-2 text-xs sm:text-sm">
-                <li className="flex items-center space-x-2 text-gray-300">
-                  <Phone size={16} className="text-primary-blue flex-shrink-0" />
-                  <span>Suporte Operacional - (27) 99945-0345</span>
-                </li>
-                <li className="flex items-center space-x-2 text-gray-300">
-                  <Phone size={16} className="text-primary-blue flex-shrink-0" />
-                  <span>Comercial - (27) 99660-0345</span>
-                </li>
-                <li className="flex items-center space-x-2 text-gray-300">
-                  <Mail size={16} className="text-primary-blue flex-shrink-0" />
-                  <span>contato@meucamp.com.br</span>
-                </li>
+            <section aria-labelledby="footer-contact-title">
+              <h2 id="footer-contact-title" className="font-mc-display text-mc-h3 text-white">Fale conosco</h2>
+              <ul className="mt-mc-12 space-y-mc-12 font-mc-interface text-sm leading-5 text-slate-300">
+                <li className="flex items-start gap-mc-8"><Phone aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-blue-200" /><span>Suporte Operacional - (27) 99945-0345</span></li>
+                <li className="flex items-start gap-mc-8"><Phone aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-blue-200" /><span>Comercial - (27) 99660-0345</span></li>
+                <li className="flex items-start gap-mc-8"><Mail aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-blue-200" /><span>contato@meucamp.com.br</span></li>
               </ul>
-              <p className="text-gray-300 text-xs sm:text-sm mt-4">
-                <strong>Atendimento on-line:</strong><br />
-                Acesse o ícone do WhatsApp no rodapé para falar conosco.<br />
-                Horário: Seg à Sex das 09 às 19h (dias úteis)
-              </p>
-            </div>
+              <p className="mt-mc-16 font-mc-interface text-sm leading-6 text-slate-300"><strong className="font-semibold text-white">Atendimento on-line:</strong><br />Acesse o ícone do WhatsApp no rodapé para falar conosco.<br />Horário: Seg à Sex das 09 às 19h (dias úteis)</p>
+            </section>
 
-            {/* Social Links */}
-            <div>
-              <h3 className="text-base sm:text-lg font-bold mb-3">Redes Sociais</h3>
-              <div className="flex space-x-3">
-                <a
-                  href="https://facebook.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary-blue transition-colors"
-                >
-                  <Facebook size={18} />
-                </a>
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary-blue transition-colors"
-                >
-                  <Instagram size={18} />
-                </a>
-                <a
-                  href="https://youtube.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary-blue transition-colors"
-                >
-                  <Youtube size={18} />
-                </a>
-              </div>
-            </div>
+            <section aria-labelledby="footer-social-title">
+              <h2 id="footer-social-title" className="font-mc-display text-mc-h3 text-white">Redes sociais</h2>
+              <ul className="mt-mc-12 flex gap-mc-12">
+                {socialLinks.map((social) => (
+                  <li key={social.href}><a href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label} className="flex min-h-12 min-w-12 items-center justify-center rounded-mc-full bg-white/10 text-white transition-colors duration-mc-normal hover:bg-mc-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure"><social.icon aria-hidden="true" size={20} /></a></li>
+                ))}
+              </ul>
+            </section>
 
-            {/* Formas de Pagamento */}
-            <div>
-              <h3 className="text-base sm:text-lg font-bold mb-3">Formas de Pagamento</h3>
-              <p className="text-gray-300 text-xs sm:text-sm mb-3">
-                Boleto, Depósito Bancário ou Transferência Eletrônica
-                <br />
-                <span className="text-xs">(informações na página do evento)</span>
-              </p>
-              <div className="flex flex-wrap gap-2 mb-3">
-                <div className="w-14 h-9 bg-white rounded flex items-center justify-center text-xs font-bold text-gray-800">
-                  Visa
-                </div>
-                <div className="w-14 h-9 bg-white rounded flex items-center justify-center text-xs font-bold text-gray-800">
-                  MC
-                </div>
-                <div className="w-14 h-9 bg-white rounded flex items-center justify-center text-xs font-bold text-gray-800">
-                  Elo
-                </div>
+            <section aria-labelledby="footer-payment-title">
+              <h2 id="footer-payment-title" className="font-mc-display text-mc-h3 text-white">Formas de pagamento</h2>
+              <p className="mt-mc-12 font-mc-interface text-sm leading-6 text-slate-300">Boleto, Depósito Bancário ou Transferência Eletrônica<br /><span className="text-mc-caption">(informações na página do evento)</span></p>
+              <div className="mt-mc-16 flex flex-wrap gap-mc-8" aria-label="Bandeiras aceitas">
+                {['Visa', 'MC', 'Elo'].map((brand) => <span key={brand} className="flex h-9 min-w-14 items-center justify-center rounded-mc-small bg-white px-mc-8 font-mc-interface text-xs font-bold text-mc-text-primary">{brand}</span>)}
               </div>
-              <div className="text-xs text-gray-400">
-                <p>Portal Meu Camp tem Certificado de Segurança, para proteger os dados dos atletas e dos organizadores</p>
-              </div>
-            </div>
-          </motion.div>
+              <p className="mt-mc-16 font-mc-interface text-mc-caption leading-5 text-slate-400">Portal Meu Camp tem Certificado de Segurança, para proteger os dados dos atletas e dos organizadores.</p>
+            </section>
+          </div>
 
-          {/* Links Legais */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="border-t border-white/20 mt-8 pt-8"
-          >
-            <div className="flex flex-col md:flex-row justify-between items-center text-xs sm:text-sm text-gray-300">
-              <p>© {new Date().getFullYear()}, Portal Meu Camp – Todos os direitos reservados.</p>
-              <div className="flex space-x-4 mt-4 md:mt-0">
-                <Link href="/termos" className="hover:text-primary-blue transition-colors">
-                  Termos de Uso
-                </Link>
-                <span>|</span>
-                <Link href="/privacidade" className="hover:text-primary-blue transition-colors">
-                  Política de Privacidade
-                </Link>
-              </div>
+          <div className="mt-mc-32 flex flex-col gap-mc-12 border-t border-white/20 pt-mc-24 font-mc-interface text-sm text-slate-300 sm:flex-row sm:items-center sm:justify-between">
+            <p>© {new Date().getFullYear()}, Portal Meu Camp – Todos os direitos reservados.</p>
+            <div className="flex flex-wrap gap-x-mc-16 gap-y-mc-8">
+              <Link href="/termos" className="hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">Termos de Uso</Link>
+              <Link href="/privacidade" className="hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">Política de Privacidade</Link>
             </div>
-          </motion.div>
+          </div>
         </div>
       </footer>
 
-      {/* WhatsApp Widget */}
-      <button
-        onClick={handleWhatsApp}
-        className="fixed bottom-6 right-6 w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 bg-[#25D366] text-white rounded-full shadow-lg hover:bg-[#20BA5A] transition-all duration-300 flex items-center justify-center z-40 hover:scale-110"
-        aria-label="Fale conosco no WhatsApp"
-      >
-        <MessageCircle size={24} className="sm:w-7 sm:h-7 md:w-8 md:h-8" />
-      </button>
+      {!isOperationalEventScreen && (
+        <button type="button" onClick={handleWhatsApp} className="fixed bottom-[calc(env(safe-area-inset-bottom)+1rem)] right-[calc(env(safe-area-inset-right)+1rem)] z-40 flex min-h-12 min-w-12 items-center justify-center rounded-mc-full bg-[#25D366] text-white shadow-mc-elevated transition-colors duration-mc-normal hover:bg-[#20BA5A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2 sm:bottom-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:right-[calc(env(safe-area-inset-right)+1.5rem)] sm:min-h-14 sm:min-w-14" aria-label="Fale conosco no WhatsApp">
+          <MessageCircle aria-hidden="true" size={24} />
+        </button>
+      )}
     </>
   )
 }

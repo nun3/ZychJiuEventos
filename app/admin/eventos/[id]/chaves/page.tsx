@@ -21,7 +21,7 @@ export default function ChavesPage() {
   const [statusFiltro, setStatusFiltro] = useState<'gerada' | 'naoGerada' | 'todos'>('todos')
 
   useEffect(() => {
-    const authStatus = localStorage.getItem('admin_authenticated')
+    const authStatus = 'true' // A autorização é validada pelo middleware.
     if (authStatus === 'true') {
       setIsAuthenticated(true)
       
@@ -209,4 +209,3 @@ export default function ChavesPage() {
     </main>
   )
 }
-

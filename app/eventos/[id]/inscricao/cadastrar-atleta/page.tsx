@@ -1,70 +1,55 @@
-'use client'
-
-import { useState } from 'react'
-import ModernNavbar from '@/components/ModernNavbar'
-import ModernFooter from '@/components/ModernFooter'
-import NewAthleteModal from '@/components/Modals/NewAthleteModal'
 import Link from 'next/link'
-import { FiArrowLeft, FiUserPlus } from 'react-icons/fi'
+import { notFound, redirect } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
+import ModernNavbar from '@/components/ModernNavbar'
+import { Alert } from '@/components/ui/Alert'
+import { PageContainer } from '@/components/ui/PageContainer'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { createClient } from '@/lib/supabase/server'
+import RegistrationForm from './RegistrationForm'
 
-export default function NewAthletePage({ params }: { params: { id: string } }) {
-  const [isModalOpen, setIsModalOpen] = useState(false) // Não abre automaticamente
-
-  const handleSubmit = (data: any) => {
-    // Aqui você pode adicionar lógica para salvar o atleta e redirecionar para inscrição
-    console.log('Dados do atleta:', data)
-    // Após salvar, redirecionar para a página de inscrição do evento
-    // window.location.href = `/eventos/${params.id}/inscricao`
-  }
-
+export default async function RegistrationPage({ params }: { params: { id: string } }) {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect(`/login?redirectTo=${encodeURIComponent(`/eventos/${params.id}/inscricao/cadastrar-atleta`)}`)
+  const { data: event } = await supabase.from('events').select('id, nome, status, data_evento, valor_inscricao, regulamento_url').eq('id', params.id).maybeSingle()
+  if (!event) notFound()
+  const [phases, managers, athletes, rules, registrations] = await Promise.all([
+    supabase.from('event_phases').select('inicio, fim').eq('event_id', event.id).eq('tipo', 'inscricao'),
+    supabase.from('athlete_managers').select('athlete_id').eq('manager_id', user.id),
+    supabase.from('athletes').select('id, user_id, nome_completo, data_nascimento, genero, faixa, peso_kg'),
+    supabase.from('category_rule_sets').select('event_categories(*)').eq('event_id', event.id).eq('ativo', true).maybeSingle(),
+    supabase.from('registrations').select('athlete_id').eq('event_id', event.id).in('status', ['rascunho', 'pendente_pagamento', 'efetivada']),
+  ])
+  const failed = [phases, managers, athletes, rules, registrations].some(r => r.error)
+  const now = Date.now()
+  const open = event.status === 'inscricao' && phases.data?.some(p => now >= Date.parse(p.inicio) && now <= Date.parse(p.fim))
+  const managed = new Set(managers.data?.map(m => m.athlete_id))
+  const allowed = athletes.data?.filter(a => a.user_id === user.id || managed.has(a.id)) || []
   return (
-    <main className="min-h-screen bg-[#f8fafc]">
+    <main className="min-h-screen bg-mc-background">
       <ModernNavbar />
-      <div className="pt-20">
-        <div className="container mx-auto px-4 py-10">
-          {/* Header */}
-          <div className="mb-8">
-            <Link
-              href={`/eventos/${params.id}`}
-              className="text-gray-600 hover:text-amber-600 flex items-center space-x-2 transition mb-6"
-            >
-              <FiArrowLeft />
-              <span>voltar</span>
+      <PageContainer className="pb-mc-64 pt-32 sm:pt-36">
+        <PageHeader
+          title={`Inscrição — ${event.nome}`}
+          description="Selecione os atletas elegíveis, confira a categoria calculada e aceite os termos para confirmar."
+          breadcrumb={(
+            <Link href={`/eventos/${event.id}`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
+              <ArrowLeft aria-hidden="true" size={18} />
+              Voltar ao evento
             </Link>
-            <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-gray-800">
-              CADASTRAR NOVO ATLETA
-            </h1>
-            <p className="text-center text-lg text-gray-600 mb-12">
-              Preencha os dados do novo atleta. Após o cadastro, você poderá inscrevê-lo no evento.
-            </p>
-          </div>
-
-          {/* Botão para abrir modal (caso o modal seja fechado) */}
-          {!isModalOpen && (
-            <div className="text-center">
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-primary-blue to-primary-accent text-white px-8 py-4 rounded-lg font-semibold text-lg hover:shadow-lg transition-all"
-              >
-                <FiUserPlus size={24} />
-                Abrir Formulário de Cadastro
-              </button>
-            </div>
+          )}
+        />
+        <div className="mt-mc-32">
+          {failed ? (
+            <Alert variant="error" role="alert">Não foi possível carregar os dados. Tente novamente.</Alert>
+          ) : !open ? (
+            <Alert variant="warning" role="alert" title="Inscrições indisponíveis">Este evento está fora do prazo de inscrição.</Alert>
+          ) : (
+            <RegistrationForm event={event} athletes={allowed} categories={rules.data?.event_categories || []} registeredIds={registrations.data?.map(r => r.athlete_id) || []} />
           )}
         </div>
-      </div>
-
-      {/* Modal de Cadastro de Atleta */}
-      <NewAthleteModal
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmit}
-        mode="create"
-        showPasswordFields={false}
-      />
-
-      <ModernFooter />
+      </PageContainer>
     </main>
   )
 }
-

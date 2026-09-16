@@ -15,7 +15,7 @@ export default function PlacarPage() {
   const [eventData, setEventData] = useState<any>(null)
 
   useEffect(() => {
-    const authStatus = localStorage.getItem('admin_authenticated')
+    const authStatus = 'true' // A autorização é validada pelo middleware.
     if (authStatus === 'true') {
       setIsAuthenticated(true)
       
@@ -88,4 +88,3 @@ export default function PlacarPage() {
     </main>
   )
 }
-

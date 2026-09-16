@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion'
-import { Menu, X, User, FileText, Calendar, Users, Award, Ticket, LogOut, ChevronDown, ChevronUp, Plus } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Award, Calendar, ChevronDown, ChevronUp, FileText, LogOut, Menu, Plus, Ticket, User, Users, X } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 const accountLinks = [
   { href: '/dashboard/meu-perfil', label: 'Meu Perfil', icon: User },
@@ -16,266 +17,171 @@ const accountLinks = [
   { href: '/admin/autenticacao', label: 'Criar Evento', icon: Plus },
 ]
 
+const navLinks = [
+  { href: '/', label: 'Início' },
+  { href: '/eventos', label: 'Eventos' },
+  { href: '/academias', label: 'Academias' },
+  { href: '/sistema', label: 'Sistema' },
+  { href: '/quem-somos', label: 'Quem somos' },
+]
+
+type CurrentUser = { name: string; initial: string } | null
+
 export default function ModernNavbar() {
-  const [isScrolled, setIsScrolled] = useState(false)
+  const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  // Simulando usuário logado - em produção, isso viria de um contexto/auth
-  const [isLoggedIn] = useState(true) // true porque o perfil está sendo mostrado
-  const { scrollY } = useScroll()
-  
+  const [currentUser, setCurrentUser] = useState<CurrentUser>(null)
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null)
+  const accountButtonRef = useRef<HTMLButtonElement>(null)
+  const accountMenuRef = useRef<HTMLDivElement>(null)
+  const isLoggedIn = currentUser !== null
+
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+    const supabase = createClient()
+    const applyUser = (user: { email?: string; user_metadata?: Record<string, unknown> } | null) => {
+      if (!user) return setCurrentUser(null)
+      const metadataName = typeof user.user_metadata?.nome_completo === 'string'
+        ? user.user_metadata.nome_completo.trim()
+        : ''
+      const name = metadataName || user.email?.split('@')[0] || 'Usuário'
+      setCurrentUser({ name, initial: name.charAt(0).toUpperCase() })
     }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+
+    void supabase.auth.getUser().then(({ data }) => applyUser(data.user))
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => applyUser(session?.user ?? null))
+    return () => listener.subscription.unsubscribe()
   }, [])
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      if (isAccountMenuOpen && !target.closest('.account-menu-container')) {
+    const closeMobileMenuOnDesktop = () => {
+      if (window.innerWidth >= 1024) setIsMobileMenuOpen(false)
+    }
+    window.addEventListener('resize', closeMobileMenuOnDesktop)
+    return () => window.removeEventListener('resize', closeMobileMenuOnDesktop)
+  }, [])
+
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent) => {
+      if (isAccountMenuOpen && !accountMenuRef.current?.contains(event.target as Node)) setIsAccountMenuOpen(false)
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      if (isMobileMenuOpen) {
+        setIsMobileMenuOpen(false)
+        mobileMenuButtonRef.current?.focus()
+      }
+      if (isAccountMenuOpen) {
         setIsAccountMenuOpen(false)
+        accountButtonRef.current?.focus()
       }
     }
-    if (isAccountMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
+    document.addEventListener('mousedown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isAccountMenuOpen])
+  }, [isAccountMenuOpen, isMobileMenuOpen])
 
-  useMotionValueEvent(scrollY, 'change', (latest) => {
-    setIsScrolled(latest > 50)
-  })
+  const closeMenus = () => {
+    setIsMobileMenuOpen(false)
+    setIsAccountMenuOpen(false)
+  }
 
-  const navLinks = [
-    { href: '/', label: 'Início' },
-    { href: '/eventos', label: 'Eventos' },
-    { href: '/academias', label: 'Academias' },
-    { href: '/sistema', label: 'Sistema' },
-    { href: '/quem-somos', label: 'Quem somos' },
-  ]
+  const handleLogout = async () => {
+    await createClient().auth.signOut()
+    closeMenus()
+    router.replace('/login')
+    router.refresh()
+  }
+
+  const accountMenu = (
+    <ul className="divide-y divide-mc-border">
+      {accountLinks.map((item) => (
+        <li key={item.href}>
+          <Link href={item.href} className="flex min-h-12 items-center gap-mc-12 px-mc-16 py-mc-8 font-mc-interface text-sm font-medium text-mc-text-primary transition-colors duration-mc-normal hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus" onClick={closeMenus}>
+            <item.icon aria-hidden="true" size={18} className="shrink-0 text-mc-text-secondary" />
+            {item.label}
+          </Link>
+        </li>
+      ))}
+      <li>
+        <button type="button" onClick={handleLogout} className="flex min-h-12 w-full items-center gap-mc-12 px-mc-16 py-mc-8 text-left font-mc-interface text-sm font-medium text-mc-error transition-colors duration-mc-normal hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus">
+          <LogOut aria-hidden="true" size={18} className="shrink-0" />
+          Sair
+        </button>
+      </li>
+    </ul>
+  )
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className={`fixed top-0 left-0 right-0 z-50 bg-white transition-all duration-300 ${
-        isScrolled ? 'shadow-lg' : 'shadow-sm'
-      }`}
-    >
-      <div className="w-full" style={{ maxWidth: '1600px', margin: '0 auto' }}>
-        <div className="px-3 sm:px-5 lg:px-6 py-3 sm:py-4 lg:py-5">
-          <div className="flex items-center justify-between w-full">
-            {/* Logo */}
-            <Link href="/" className="flex items-center flex-shrink-0" style={{ marginRight: isMobile ? '20px' : '40px' }}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: 'spring', stiffness: 400 }}
-                className="relative"
-                style={{ width: isMobile ? '126px' : '162px', height: isMobile ? '63px' : '81px' }}
-              >
-                <Image
-                  src="/images/meucamp-logo.png"
-                  alt="Meu Camp"
-                  fill
-                  className="object-contain"
-                  priority
-                  sizes="(max-width: 768px) 180px, 240px"
-                />
-              </motion.div>
-            </Link>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-mc-border bg-mc-surface shadow-mc-subtle">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex min-h-20 items-center justify-between gap-mc-16">
+          <Link href="/" className="shrink-0 rounded-mc-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2" aria-label="Meu Camp — página inicial">
+            <span className="relative block h-12 w-28 sm:h-14 sm:w-32">
+              <Image src="/images/meucamp-logo.png" alt="Meu Camp" fill className="object-contain" priority sizes="(max-width: 639px) 112px, 128px" />
+            </span>
+          </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center" style={{ gap: '29px', flex: '1', justifyContent: 'center' }}>
+          <nav aria-label="Navegação principal" className="hidden flex-1 items-center justify-center gap-5 lg:flex xl:gap-7">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="inline-flex min-h-10 items-center font-mc-interface text-sm font-semibold text-mc-text-primary transition-colors duration-mc-normal hover:text-mc-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="hidden shrink-0 lg:flex lg:items-center">
+            {!isLoggedIn ? (
+              <Link href="/login" className="inline-flex min-h-10 items-center rounded-mc-medium px-mc-16 font-mc-interface text-sm font-semibold text-mc-text-primary transition-colors duration-mc-normal hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2">
+                Entrar
+              </Link>
+            ) : (
+              <div ref={accountMenuRef} className="relative">
+                <button ref={accountButtonRef} type="button" onClick={() => setIsAccountMenuOpen((open) => !open)} aria-label="Minha Conta" aria-expanded={isAccountMenuOpen} aria-controls="account-menu" className="inline-flex min-h-12 items-center gap-mc-8 rounded-mc-medium px-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary transition-colors duration-mc-normal hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-mc-full bg-mc-structure text-sm text-white">{currentUser?.initial}</span>
+                  <span className="max-w-36 truncate">{currentUser?.name}</span>
+                  {isAccountMenuOpen ? <ChevronUp aria-hidden="true" size={18} /> : <ChevronDown aria-hidden="true" size={18} />}
+                </button>
+                {isAccountMenuOpen ? <div id="account-menu" role="menu" className="absolute right-0 mt-mc-8 w-80 overflow-hidden rounded-mc-medium border border-mc-border bg-mc-surface shadow-mc-elevated">{accountMenu}</div> : null}
+              </div>
+            )}
+          </div>
+
+          <button ref={mobileMenuButtonRef} type="button" className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-mc-medium text-mc-text-primary transition-colors duration-mc-normal hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2 lg:hidden" onClick={() => setIsMobileMenuOpen((open) => !open)} aria-expanded={isMobileMenuOpen} aria-controls="mobile-navigation" aria-label={isMobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}>
+            {isMobileMenuOpen ? <X aria-hidden="true" size={24} /> : <Menu aria-hidden="true" size={24} />}
+          </button>
+        </div>
+
+        {isMobileMenuOpen ? (
+          <nav id="mobile-navigation" aria-label="Navegação principal" className="border-t border-mc-border py-mc-12 lg:hidden">
+            <div className="space-y-mc-4">
               {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-xs sm:text-sm md:text-sm lg:text-base font-semibold text-gray-900 hover:text-gray-700 transition-colors relative group whitespace-nowrap uppercase tracking-wide py-1.5"
-                >
+                <Link key={link.href} href={link.href} className="flex min-h-12 items-center rounded-mc-small px-mc-12 font-mc-interface text-base font-semibold text-mc-text-primary transition-colors duration-mc-normal hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2" onClick={() => setIsMobileMenuOpen(false)}>
                   {link.label}
-                  <motion.span
-                    className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 group-hover:w-full transition-all duration-300"
-                    initial={false}
-                  />
                 </Link>
               ))}
             </div>
-
-            {/* Right Side Actions - Ícones e Botões */}
-            <div className="hidden md:flex items-center gap-5 ml-auto flex-shrink-0">
-              {/* Link Entrar - Só mostra se não estiver logado */}
-              {!isLoggedIn && (
-                <Link
-                  href="/login"
-                  className="text-xs sm:text-sm md:text-sm lg:text-base font-semibold text-gray-900 hover:text-gray-700 transition-colors whitespace-nowrap uppercase tracking-wide"
-                >
+            <div className="mt-mc-12 border-t border-mc-border pt-mc-12">
+              {!isLoggedIn ? (
+                <Link href="/login" className="flex min-h-12 items-center justify-center rounded-mc-medium bg-mc-action px-mc-16 font-mc-interface text-base font-semibold text-white transition-colors duration-mc-normal hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2" onClick={() => setIsMobileMenuOpen(false)}>
                   Entrar
                 </Link>
-              )}
-
-              {/* Perfil no Navbar - Estilo do exemplo - Só mostra se estiver logado */}
-              {isLoggedIn && (
-                <div className="relative account-menu-container">
-                  <motion.button
-                    onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    aria-label="Minha Conta"
-                  >
-                    <div className="relative flex-shrink-0">
-                      <div className="w-11 h-11 rounded-full bg-gray-900 flex items-center justify-center border-2 border-gray-300 overflow-hidden">
-                        <span className="text-white font-semibold text-base">R</span>
-                      </div>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">Ricardo</span>
-                    {isAccountMenuOpen ? (
-                      <ChevronUp size={20} className="text-gray-600 flex-shrink-0" />
-                    ) : (
-                      <ChevronDown size={20} className="text-gray-600 flex-shrink-0" />
-                    )}
-                  </motion.button>
-                  {isAccountMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-xl overflow-hidden z-50"
-                    >
-                      <div className="border-b border-gray-200 bg-gray-50 px-5 py-4">
-                        <div className="text-base font-semibold uppercase tracking-wide text-gray-900">
-                          Meu Perfil
-                        </div>
-                      </div>
-                      <ul className="py-2">
-                        {accountLinks.map((item) => (
-                          <li key={item.href}>
-                            <Link
-                              href={item.href}
-                              className="flex items-center gap-4 px-5 py-4 text-gray-900 hover:bg-gray-100 transition text-xs sm:text-sm md:text-base"
-                              onClick={() => setIsAccountMenuOpen(false)}
-                            >
-                              <item.icon size={24} className="text-gray-600" />
-                              {item.label}
-                            </Link>
-                          </li>
-                        ))}
-                        <li className="border-t border-gray-200 mt-2">
-                          <button className="flex w-full items-center gap-4 px-5 py-4 text-left text-gray-900 hover:bg-gray-100 transition text-sm sm:text-base md:text-lg">
-                            <LogOut size={24} className="text-gray-600" />
-                            Sair
-                          </button>
-                        </li>
-                      </ul>
-                    </motion.div>
-                  )}
+              ) : (
+                <div className="overflow-hidden rounded-mc-medium border border-mc-border bg-mc-surface-secondary">
+                  <div className="flex items-center gap-mc-12 px-mc-16 py-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-mc-full bg-mc-structure text-white">{currentUser?.initial}</span>
+                    <span className="truncate">{currentUser?.name}</span>
+                  </div>
+                  {accountMenu}
                 </div>
               )}
             </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden text-gray-900"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
-          </div>
-
-          {/* Mobile Menu */}
-          <motion.div
-            initial={false}
-            animate={{
-              height: isMobileMenuOpen ? 'auto' : 0,
-              opacity: isMobileMenuOpen ? 1 : 0,
-            }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden overflow-hidden"
-          >
-            <div className="pt-4 pb-2 space-y-3">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block text-xs sm:text-sm md:text-base font-semibold text-gray-900 hover:text-gray-700 transition-colors py-3 uppercase tracking-wide"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="pt-4 space-y-3 border-t border-gray-200">
-                {!isLoggedIn && (
-                  <Link
-                    href="/login"
-                    className="block text-xs sm:text-sm md:text-base font-semibold text-gray-900 hover:text-gray-700 transition-colors py-3 uppercase tracking-wide"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Entrar
-                  </Link>
-                )}
-                {isLoggedIn && (
-                  <div className="w-full">
-                    <button
-                      onClick={() => {
-                        setIsAccountMenuOpen(!isAccountMenuOpen)
-                        setIsMobileMenuOpen(false)
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 text-gray-900 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all w-full"
-                      aria-label="Minha Conta"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center border-2 border-gray-300">
-                        <span className="text-white font-semibold text-lg">R</span>
-                      </div>
-                      <span className="text-lg font-semibold text-gray-900">Ricardo</span>
-                    </button>
-                    {isAccountMenuOpen && (
-                      <div className="mt-2 rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden">
-                        <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
-                          <div className="text-base font-semibold uppercase tracking-wide text-gray-900">
-                            Meu Perfil
-                          </div>
-                        </div>
-                        <ul className="py-2">
-                          {accountLinks.map((item) => (
-                            <li key={item.href}>
-                              <Link
-                                href={item.href}
-                                className="flex items-center gap-4 px-5 py-4 text-gray-900 hover:bg-gray-100 transition text-xs sm:text-sm md:text-base"
-                                onClick={() => {
-                                  setIsAccountMenuOpen(false)
-                                  setIsMobileMenuOpen(false)
-                                }}
-                              >
-                                <item.icon size={24} className="text-gray-600" />
-                                {item.label}
-                              </Link>
-                            </li>
-                          ))}
-                          <li className="border-t border-gray-200 mt-2">
-                            <button className="flex w-full items-center gap-4 px-5 py-4 text-left text-gray-900 hover:bg-gray-100 transition text-sm sm:text-base md:text-lg">
-                              <LogOut size={24} className="text-gray-600" />
-                              Sair
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        </div>
+          </nav>
+        ) : null}
       </div>
-    </motion.nav>
+    </header>
   )
 }
-

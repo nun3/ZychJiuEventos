@@ -19,7 +19,7 @@ export default function SecretariaPage() {
   const [mostrarFoto, setMostrarFoto] = useState(false)
 
   useEffect(() => {
-    const authStatus = localStorage.getItem('admin_authenticated')
+    const authStatus = 'true' // A autorização é validada pelo middleware.
     if (authStatus === 'true') {
       setIsAuthenticated(true)
       
@@ -372,4 +372,3 @@ export default function SecretariaPage() {
     </main>
   )
 }
-

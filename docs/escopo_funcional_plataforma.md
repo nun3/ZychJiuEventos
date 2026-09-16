@@ -243,9 +243,25 @@ Funcionalidades previstas:
 
 ## 9. Pontos para Validacao com o Cliente
 
-- definicao final dos papeis e niveis de acesso
-- regras de mudanca de categoria durante checagem
-- politica de pagamento e cancelamento
-- integracao de gateway prioritario
-- logica detalhada de geracao de chaves
-- formato desejado dos relatorios financeiros
+### Decisoes confirmadas
+
+- cada atleta pertence a uma unica equipe
+- atletas menores de idade nao possuem login proprio; o acesso e feito pela conta do responsavel
+- a idade e calculada pela data completa de nascimento
+- a categoria e calculada automaticamente no momento da inscricao
+- durante a checagem, o usuario pode solicitar mudanca de categoria e o organizador deve aprovar ou recusar
+- eventos concluidos permanecem em um historico publico com os resultados das lutas
+- o pagamento unificado pode reunir somente inscricoes do mesmo evento
+
+### Decisoes pendentes
+
+- confirmar a taxa da plataforma e sua forma de incidencia
+- definir a logica detalhada de geracao de chaves
+- definir a politica de cancelamento e estorno
+- confirmar o formato final dos relatorios financeiros
+
+### Diretriz inicial de gateway
+
+Para a primeira integracao, o Asaas deve ser avaliado como opcao principal por oferecer ambiente Sandbox separado, cobrancas PIX, integracao por API e Webhooks. O Mercado Pago permanece como alternativa, pois tambem oferece PIX, boleto, ambiente de testes e Webhooks.
+
+A escolha definitiva deve ocorrer depois de comparar tarifas de PIX e boleto, prazo de disponibilidade dos valores, requisitos de cadastro, suporte a contas de teste e regras de recebimento para a plataforma. Nenhum gateway deve ser tratado como gratuito em producao sem validacao comercial atualizada.

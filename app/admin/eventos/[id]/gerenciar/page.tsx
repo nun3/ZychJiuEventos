@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import {
   FiPlus,
   FiFileText,
@@ -286,7 +287,7 @@ export default function EventManagementPage() {
 
   useEffect(() => {
     // Verificar autenticação
-    const authStatus = localStorage.getItem('admin_authenticated')
+    const authStatus = 'true' // A autorização é validada pelo middleware.
     if (authStatus === 'true') {
       setIsAuthenticated(true)
       
@@ -322,10 +323,10 @@ export default function EventManagementPage() {
     }
   }, [router, eventId])
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_authenticated')
-    localStorage.removeItem('admin_usuario')
-    router.push('/admin/autenticacao')
+  const handleLogout = async () => {
+    await createClient().auth.signOut()
+    router.replace('/admin/autenticacao')
+    router.refresh()
   }
 
   if (isLoading) {
@@ -433,4 +434,3 @@ export default function EventManagementPage() {
     </main>
   )
 }
-

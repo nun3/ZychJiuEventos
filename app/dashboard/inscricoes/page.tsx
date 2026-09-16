@@ -1,318 +1,155 @@
-'use client'
-
 import Link from 'next/link'
-import { useState } from 'react'
-import { FiUser, FiEdit, FiUsers, FiClipboard, FiAward, FiCreditCard, FiChevronRight, FiFileText, FiCheckCircle, FiAlertCircle, FiDownload, FiStar, FiSearch } from 'react-icons/fi'
+import { redirect } from 'next/navigation'
+import { ClipboardList } from 'lucide-react'
+import { Alert } from '@/components/ui/Alert'
+import { DataTable, type DataTableColumn } from '@/components/ui/DataTable'
+import { EmptyState } from '@/components/ui/EmptyState'
+import {
+  MobileRecord,
+  MobileRecordActions,
+  MobileRecordHeader,
+  MobileRecordMeta,
+  MobileRecordStatus,
+  MobileRecordTitle,
+} from '@/components/ui/MobileRecord'
+import { PageContainer } from '@/components/ui/PageContainer'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { StatusBadge, type StatusBadgeProps } from '@/components/ui/StatusBadge'
+import { createClient } from '@/lib/supabase/server'
+import type { Json } from '@/lib/supabase/database.types'
+import PaymentCheckout, { type CheckoutRegistration } from './PaymentCheckout'
 
-const menuItems = [
-  { href: '/dashboard/meu-perfil', label: 'Meu Perfil', icon: FiUser },
-  { href: '/dashboard/alterar-cadastro', label: 'Alterar Meu Cadastro', icon: FiEdit },
-  { href: '/dashboard/meus-atletas', label: 'Meus Atletas', icon: FiUsers },
-  { href: '/dashboard/inscricoes', label: 'Inscrições Realizadas', icon: FiClipboard, active: true },
-  { href: '/dashboard/minhas-filiacoes', label: 'Minhas Filiações', icon: FiAward },
-  { href: '/dashboard/meus-ingressos', label: 'Meus Ingressos', icon: FiCreditCard },
-]
-
-interface Registration {
-  id: string
-  athleteName: string
-  age: number
-  eventName: string
-  eventDate: string
-  modality: string[]
-  category: string[]
-  team: string
-  professor: string
-  registrationNumber: string
-  price: number
-  paymentStatus: 'confirmed' | 'pending'
-  registrationStatus: 'confirmed' | 'pending'
-  registeredAt: string
+function snapshotName(value: Json, key: string) {
+  return value && typeof value === 'object' && !Array.isArray(value) && typeof value[key] === 'string' ? String(value[key]) : 'Não informado'
 }
 
-// Inscrições do próprio professor (vazio para mostrar alerta)
-const mockMyRegistrations: Registration[] = []
+const statusLabels: Record<string, string> = {
+  rascunho: 'Rascunho',
+  pendente_pagamento: 'Pendente de pagamento',
+  efetivada: 'Efetivada',
+  expirada: 'Expirada',
+  cancelada: 'Cancelada',
+  estornada: 'Estornada',
+}
 
-// Inscrições dos atletas do professor
-const mockAthleteRegistrations: Registration[] = [
-  {
-    id: '1',
-    athleteName: 'ARTHUR DA COSTA RAMOS',
-    age: 10,
-    eventName: '1ª COPA GREMIO INDUSTRIAL KIDS DE JIU-JITSU',
-    eventDate: '07/12/2025',
-    modality: ['Categoria de Peso Jiu-Jitsu'],
-    category: ['Infantil B - Branca/Cinza - Pluma - Masculino'],
-    team: 'Zych Jiu Jitsu',
-    professor: 'Ricardo Zych',
-    registrationNumber: '0003',
-    price: 70.00,
-    paymentStatus: 'confirmed',
-    registrationStatus: 'confirmed',
-    registeredAt: '11/11/2025 10:00',
-  },
-  {
-    id: '2',
-    athleteName: 'ÁGATA GIORDANI',
-    age: 9,
-    eventName: '1ª COPA GREMIO INDUSTRIAL KIDS DE JIU-JITSU',
-    eventDate: '07/12/2025',
-    modality: ['Categoria de Peso Jiu-Jitsu'],
-    category: ['Infantil A - Branca/Cinza - Extra Pesadíssimo - Feminino'],
-    team: 'Zych Jiu Jitsu',
-    professor: 'Ricardo Zych',
-    registrationNumber: '0029',
-    price: 70.00,
-    paymentStatus: 'confirmed',
-    registrationStatus: 'confirmed',
-    registeredAt: '27/11/2025 16:32',
-  },
-  {
-    id: '3',
-    athleteName: 'CAETANO DALL ACQUA',
-    age: 10,
-    eventName: '1ª COPA GREMIO INDUSTRIAL KIDS DE JIU-JITSU',
-    eventDate: '07/12/2025',
-    modality: ['Categoria de Peso e Absoluto Jiu-Jitsu', 'Categoria de Peso Jiu-Jitsu'],
-    category: ['Infantil B - Todas Faixas - Live - Masculino', 'Infantil B - Branca/Cinza - Pesadíssimo - Masculino'],
-    team: 'Zych Jiu Jitsu',
-    professor: 'Ricardo Zych',
-    registrationNumber: '0005',
-    price: 95.00,
-    paymentStatus: 'confirmed',
-    registrationStatus: 'confirmed',
-    registeredAt: '11/11/2025 10:00',
-  },
-]
+const statusVariants: Record<string, StatusBadgeProps['variant']> = {
+  rascunho: 'neutral',
+  pendente_pagamento: 'warning',
+  efetivada: 'success',
+  expirada: 'error',
+  cancelada: 'error',
+  estornada: 'error',
+}
 
-export default function InscricoesPage() {
-  const [selectedEvent, setSelectedEvent] = useState<string>('all')
+function RegistrationStatus({ status }: { status: string }) {
+  return <StatusBadge variant={statusVariants[status] || 'neutral'}>{statusLabels[status] || status.replaceAll('_', ' ')}</StatusBadge>
+}
 
-  // Agrupar inscrições dos atletas por evento
-  const groupedByEvent = mockAthleteRegistrations.reduce((acc, reg) => {
-    if (!acc[reg.eventName]) {
-      acc[reg.eventName] = []
-    }
-    acc[reg.eventName].push(reg)
-    return acc
-  }, {} as Record<string, Registration[]>)
-
-  const events = Object.keys(groupedByEvent)
-  const filteredAthleteRegistrations = selectedEvent === 'all' 
-    ? mockAthleteRegistrations 
-    : groupedByEvent[selectedEvent] || []
-
-  const hasMyRegistrations = mockMyRegistrations.length > 0
-  const hasAthleteRegistrations = mockAthleteRegistrations.length > 0
+export default async function RegistrationsPage() {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login?redirectTo=%2Fdashboard%2Finscricoes')
+  const [own, managed] = await Promise.all([
+    supabase.from('athletes').select('id').eq('user_id', user.id),
+    supabase.from('athlete_managers').select('athlete_id').eq('manager_id', user.id),
+  ])
+  const ids = Array.from(new Set([...(own.data || []).map(a => a.id), ...(managed.data || []).map(a => a.athlete_id)]))
+  const result = ids.length ? await supabase.from('registrations')
+    .select('id, numero, athlete_id, event_id, status, valor, athlete_snapshot, category_snapshot, events(id, nome)')
+    .in('athlete_id', ids).order('created_at', { ascending: false }) : { data: [], error: null }
+  const payments = await supabase.from('payments').select('id, status, valor_total, metodo, events(nome), payment_registrations(registration_id)').eq('created_by', user.id).order('created_at', { ascending: false })
+  const error = own.error || managed.error || result.error || payments.error
+  const reserved = new Set((payments.data || []).filter(p => ['aguardando', 'pago'].includes(p.status)).flatMap(p => p.payment_registrations.map(r => r.registration_id)))
+  const checkoutRows: CheckoutRegistration[] = (result.data || []).filter(r => !reserved.has(r.id)).map(r => ({
+    id: r.id,
+    eventId: r.event_id,
+    eventName: r.events?.nome || 'Evento',
+    athleteName: snapshotName(r.athlete_snapshot, 'nome_completo'),
+    categoryName: snapshotName(r.category_snapshot, 'nome'),
+    status: r.status,
+    amount: r.valor,
+  }))
+  const rows = result.data || []
+  const columns: Array<DataTableColumn<(typeof rows)[number]>> = [
+    {
+      key: 'event',
+      header: 'Evento',
+      render: (registration) => (
+        <div className="min-w-52">
+          <p className="font-semibold text-mc-text-primary">{registration.events?.nome || 'Evento'}</p>
+          <p className="mt-mc-4 text-xs text-mc-text-secondary">Inscrição #{registration.numero}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'athlete',
+      header: 'Atleta',
+      render: (registration) => (
+        <div className="min-w-48">
+          <p className="font-semibold text-mc-text-primary">{snapshotName(registration.athlete_snapshot, 'nome_completo')}</p>
+          <p className="mt-mc-4 text-xs text-mc-text-secondary">{snapshotName(registration.category_snapshot, 'nome')}</p>
+        </div>
+      ),
+    },
+    { key: 'status', header: 'Situação', render: (registration) => <RegistrationStatus status={registration.status} /> },
+    { key: 'amount', header: 'Valor', render: (registration) => <span className="font-semibold">{registration.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span> },
+    {
+      key: 'actions',
+      header: 'Ação',
+      render: (registration) => <Link href={`/dashboard/meus-atletas/${registration.athlete_id}/inscricoes`} className="inline-flex min-h-10 items-center font-semibold text-mc-action hover:underline">Histórico do atleta</Link>,
+    },
+  ]
 
   return (
-    <div className="container mx-auto px-6 pt-6 pb-12">
-      <section className="rounded-2xl bg-white shadow-xl overflow-hidden">
-        {/* Header */}
-        <div className="relative bg-gradient-to-r from-[#0C3049] via-blue-800 to-[#0C3049] px-6 py-8 text-white">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
-          <div className="relative">
-            <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-wide mb-2">Minhas Inscrições</h1>
-            <p className="text-base text-blue-100">Acompanhe todas as suas inscrições realizadas</p>
-          </div>
+    <main className="py-mc-32 sm:py-mc-48">
+      <PageContainer>
+        <PageHeader title="Inscrições realizadas" description="Consulte suas inscrições e as dos atletas que você gerencia." />
+
+        <div className="mt-mc-32">
+          {error ? <Alert variant="error" role="alert">Não foi possível carregar as inscrições.</Alert> : null}
+          {!error && !rows.length ? (
+            <EmptyState
+              icon={<ClipboardList size={34} />}
+              title="Nenhuma inscrição encontrada"
+              description="As inscrições realizadas por você ou para seus atletas aparecerão aqui."
+              className="rounded-mc-medium border border-mc-border bg-mc-surface"
+            />
+          ) : null}
+          {!error && rows.length ? (
+            <section aria-labelledby="registrations-list-title">
+              <h2 id="registrations-list-title" className="sr-only">Lista de inscrições</h2>
+              <DataTable rows={rows} columns={columns} getRowKey={(registration) => registration.id} caption="Inscrições realizadas" className="hidden md:block" tableClassName="min-w-[900px]" />
+              <div className="space-y-mc-12 md:hidden">
+                {rows.map((registration) => (
+                  <MobileRecord key={registration.id}>
+                    <MobileRecordHeader>
+                      <div className="min-w-0">
+                        <MobileRecordTitle className="text-lg leading-6">{registration.events?.nome || 'Evento'}</MobileRecordTitle>
+                        <MobileRecordMeta>Inscrição #{registration.numero}</MobileRecordMeta>
+                      </div>
+                    </MobileRecordHeader>
+                    <dl className="mt-mc-16 space-y-mc-12 border-y border-mc-border py-mc-12 font-mc-interface text-sm">
+                      <div><dt className="text-mc-text-secondary">Atleta</dt><dd className="mt-mc-4 font-semibold text-mc-text-primary">{snapshotName(registration.athlete_snapshot, 'nome_completo')}</dd></div>
+                      <div><dt className="text-mc-text-secondary">Categoria</dt><dd className="mt-mc-4 font-semibold text-mc-text-primary">{snapshotName(registration.category_snapshot, 'nome')}</dd></div>
+                      <div><dt className="text-mc-text-secondary">Valor</dt><dd className="mt-mc-4 font-semibold text-mc-text-primary">{registration.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</dd></div>
+                    </dl>
+                    <MobileRecordStatus><RegistrationStatus status={registration.status} /></MobileRecordStatus>
+                    <MobileRecordActions><Link href={`/dashboard/meus-atletas/${registration.athlete_id}/inscricoes`} className="inline-flex min-h-11 items-center rounded-mc-medium border border-mc-border px-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary hover:bg-mc-surface-secondary">Histórico do atleta</Link></MobileRecordActions>
+                  </MobileRecord>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
 
-        <div className="grid gap-6 px-6 py-8 lg:grid-cols-[220px,1fr]">
-          {/* Menu Lateral */}
-          <aside className="space-y-3">
-            {menuItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm font-semibold transition ${
-                    item.active
-                      ? 'border-primary-blue bg-primary-blue text-white shadow'
-                      : 'border-gray-200 text-gray-600 hover:border-primary-blue hover:text-primary-blue'
-                  }`}
-                >
-                  <Icon size={16} />
-                  {item.label}
-                </Link>
-              )
-            })}
-            <button className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition w-full">
-              Sair da conta
-              <FiChevronRight size={14} />
-            </button>
-          </aside>
-
-          <div className="space-y-8">
-            {/* Seção: Minhas Inscrições (do Professor) */}
-            <div>
-              <h2 className="text-2xl font-bold text-teal-600 uppercase tracking-wide mb-4">Minhas Inscrições</h2>
-              
-              {/* Alerta quando não há inscrições do professor */}
-              {!hasMyRegistrations && (
-                <div className="rounded-xl border-2 border-pink-200 bg-pink-50 p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                        <FiAlertCircle className="text-red-600" size={24} />
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-red-800 mb-2 uppercase">Atenção</h3>
-                      <p className="text-base text-gray-700">
-                        Você ainda NÃO se inscreveu em nenhum evento no site. Clique{' '}
-                        <Link href="/eventos" className="text-primary-blue font-semibold hover:underline">
-                          AQUI
-                        </Link>{' '}
-                        para acessar os Eventos e realizar a sua inscrição.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Lista de inscrições do professor (quando houver) */}
-              {hasMyRegistrations && (
-                <div className="space-y-4">
-                  {mockMyRegistrations.map((reg) => (
-                    <div key={reg.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-                      {/* Conteúdo das inscrições do professor */}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Seção: Inscrições de Meus Atletas */}
-            <div>
-              <h2 className="text-2xl font-bold text-teal-600 uppercase tracking-wide mb-4">Inscrições de Meus Atletas</h2>
-              
-              {hasAthleteRegistrations && (
-                <>
-
-                  {/* Filtro por Evento */}
-                  <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm mb-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FiSearch className="text-gray-400" size={18} />
-                      <label className="block text-sm font-semibold text-gray-700 uppercase">Filtrar por Evento</label>
-                    </div>
-                    <select
-                      value={selectedEvent}
-                      onChange={(e) => setSelectedEvent(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue transition bg-white"
-                    >
-                      <option value="all">Todos os Eventos</option>
-                      {events.map((event) => (
-                        <option key={event} value={event}>{event} em {groupedByEvent[event][0].eventDate}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Lista de Inscrições Agrupadas por Evento */}
-                  {Object.entries(selectedEvent === 'all' ? groupedByEvent : { [selectedEvent]: groupedByEvent[selectedEvent] || [] }).map(([eventName, registrations]) => (
-                    <div key={eventName} className="space-y-4">
-                      {/* Header do Evento */}
-                      <div className="rounded-xl border-2 border-primary-blue bg-blue-50 p-4">
-                        <h3 className="text-lg font-bold text-gray-800 uppercase mb-1">{eventName}</h3>
-                        <p className="text-sm text-gray-600">
-                          em {registrations[0].eventDate} • N° de Inscrições Realizadas: <span className="font-semibold text-primary-blue">{registrations.length}</span>
-                        </p>
-                      </div>
-
-                    {/* Cards de Inscrições */}
-                    <div className="space-y-4">
-                      {registrations.map((reg) => (
-                        <div key={reg.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition">
-                          {/* Header do Atleta */}
-                          <div className="flex items-start justify-between mb-4 pb-4 border-b border-gray-200">
-                            <div className="flex-1">
-                              <h3 className="text-xl font-bold text-gray-900 uppercase mb-1">
-                                {reg.athleteName}, {reg.age} ANOS
-                              </h3>
-                              <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
-                                <span>Equipe: <span className="font-semibold">{reg.team}</span></span>
-                                <span>Professor: <span className="font-semibold">{reg.professor}</span></span>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-mono text-gray-400 mb-1">#{reg.registrationNumber}</p>
-                              <p className="text-lg font-bold text-primary-blue">R$ {reg.price.toFixed(2).replace('.', ',')}</p>
-                            </div>
-                          </div>
-
-                          {/* Modalidades e Categorias */}
-                          <div className="mb-4 space-y-3">
-                            {reg.modality.map((mod, index) => (
-                              <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                <p className="text-sm font-semibold text-gray-700 uppercase mb-2">Modalidade</p>
-                                <p className="text-base font-medium text-gray-800 mb-2">{mod}</p>
-                                {reg.category[index] && (
-                                  <p className="text-sm text-gray-600">{reg.category[index]}</p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Status e Data */}
-                          <div className="flex flex-wrap items-center gap-4 mb-4 pb-4 border-b border-gray-200">
-                            <div className="flex items-center gap-2">
-                              {reg.paymentStatus === 'confirmed' ? (
-                                <>
-                                  <FiCheckCircle className="text-green-600" size={18} />
-                                  <span className="text-sm font-semibold text-green-700">Pagamento: Confirmado</span>
-                                </>
-                              ) : (
-                                <>
-                                  <FiAlertCircle className="text-amber-600" size={18} />
-                                  <span className="text-sm font-semibold text-amber-700">Pagamento: Pendente</span>
-                                </>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {reg.registrationStatus === 'confirmed' ? (
-                                <>
-                                  <FiCheckCircle className="text-green-600" size={18} />
-                                  <span className="text-sm font-semibold text-green-700">Inscrição: Efetivada</span>
-                                </>
-                              ) : (
-                                <>
-                                  <FiAlertCircle className="text-amber-600" size={18} />
-                                  <span className="text-sm font-semibold text-amber-700">Inscrição: Pendente</span>
-                                </>
-                              )}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              Inscrito em {reg.registeredAt}
-                            </div>
-                          </div>
-
-                          {/* Botões de Ação */}
-                          <div className="flex flex-wrap gap-3">
-                            <button className="flex items-center gap-2 rounded-lg border-2 border-red-300 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50">
-                              <FiDownload size={16} />
-                              Recibo de Pagamento
-                            </button>
-                            <button className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700">
-                              <FiFileText size={16} />
-                              Declaração de Participação
-                            </button>
-                            <button className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700">
-                              <FiStar size={16} />
-                              Avaliar o Evento
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  ))}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+        {!error && <PaymentCheckout registrations={checkoutRows} />}
+        {!error && !!payments.data?.length && <section className="mt-8" aria-label="Pagamentos reservados">
+          <h2 className="text-2xl font-bold">Pagamentos reservados</h2>
+          <ul className="mt-4 space-y-3">{payments.data.map(p => <li key={p.id}>
+            <Link className="text-primary-blue underline" href={`/dashboard/pagamentos/${p.id}`}>{p.events?.nome || 'Evento'} — {p.metodo.toUpperCase()} — {p.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} — {p.status}</Link>
+          </li>)}</ul>
+        </section>}
+      </PageContainer>
+    </main>
   )
 }
-

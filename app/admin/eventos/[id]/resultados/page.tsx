@@ -18,7 +18,7 @@ export default function ResultadosPage() {
   const [apenasSemResultados, setApenasSemResultados] = useState(false)
 
   useEffect(() => {
-    const authStatus = localStorage.getItem('admin_authenticated')
+    const authStatus = 'true' // A autorização é validada pelo middleware.
     if (authStatus === 'true') {
       setIsAuthenticated(true)
       
@@ -170,4 +170,3 @@ export default function ResultadosPage() {
     </main>
   )
 }
-

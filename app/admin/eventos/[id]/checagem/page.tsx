@@ -1,209 +1,121 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { FiArrowLeft, FiSearch } from 'react-icons/fi'
-import { getEventById } from '@/lib/eventStorage'
+import { notFound, redirect } from 'next/navigation'
+import { ArrowLeft, ClipboardList, Info } from 'lucide-react'
+import InternalNavigation from '@/components/InternalNavigation'
+import { Alert } from '@/components/ui/Alert'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { PageContainer } from '@/components/ui/PageContainer'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import { createClient } from '@/lib/supabase/server'
+import type { Json } from '@/lib/supabase/database.types'
+import EventRegistrationsList, { type EventRegistrationItem } from './EventRegistrationsList'
 
-export default function ChecagemPage() {
-  const router = useRouter()
-  const params = useParams()
-  const eventId = params?.id as string
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [eventData, setEventData] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<'categoria' | 'atleta' | 'equipe'>('categoria')
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-  useEffect(() => {
-    const authStatus = localStorage.getItem('admin_authenticated')
-    if (authStatus === 'true') {
-      setIsAuthenticated(true)
-      
-      const id = parseInt(eventId)
-      if (!isNaN(id)) {
-        const stored = getEventById(id)
-        if (stored) {
-          setEventData({
-            id: stored.id,
-            title: stored.titulo,
-          })
-        }
-      }
-      
-      setIsLoading(false)
-    } else {
-      router.push('/admin/autenticacao')
-    }
-  }, [router, eventId])
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#0C3049] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!isAuthenticated) return null
-
-  return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm -mt-44 pt-44">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-between mb-4">
-            <Link
-              href={`/admin/eventos/${eventId}/gerenciar`}
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-[#0C3049] transition-colors"
-            >
-              <FiArrowLeft size={20} />
-              <span className="font-semibold">Voltar para Gestão</span>
-            </Link>
-          </div>
-          
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 uppercase tracking-wide">
-            Checagem
-          </h1>
-        </div>
-      </div>
-
-      {/* Conteúdo */}
-      <div className="container mx-auto px-6 py-8">
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          {/* Tabs */}
-          <div className="flex gap-2 mb-6 border-b border-gray-200">
-            <button
-              onClick={() => setActiveTab('categoria')}
-              className={`px-6 py-3 font-semibold transition ${
-                activeTab === 'categoria'
-                  ? 'border-b-2 border-[#0C3049] text-[#0C3049]'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Por Categoria
-            </button>
-            <button
-              onClick={() => setActiveTab('atleta')}
-              className={`px-6 py-3 font-semibold transition ${
-                activeTab === 'atleta'
-                  ? 'border-b-2 border-[#0C3049] text-[#0C3049]'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Por Atleta
-            </button>
-            <button
-              onClick={() => setActiveTab('equipe')}
-              className={`px-6 py-3 font-semibold transition ${
-                activeTab === 'equipe'
-                  ? 'border-b-2 border-[#0C3049] text-[#0C3049]'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Por Equipe
-            </button>
-          </div>
-
-          {/* Filtros */}
-          {activeTab === 'categoria' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase">
-                    Tipo Categoria
-                  </label>
-                  <select className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0C3049] focus:border-[#0C3049]">
-                    <option value="">Selecione...</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase">
-                    Categoria
-                  </label>
-                  <select className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0C3049] focus:border-[#0C3049]">
-                    <option value="">Selecione...</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase">
-                    Faixa
-                  </label>
-                  <select className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0C3049] focus:border-[#0C3049]">
-                    <option value="">Selecione...</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase">
-                    Peso
-                  </label>
-                  <select className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0C3049] focus:border-[#0C3049]">
-                    <option value="">Selecione...</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase">
-                    Sexo
-                  </label>
-                  <select className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0C3049] focus:border-[#0C3049]">
-                    <option value="">Selecione...</option>
-                    <option>Masculino</option>
-                    <option>Feminino</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase">
-                      Ordenar Registros
-                    </label>
-                    <select className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0C3049] focus:border-[#0C3049]">
-                      <option>Nome do Atleta</option>
-                      <option>Data de Inscrição</option>
-                      <option>Categoria</option>
-                    </select>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mt-6">
-                    <label className="text-sm font-semibold text-gray-700 uppercase">
-                      Mostrar Foto do Atleta?
-                    </label>
-                    <input type="checkbox" className="w-4 h-4" />
-                    <span className="text-sm text-gray-600">Sim</span>
-                  </div>
-                </div>
-                
-                <button className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0C3049] to-blue-800 text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition">
-                  <FiSearch size={20} />
-                  Pesquisar
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'atleta' && (
-            <div className="text-center py-12 text-gray-500">
-              <p>Filtros por Atleta em desenvolvimento...</p>
-            </div>
-          )}
-
-          {activeTab === 'equipe' && (
-            <div className="text-center py-12 text-gray-500">
-              <p>Filtros por Equipe em desenvolvimento...</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </main>
-  )
+function snapshotRecord(snapshot: Json) {
+  return snapshot && typeof snapshot === 'object' && !Array.isArray(snapshot)
+    ? snapshot as Record<string, Json | undefined>
+    : {}
 }
 
+function textValue(value: Json | undefined, fallback = 'Não informado') {
+  return typeof value === 'string' && value.trim() ? value : fallback
+}
+
+function numberValue(value: Json | undefined) {
+  return typeof value === 'number' ? value : null
+}
+
+export default async function EventRegistrationsPage({ params }: { params: { id: string } }) {
+  if (!uuidPattern.test(params.id)) notFound()
+
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect(`/admin/autenticacao?redirectTo=${encodeURIComponent(`/admin/eventos/${params.id}/checagem`)}`)
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, nome, organization_id, status')
+    .eq('id', params.id)
+    .maybeSingle()
+
+  if (!event) notFound()
+
+  const [{ data: membership }, { data: platformRole }] = await Promise.all([
+    supabase.from('organization_members').select('role').eq('organization_id', event.organization_id).eq('user_id', user.id).in('role', ['owner', 'organizer']).limit(1).maybeSingle(),
+    supabase.from('platform_user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle(),
+  ])
+
+  if (!membership && !platformRole) redirect('/dashboard?erro=sem_permissao')
+
+  const { data, error } = await supabase
+    .from('registrations')
+    .select('id, numero, status, athlete_snapshot, category_snapshot, created_at, payment_registrations(payments(status))')
+    .eq('event_id', event.id)
+    .order('numero', { ascending: true })
+
+  const registrations: EventRegistrationItem[] = (data || []).map((registration) => {
+    const athlete = snapshotRecord(registration.athlete_snapshot)
+    const category = snapshotRecord(registration.category_snapshot)
+    const paymentStatuses = registration.payment_registrations
+      .map((link) => link.payments?.status)
+      .filter((status): status is NonNullable<typeof status> => Boolean(status))
+
+    return {
+      id: registration.id,
+      number: registration.numero,
+      athleteName: textValue(athlete.nome_completo, 'Atleta não informado'),
+      teamName: textValue(athlete.team_name),
+      categoryName: textValue(category.nome, 'Categoria não informada'),
+      belt: textValue(athlete.faixa),
+      registeredWeight: numberValue(athlete.peso_kg),
+      registrationStatus: registration.status,
+      paymentStatus: paymentStatuses.at(-1) || null,
+      createdAt: registration.created_at,
+    }
+  })
+
+  return (
+    <div className="-mt-24 min-h-screen bg-mc-background">
+      <InternalNavigation />
+      <main className="py-mc-32 sm:py-mc-48">
+        <PageContainer>
+          <PageHeader
+            title={`Inscritos — ${event.nome}`}
+            description="Consulta operacional das inscrições reais deste evento. Use a busca para localizar atletas, equipes, categorias ou números de inscrição."
+            breadcrumb={
+              <Link href={`/admin/eventos/${event.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
+                <ArrowLeft aria-hidden="true" size={18} />
+                Voltar para gestão
+              </Link>
+            }
+            actions={<StatusBadge variant="info">Evento: {event.status.replaceAll('_', ' ')}</StatusBadge>}
+          />
+
+          <Alert className="mt-mc-24" variant="info" icon={<Info size={20} />} title="Operação somente para consulta">
+            Check-in e pesagem ainda não possuem persistência no modelo atual. Nenhuma ação operacional foi simulada nesta tela.
+          </Alert>
+
+          <section aria-labelledby="event-registrations-title" className="mt-mc-24">
+            <h2 id="event-registrations-title" className="sr-only">Inscrições do evento</h2>
+            {error ? (
+              <Alert role="alert" variant="error" title="Não foi possível carregar os inscritos">
+                Tente novamente. Nenhum dado foi alterado.
+              </Alert>
+            ) : registrations.length ? (
+              <EventRegistrationsList registrations={registrations} />
+            ) : (
+              <EmptyState
+                icon={<ClipboardList size={34} />}
+                title="Nenhuma inscrição neste evento"
+                description="As inscrições reais aparecerão aqui assim que forem cadastradas."
+                className="rounded-mc-medium border border-mc-border bg-mc-surface"
+              />
+            )}
+          </section>
+        </PageContainer>
+      </main>
+    </div>
+  )
+}

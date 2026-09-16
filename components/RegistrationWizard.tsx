@@ -266,11 +266,11 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
   }
 
   const handleConfirmSelection = (selectedIds: number[]) => {
-    const newAthletes: SelectedAthlete[] = selectedIds
-      .map((id) => {
+    const newAthletes = selectedIds
+      .flatMap<SelectedAthlete>((id) => {
         const athlete = allAthletes.find((a) => a.id === id)
-        if (!athlete) return null
-        return {
+        if (!athlete) return []
+        return [{
           id: athlete.id,
           name: athlete.name,
           age: athlete.age,
@@ -284,9 +284,8 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
           weightCategory: 'Pluma (Até 38.500 kg)',
           registrationType: 'Apenas Categoria de Peso',
           price: 70.0,
-        }
+        }]
       })
-      .filter((a): a is SelectedAthlete => a !== null)
 
     setSelectedAthletes((prev) => {
       const existingIds = prev.map((a) => a.id)
@@ -1080,4 +1079,3 @@ export default function RegistrationWizard({ eventId }: RegistrationWizardProps)
     </div>
   )
 }
-
