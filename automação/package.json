@@ -13,7 +13,8 @@
     "test:payments:manual": "bddgen && playwright test --grep @manual-settlement",
     "test:generate": "bddgen",
     "test:smoke": "bddgen && playwright test --grep @smoke",
-    "test:write": "bddgen && playwright test --grep @write"
+    "test:write": "bddgen && playwright test --grep @write",
+    "test:checagem": "bddgen && playwright test --grep @sprint7"
   },
   "dependencies": {
     "playwright": "1.51.1"

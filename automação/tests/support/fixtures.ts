@@ -1,6 +1,7 @@
 import { test as base } from 'playwright-bdd';
 import { LoginPage } from '../pages/LoginPage';
 import { paymentFixture, type PaymentFixture } from './payment-fixture';
+import { checagemFixture, type ChecagemFixture } from './checagem-fixture';
 import type { APIResponse } from '@playwright/test';
 
 type ScenarioData = {
@@ -15,9 +16,20 @@ export const test = base.extend<{
   loginPage: LoginPage;
   scenarioData: ScenarioData;
   paymentData: PaymentFixture;
+  checagemData: ChecagemFixture;
   webhookState: { response?: APIResponse };
 }>({
   webhookState: async ({}, use) => use({}),
+  checagemData: async ({}, use) => {
+    base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para fixtures de checagem no Sandbox.');
+    const data = checagemFixture();
+    try {
+      await data.setup();
+      await use(data);
+    } finally {
+      await data.cleanup();
+    }
+  },
   paymentData: async ({}, use) => {
     base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para fixtures de pagamentos no Sandbox.');
     const data = paymentFixture();
