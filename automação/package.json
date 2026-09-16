@@ -14,7 +14,11 @@
     "test:generate": "bddgen",
     "test:smoke": "bddgen && playwright test --grep @smoke",
     "test:write": "bddgen && playwright test --grep @write",
-    "test:checagem": "bddgen && playwright test --grep @sprint7"
+    "test:checagem": "bddgen && playwright test --grep @sprint7",
+    "cleanup:e2e:dry-run": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/e2e-cleanup.ts",
+    "cleanup:e2e": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/e2e-cleanup.ts --execute",
+    "mc-sim:bootstrap": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-bootstrap.ts",
+    "mc-sim:bootstrap:owner-session": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-bootstrap.ts --owner-session"
   },
   "dependencies": {
     "playwright": "1.51.1"
