@@ -1,6 +1,9 @@
+import { writeFileSync } from 'node:fs';
+import path from 'node:path';
 import identity from './mc-sim.identity.json';
 
 export const MC_SIM_EVENT_NAME = 'MC-SIM — Competição canônica';
+export const MC_SIM_IDENTITY_PATH = path.resolve(__dirname, 'mc-sim.identity.json');
 
 export type McSimIdentity = {
   eventId: string;
@@ -11,7 +14,13 @@ export type McSimIdentity = {
   ruleSetId?: string | null;
   categoryId?: string | null;
   categoryName?: string;
+  categoryIds?: { leve: string; medio?: string };
+  teamIds?: { alfa: string; beta: string };
+  athleteIds?: string[];
+  registrationIds?: string[];
+  paymentId?: string | null;
   reused?: boolean;
+  createdVia?: string;
 };
 
 export function loadMcSimIdentity(): McSimIdentity {
@@ -19,4 +28,8 @@ export function loadMcSimIdentity(): McSimIdentity {
     throw new Error('MC-SIM ainda não foi bootstrapado. Rode npm run mc-sim:bootstrap.');
   }
   return identity as McSimIdentity;
+}
+
+export function writeMcSimIdentity(next: McSimIdentity) {
+  writeFileSync(MC_SIM_IDENTITY_PATH, `${JSON.stringify(next, null, 2)}\n`);
 }

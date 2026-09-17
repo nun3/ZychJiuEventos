@@ -3,10 +3,31 @@
   "eventName": "MC-SIM — Competição canônica",
   "organizationId": "0c7cf475-f5db-4ef0-9f41-dd8fef20c91d",
   "organizationName": "Organização Teste Ricardo",
-  "status": "publicado",
+  "status": "pagamento",
   "ruleSetId": "9cc9019f-478e-4d6e-9633-5b8f19ac4d5e",
   "categoryId": "352ab725-e27d-4d2f-bfed-3640983a3163",
   "categoryName": "MC-SIM Adulto Leve",
   "reused": false,
-  "createdVia": "owner-session"
+  "createdVia": "owner-session",
+  "teamIds": {
+    "alfa": "7fe5dfd2-e60b-486c-a1d3-9d3ff3c4ac8a",
+    "beta": "70654fbe-0262-444e-bc2d-f8b02f8060dc"
+  },
+  "athleteIds": [
+    "c56da6a4-120f-48cf-ac8e-200ed6f5da83",
+    "20355202-cfe1-4885-9845-2c43e77a9d8a",
+    "428a06f9-88e7-416f-a88f-73e423e22143",
+    "8e5725c1-866c-4a55-b896-4c192e2f2e58"
+  ],
+  "categoryIds": {
+    "leve": "352ab725-e27d-4d2f-bfed-3640983a3163",
+    "medio": "bf2aefc4-4c3c-40de-a079-1b5b9086e971"
+  },
+  "registrationIds": [
+    "2cbe0d7f-c3bc-4ed4-bf7d-4849a35ea15e",
+    "a0166c6e-2cfa-4bd8-88e9-5ca88b60351a",
+    "9aeccaed-c2c7-439a-9ae3-a666dd2f217b",
+    "fe11316d-7579-46d2-bc4c-954a26ce4ab5"
+  ],
+  "paymentId": "e7837e64-172d-460d-9432-820800ded39b"
 }

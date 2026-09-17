@@ -18,7 +18,11 @@
     "cleanup:e2e:dry-run": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/e2e-cleanup.ts",
     "cleanup:e2e": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/e2e-cleanup.ts --execute",
     "mc-sim:bootstrap": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-bootstrap.ts",
-    "mc-sim:bootstrap:owner-session": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-bootstrap.ts --owner-session"
+    "mc-sim:bootstrap:owner-session": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-bootstrap.ts --owner-session",
+    "mc-sim:participants": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-runbook.ts participants",
+    "mc-sim:registrations": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-runbook.ts registrations",
+    "mc-sim:settle": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-runbook.ts settle",
+    "mc-sim:verify": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-verify.ts"
   },
   "dependencies": {
     "playwright": "1.51.1"
