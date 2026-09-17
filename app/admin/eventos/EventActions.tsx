@@ -27,6 +27,7 @@ export default function EventActions({ eventId, status }: { eventId: string; sta
         <Button size="small" variant="danger" disabled={pending} onClick={() => run(() => deleteDraftEvent(eventId))}>Excluir</Button>
       </> : null}
       {status === 'publicado' ? <Button size="small" disabled={pending} onClick={() => run(() => transitionEvent(eventId, 'inscricao'))}>Abrir inscrições</Button> : null}
+      {status === 'pagamento' ? <Button size="small" disabled={pending} onClick={() => run(() => transitionEvent(eventId, 'checagem'))}>Abrir checagem</Button> : null}
       {!['cancelado', 'concluido'].includes(status) ? <Button size="small" variant="outline" disabled={pending} onClick={() => run(() => transitionEvent(eventId, 'cancelado'))}>Cancelar</Button> : null}
     </div>
     {error ? <Alert variant="error" role="alert" className="p-mc-8">{error}</Alert> : null}

@@ -123,7 +123,7 @@ export async function updateEvent(formData: FormData): Promise<EventActionResult
   return { ok: true, message: 'Evento atualizado com sucesso.', eventId }
 }
 
-export async function transitionEvent(eventId: string, status: 'publicado' | 'inscricao' | 'cancelado'): Promise<EventActionResult> {
+export async function transitionEvent(eventId: string, status: 'publicado' | 'inscricao' | 'checagem' | 'cancelado'): Promise<EventActionResult> {
   const { supabase, event } = await editableEvent(eventId)
   if (!event) return failure('Evento não encontrado ou sem permissão.')
   const { error } = await supabase.from('events').update({ status }).eq('id', eventId)
@@ -132,7 +132,8 @@ export async function transitionEvent(eventId: string, status: 'publicado' | 'in
   revalidatePath('/')
   revalidatePath('/admin/eventos')
   revalidatePath(`/eventos/${eventId}`)
-  const messages = { publicado: 'Evento publicado.', inscricao: 'Inscrições abertas.', cancelado: 'Evento cancelado.' }
+  revalidatePath(`/admin/eventos/${eventId}/checagem`)
+  const messages = { publicado: 'Evento publicado.', inscricao: 'Inscrições abertas.', checagem: 'Checagem aberta.', cancelado: 'Evento cancelado.' }
   return { ok: true, message: messages[status] }
 }
 
