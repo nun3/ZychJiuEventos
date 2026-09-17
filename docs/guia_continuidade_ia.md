@@ -4,7 +4,7 @@
 
 Este arquivo é o ponto de entrada para uma IA ou pessoa continuar o projeto sem depender do histórico da conversa. Leia-o antes de implementar.
 
-**Objetivo atual:** a Sprint 7 (núcleo operacional da checagem) está concluída. Não iniciar Sprint 8, correção de faixa, flags de realocação no rule set nem reabertura da checagem. A Sprint 6 de pagamentos Sandbox permanece concluída no plano operacional. Não inventar check-in, pesagem, chaves ou identidade pública ainda pendente no PRD.
+**Objetivo atual:** a Sprint 8 está com o domínio de banco/DRAFT de chaves validado no Sandbox e a integração da aplicação pendente. O próximo marco é Types → Server Actions → UI DRAFT. Não iniciar resultado, WO, pesagem, área/tatame, programação, premiação, consulta pública, correção de faixa, flags de realocação nem reabertura da checagem sem o respectivo contrato aprovado. A Sprint 6 de pagamentos Sandbox e o núcleo operacional da Sprint 7 permanecem concluídos.
 
 MC-SIM r1 e r2 são evidências permanentes. Não alterá-los para cenário novo.
 
@@ -241,7 +241,7 @@ A ausência de uma chave bloqueia homologação externa, mas não bloqueia imple
 | Sprint | Trabalho exigido | Gate de saída |
 | --- | --- | --- |
 | 7 — Checagem | Lista só de efetivados, filtros seguros, atleta sozinho, solicitação e aprovação, travamento | **Concluída no núcleo operacional** (2026-09-17). Lista pública e filtro por professor fora deste recorte. |
-| 8 — Chaves | Modelagem persistente de chaves/confrontos/pesagens/resultados, versões e algoritmo aprovado | Regras 3/5 e demais casos aprovados; determinismo e testes de 2 a 16 atletas |
+| 8 — Chaves | Domínio DRAFT validado; integração da aplicação, operação e consulta pública pendentes | Types, Server Actions, UI DRAFT e MC-SIM completo pela aplicação |
 | 9 — Financeiro | Extratos conciliados, taxas/estornos, exportação e fechamento | Política comercial aprovada; totais fecham sem dupla contagem |
 | 10 — Produção | Segurança, privacidade, acessibilidade, desempenho, deploy e recuperação | Evidência de fluxo completo, restauração e liberação autorizada |
 
@@ -257,9 +257,11 @@ A Sprint 7 fecha o núcleo operacional. Não contornar a hidratação quebrada d
 
 A identidade pública dos inscritos ainda depende da decisão do PRD. Não publicar CPF, nascimento completo, contatos, dados de menores ou pagamentos por reutilização de consultas internas.
 
-### Sprint 8: não completar protótipo com regras inventadas
+### Sprint 8: domínio DRAFT validado; integração pendente
 
-Há telas, mas a persistência esportiva ainda precisa ser modelada. Regras de grupos de 3/5 e regeneração exigem decisão. Prepare exemplos e testes demonstráveis para a decisão do usuário. Não declarar algoritmo definitivo sem aprovação.
+O contrato de domínio está aprovado. As migrations de brackets estão aplicadas no Sandbox e criam persistência DRAFT com `final_2`, `copo_3`, `semi_4`, agrupamento 2/3/4 para 5+, `sem_confronto` para N=1, sugestão automática, casamento manual no domínio, warnings de mesma equipe, restore, publish, regenerate/versionamento, RLS/permissões, auditoria e integração com `current_category_id`. O smoke SQL foi aprovado com rollback e sem massa residual.
+
+Ainda faltam Types regenerados após o schema final, Server Actions, UI real de casamento DRAFT, consulta pública, resultado, WO, pesagem, área/tatame, programação, premiação e MC-SIM completo da Sprint 8 pela aplicação. As telas atuais continuam protótipos; não adaptar o protótipo como se fosse a integração real nem inventar os domínios pendentes.
 
 ### Sprint 9: origem dos números
 

@@ -551,21 +551,28 @@ Nucleo operacional da Sprint 7 esta comprovado no Sandbox. A sprint fecha neste 
 
 ### Sprint 8 - Chaves e operacao esportiva
 
-- Status: bloqueada
-- Bloqueio: decisao de negocio sobre algoritmo e grupos de 3/5.
-- Dependencia: Sprint 7 (nucleo operacional concluido) e aprovacao formal do algoritmo.
+- Status: dominio de banco/DRAFT validado; integracao da aplicacao pendente.
+- Dependencia atendida neste recorte: Sprint 7 (nucleo operacional concluido) e contrato de dominio aprovado.
 - Objetivo: gerar, versionar e publicar chaves; registrar pesagem e resultados.
-- Escopo:
-  - formatos aprovados, byes e grupos de 3/5;
-  - tentativa de separacao de atletas da mesma equipe;
-  - versoes e justificativa de regeneracao;
-  - pesagem, WO, desclassificacao e resultados;
-  - historico publico.
+- Concluido no dominio persistente:
+  - migration de brackets aplicada no Sandbox;
+  - topologias `final_2`, `copo_3` e `semi_4`, com 5+ por agrupamento 2/3/4 no recorte atual;
+  - `sem_confronto` para N=1;
+  - sugestao automatica, casamento manual no DRAFT, warnings de mesma equipe e restore;
+  - publish, regenerate/versionamento, RLS/permissoes e auditoria;
+  - consumo da alocacao vigente por `current_category_id`;
+  - smoke SQL aprovado no Sandbox com rollback e sem massa residual.
+- Pendente:
+  - Types regenerados apos o schema final;
+  - Server Actions e UI real de casamento DRAFT;
+  - consulta publica de chaves;
+  - resultado, WO, pesagem, area/tatame, programacao e premiacao;
+  - MC-SIM completo da Sprint 8 pela aplicacao.
 - Criterios de saida: algoritmo deterministico, testado e auditavel para todas as quantidades aprovadas.
 
-Revisao: as tabelas de chaves, confrontos, pesagens e resultados ainda precisam ser criadas; telas existentes sao prototipos. A geracao devera consumir a alocacao vigente travada da Sprint 7 e preservar versoes anteriores.
+Revisao: o dominio DRAFT de chaves e confrontos foi criado e validado no Sandbox. As telas existentes continuam prototipos e nao representam a integracao real. Pesagem e resultados ainda nao existem.
 
-Automacao: quantidades de 2 a 16 atletas, byes, grupos de 3/5 aprovados, separacao de equipe quando possivel, determinismo, regeneracao justificada, WO e resultado idempotente.
+Automacao: o smoke transacional cobre o dominio DRAFT, autorizacao, invariantes, versionamento e auditoria. A validacao completa pela aplicacao e os cenarios de WO/resultados permanecem pendentes.
 
 ### Sprint 9 - Financeiro e encerramento
 
@@ -607,7 +614,7 @@ Automacao: jornada completa com multiplos papeis, regressao de isolamento, naveg
 
 | Risco | Impacto | Tratamento |
 |---|---|---|
-| Regras de chaves indefinidas | Bloqueia operacao esportiva | Aprovar exemplos de 2 a 16 atletas antes da Sprint 8 |
+| Integracao da aplicacao com chaves pendente | Bloqueia operacao esportiva completa | Types, Server Actions, UI DRAFT e MC-SIM da Sprint 8 |
 | Politica financeira indefinida | Bloqueia pagamento real e fechamento | Decisao comercial antes da promocao do Sandbox |
 | Dados de menores | Risco legal e reputacional | Minimizar exposicao, registrar consentimento e revisar LGPD |
 | Prototipo confundido com sistema real | Expectativa e testes incorretos | Rotular mocks e migrar modulo a modulo |
