@@ -19,6 +19,8 @@ export type McSimIdentity = {
   athleteIds?: string[];
   registrationIds?: string[];
   paymentId?: string | null;
+  changeRequestId?: string | null;
+  checagemLockedAt?: string | null;
   reused?: boolean;
   createdVia?: string;
 };

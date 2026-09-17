@@ -216,9 +216,254 @@ export async function ensureSettlement() {
   return { stage: 'settle', reused: false, identity: next, registrations: after.data, paymentId };
 }
 
+type SnapshotMap = Record<string, unknown>;
+
+function snapshotOf(value: unknown): SnapshotMap {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as SnapshotMap : {};
+}
+
+export async function officialList() {
+  const { admin, identity, event } = await clients();
+  const loaded = await admin.from('registrations').select('id, numero, status, athlete_id, category_id, current_category_id, athlete_snapshot, category_snapshot').eq('event_id', event.id).eq('status', 'efetivada').order('numero');
+  const rows = loaded.data || [];
+  const categories = await admin.from('event_categories').select('id, nome').eq('rule_set_id', identity.ruleSetId || '');
+  const names = new Map((categories.data || []).map((category) => [category.id, category.nome]));
+  const mapped = rows.map((row) => {
+    const athlete = snapshotOf(row.athlete_snapshot);
+    const currentId = row.current_category_id || row.category_id;
+    return {
+      id: row.id,
+      numero: row.numero,
+      athleteId: row.athlete_id,
+      athleteName: String(athlete.nome_completo || ''),
+      teamName: String(athlete.team_name || ''),
+      categoryId: currentId,
+      categoryName: names.get(currentId) || '',
+      originalCategoryId: row.category_id,
+      originalCategoryName: names.get(row.category_id) || '',
+      hasOverride: Boolean(row.current_category_id),
+      status: row.status,
+      snapshot: athlete,
+    };
+  });
+  const counts = mapped.reduce<Record<string, number>>((acc, row) => {
+    acc[row.categoryName] = (acc[row.categoryName] || 0) + 1;
+    return acc;
+  }, {});
+  return mapped.map((row) => ({ ...row, isAloneInCategory: counts[row.categoryName] === 1 }));
+}
+
+export async function ensureChecking() {
+  const { admin, actor, identity, event } = await clients();
+  const before = await admin.from('registrations').select('id, status, category_id, current_category_id, athlete_snapshot, category_snapshot').eq('event_id', event.id).order('id');
+  if ((before.data || []).length !== 4 || (before.data || []).some((row) => row.status !== 'efetivada')) {
+    throw new Error('MC-SIM precisa das 4 inscrições efetivadas antes da checagem.');
+  }
+
+  const checagemPhase = await admin.from('event_phases').select('id, inicio, fim').eq('event_id', event.id).eq('tipo', 'checagem').single();
+  if (checagemPhase.error || !checagemPhase.data) throw new Error('Fase de checagem inexistente.');
+  const now = Date.now();
+  if (now < Date.parse(checagemPhase.data.inicio) || now > Date.parse(checagemPhase.data.fim)) {
+    const paymentPhase = await admin.from('event_phases').select('id').eq('event_id', event.id).eq('tipo', 'pagamento').single();
+    if (paymentPhase.data?.id) {
+      const close = await actor.from('event_phases').update({ inicio: hoursFromNow(-48), fim: hoursFromNow(-1) }).eq('id', paymentPhase.data.id);
+      if (close.error) throw new Error(`fechar pagamento: ${close.error.message}`);
+    }
+    const shifted = await actor.from('event_phases').update({ inicio: hoursFromNow(-2), fim: hoursFromNow(24 * 14) }).eq('id', checagemPhase.data.id);
+    if (shifted.error) throw new Error(`fase checagem: ${shifted.error.message}`);
+  }
+
+  let reused = event.status === 'checagem';
+  if (event.status === 'pagamento') {
+    const moved = await actor.from('events').update({ status: 'checagem' }).eq('id', event.id);
+    if (moved.error) throw new Error(`abrir checagem: ${moved.error.message}`);
+    reused = false;
+  } else if (event.status !== 'checagem') {
+    throw new Error(`MC-SIM em ${event.status}; checagem exige pagamento ou checagem.`);
+  }
+
+  const afterEvent = await admin.from('events').select('id, status, checagem_travada_em').eq('id', event.id).single();
+  const afterRegs = await admin.from('registrations').select('id, status, category_id, current_category_id, athlete_snapshot, category_snapshot').eq('event_id', event.id).order('id');
+  const afterPhase = await admin.from('event_phases').select('tipo, inicio, fim').eq('event_id', event.id).eq('tipo', 'checagem').single();
+  const snapshotsIntact = JSON.stringify(before.data) === JSON.stringify(afterRegs.data);
+  if (!snapshotsIntact) throw new Error('Snapshots ou inscrições mudaram na transição para checagem.');
+
+  const next: McSimIdentity = { ...identity, status: 'checagem' };
+  writeMcSimIdentity(next);
+  return {
+    stage: 'checking',
+    reused,
+    identity: next,
+    event: afterEvent.data,
+    phase: afterPhase.data,
+    list: await officialList(),
+    snapshotsIntact,
+  };
+}
+
+export async function ensureChangeRequest() {
+  const { admin, actor, identity, event } = await clients();
+  if (event.status !== 'checagem') throw new Error('MC-SIM precisa estar em checagem. Rode npm run mc-sim:checking.');
+  const athleteId = identity.athleteIds?.[3];
+  const registrationId = identity.registrationIds?.[3];
+  if (!athleteId || !registrationId) throw new Error('Atleta 4/inscrição ausentes na identidade.');
+
+  if (identity.changeRequestId) {
+    const existing = await admin.from('category_change_requests').select('*').eq('id', identity.changeRequestId).maybeSingle();
+    if (existing.data) {
+      return { stage: 'change-request', reused: true, identity, request: existing.data };
+    }
+  }
+
+  const eligible = await actor.rpc('list_eligible_category_changes', { target_registration_id: registrationId });
+  if (eligible.error) throw new Error(`elegibilidade: ${eligible.error.message}`);
+  const targets = eligible.data || [];
+  if (!targets.length) {
+    return {
+      stage: 'change-request',
+      blocked: 'no_eligible_target',
+      registrationId,
+      athleteId,
+      targets,
+      note: 'list_eligible_category_changes retornou vazio. Solicitação não criada. Peso do snapshot permanece a regra vigente.',
+    };
+  }
+
+  const requested = await actor.rpc('request_category_change', {
+    target_registration_id: registrationId,
+    requested_category_id: targets[0].id,
+    reason_text: 'Atleta sozinho na categoria vigente do MC-SIM.',
+  });
+  const payload = must('solicitação', requested.error, requested.data);
+  if (typeof payload !== 'object' || Array.isArray(payload) || payload.kind !== 'requested') {
+    throw new Error('Solicitação não retornou kind=requested.');
+  }
+  const requestId = String(payload.requestId);
+  const duplicate = await actor.rpc('request_category_change', {
+    target_registration_id: registrationId,
+    requested_category_id: targets[0].id,
+    reason_text: 'segunda tentativa deve falhar',
+  });
+  const next: McSimIdentity = { ...identity, changeRequestId: requestId };
+  writeMcSimIdentity(next);
+  const stored = await admin.from('category_change_requests').select('*').eq('id', requestId).single();
+  const registration = await admin.from('registrations').select('id, category_id, current_category_id, athlete_snapshot, category_snapshot').eq('id', registrationId).single();
+  return {
+    stage: 'change-request',
+    reused: false,
+    identity: next,
+    targets,
+    request: stored.data,
+    registration: registration.data,
+    secondRequestError: duplicate.error?.message || null,
+  };
+}
+
+export async function ensureReview(approve = true) {
+  const { admin, actor, identity, event } = await clients();
+  if (event.status !== 'checagem') throw new Error('MC-SIM precisa estar em checagem.');
+  if (!identity.changeRequestId) {
+    return { stage: 'review', skipped: true, reason: 'Nenhuma solicitação MC-SIM para decidir.' };
+  }
+  const request = await admin.from('category_change_requests').select('*').eq('id', identity.changeRequestId).single();
+  if (request.error || !request.data) throw new Error('Solicitação da identidade não encontrada.');
+  if (request.data.status !== 'pendente') {
+    return { stage: 'review', reused: true, request: request.data };
+  }
+  const before = await admin.from('registrations').select('id, category_id, current_category_id, athlete_snapshot, category_snapshot').eq('id', request.data.registration_id).single();
+  const reviewed = await actor.rpc('review_category_change', {
+    target_request_id: identity.changeRequestId,
+    approve_request: approve,
+  });
+  const payload = must('decisão', reviewed.error, reviewed.data);
+  const second = await actor.rpc('review_category_change', {
+    target_request_id: identity.changeRequestId,
+    approve_request: approve,
+  });
+  const after = await admin.from('registrations').select('id, category_id, current_category_id, athlete_snapshot, category_snapshot').eq('id', request.data.registration_id).single();
+  const stored = await admin.from('category_change_requests').select('*').eq('id', identity.changeRequestId).single();
+  const audit = await admin.from('event_audit_logs').select('action, resource_id').eq('resource_id', identity.changeRequestId);
+  return {
+    stage: 'review',
+    reused: false,
+    approved: approve,
+    result: payload,
+    request: stored.data,
+    before: before.data,
+    after: after.data,
+    snapshotPreserved: JSON.stringify(before.data?.athlete_snapshot) === JSON.stringify(after.data?.athlete_snapshot)
+      && before.data?.category_id === after.data?.category_id,
+    secondReviewError: second.error?.message || null,
+    audit: audit.data,
+    list: await officialList(),
+  };
+}
+
+export async function ensureLock() {
+  const { admin, actor, identity, event } = await clients();
+  if (event.status !== 'checagem') throw new Error('MC-SIM precisa estar em checagem.');
+  const loaded = await admin.from('events').select('id, status, checagem_travada_em').eq('id', event.id).single();
+  if (loaded.data?.checagem_travada_em) {
+    const second = await actor.rpc('lock_event_checagem', { target_event_id: event.id });
+    const athlete4 = identity.registrationIds?.[3];
+    const requestAfterLock = athlete4
+      ? await actor.rpc('request_category_change', {
+        target_registration_id: athlete4,
+        requested_category_id: identity.categoryIds?.leve || identity.categoryId || '',
+        reason_text: 'tentativa após travamento',
+      })
+      : { error: { message: 'sem inscrição' }, data: null };
+    const audit = await admin.from('event_audit_logs').select('action, after_data, created_at').eq('event_id', event.id).eq('action', 'checagem_locked');
+    const next: McSimIdentity = { ...identity, checagemLockedAt: loaded.data.checagem_travada_em, status: 'checagem' };
+    writeMcSimIdentity(next);
+    return {
+      stage: 'lock',
+      reused: true,
+      identity: next,
+      lockedAt: loaded.data.checagem_travada_em,
+      secondLockError: second.error?.message || null,
+      requestAfterLockError: requestAfterLock.error?.message || null,
+      audit: audit.data,
+    };
+  }
+  const pending = await admin.from('category_change_requests').select('id, status').eq('status', 'pendente').in('registration_id', identity.registrationIds || []);
+  if ((pending.data || []).length) {
+    throw new Error('Há solicitação pendente. Decida antes de travar.');
+  }
+  const locked = await actor.rpc('lock_event_checagem', { target_event_id: event.id });
+  const payload = must('travamento', locked.error, locked.data);
+  const second = await actor.rpc('lock_event_checagem', { target_event_id: event.id });
+  const after = await admin.from('events').select('id, status, checagem_travada_em').eq('id', event.id).single();
+  const athlete4 = identity.registrationIds?.[3];
+  const requestAfterLock = athlete4
+    ? await actor.rpc('request_category_change', {
+      target_registration_id: athlete4,
+      requested_category_id: identity.categoryIds?.leve || identity.categoryId || '',
+      reason_text: 'tentativa após travamento',
+    })
+    : { error: { message: 'sem inscrição' }, data: null };
+  const audit = await admin.from('event_audit_logs').select('action, after_data, created_at').eq('event_id', event.id).eq('action', 'checagem_locked');
+  const next: McSimIdentity = { ...identity, status: 'checagem', checagemLockedAt: after.data?.checagem_travada_em || null };
+  writeMcSimIdentity(next);
+  return {
+    stage: 'lock',
+    reused: false,
+    identity: next,
+    result: payload,
+    lockedAt: after.data?.checagem_travada_em,
+    secondLockError: second.error?.message || null,
+    requestAfterLockError: requestAfterLock.error?.message || null,
+    audit: audit.data,
+  };
+}
+
 export async function runStage(stage: string) {
   if (stage === 'participants') return ensureParticipants();
   if (stage === 'registrations') return ensureRegistrations();
   if (stage === 'settle') return ensureSettlement();
-  throw new Error('Use participants | registrations | settle');
+  if (stage === 'checking') return ensureChecking();
+  if (stage === 'change-request') return ensureChangeRequest();
+  if (stage === 'review') return ensureReview(true);
+  if (stage === 'lock') return ensureLock();
+  throw new Error('Use participants | registrations | settle | checking | change-request | review | lock');
 }

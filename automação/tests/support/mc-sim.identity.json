@@ -3,7 +3,7 @@
   "eventName": "MC-SIM — Competição canônica",
   "organizationId": "0c7cf475-f5db-4ef0-9f41-dd8fef20c91d",
   "organizationName": "Organização Teste Ricardo",
-  "status": "pagamento",
+  "status": "checagem",
   "ruleSetId": "9cc9019f-478e-4d6e-9633-5b8f19ac4d5e",
   "categoryId": "352ab725-e27d-4d2f-bfed-3640983a3163",
   "categoryName": "MC-SIM Adulto Leve",
@@ -29,5 +29,6 @@
     "9aeccaed-c2c7-439a-9ae3-a666dd2f217b",
     "fe11316d-7579-46d2-bc4c-954a26ce4ab5"
   ],
-  "paymentId": "e7837e64-172d-460d-9432-820800ded39b"
+  "paymentId": "e7837e64-172d-460d-9432-820800ded39b",
+  "checagemLockedAt": "2026-09-17T14:00:59.656739+00:00"
 }
