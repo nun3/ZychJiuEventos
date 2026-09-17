@@ -27,7 +27,19 @@
     "mc-sim:review": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-runbook.ts review",
     "mc-sim:lock": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-runbook.ts lock",
     "mc-sim:verify": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-verify.ts",
-    "mc-sim:ui-smoke": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-ui-smoke.ts"
+    "mc-sim:ui-smoke": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-ui-smoke.ts",
+    "mc-sim:r2:bootstrap": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-r2-bootstrap.ts",
+    "mc-sim:r2:participants": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-r2-runbook.ts participants",
+    "mc-sim:r2:registrations": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-r2-runbook.ts registrations",
+    "mc-sim:r2:settle": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-r2-runbook.ts settle",
+    "mc-sim:r2:checking": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-r2-runbook.ts checking",
+    "mc-sim:r2:request": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-r2-runbook.ts request",
+    "mc-sim:r2:reject": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-r2-runbook.ts reject",
+    "mc-sim:r2:request-again": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-r2-runbook.ts request-again",
+    "mc-sim:r2:approve": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-r2-runbook.ts approve",
+    "mc-sim:r2:lock": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-r2-runbook.ts lock",
+    "mc-sim:r2:verify": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-r2-verify.ts",
+    "mc-sim:r2:ui-smoke": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/mc-sim-r2-ui-smoke.ts"
   },
   "dependencies": {
     "playwright": "1.51.1"
