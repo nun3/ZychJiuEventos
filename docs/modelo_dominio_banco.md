@@ -109,6 +109,10 @@ Travamento operacional grava `checagem_travada_em` uma vez. Reabertura nao faz p
 
 A inscricao preserva um snapshot imutavel dos dados usados no aceite: nome, nascimento, genero, faixa, peso, equipe, categoria, valor, versao das regras e versao dos termos. Mudancas futuras no perfil do atleta nao alteram o historico. A posicao operacional na checagem usa a alocacao vigente (`coalesce(current_category_id, category_id)`), alterada somente por solicitacao aprovada.
 
+Realocacao na checagem (atleta sozinho) e distinta da categorizacao de inscricao. Destinos sao classes adjacentes no mesmo `category_rule_set` da categoria original: subir 1 classe de peso; idade ±1 classe; um eixo por movimento; genero e intervalo de faixa congelados. Sobreposicao ou duplicidade de intervalos no grupo falha fechado. `category_is_eligible_for_registration` nao governa esse destino.
+
+Nao ha flags em `category_rule_sets` nesta versao. A politica acima e o default da plataforma; configurar eixos por rule set permanece divida consciente, sem schema morto.
+
 Restricao unica: um atleta nao pode possuir duas inscricoes ativas no mesmo evento.
 
 ### payments

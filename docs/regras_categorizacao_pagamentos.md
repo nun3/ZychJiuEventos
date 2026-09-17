@@ -16,9 +16,29 @@ Entrada obrigatoria: data de nascimento, genero, faixa, peso em kg e regras da c
 A categoria alocada deve ser congelada na inscrição. Mudanças posteriores não alteram o perfil do atleta e somente ocorrem por solicitação aprovada.
 O calculo deve registrar a versao do conjunto de regras e os dados de entrada usados. Limites de peso sao inclusivos e comparados como decimal, nunca ponto flutuante.
 
+`category_is_eligible_for_registration` governa somente esta alocação automática. Não é a regra de realocação da checagem.
+
 ### Atleta sozinho
 
-Durante a checagem, agrupar inscrições efetivadas por categoria. Se o total for 1, habilitar solicitação de mudança apenas para categorias elegíveis segundo idade, faixa, gênero, peso e regras do evento. A aprovação é do organizador.
+Durante a checagem, agrupar inscrições efetivadas pela categoria vigente (`coalesce(current_category_id, category_id)`). Se o total for 1, e o evento estiver em checagem destravada, habilitar solicitação de **realocação operacional** para categorias adjacentes no mesmo rule set da inscrição original.
+
+A elegibilidade de destino **não** revalida o snapshot contra peso ou idade da categoria-alvo.
+
+Regra padrão da plataforma (ainda sem flags por evento/rule set):
+
+- peso: subir exatamente 1 classe adjacente; não descer; não pular classe existente;
+- idade: subir ou descer exatamente 1 classe adjacente; não pular classe existente;
+- um destino altera peso **ou** idade, nunca os dois;
+- gênero permanece o mesmo;
+- intervalo de faixa (`faixa_min_ordem` / `faixa_max_ordem`) permanece exatamente igual;
+- sobreposição ou duplicidade de intervalos no grupo relevante falha fechado: nenhum destino naquele eixo;
+- buraco em kg sem categoria intermediária: a próxima existente é a adjacente.
+
+Adjacência usa intervalos estruturais, não o nome nem `ordem`. Correção de faixa é outro fluxo.
+
+A aprovação do organizador grava somente `current_category_id`. Snapshot e `category_id` original permanecem imutáveis. A próxima análise parte da categoria vigente após o override.
+
+Dívida consciente: o PRD condiciona a permissão às regras do evento, mas ainda não há schema para habilitar/desabilitar eixos. A política acima é o default da plataforma até existir configuração em `category_rule_sets`.
 
 ## Pagamento
 
