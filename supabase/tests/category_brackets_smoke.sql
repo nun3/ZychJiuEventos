@@ -887,13 +887,13 @@ begin
     raise exception 'FAIL: participant update persisted';
   end if;
 
-  select g.id into foreign_group from public.bracket_groups where bracket_id = b_five and label = 'A';
+  select g.id into foreign_group from public.bracket_groups g where bracket_id = b_five and label = 'A';
   select e.id into foreign_entry
     from public.bracket_entries e
     join public.bracket_groups g on g.id = e.group_id
    where g.bracket_id = b_five and g.label = 'B'
    limit 1;
-  select g.id into local_group from public.bracket_groups where bracket_id = b_five and label = 'B';
+  select g.id into local_group from public.bracket_groups g where bracket_id = b_five and label = 'B';
   rejected := false;
   begin
     insert into public.bracket_matches(group_id, round, pair_index, side_a_entry_id, side_b_entry_id)
@@ -910,9 +910,10 @@ begin
   rejected := false;
   begin
     insert into public.category_brackets(
-      event_id, category_id, version, mode, status, source_checagem_travada_em, generated_by
+      event_id, category_id, version, mode, status,
+      source_checagem_travada_em, generated_by, regeneration_reason
     ) values (
-      event, cat_one, 9, 'sem_confronto', 'draft', now(), owner
+      event, cat_one, 9, 'sem_confronto', 'draft', now(), owner, 'teste unique draft'
     );
   exception when others then
     if sqlstate <> '23505' then raise; end if;
@@ -924,9 +925,11 @@ begin
   begin
     insert into public.category_brackets(
       event_id, category_id, version, mode, status,
-      source_checagem_travada_em, generated_by, published_by, published_at
+      source_checagem_travada_em, generated_by, published_by, published_at,
+      regeneration_reason
     ) values (
-      event, cat_two, 9, 'competicao', 'publicada', now(), owner, owner, now()
+      event, cat_two, 9, 'competicao', 'publicada', now(), owner, owner, now(),
+      'teste unique live'
     );
   exception when others then
     if sqlstate <> '23505' then raise; end if;
@@ -937,9 +940,10 @@ begin
   rejected := false;
   begin
     insert into public.category_brackets(
-      event_id, category_id, version, mode, status, source_checagem_travada_em, generated_by
+      event_id, category_id, version, mode, status,
+      source_checagem_travada_em, generated_by, regeneration_reason
     ) values (
-      event, cat_two, 2, 'competicao', 'draft', now(), owner
+      event, cat_two, 2, 'competicao', 'draft', now(), owner, 'teste unique version'
     );
   exception when others then
     if sqlstate <> '23505' then raise; end if;
