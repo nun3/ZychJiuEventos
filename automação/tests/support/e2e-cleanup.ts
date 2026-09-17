@@ -212,6 +212,153 @@ export async function buildCleanupPlan(admin: SupabaseClient<Database>, ownerUse
   };
 }
 
+export async function buildCleanupPlanFromExactIds(
+  admin: SupabaseClient<Database>,
+  input: {
+    eventIds: string[];
+    organizationIds: string[];
+    athleteIds?: string[];
+    teamIds?: string[];
+    protectedEventIds: string[];
+    protectedOrgIds: string[];
+  },
+): Promise<CleanupPlan> {
+  const eventIds = unique(input.eventIds);
+  const organizationIds = unique(input.organizationIds);
+  const extraAthleteIds = unique(input.athleteIds || []);
+  const extraTeamIds = unique(input.teamIds || []);
+  if (eventIds.some((id) => input.protectedEventIds.includes(id))) {
+    throw new Error('ID protegido (MC-SIM) na lista de eventos. Cleanup abortado.');
+  }
+  if (organizationIds.some((id) => input.protectedOrgIds.includes(id))) {
+    throw new Error('Organização permanente na lista de exclusão. Cleanup abortado.');
+  }
+
+  const events = eventIds.length
+    ? await must('events by id', admin.from('events').select('id, nome, organization_id').in('id', eventIds))
+    : [];
+  if ((events || []).length !== eventIds.length) throw new Error('Evento informado não encontrado.');
+  if ((events || []).some((event) => input.protectedEventIds.includes(event.id))) {
+    throw new Error('Evento protegido no recorte. Cleanup abortado.');
+  }
+
+  const registrations = eventIds.length
+    ? await must('registrations', admin.from('registrations').select('id, athlete_id, category_id').in('event_id', eventIds))
+    : [];
+  const registrationIds = (registrations || []).map((row) => row.id);
+  const payments = eventIds.length
+    ? await must('payments', admin.from('payments').select('id').in('event_id', eventIds))
+    : [];
+  const paymentIds = (payments || []).map((row) => row.id);
+  const ruleSets = eventIds.length
+    ? await must('rules', admin.from('category_rule_sets').select('id').in('event_id', eventIds))
+    : [];
+  const ruleSetIds = (ruleSets || []).map((row) => row.id);
+  const categories = ruleSetIds.length
+    ? await must('categories', admin.from('event_categories').select('id').in('rule_set_id', ruleSetIds))
+    : [];
+  const categoryIds = unique([
+    ...(categories || []).map((row) => row.id),
+    ...(registrations || []).map((row) => row.category_id),
+  ]);
+  const changeRequests = registrationIds.length
+    ? await must('changes', admin.from('category_change_requests').select('id').in('registration_id', registrationIds))
+    : [];
+  const auditLogs = eventIds.length
+    ? await must('audit', admin.from('event_audit_logs').select('id').in('event_id', eventIds))
+    : [];
+
+  const orgAthletes = organizationIds.length
+    ? await must('org athletes', admin.from('athletes').select('id, nome_completo, organization_id, team_id').in('organization_id', organizationIds))
+    : [];
+  const extraAthletes = extraAthleteIds.length
+    ? await must('extra athletes', admin.from('athletes').select('id, nome_completo, organization_id, team_id').in('id', extraAthleteIds))
+    : [];
+  const registrationAthletes = (registrations || []).length
+    ? await must('reg athletes', admin.from('athletes').select('id, nome_completo, organization_id, team_id').in('id', unique((registrations || []).map((row) => row.athlete_id))))
+    : [];
+  const athletes = unique([...(orgAthletes || []), ...(extraAthletes || []), ...(registrationAthletes || [])].map((athlete) => athlete.id))
+    .map((id) => [...(orgAthletes || []), ...(extraAthletes || []), ...(registrationAthletes || [])].find((athlete) => athlete.id === id)!)
+    .filter(Boolean);
+  if (athletes.some((athlete) => !athlete)) throw new Error('Atleta informado não encontrado.');
+
+  const leftoverRegs = athletes.length
+    ? await must('athlete regs', admin.from('registrations').select('id, event_id').in('athlete_id', athletes.map((athlete) => athlete.id)))
+    : [];
+  const leftoverEventIds = unique((leftoverRegs || []).map((row) => row.event_id).filter((id) => !eventIds.includes(id)));
+  if (leftoverEventIds.some((id) => input.protectedEventIds.includes(id))) {
+    throw new Error('Atleta ainda vinculado ao MC-SIM. Cleanup abortado.');
+  }
+  if (leftoverEventIds.length) {
+    throw new Error(`Atleta ainda vinculado a evento fora do recorte (${leftoverEventIds.join(', ')}). Cleanup abortado.`);
+  }
+
+  const orgTeams = organizationIds.length
+    ? await must('org teams', admin.from('teams').select('id, nome, organization_id').in('organization_id', organizationIds))
+    : [];
+  const extraTeams = extraTeamIds.length
+    ? await must('extra teams', admin.from('teams').select('id, nome, organization_id').in('id', extraTeamIds))
+    : [];
+  const teams = unique([...(orgTeams || []), ...(extraTeams || [])].map((team) => team.id))
+    .map((id) => [...(orgTeams || []), ...(extraTeams || [])].find((team) => team.id === id)!)
+    .filter(Boolean);
+
+  const otherAthletesOnTeams = (await must('all athletes', admin.from('athletes').select('id, team_id')) || [])
+    .filter((athlete) => teams.some((team) => team.id === athlete.team_id) && !athletes.some((item) => item.id === athlete.id));
+  if (otherAthletesOnTeams.length) {
+    throw new Error('Equipe do recorte contém atleta fora dos IDs informados. Cleanup abortado.');
+  }
+
+  const orgs = organizationIds.length
+    ? await must('orgs by id', admin.from('organizations').select('id, nome').in('id', organizationIds))
+    : [];
+  if ((orgs || []).length !== organizationIds.length) throw new Error('Organização informada não encontrada.');
+
+  const storagePaths: string[] = [];
+  for (const event of events || []) {
+    const folder = `${event.organization_id}/${event.id}`;
+    const listed = await admin.storage.from('event-assets').list(folder);
+    if (!listed.error) {
+      for (const object of listed.data || []) {
+        if (object.name) storagePaths.push(`${folder}/${object.name}`);
+      }
+    }
+  }
+
+  const phases = eventIds.length
+    ? await must('phases', admin.from('event_phases').select('id').in('event_id', eventIds))
+    : [];
+  const issuanceJobs = paymentIds.length
+    ? await must('jobs', admin.from('payment_issuance_jobs').select('payment_id').in('payment_id', paymentIds))
+    : [];
+  const attempts = paymentIds.length
+    ? await must('attempts', admin.from('payment_attempts').select('id').in('payment_id', paymentIds))
+    : [];
+  const managers = athletes.length
+    ? await must('managers', admin.from('athlete_managers').select('athlete_id, manager_id').in('athlete_id', athletes.map((athlete) => athlete.id)))
+    : [];
+
+  return {
+    protectedOrgIds: input.protectedOrgIds,
+    ownerUserId: '',
+    events: events || [],
+    registrations: registrationIds,
+    payments: paymentIds,
+    categories: categoryIds,
+    ruleSets: ruleSetIds,
+    athletes,
+    teams,
+    disposableOrgs: orgs || [],
+    auditLogIds: (auditLogs || []).map((row) => row.id),
+    changeRequestIds: (changeRequests || []).map((row) => row.id),
+    storagePaths,
+    phaseIds: (phases || []).map((row) => row.id),
+    issuanceJobPaymentIds: (issuanceJobs || []).map((row) => row.payment_id),
+    attemptIds: (attempts || []).map((row) => row.id),
+    managerAthleteIds: unique((managers || []).map((row) => row.athlete_id)),
+  };
+}
+
 export function summarizePlan(plan: CleanupPlan) {
   return {
     protectedOrgs: plan.protectedOrgIds.length,
