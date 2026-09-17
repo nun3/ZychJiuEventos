@@ -1,0 +1,33 @@
+{
+  "revision": "r2",
+  "eventId": "0c5d6eff-26b7-48c6-8dbc-7ea5e715b0c7",
+  "eventName": "MC-SIM r2 — Realocação operacional",
+  "organizationId": "0c7cf475-f5db-4ef0-9f41-dd8fef20c91d",
+  "organizationName": "Organização Teste Ricardo",
+  "status": "checagem",
+  "ruleSetId": "8d432920-7555-4272-924f-218c03ee0e0b",
+  "categoryIds": {
+    "leve": "97a49ee2-556f-4d92-b93d-85e86d70b3c5",
+    "medio": "bc0ede9a-7b82-4633-9fec-62ca1e5a24be"
+  },
+  "teamIds": {
+    "alfa": "fd306815-0fee-4685-bb70-1f982a7c725d",
+    "beta": "76d8d5bb-09d4-40cc-b179-5a769854d6ff"
+  },
+  "athleteIds": {
+    "a": "0cb97273-83af-4ffc-9418-6ad5a97181ff",
+    "b": "e3361f72-fea3-412c-9abb-0b05cdcb743f",
+    "c": "4460db53-bffe-4012-aac4-f4f90fe9babf"
+  },
+  "registrationIds": {
+    "a": "2547606d-b607-4545-ad21-82dd419b6104",
+    "b": "52b3e990-4f21-4ba4-8d0a-14c70a93a33c",
+    "c": "f0226538-e5f5-4575-b31a-971d7fbf3517"
+  },
+  "createdVia": "owner-session",
+  "paymentId": "fb315dbe-1594-440a-8596-af47db1d3ec9",
+  "changeRequestId": "23163fd3-1564-4cd8-89b5-8446b90710a4",
+  "rejectedRequestId": "d8cc02e7-6b92-45f7-84c4-3e299e7106ca",
+  "approvedRequestId": "23163fd3-1564-4cd8-89b5-8446b90710a4",
+  "checagemLockedAt": "2026-09-17T14:46:53.933219+00:00"
+}
