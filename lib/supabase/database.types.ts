@@ -120,6 +120,323 @@ export type Database = {
           },
         ]
       }
+      bracket_entries: {
+        Row: {
+          bracket_id: string
+          created_at: string
+          group_id: string
+          id: string
+          participant_id: string
+          slot: number
+        }
+        Insert: {
+          bracket_id: string
+          created_at?: string
+          group_id: string
+          id?: string
+          participant_id: string
+          slot: number
+        }
+        Update: {
+          bracket_id?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          participant_id?: string
+          slot?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bracket_entries_group_id_bracket_id_fkey"
+            columns: ["group_id", "bracket_id"]
+            isOneToOne: false
+            referencedRelation: "bracket_groups"
+            referencedColumns: ["id", "bracket_id"]
+          },
+          {
+            foreignKeyName: "bracket_entries_participant_id_bracket_id_fkey"
+            columns: ["participant_id", "bracket_id"]
+            isOneToOne: false
+            referencedRelation: "bracket_participants"
+            referencedColumns: ["id", "bracket_id"]
+          },
+        ]
+      }
+      bracket_groups: {
+        Row: {
+          bracket_id: string
+          created_at: string
+          id: string
+          label: string
+          sort_order: number
+          topology: Database["public"]["Enums"]["bracket_topology"]
+        }
+        Insert: {
+          bracket_id: string
+          created_at?: string
+          id?: string
+          label: string
+          sort_order: number
+          topology: Database["public"]["Enums"]["bracket_topology"]
+        }
+        Update: {
+          bracket_id?: string
+          created_at?: string
+          id?: string
+          label?: string
+          sort_order?: number
+          topology?: Database["public"]["Enums"]["bracket_topology"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bracket_groups_bracket_id_fkey"
+            columns: ["bracket_id"]
+            isOneToOne: false
+            referencedRelation: "category_brackets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bracket_matches: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          pair_index: number
+          round: Database["public"]["Enums"]["match_round"]
+          side_a_entry_id: string | null
+          side_a_source_match_id: string | null
+          side_b_entry_id: string | null
+          side_b_source_match_id: string | null
+          status: Database["public"]["Enums"]["match_status"]
+          winner_entry_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          pair_index: number
+          round: Database["public"]["Enums"]["match_round"]
+          side_a_entry_id?: string | null
+          side_a_source_match_id?: string | null
+          side_b_entry_id?: string | null
+          side_b_source_match_id?: string | null
+          status?: Database["public"]["Enums"]["match_status"]
+          winner_entry_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          pair_index?: number
+          round?: Database["public"]["Enums"]["match_round"]
+          side_a_entry_id?: string | null
+          side_a_source_match_id?: string | null
+          side_b_entry_id?: string | null
+          side_b_source_match_id?: string | null
+          status?: Database["public"]["Enums"]["match_status"]
+          winner_entry_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bracket_matches_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "bracket_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bracket_matches_side_a_entry_fk"
+            columns: ["side_a_entry_id", "group_id"]
+            isOneToOne: false
+            referencedRelation: "bracket_entries"
+            referencedColumns: ["id", "group_id"]
+          },
+          {
+            foreignKeyName: "bracket_matches_side_a_source_fk"
+            columns: ["side_a_source_match_id", "group_id"]
+            isOneToOne: false
+            referencedRelation: "bracket_matches"
+            referencedColumns: ["id", "group_id"]
+          },
+          {
+            foreignKeyName: "bracket_matches_side_b_entry_fk"
+            columns: ["side_b_entry_id", "group_id"]
+            isOneToOne: false
+            referencedRelation: "bracket_entries"
+            referencedColumns: ["id", "group_id"]
+          },
+          {
+            foreignKeyName: "bracket_matches_side_b_source_fk"
+            columns: ["side_b_source_match_id", "group_id"]
+            isOneToOne: false
+            referencedRelation: "bracket_matches"
+            referencedColumns: ["id", "group_id"]
+          },
+          {
+            foreignKeyName: "bracket_matches_winner_entry_fk"
+            columns: ["winner_entry_id", "group_id"]
+            isOneToOne: false
+            referencedRelation: "bracket_entries"
+            referencedColumns: ["id", "group_id"]
+          },
+        ]
+      }
+      bracket_participants: {
+        Row: {
+          athlete_id: string
+          bracket_id: string
+          created_at: string
+          id: string
+          nome_exibido: string
+          registration_id: string
+          source_order: number
+          team_id: string | null
+          team_name: string | null
+        }
+        Insert: {
+          athlete_id: string
+          bracket_id: string
+          created_at?: string
+          id?: string
+          nome_exibido: string
+          registration_id: string
+          source_order: number
+          team_id?: string | null
+          team_name?: string | null
+        }
+        Update: {
+          athlete_id?: string
+          bracket_id?: string
+          created_at?: string
+          id?: string
+          nome_exibido?: string
+          registration_id?: string
+          source_order?: number
+          team_id?: string | null
+          team_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bracket_participants_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bracket_participants_bracket_id_fkey"
+            columns: ["bracket_id"]
+            isOneToOne: false
+            referencedRelation: "category_brackets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bracket_participants_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bracket_participants_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      category_brackets: {
+        Row: {
+          category_id: string
+          created_at: string
+          event_id: string
+          generated_at: string
+          generated_by: string
+          id: string
+          mode: Database["public"]["Enums"]["bracket_mode"]
+          published_at: string | null
+          published_by: string | null
+          regeneration_reason: string | null
+          source_checagem_travada_em: string
+          status: Database["public"]["Enums"]["bracket_status"]
+          supersedes_id: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          event_id: string
+          generated_at?: string
+          generated_by: string
+          id?: string
+          mode: Database["public"]["Enums"]["bracket_mode"]
+          published_at?: string | null
+          published_by?: string | null
+          regeneration_reason?: string | null
+          source_checagem_travada_em: string
+          status: Database["public"]["Enums"]["bracket_status"]
+          supersedes_id?: string | null
+          updated_at?: string
+          version: number
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          event_id?: string
+          generated_at?: string
+          generated_by?: string
+          id?: string
+          mode?: Database["public"]["Enums"]["bracket_mode"]
+          published_at?: string | null
+          published_by?: string | null
+          regeneration_reason?: string | null
+          source_checagem_travada_em?: string
+          status?: Database["public"]["Enums"]["bracket_status"]
+          supersedes_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_brackets_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "event_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_brackets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_brackets_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_brackets_published_by_fkey"
+            columns: ["published_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_brackets_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "category_brackets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_change_requests: {
         Row: {
           created_at: string
@@ -1015,11 +1332,107 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_suggested_bracket_composition: {
+        Args: { target_bracket_id: string }
+        Returns: undefined
+      }
+      assert_bracket_structure: {
+        Args: { target_bracket_id: string }
+        Returns: undefined
+      }
+      assert_registration_can_request_category_change: {
+        Args: {
+          target_registration: Database["public"]["Tables"]["registrations"]["Row"]
+        }
+        Returns: undefined
+      }
       belt_order: { Args: { athlete_belt: string }; Returns: number }
+      bracket_has_results: {
+        Args: { target_bracket_id: string }
+        Returns: boolean
+      }
+      bracket_partition_sizes: {
+        Args: { athlete_count: number }
+        Returns: number[]
+      }
+      bracket_same_team_warnings: {
+        Args: { target_bracket_id: string }
+        Returns: Json
+      }
+      bracket_topology_size: {
+        Args: {
+          target_topology: Database["public"]["Enums"]["bracket_topology"]
+        }
+        Returns: number
+      }
+      category_belongs_to_event: {
+        Args: { target_category_id: string; target_event_id: string }
+        Returns: boolean
+      }
+      category_bracket_load_event: {
+        Args: { target_event_id: string }
+        Returns: {
+          checagem_travada_em: string | null
+          created_at: string
+          created_by: string
+          data_evento: string
+          id: string
+          imagem_cartaz_url: string | null
+          informacoes: string | null
+          local: string
+          nome: string
+          organization_id: string
+          regulamento_url: string | null
+          results_publicados: boolean
+          slug: string
+          status: Database["public"]["Enums"]["event_status"]
+          tabela_peso_url: string | null
+          timezone: string
+          updated_at: string
+          valor_inscricao: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "events"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      category_bracket_lock: {
+        Args: { target_category_id: string; target_event_id: string }
+        Returns: undefined
+      }
+      category_bracket_require_staff: {
+        Args: { target_event: Database["public"]["Tables"]["events"]["Row"] }
+        Returns: undefined
+      }
+      category_bracket_to_json: {
+        Args: { result_kind: string; target_bracket_id: string }
+        Returns: Json
+      }
+      category_is_eligible_for_checking_reallocation: {
+        Args: {
+          current_category: Database["public"]["Tables"]["event_categories"]["Row"]
+          target_category: Database["public"]["Tables"]["event_categories"]["Row"]
+        }
+        Returns: boolean
+      }
+      category_is_eligible_for_registration: {
+        Args: {
+          event_date: string
+          target_category: Database["public"]["Tables"]["event_categories"]["Row"]
+          target_registration: Database["public"]["Tables"]["registrations"]["Row"]
+        }
+        Returns: boolean
+      }
       claim_payment_customer: { Args: { actor_id: string }; Returns: Json }
       claim_payment_issuance: {
         Args: { actor_id: string; target_payment_id: string }
         Returns: Json
+      }
+      clear_bracket_composition: {
+        Args: { target_bracket_id: string }
+        Returns: undefined
       }
       complete_payment_customer: {
         Args: { actor_id: string; claim_token: string; gateway_id: string }
@@ -1036,6 +1449,10 @@ export type Database = {
           target_payment_id: string
         }
         Returns: undefined
+      }
+      copy_bracket_participants: {
+        Args: { source_bracket_id: string; target_bracket_id: string }
+        Returns: number
       }
       create_event_registrations: {
         Args: {
@@ -1073,12 +1490,36 @@ export type Database = {
         Args: { claim_token: string; target_payment_id: string }
         Returns: undefined
       }
+      freeze_bracket_participants: {
+        Args: {
+          target_bracket_id: string
+          target_category_id: string
+          target_event_id: string
+        }
+        Returns: number
+      }
+      generate_category_bracket: {
+        Args: { target_category_id: string; target_event_id: string }
+        Returns: Json
+      }
       has_organization_role: {
         Args: {
           allowed_roles: Database["public"]["Enums"]["organization_role"][]
           target_organization_id: string
         }
         Returns: boolean
+      }
+      insert_group_entries: {
+        Args: {
+          member_ids: string[]
+          target_bracket_id: string
+          target_group_id: string
+        }
+        Returns: undefined
+      }
+      insert_group_matches: {
+        Args: { target_group_id: string }
+        Returns: undefined
       }
       is_platform_admin: { Args: never; Returns: boolean }
       link_athlete_to_current_user: {
@@ -1098,8 +1539,24 @@ export type Database = {
         Args: { target_event_id: string }
         Returns: Json
       }
+      publish_category_bracket: {
+        Args: { target_bracket_id: string }
+        Returns: Json
+      }
+      regenerate_category_bracket: {
+        Args: { reason: string; target_bracket_id: string }
+        Returns: Json
+      }
+      registration_current_category_id: {
+        Args: { target: Database["public"]["Tables"]["registrations"]["Row"] }
+        Returns: string
+      }
       release_payment_issuance_claim: {
         Args: { claim_token: string; target_payment_id: string }
+        Returns: undefined
+      }
+      replace_bracket_composition: {
+        Args: { groups_payload: Json; target_bracket_id: string }
         Returns: undefined
       }
       request_category_change: {
@@ -1123,8 +1580,16 @@ export type Database = {
           total: number
         }[]
       }
+      restore_category_bracket_suggestion: {
+        Args: { target_bracket_id: string }
+        Returns: Json
+      }
       review_category_change: {
         Args: { approve_request: boolean; target_request_id: string }
+        Returns: Json
+      }
+      save_category_bracket_composition: {
+        Args: { groups_payload: Json; target_bracket_id: string }
         Returns: Json
       }
       settle_payment_manually: {
@@ -1148,6 +1613,14 @@ export type Database = {
       }
     }
     Enums: {
+      bracket_mode: "competicao" | "sem_confronto"
+      bracket_status:
+        | "draft"
+        | "publicada"
+        | "em_andamento"
+        | "concluida"
+        | "substituida"
+      bracket_topology: "final_2" | "copo_3" | "semi_4"
       change_request_status: "pendente" | "aprovada" | "recusada"
       event_phase_type: "inscricao" | "pagamento" | "checagem" | "chaves"
       event_status:
@@ -1161,6 +1634,8 @@ export type Database = {
         | "concluido"
         | "cancelado"
       manager_relationship: "professor" | "responsavel"
+      match_round: "semifinal" | "final"
+      match_status: "pendente" | "concluido" | "wo"
       organization_role: "owner" | "organizer" | "staff" | "finance"
       payment_method: "pix" | "boleto"
       payment_status:
@@ -1309,6 +1784,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      bracket_mode: ["competicao", "sem_confronto"],
+      bracket_status: [
+        "draft",
+        "publicada",
+        "em_andamento",
+        "concluida",
+        "substituida",
+      ],
+      bracket_topology: ["final_2", "copo_3", "semi_4"],
       change_request_status: ["pendente", "aprovada", "recusada"],
       event_phase_type: ["inscricao", "pagamento", "checagem", "chaves"],
       event_status: [
@@ -1323,6 +1807,8 @@ export const Constants = {
         "cancelado",
       ],
       manager_relationship: ["professor", "responsavel"],
+      match_round: ["semifinal", "final"],
+      match_status: ["pendente", "concluido", "wo"],
       organization_role: ["owner", "organizer", "staff", "finance"],
       payment_method: ["pix", "boleto"],
       payment_status: [
