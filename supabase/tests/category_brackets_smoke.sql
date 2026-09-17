@@ -82,7 +82,7 @@ declare
   other_org uuid := gen_random_uuid();
   team_alfa uuid := gen_random_uuid();
   team_beta uuid := gen_random_uuid();
-  event_id uuid := gen_random_uuid();
+  event uuid := gen_random_uuid();
   unlocked_event uuid := gen_random_uuid();
   other_event uuid := gen_random_uuid();
   rules uuid := gen_random_uuid();
@@ -185,11 +185,11 @@ begin
     (team_beta,org,'Beta',owner);
   insert into public.events(id,organization_id,nome,slug,data_evento,local,status,created_by,valor_inscricao)
     values
-      (event_id,org,'Evento chaves',event_id::text,current_date,'Teste','checagem',owner,80),
+      (event,org,'Evento chaves',event::text,current_date,'Teste','checagem',owner,80),
       (unlocked_event,org,'Evento sem lock',unlocked_event::text,current_date,'Teste','checagem',owner,80),
       (other_event,other_org,'Outro evento chaves',other_event::text,current_date,'Teste','checagem',other_owner,80);
   insert into public.category_rule_sets(id,event_id,nome,versao,ativo) values
-    (rules,event_id,'Regras',1,true),
+    (rules,event,'Regras',1,true),
     (unlocked_rules,unlocked_event,'Regras unlocked',1,true),
     (other_rules,other_event,'Outras',1,true);
   insert into public.event_categories(
@@ -238,67 +238,67 @@ begin
     id,event_id,athlete_id,category_id,registered_by,status,valor,
     athlete_snapshot,category_snapshot,rule_set_version,terms_version,terms_accepted_at
   ) values
-    (r_one,event_id,a_one,cat_one,owner,'efetivada',80,
+    (r_one,event,a_one,cat_one,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N1 Sozinho','peso_kg',70,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','N1'),1,'MVP-2026-09',now()),
-    (r_two_a,event_id,a_two_a,cat_two,owner,'efetivada',80,
+    (r_two_a,event,a_two_a,cat_two,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N2 Alfa','peso_kg',78,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','N2'),1,'MVP-2026-09',now()),
-    (r_two_b,event_id,a_two_b,cat_two,owner,'efetivada',80,
+    (r_two_b,event,a_two_b,cat_two,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N2 Beta','peso_kg',78,'team_id',team_beta,'team_name','Beta'),
       jsonb_build_object('nome','N2'),1,'MVP-2026-09',now()),
-    (r_same_1,event_id,a_same_1,cat_two_same,owner,'efetivada',80,
+    (r_same_1,event,a_same_1,cat_two_same,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N2 Same 1','peso_kg',82,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','N2 mesma equipe'),1,'MVP-2026-09',now()),
-    (r_same_2,event_id,a_same_2,cat_two_same,owner,'efetivada',80,
+    (r_same_2,event,a_same_2,cat_two_same,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N2 Same 2','peso_kg',82,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','N2 mesma equipe'),1,'MVP-2026-09',now()),
-    (r_three_a1,event_id,a_three_a1,cat_three,owner,'efetivada',80,
+    (r_three_a1,event,a_three_a1,cat_three,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N3 Alfa 1','peso_kg',86,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','N3'),1,'MVP-2026-09',now()),
-    (r_three_a2,event_id,a_three_a2,cat_three,owner,'efetivada',80,
+    (r_three_a2,event,a_three_a2,cat_three,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N3 Alfa 2','peso_kg',86,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','N3'),1,'MVP-2026-09',now()),
-    (r_three_b,event_id,a_three_b,cat_three,owner,'efetivada',80,
+    (r_three_b,event,a_three_b,cat_three,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N3 Beta','peso_kg',86,'team_id',team_beta,'team_name','Beta'),
       jsonb_build_object('nome','N3'),1,'MVP-2026-09',now()),
-    (r_four_a1,event_id,a_four_a1,cat_four,owner,'efetivada',80,
+    (r_four_a1,event,a_four_a1,cat_four,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','Alfa 1','peso_kg',90,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','N4'),1,'MVP-2026-09',now()),
-    (r_four_a2,event_id,a_four_a2,cat_four,owner,'efetivada',80,
+    (r_four_a2,event,a_four_a2,cat_four,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','Alfa 2','peso_kg',90,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','N4'),1,'MVP-2026-09',now()),
-    (r_four_b1,event_id,a_four_b1,cat_four,owner,'efetivada',80,
+    (r_four_b1,event,a_four_b1,cat_four,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','Beta 1','peso_kg',90,'team_id',team_beta,'team_name','Beta'),
       jsonb_build_object('nome','N4'),1,'MVP-2026-09',now()),
-    (r_four_b2,event_id,a_four_b2,cat_four,owner,'efetivada',80,
+    (r_four_b2,event,a_four_b2,cat_four,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','Beta 2','peso_kg',90,'team_id',team_beta,'team_name','Beta'),
       jsonb_build_object('nome','N4'),1,'MVP-2026-09',now()),
-    (r_five_1,event_id,a_five_1,cat_five,owner,'efetivada',80,
+    (r_five_1,event,a_five_1,cat_five,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N5 1','peso_kg',94,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','N5'),1,'MVP-2026-09',now()),
-    (r_five_2,event_id,a_five_2,cat_five,owner,'efetivada',80,
+    (r_five_2,event,a_five_2,cat_five,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N5 2','peso_kg',94,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','N5'),1,'MVP-2026-09',now()),
-    (r_five_3,event_id,a_five_3,cat_five,owner,'efetivada',80,
+    (r_five_3,event,a_five_3,cat_five,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N5 3','peso_kg',94,'team_id',team_beta,'team_name','Beta'),
       jsonb_build_object('nome','N5'),1,'MVP-2026-09',now()),
-    (r_five_4,event_id,a_five_4,cat_five,owner,'efetivada',80,
+    (r_five_4,event,a_five_4,cat_five,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N5 4','peso_kg',94,'team_id',team_beta,'team_name','Beta'),
       jsonb_build_object('nome','N5'),1,'MVP-2026-09',now()),
-    (r_five_5,event_id,a_five_5,cat_five,owner,'efetivada',80,
+    (r_five_5,event,a_five_5,cat_five,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','N5 5','peso_kg',94,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','N5'),1,'MVP-2026-09',now()),
-    (r_moved,event_id,a_moved,cat_origin,owner,'efetivada',80,
+    (r_moved,event,a_moved,cat_origin,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','Movido vigente','peso_kg',102,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','Origem vigente'),1,'MVP-2026-09',now()),
-    (r_dest,event_id,a_dest,cat_dest,owner,'efetivada',80,
+    (r_dest,event,a_dest,cat_dest,owner,'efetivada',80,
       snapshot || jsonb_build_object('nome_completo','Nativo destino','peso_kg',102,'team_id',team_beta,'team_name','Beta'),
       jsonb_build_object('nome','Destino vigente'),1,'MVP-2026-09',now()),
-    (r_pending,event_id,a_pending,cat_dest,owner,'pendente_pagamento',80,
+    (r_pending,event,a_pending,cat_dest,owner,'pendente_pagamento',80,
       snapshot || jsonb_build_object('nome_completo','Pendente','peso_kg',102,'team_id',team_alfa,'team_name','Alfa'),
       jsonb_build_object('nome','Destino vigente'),1,'MVP-2026-09',now()),
-    (r_cancel,event_id,a_cancel,cat_dest,owner,'cancelada',80,
+    (r_cancel,event,a_cancel,cat_dest,owner,'cancelada',80,
       snapshot || jsonb_build_object('nome_completo','Cancelado','peso_kg',102,'team_id',team_beta,'team_name','Beta'),
       jsonb_build_object('nome','Destino vigente'),1,'MVP-2026-09',now()),
     (r_unlocked_1,unlocked_event,a_unlocked_1,cat_unlocked,owner,'efetivada',80,
@@ -322,7 +322,7 @@ begin
   ) order by id)
     into regs_before
     from public.registrations
-   where event_id in (event_id, unlocked_event);
+   where registrations.event_id in (event, unlocked_event);
 
   perform set_config('request.jwt.claim.sub', owner::text, true);
   set local role authenticated;
@@ -336,12 +336,12 @@ begin
   end;
   if not rejected then raise exception 'FAIL: generate without lock'; end if;
 
-  if (public.lock_event_checagem(event_id)->>'kind') <> 'locked' then
+  if (public.lock_event_checagem(event)->>'kind') <> 'locked' then
     raise exception 'FAIL: lock checagem';
   end if;
 
   -- N=1
-  result := public.generate_category_bracket(event_id, cat_one);
+  result := public.generate_category_bracket(event, cat_one);
   b_one := (result->>'bracketId')::uuid;
   if result->>'mode' <> 'sem_confronto' or result->>'status' <> 'draft' then
     raise exception 'FAIL: N=1 mode/status %', result;
@@ -368,7 +368,7 @@ begin
   if not rejected then raise exception 'FAIL: N=1 save allowed'; end if;
 
   -- N=2 equipes distintas
-  result := public.generate_category_bracket(event_id, cat_two);
+  result := public.generate_category_bracket(event, cat_two);
   b_two := (result->>'bracketId')::uuid;
   if result->>'mode' <> 'competicao' then raise exception 'FAIL: N=2 mode'; end if;
   if jsonb_array_length(coalesce(result->'warnings','[]'::jsonb)) <> 0 then
@@ -393,7 +393,7 @@ begin
   then raise exception 'FAIL: N=2 match graph'; end if;
 
   -- N=2 mesma equipe: warning, nao erro
-  result := public.generate_category_bracket(event_id, cat_two_same);
+  result := public.generate_category_bracket(event, cat_two_same);
   b_two_same := (result->>'bracketId')::uuid;
   if not exists(
     select 1 from jsonb_array_elements(result->'warnings') w
@@ -405,7 +405,7 @@ begin
   end if;
 
   -- N=3 copo
-  result := public.generate_category_bracket(event_id, cat_three);
+  result := public.generate_category_bracket(event, cat_three);
   b_three := (result->>'bracketId')::uuid;
   if (select topology from public.bracket_groups where bracket_id = b_three) <> 'copo_3' then
     raise exception 'FAIL: N=3 topology';
@@ -476,7 +476,7 @@ begin
   end if;
 
   -- N=4 custo 0
-  result := public.generate_category_bracket(event_id, cat_four);
+  result := public.generate_category_bracket(event, cat_four);
   b_four := (result->>'bracketId')::uuid;
   if (select topology from public.bracket_groups where bracket_id = b_four) <> 'semi_4' then
     raise exception 'FAIL: N=4 topology';
@@ -535,7 +535,7 @@ begin
   end if;
 
   -- N=5 split 3+2
-  result := public.generate_category_bracket(event_id, cat_five);
+  result := public.generate_category_bracket(event, cat_five);
   b_five := (result->>'bracketId')::uuid;
   if (select count(*) from public.bracket_participants where bracket_id = b_five) <> 5
      or (select count(*) from public.bracket_entries where bracket_id = b_five) <> 5
@@ -664,14 +664,14 @@ begin
   -- vigente Sprint 7
   rejected := false;
   begin
-    perform public.generate_category_bracket(event_id, cat_origin);
+    perform public.generate_category_bracket(event, cat_origin);
   exception when others then
     if sqlerrm <> 'Categoria sem inscricoes efetivadas' then raise; end if;
     rejected := true;
   end;
   if not rejected then raise exception 'FAIL: origin category generated after move'; end if;
 
-  result := public.generate_category_bracket(event_id, cat_dest);
+  result := public.generate_category_bracket(event, cat_dest);
   b_dest := (result->>'bracketId')::uuid;
   if (select count(*) from public.bracket_participants where bracket_id = b_dest) <> 2 then
     raise exception 'FAIL: dest should have moved+native only';
@@ -684,12 +684,12 @@ begin
   then raise exception 'FAIL: generate rewrote moved registration'; end if;
 
   -- idempotencia
-  result := public.generate_category_bracket(event_id, cat_one);
+  result := public.generate_category_bracket(event, cat_one);
   b_two_again := (result->>'bracketId')::uuid;
   if result->>'kind' <> 'existing_draft' or b_two_again is distinct from b_one then
     raise exception 'FAIL: generate not idempotent %', result;
   end if;
-  if (select count(*) from public.category_brackets where event_id = event_id and category_id = cat_one) <> 1 then
+  if (select count(*) from public.category_brackets where event_id = event and category_id = cat_one) <> 1 then
     raise exception 'FAIL: second generate created version';
   end if;
 
@@ -801,7 +801,7 @@ begin
     raise exception 'FAIL: v2 not published';
   end if;
   if (select count(*) from public.category_brackets
-       where event_id = event_id and category_id = cat_two
+       where event_id = event and category_id = cat_two
          and status in ('publicada','em_andamento','concluida')) <> 1
   then raise exception 'FAIL: more than one live version'; end if;
   if (select count(*) from public.bracket_entries where bracket_id = b_two) <> 2
@@ -814,7 +814,7 @@ begin
   set local role authenticated;
   rejected := false;
   begin
-    perform public.generate_category_bracket(event_id, cat_one);
+    perform public.generate_category_bracket(event, cat_one);
   exception when others then
     if sqlerrm <> 'Sem permissao para operar chaves' then raise; end if;
     rejected := true;
@@ -842,7 +842,7 @@ begin
   set local role authenticated;
   rejected := false;
   begin
-    perform public.generate_category_bracket(event_id, cat_one);
+    perform public.generate_category_bracket(event, cat_one);
   exception when others then
     if sqlerrm <> 'Sem permissao para operar chaves' then raise; end if;
     rejected := true;
@@ -857,7 +857,7 @@ begin
     insert into public.category_brackets(
       event_id, category_id, version, mode, status, source_checagem_travada_em, generated_by
     ) values (
-      event_id, cat_one, 9, 'sem_confronto', 'draft', now(), owner
+      event, cat_one, 9, 'sem_confronto', 'draft', now(), owner
     );
   exception when others then
     rejected := true;
@@ -912,7 +912,7 @@ begin
     insert into public.category_brackets(
       event_id, category_id, version, mode, status, source_checagem_travada_em, generated_by
     ) values (
-      event_id, cat_one, 9, 'sem_confronto', 'draft', now(), owner
+      event, cat_one, 9, 'sem_confronto', 'draft', now(), owner
     );
   exception when others then
     if sqlstate <> '23505' then raise; end if;
@@ -926,7 +926,7 @@ begin
       event_id, category_id, version, mode, status,
       source_checagem_travada_em, generated_by, published_by, published_at
     ) values (
-      event_id, cat_two, 9, 'competicao', 'publicada', now(), owner, owner, now()
+      event, cat_two, 9, 'competicao', 'publicada', now(), owner, owner, now()
     );
   exception when others then
     if sqlstate <> '23505' then raise; end if;
@@ -939,7 +939,7 @@ begin
     insert into public.category_brackets(
       event_id, category_id, version, mode, status, source_checagem_travada_em, generated_by
     ) values (
-      event_id, cat_two, 2, 'competicao', 'draft', now(), owner
+      event, cat_two, 2, 'competicao', 'draft', now(), owner
     );
   exception when others then
     if sqlstate <> '23505' then raise; end if;
@@ -952,14 +952,14 @@ begin
 
   select count(*) into generated_audits
     from public.event_audit_logs
-   where event_id = event_id and action = 'bracket_generated';
+   where event_id = event and action = 'bracket_generated';
   if generated_audits <> 7 then
     raise exception 'FAIL: generated audit count %', generated_audits;
   end if;
-  if not exists(select 1 from public.event_audit_logs where event_id = event_id and action = 'bracket_composition_saved')
-     or not exists(select 1 from public.event_audit_logs where event_id = event_id and action = 'bracket_suggestion_restored')
-     or not exists(select 1 from public.event_audit_logs where event_id = event_id and action = 'bracket_published')
-     or not exists(select 1 from public.event_audit_logs where event_id = event_id and action = 'bracket_regenerated')
+  if not exists(select 1 from public.event_audit_logs where event_id = event and action = 'bracket_composition_saved')
+     or not exists(select 1 from public.event_audit_logs where event_id = event and action = 'bracket_suggestion_restored')
+     or not exists(select 1 from public.event_audit_logs where event_id = event and action = 'bracket_published')
+     or not exists(select 1 from public.event_audit_logs where event_id = event and action = 'bracket_regenerated')
   then raise exception 'FAIL: missing audit actions'; end if;
 
   if (
@@ -972,7 +972,7 @@ begin
       'status', status
     ) order by id)
       from public.registrations
-     where event_id in (event_id, unlocked_event)
+     where registrations.event_id in (event, unlocked_event)
   ) is distinct from regs_before then
     raise exception 'FAIL: Sprint 7 registration mutated';
   end if;
