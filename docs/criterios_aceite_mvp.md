@@ -38,11 +38,13 @@
 
 ## Checagem e categoria
 
-- [ ] Somente inscrições pagas ou baixadas manualmente aparecem na checagem.
+- [x] Somente inscrições pagas ou baixadas manualmente aparecem na checagem.
 - [ ] Lista permite filtros por categoria, equipe e professor sem expor dados indevidos.
-- [ ] Atleta sozinho pode solicitar mudança elegível.
-- [ ] Organizador aprova ou recusa com histórico.
-- [ ] Lista travada não aceita alterações comuns.
+- [x] Atleta sozinho pode solicitar mudança elegível.
+- [x] Organizador aprova ou recusa com histórico.
+- [x] Lista travada não aceita alterações comuns.
+
+Filtros entregues na checagem autenticada: categoria e equipe. Filtro por professor e lista pública de checagem não fazem parte do núcleo operacional fechado da Sprint 7; a lista pública permanece bloqueada pela identidade do inscrito no PRD.
 
 ## Pagamento
 

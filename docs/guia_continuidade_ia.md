@@ -4,7 +4,9 @@
 
 Este arquivo é o ponto de entrada para uma IA ou pessoa continuar o projeto sem depender do histórico da conversa. Leia-o antes de implementar.
 
-**Objetivo atual:** avançar a Sprint 7 (checagem e alterações). A Sprint 6 de pagamentos Sandbox está concluída no plano operacional. Não inventar check-in, pesagem, chaves ou identidade pública ainda pendente no PRD.
+**Objetivo atual:** a Sprint 7 (núcleo operacional da checagem) está concluída. Não iniciar Sprint 8, correção de faixa, flags de realocação no rule set nem reabertura da checagem. A Sprint 6 de pagamentos Sandbox permanece concluída no plano operacional. Não inventar check-in, pesagem, chaves ou identidade pública ainda pendente no PRD.
+
+MC-SIM r1 e r2 são evidências permanentes. Não alterá-los para cenário novo.
 
 O usuário pediu continuidade e automação acompanhando as entregas. Execute trabalho técnico autorizado e reversível sem pedir a mesma confirmação a cada passo. A autorização para desenvolvimento não equivale a autorização para produção, movimentação financeira real, envio de mensagens a terceiros, exclusão de dados ou decisões comerciais.
 
@@ -238,7 +240,7 @@ A ausência de uma chave bloqueia homologação externa, mas não bloqueia imple
 
 | Sprint | Trabalho exigido | Gate de saída |
 | --- | --- | --- |
-| 7 — Checagem | Lista só de efetivados, filtros seguros, atleta sozinho, solicitação e aprovação, travamento | Mudança auditada e concorrência controlada; travamento respeitado |
+| 7 — Checagem | Lista só de efetivados, filtros seguros, atleta sozinho, solicitação e aprovação, travamento | **Concluída no núcleo operacional** (2026-09-17). Lista pública e filtro por professor fora deste recorte. |
 | 8 — Chaves | Modelagem persistente de chaves/confrontos/pesagens/resultados, versões e algoritmo aprovado | Regras 3/5 e demais casos aprovados; determinismo e testes de 2 a 16 atletas |
 | 9 — Financeiro | Extratos conciliados, taxas/estornos, exportação e fechamento | Política comercial aprovada; totais fecham sem dupla contagem |
 | 10 — Produção | Segurança, privacidade, acessibilidade, desempenho, deploy e recuperação | Evidência de fluxo completo, restauração e liberação autorizada |
@@ -249,7 +251,9 @@ A Sprint 5 protege o snapshot por trigger. Não desabilite essa proteção para 
 
 Implemente uma alocação vigente separada ou solução equivalente que preserve a fotografia original e registre cada decisão. A checagem e as chaves devem consumir a alocação vigente aprovada e travada.
 
-Lote 2 (alocação vigente e RPCs de categoria) está aplicado no Sandbox e aprovado em smoke SQL e RPC autenticada. Lote 3 (travamento operacional de `checagem_travada_em`) está aplicado no Sandbox e aprovado em smoke SQL, sem reabertura. Não contornar a hidratação quebrada do login E2E no Playwright: é infraestrutura separada.
+Lote 2 (alocação vigente e RPCs de categoria) e Lote 3 (travamento) estão aplicados no Sandbox. A elegibilidade de realocação da checagem foi corrigida em 2026-09-17 (`category_is_eligible_for_checking_reallocation`) e comprovada no MC-SIM r2. MC-SIM r1 e r2 estão travados e são evidências permanentes.
+
+A Sprint 7 fecha o núcleo operacional. Não contornar a hidratação quebrada do login E2E no Playwright: é infraestrutura separada. O smoke de UI usou cookie de sessão do owner.
 
 A identidade pública dos inscritos ainda depende da decisão do PRD. Não publicar CPF, nascimento completo, contatos, dados de menores ou pagamentos por reutilização de consultas internas.
 

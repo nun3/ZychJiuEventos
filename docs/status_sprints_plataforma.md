@@ -455,60 +455,105 @@ Pré-requisitos: migrações de reserva já aplicadas; URL/chaves públicas e `S
 
 ### Sprint 7 - Checagem e alteracoes
 
-- Status: em andamento
+- Status: concluida (nucleo operacional)
 - Dependencia: Sprint 6.
 - Objetivo: publicar a lista oficial e reduzir atendimento manual.
-- Escopo:
+- Escopo entregue:
   - checagem apenas de inscricoes efetivadas;
-  - filtros publicos seguros;
-  - deteccao de atleta sozinho;
-  - solicitacao e decisao de mudanca elegivel;
-  - travamento e trilha de auditoria.
-- Criterios de saida: lista travada e imutavel para operacoes comuns e pronta para originar chaves.
+  - filtros operacionais por categoria e equipe;
+  - deteccao de atleta sozinho na categoria vigente;
+  - solicitacao e decisao de realocacao operacional;
+  - travamento unico, sem reabertura, com trilha de auditoria.
+- Criterio de saida: lista travada e imutavel para operacoes comuns e pronta para originar chaves. **Atendido.**
 
-Revisao: criar uma alocacao vigente separada do snapshot original da inscricao (hoje protegido por trigger). A aprovacao deve alterar essa alocacao em transacao, registrar antes/depois e respeitar travamento. A identidade publica ainda depende da decisao registrada no PRD; CPF, nascimento completo e dados de pagamento nunca entram na consulta publica.
+Revisao vigente: a alocacao operacional e `coalesce(current_category_id, category_id)`. Snapshot e `category_id` original permanecem imutaveis. Aprovacao, recusa e travamento sao atomicos, auditados e recusam concorrencia/segunda decisao. A identidade publica dos inscritos ainda depende de decisao do PRD; CPF, nascimento completo e dados de pagamento nunca entram em consulta publica.
 
-Automacao: inscricao pendente/expirada/estornada ausente da lista, filtros, atleta sozinho, solicitacao cruzada negada, aprovacao auditada, duas aprovacoes concorrentes e bloqueio apos travamento.
+MC-SIM r1 (`24fa57c3-…`, travado em `2026-09-17T14:00:59Z`) e MC-SIM r2 (`0c5d6eff-…`, travado em `2026-09-17T14:46:53Z`) sao evidencias permanentes do runbook. Nao reabrir, nao reciclar para cenario novo, nao usar como massa descartavel de E2E.
 
-#### Incremento de 2026-09-15
+#### Regras de dominio vigentes
 
-- lista autenticada de checagem passou a consultar somente `registrations.status = efetivada`;
-- filtros operacionais por categoria e equipe a partir do snapshot;
-- detecção de atleta sozinho na categoria, sem abrir solicitação de mudança;
-- filtro por professor, lista pública, alocação vigente, aprovação e travamento permanecem para os próximos incrementos.
+- `category_is_eligible_for_registration` governa so a **inscricao** (snapshot: nascimento, peso, faixa, genero).
+- `category_is_eligible_for_checking_reallocation` governa a **checagem** do sozinho. Nao revalida peso/idade do snapshot contra o destino.
+- Peso: subir exatamente 1 classe adjacente; nao descer; nao pular classe existente. Buraco em kg sem linha intermediaria conta como adjacente.
+- Idade: ±1 classe adjacente; nao pular classe existente.
+- XOR: um destino muda peso **ou** idade, nunca os dois.
+- Genero e intervalo de faixa congelados.
+- Overlap ou duplicidade de intervalos no grupo: fail closed naquele eixo.
+- Politica por `category_rule_sets` (habilitar/desabilitar eixos) e divida futura, sem schema morto. O default da plataforma e a regra acima.
+- Correcao de dados/faixa e outro fluxo. Nao faz parte da realocacao do sozinho.
 
-#### Incremento de 2026-09-15 (lote 2)
+#### Lote 1 — lista oficial (2026-09-15)
 
-- alocação vigente por `registrations.current_category_id` (override nulo = categoria original);
-- RPCs `list_eligible_category_changes`, `request_category_change` e `review_category_change`;
-- uma pendência por inscrição; snapshot e `category_id` original imutáveis;
-- UI mínima: solicitação em `/dashboard/inscricoes` e decisão na checagem administrativa.
-- migration `202609160001_category_change_allocation.sql` aplicada no Sandbox `kfvypacjzlzwwblsbpwj` pelo SQL Editor;
-- smoke SQL `supabase/tests/category_change_smoke.sql` aprovado (sucesso sem linhas; rollback da massa);
-- smoke autenticado das RPCs aprovado com JWT do owner E2E: elegibilidade, solicitação, decisão, `current_category_id` atualizado, `category_id`/snapshot preservados, segunda decisão bloqueada; massa removida;
-- fixture BDD de checagem alinhada ao snapshot real da RPC de inscrição (`data_nascimento`, `genero` e demais campos de elegibilidade);
-- UI de solicitação/decisão não validada por clique: hidratação do login E2E no Playwright permanece falha preexistente de infraestrutura, fora deste lote.
+- lista autenticada consulta somente `registrations.status = efetivada`;
+- filtros por categoria e equipe a partir do snapshot;
+- deteccao de atleta sozinho na categoria vigente;
+- evidencia BDD de checagem (pendente/expirada/estornada ausentes; sozinho identificado).
 
-#### Incremento de 2026-09-15 (lote 3)
+#### Lote 2 — alocacao vigente e solicitacoes (2026-09-15)
 
-- RPC `lock_event_checagem`: owner/organizer/admin, evento em `checagem`, recusa segundo travamento;
-- trigger impede escrita direta e reabertura de `checagem_travada_em`;
-- UI administrativa com confirmação explícita antes de gravar o timestamp;
-- auditoria `checagem_locked`; bloqueios de solicitação/decisão já existentes permanecem;
-- sem RPC de reabertura;
-- migration `202609160002_lock_event_checagem.sql` aplicada no Sandbox `kfvypacjzlzwwblsbpwj` pelo SQL Editor;
-- smoke SQL `supabase/tests/checagem_lock_smoke.sql` aprovado (sucesso sem linhas; rollback da massa): outsider e organizador cruzado recusados, escrita direta bloqueada, owner trava, segundo travamento recusado, reabertura recusada, auditoria gravada;
-- UI de travamento não validada por clique: hidratação do login E2E no Playwright permanece falha preexistente de infraestrutura.
+- `registrations.current_category_id` (nulo = original);
+- RPCs `list_eligible_category_changes`, `request_category_change`, `review_category_change`;
+- uma pendencia por inscricao; snapshot/`category_id` imutaveis;
+- UI: solicitacao em `/dashboard/inscricoes`; decisao na checagem administrativa;
+- migration `202609160001_category_change_allocation.sql` no Sandbox `kfvypacjzlzwwblsbpwj`.
 
-#### Fechamento do lote 2
+#### Lote 3 — travamento (2026-09-15)
 
-Aprovado no nível de domínio, persistência, RLS e RPC. Travamento operacional (lote 3) aplicado no Sandbox e aprovado em smoke SQL. Sem reabertura, lista pública, check-in, pesagem ou chaves.
+- RPC `lock_event_checagem`; trigger bloqueia escrita direta e reabertura;
+- UI administrativa com confirmacao explicita;
+- auditoria `checagem_locked`;
+- migration `202609160002_lock_event_checagem.sql`;
+- smoke `supabase/tests/checagem_lock_smoke.sql` aprovado (sucesso sem linhas).
+
+#### Correcao de dominio — elegibilidade de realocacao (2026-09-17)
+
+O predicado de destino deixou de reutilizar a elegibilidade de inscricao. Helper interno `category_is_eligible_for_checking_reallocation`; as tres RPCs revalidam o mesmo contrato. Migration `202609170001_checking_reallocation_eligibility.sql` aplicada no Sandbox. Smoke `category_change_smoke.sql` reescrito com intervalos disjuntos: `Success. No rows returned`.
+
+#### MC-SIM r1 — evidencia permanente
+
+Evento canônico travado **antes** da regra nova. Atleta 4 sozinho no Medio, 82 kg; lista de destinos vazia pela regra antiga; checagem travada. Nao reabrir.
+
+#### MC-SIM r2 — evidencia permanente
+
+Evento novo. Atleta A sozinho no Leve (70 kg) → Medio adjacente → solicitacao → recusa → nova solicitacao → aprovacao → `current_category_id` = Medio, `category_id`/snapshots intactos → lista agrupa A com B e C no Medio → travamento. UI smoke autenticado por cookie do owner. Nao reciclar.
+
+#### Matriz de aceite da Sprint 7
+
+| Requisito | Implementacao | Evidencia | Status |
+|---|---|---|---|
+| Lista so de efetivadas | checagem admin filtra `status = efetivada` | BDD checagem; MC-SIM r1/r2 | aprovado |
+| Detectar atleta sozinho | contagem pela categoria vigente | BDD; r1 Atleta 4; r2 Atleta A | aprovado |
+| Sozinho solicita mudanca elegivel | RPC list/request com adjacencia operacional | smoke SQL; r2 Medio unico destino | aprovado |
+| Organizador aprova/recusa com historico | `review_category_change` + `event_audit_logs` | smoke; r2 recusa + aprovacao | aprovado |
+| Snapshot e `category_id` imutaveis | override so em `current_category_id` | smoke; r2 verify | aprovado |
+| Lista usa alocacao vigente | `coalesce(current_category_id, category_id)` | r2 A no Medio com original Leve | aprovado |
+| Travamento unico, sem reabertura | `lock_event_checagem` + trigger | smoke lock; r1 e r2 travados | aprovado |
+| Bloqueios pos-lock | request/review recusam `Checagem travada` | smoke; r2 lock | aprovado |
+| Filtros categoria e equipe | `EventRegistrationsList` | BDD; UI smoke r1/r2 | aprovado |
+| Filtro por professor | — | — | nao entregue |
+| Lista publica de checagem | — | identidade publica ainda e decisao de PRD | pendente de produto |
+| Correcao de faixa/dados | — | fluxo distinto, fora da realocacao | futuro / decisao de modelo |
+| Flags de realocacao no rule set | default de plataforma no SQL | divida consciente, sem schema | futuro |
+
+#### Fora deste fechamento (nao bloquear o nucleo)
+
+- lista publica e filtro por professor;
+- correcao de faixa/dados cadastrais;
+- configuracao por evento/rule set dos eixos de realocacao;
+- unlock da checagem;
+- Sprint 8 (chaves), check-in, pesagem.
+
+Automacao proporcional: BDD de lista/sozinho; smokes SQL de realocacao e lock; RPCs autenticadas; MC-SIM r1 e r2. A hidratacao quebrada do login E2E no Playwright permanece limitacao de infraestrutura; o smoke de UI autenticado usou cookie de sessao do owner, nao `waitForTimeout`.
+
+#### Fechamento
+
+Nucleo operacional da Sprint 7 esta comprovado no Sandbox. A sprint fecha neste recorte. Nao iniciar Sprint 8, correcao de faixa, flags nem reabertura.
 
 ### Sprint 8 - Chaves e operacao esportiva
 
 - Status: bloqueada
 - Bloqueio: decisao de negocio sobre algoritmo e grupos de 3/5.
-- Dependencia: Sprint 7 e aprovacao formal do algoritmo.
+- Dependencia: Sprint 7 (nucleo operacional concluido) e aprovacao formal do algoritmo.
 - Objetivo: gerar, versionar e publicar chaves; registrar pesagem e resultados.
 - Escopo:
   - formatos aprovados, byes e grupos de 3/5;

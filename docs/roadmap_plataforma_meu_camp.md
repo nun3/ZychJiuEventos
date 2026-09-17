@@ -107,6 +107,8 @@ Referencias tecnicas: [criacao de cobranca](https://docs.asaas.com/reference/cre
 - Solicitacao, aprovacao e recusa de mudanca com historico.
 - Travamento da checagem antes da geracao de chaves.
 
+Estado vigente (2026-09-17): o nucleo autenticado da checagem (lista de efetivadas, sozinho, realocacao operacional, aprovacao/recusa, travamento) esta entregue. A lista publica continua requisito do PRD e depende da identidade do inscrito. Correcao de faixa nao faz parte da realocacao do sozinho.
+
 ## 6. Fora do primeiro incremento operacional
 
 - Aplicativo mobile nativo.
