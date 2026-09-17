@@ -1502,6 +1502,10 @@ export type Database = {
         Args: { target_category_id: string; target_event_id: string }
         Returns: Json
       }
+      get_public_event_brackets: {
+        Args: { target_event_id: string }
+        Returns: Json
+      }
       has_organization_role: {
         Args: {
           allowed_roles: Database["public"]["Enums"]["organization_role"][]

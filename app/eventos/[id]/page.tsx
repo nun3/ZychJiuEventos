@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { unstable_noStore as noStore } from 'next/cache'
-import { ArrowLeft, CalendarDays, Clock3, Download, FileText, MapPin, Trophy, UsersRound } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Clock3, Download, FileText, GitBranch, MapPin, Trophy, UsersRound } from 'lucide-react'
 import ModernNavbar from '@/components/ModernNavbar'
 import ModernFooter from '@/components/ModernFooter'
 import { Card, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
@@ -171,6 +171,13 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                   ) : (
                     <p className="font-mc-interface text-mc-small text-mc-text-secondary">Inscrições indisponíveis nesta fase.</p>
                   )}
+                </div>
+                <div className="mt-mc-24 border-t border-mc-border pt-mc-24">
+                  <Link href={`/eventos/${event.id}/chaves`} className="inline-flex min-h-12 w-full items-center justify-center gap-mc-8 rounded-mc-medium border border-mc-border bg-mc-surface px-mc-16 font-mc-interface text-base font-semibold text-mc-text-primary transition-colors duration-mc-normal hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2">
+                    <GitBranch aria-hidden="true" size={18} />
+                    Consultar chaves
+                  </Link>
+                  <p className="mt-mc-8 font-mc-interface text-mc-caption text-mc-text-secondary">Somente versões oficiais publicadas.</p>
                 </div>
               </Card>
             </aside>
