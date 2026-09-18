@@ -16,6 +16,17 @@ export type PublicBracketMatch = {
   order: number
   sideA: string
   sideB: string
+  status: 'pendente' | 'concluido' | 'wo'
+  winner: string | null
+  isWalkover: boolean
+}
+
+export type PublicBracketPlacement = {
+  place: number
+  athlete: {
+    name: string
+    team: string | null
+  }
 }
 
 export type PublicBracketGroup = {
@@ -23,12 +34,13 @@ export type PublicBracketGroup = {
   topology: 'final_2' | 'copo_3' | 'semi_4'
   slots: PublicBracketSlot[]
   matches: PublicBracketMatch[]
+  placements: PublicBracketPlacement[]
 }
 
 export type PublicBracket = {
   category: string
   mode: 'competicao' | 'sem_confronto'
-  status: 'publicada'
+  status: 'publicada' | 'em_andamento' | 'concluida'
   athlete: { name: string; team: string | null } | null
   groups: PublicBracketGroup[]
 }
@@ -69,8 +81,32 @@ function parseMatch(value: Json): PublicBracketMatch | null {
   const order = number(source.order)
   const sideA = text(source.sideA)
   const sideB = text(source.sideB)
-  if ((round !== 'semifinal' && round !== 'final') || order === null || !sideA || !sideB) return null
-  return { round, order, sideA, sideB }
+  const status = text(source.status)
+  if (
+    (round !== 'semifinal' && round !== 'final')
+    || order === null
+    || !sideA
+    || !sideB
+    || !['pendente', 'concluido', 'wo'].includes(status || '')
+  ) return null
+  return {
+    round,
+    order,
+    sideA,
+    sideB,
+    status: status as PublicBracketMatch['status'],
+    winner: text(source.winner),
+    isWalkover: source.isWalkover === true,
+  }
+}
+
+function parsePlacement(value: Json): PublicBracketPlacement | null {
+  const source = record(value)
+  const place = source ? number(source.place) : null
+  const athleteSource = source ? record(source.athlete) : null
+  const name = athleteSource ? text(athleteSource.name) : null
+  if (place === null || !name) return null
+  return { place, athlete: { name, team: text(athleteSource?.team) } }
 }
 
 function parseGroup(value: Json): PublicBracketGroup | null {
@@ -81,7 +117,8 @@ function parseGroup(value: Json): PublicBracketGroup | null {
   if (!label || !['final_2', 'copo_3', 'semi_4'].includes(topology || '')) return null
   const slots = Array.isArray(source.slots) ? source.slots.map(parseSlot).filter((slot): slot is PublicBracketSlot => Boolean(slot)) : []
   const matches = Array.isArray(source.matches) ? source.matches.map(parseMatch).filter((match): match is PublicBracketMatch => Boolean(match)) : []
-  return { label, topology: topology as PublicBracketGroup['topology'], slots, matches }
+  const placements = Array.isArray(source.placements) ? source.placements.map(parsePlacement).filter((placement): placement is PublicBracketPlacement => Boolean(placement)) : []
+  return { label, topology: topology as PublicBracketGroup['topology'], slots, matches, placements }
 }
 
 function parseBracket(value: Json): PublicBracket | null {
@@ -90,14 +127,18 @@ function parseBracket(value: Json): PublicBracket | null {
   const category = text(source.category)
   const mode = text(source.mode)
   const status = text(source.status)
-  if (!category || (mode !== 'competicao' && mode !== 'sem_confronto') || status !== 'publicada') return null
+  if (
+    !category
+    || (mode !== 'competicao' && mode !== 'sem_confronto')
+    || !['publicada', 'em_andamento', 'concluida'].includes(status || '')
+  ) return null
 
   const athleteSource = record(source.athlete)
   const athleteName = athleteSource ? text(athleteSource.name) : null
   const athlete = athleteName ? { name: athleteName, team: text(athleteSource?.team) } : null
   const groups = Array.isArray(source.groups) ? source.groups.map(parseGroup).filter((group): group is PublicBracketGroup => Boolean(group)) : []
 
-  return { category, mode, status, athlete, groups }
+  return { category, mode, status: status as PublicBracket['status'], athlete, groups }
 }
 
 export async function getPublicEventBrackets(eventId: string): Promise<PublicBracketsResult> {

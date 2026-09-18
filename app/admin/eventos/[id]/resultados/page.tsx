@@ -1,172 +1,68 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { FiArrowLeft, FiSearch, FiEye } from 'react-icons/fi'
-import { getEventById } from '@/lib/eventStorage'
+import { notFound, redirect } from 'next/navigation'
+import { ArrowLeft, Info } from 'lucide-react'
+import InternalNavigation from '@/components/InternalNavigation'
+import { Alert, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
+import ResultsWorkspace from './ResultsWorkspace'
+import { loadResultsPageData } from './data'
 
-export default function ResultadosPage() {
-  const router = useRouter()
-  const params = useParams()
-  const eventId = params?.id as string
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [eventData, setEventData] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<'numero' | 'categoria' | 'filtros'>('numero')
-  const [numero, setNumero] = useState('')
-  const [apenasSemResultados, setApenasSemResultados] = useState(false)
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-  useEffect(() => {
-    const authStatus = 'true' // A autorização é validada pelo middleware.
-    if (authStatus === 'true') {
-      setIsAuthenticated(true)
-      
-      const id = parseInt(eventId)
-      if (!isNaN(id)) {
-        const stored = getEventById(id)
-        if (stored) {
-          setEventData({
-            id: stored.id,
-            title: stored.titulo,
-          })
-        }
-      }
-      
-      setIsLoading(false)
-    } else {
-      router.push('/admin/autenticacao')
-    }
-  }, [router, eventId])
+export default async function ResultadosPage({ params }: { params: { id: string } }) {
+  if (!uuidPattern.test(params.id)) notFound()
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#0C3049] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Carregando...</p>
-        </div>
-      </div>
-    )
+  const result = await loadResultsPageData(params.id)
+  if (result.kind === 'unauthenticated') {
+    redirect(`/admin/autenticacao?redirectTo=${encodeURIComponent(`/admin/eventos/${params.id}/resultados`)}`)
   }
-
-  if (!isAuthenticated) return null
+  if (result.kind === 'forbidden') redirect('/dashboard?erro=sem_permissao')
+  if (result.kind === 'not_found') notFound()
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm -mt-44 pt-44">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-between mb-4">
-            <Link
-              href={`/admin/eventos/${eventId}/gerenciar`}
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-[#0C3049] transition-colors"
-            >
-              <FiArrowLeft size={20} />
-              <span className="font-semibold">Voltar para Gestão</span>
-            </Link>
-          </div>
-          
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 uppercase tracking-wide">
-            Resultados
-          </h1>
-        </div>
-      </div>
+    <div className="-mt-24 min-h-screen bg-mc-background">
+      <InternalNavigation />
+      <main className="py-mc-32 sm:py-mc-48">
+        <PageContainer>
+          {result.kind === 'error' ? (
+            <>
+              <PageHeader
+                title="Resultados"
+                breadcrumb={
+                  <Link href={`/admin/eventos/${params.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
+                    <ArrowLeft aria-hidden="true" size={18} />
+                    Voltar para gestão
+                  </Link>
+                }
+              />
+              <Alert className="mt-mc-24" role="alert" variant="error" title="Não foi possível carregar os resultados">
+                {result.message}
+              </Alert>
+            </>
+          ) : (
+            <>
+              <PageHeader
+                title={`Resultados — ${result.data.event.name}`}
+                description="Opere cada chave publicada, registre vitória normal ou WO e acompanhe o avanço até as colocações."
+                breadcrumb={
+                  <Link href={`/admin/eventos/${result.data.event.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
+                    <ArrowLeft aria-hidden="true" size={18} />
+                    Voltar para gestão
+                  </Link>
+                }
+                actions={<StatusBadge variant={result.data.event.status === 'em_andamento' ? 'success' : 'info'}>Evento: {result.data.event.status.replaceAll('_', ' ')}</StatusBadge>}
+              />
 
-      {/* Conteúdo */}
-      <div className="container mx-auto px-6 py-8">
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          {/* Tabs */}
-          <div className="flex gap-2 mb-6 border-b border-gray-200">
-            <button
-              onClick={() => setActiveTab('numero')}
-              className={`px-6 py-3 font-semibold transition ${
-                activeTab === 'numero'
-                  ? 'border-b-2 border-[#0C3049] text-[#0C3049] bg-gray-50'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              N°
-            </button>
-            <button
-              onClick={() => setActiveTab('categoria')}
-              className={`px-6 py-3 font-semibold transition ${
-                activeTab === 'categoria'
-                  ? 'border-b-2 border-[#0C3049] text-[#0C3049] bg-gray-50'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Categoria
-            </button>
-            <button
-              onClick={() => setActiveTab('filtros')}
-              className={`px-6 py-3 font-semibold transition ${
-                activeTab === 'filtros'
-                  ? 'border-b-2 border-[#0C3049] text-[#0C3049] bg-gray-50'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Filtros
-            </button>
-          </div>
+              {!['chaves', 'em_andamento'].includes(result.data.event.status) ? (
+                <Alert className="mt-mc-24" variant="warning" icon={<Info size={20} />} title="Operação indisponível nesta fase">
+                  Avance o evento para “chaves” antes de iniciar as lutas. O primeiro início muda o evento para “em andamento”.
+                </Alert>
+              ) : null}
 
-          {/* Conteúdo da Aba N° */}
-          {activeTab === 'numero' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Digite o N°
-                </label>
-                <input
-                  type="text"
-                  value={numero}
-                  onChange={(e) => setNumero(e.target.value)}
-                  placeholder="Digite o N°"
-                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0C3049] focus:border-[#0C3049] italic text-gray-500"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Apenas Categorias SEM Resultados?
-                </label>
-                <input
-                  type="checkbox"
-                  checked={apenasSemResultados}
-                  onChange={(e) => setApenasSemResultados(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <span className="text-sm text-gray-600">Sim</span>
-              </div>
-
-              <div className="flex gap-4 mt-6">
-                <button className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0C3049] to-blue-800 text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition">
-                  <FiSearch size={20} />
-                  Pesquisar
-                </button>
-                <button className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition">
-                  <FiEye size={20} />
-                  Visualizar Resultado
-                </button>
-              </div>
-            </div>
+              <ResultsWorkspace data={result.data} />
+            </>
           )}
-
-          {/* Conteúdo da Aba Categoria */}
-          {activeTab === 'categoria' && (
-            <div className="text-center py-12 text-gray-500">
-              <p>Busca por categoria em desenvolvimento...</p>
-            </div>
-          )}
-
-          {/* Conteúdo da Aba Filtros */}
-          {activeTab === 'filtros' && (
-            <div className="text-center py-12 text-gray-500">
-              <p>Filtros avançados em desenvolvimento...</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </main>
+        </PageContainer>
+      </main>
+    </div>
   )
 }

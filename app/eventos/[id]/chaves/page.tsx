@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, GitBranch, Info, Trophy } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Flag, GitBranch, Info, Trophy } from 'lucide-react'
 import ModernFooter from '@/components/ModernFooter'
 import ModernNavbar from '@/components/ModernNavbar'
 import { Alert, Card, EmptyState, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
@@ -42,19 +42,47 @@ function Group({ group }: { group: PublicBracketGroup }) {
           <ol className="mt-mc-8 space-y-mc-8">
             {group.matches.map((match) => (
               <li key={`${match.round}-${match.order}`} className="rounded-mc-small border border-mc-border p-mc-12">
-                <p className="text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">
-                  {match.round === 'semifinal' ? `Semifinal ${match.order}` : 'Final'}
-                </p>
-                <div className="mt-mc-8 grid min-w-0 gap-mc-8 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
-                  <span className="break-words font-semibold text-mc-text-primary">{match.sideA}</span>
-                  <span aria-hidden="true" className="text-sm text-mc-text-secondary">×</span>
-                  <span className="break-words font-semibold text-mc-text-primary sm:text-right">{match.sideB}</span>
+                <div className="flex flex-wrap items-center justify-between gap-mc-8">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">
+                    {match.round === 'semifinal' ? `Semifinal ${match.order}` : 'Final'}
+                  </p>
+                  <StatusBadge variant={match.status === 'pendente' ? 'neutral' : match.isWalkover ? 'warning' : 'success'}>
+                    {match.status === 'pendente' ? 'Pendente' : match.isWalkover ? 'WO' : 'Concluído'}
+                  </StatusBadge>
                 </div>
+                <div className="mt-mc-8 grid min-w-0 gap-mc-8 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
+                  <span className={`break-words font-semibold ${match.winner === match.sideA ? 'text-mc-success' : 'text-mc-text-primary'}`}>{match.sideA}</span>
+                  <span aria-hidden="true" className="text-sm text-mc-text-secondary">×</span>
+                  <span className={`break-words font-semibold sm:text-right ${match.winner === match.sideB ? 'text-mc-success' : 'text-mc-text-primary'}`}>{match.sideB}</span>
+                </div>
+                {match.winner ? (
+                  <p className={`mt-mc-8 flex items-center gap-mc-4 text-sm font-semibold ${match.isWalkover ? 'text-mc-warning' : 'text-mc-success'}`}>
+                    {match.isWalkover ? <Flag aria-hidden="true" size={16} /> : <CheckCircle2 aria-hidden="true" size={16} />}
+                    {match.isWalkover ? `Vitória por WO: ${match.winner}` : `Vencedor: ${match.winner}`}
+                  </p>
+                ) : null}
               </li>
             ))}
           </ol>
         </div>
       </div>
+
+      {group.placements.length ? (
+        <div className="mt-mc-24 border-t border-mc-border pt-mc-16">
+          <h4 className="font-mc-display text-lg font-semibold text-mc-text-primary">Colocações</h4>
+          <ol className="mt-mc-12 grid gap-mc-8 sm:grid-cols-2">
+            {group.placements.map((placement) => (
+              <li key={`${placement.place}-${placement.athlete.name}`} className="flex min-w-0 items-start gap-mc-8 rounded-mc-small bg-mc-surface-secondary p-mc-12">
+                <span className="shrink-0 font-semibold text-mc-action">{placement.place}º</span>
+                <span className="min-w-0">
+                  <span className="block break-words font-semibold text-mc-text-primary">{placement.athlete.name}</span>
+                  <span className="block break-words text-sm text-mc-text-secondary">{placement.athlete.team || 'Sem equipe informada'}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ) : null}
     </section>
   )
 }
@@ -103,7 +131,7 @@ export default async function PublicBracketsPage({ params }: { params: { id: str
         ) : (
           <div className="mt-mc-24 space-y-mc-24">
             <Alert variant="info" icon={<Info size={20} />} title="Consulta oficial">
-              Esta página mostra somente a composição publicada. Resultados, WO e programação ainda não fazem parte desta consulta.
+              Esta página acompanha a composição oficial, o avanço dos vencedores, WO e colocações. Programação e placar por pontos não fazem parte desta consulta.
             </Alert>
 
             {bracketResult.brackets.map((bracket) => (
@@ -113,7 +141,9 @@ export default async function PublicBracketsPage({ params }: { params: { id: str
                     <p className="text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">Categoria</p>
                     <h2 className="mt-mc-4 break-words font-mc-display text-mc-h2 text-mc-text-primary">{bracket.category}</h2>
                   </div>
-                  <StatusBadge variant="success">Publicada</StatusBadge>
+                  <StatusBadge variant={bracket.status === 'concluida' ? 'success' : bracket.status === 'em_andamento' ? 'info' : 'warning'}>
+                    {bracket.status === 'concluida' ? 'Concluída' : bracket.status === 'em_andamento' ? 'Em andamento' : 'Publicada'}
+                  </StatusBadge>
                 </header>
 
                 {bracket.mode === 'sem_confronto' ? (
