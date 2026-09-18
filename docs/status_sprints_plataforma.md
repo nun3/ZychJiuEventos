@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprint 6 concluida em 2026-09-11. Sprint 7 em andamento: primeiro incremento da lista oficial de efetivados.
+Sprint 9 concluida no recorte aprovado em 2026-09-18. Nao iniciar Sprint 10.
 
 ## 5. Backlog ordenado por sprints
 
@@ -582,43 +582,54 @@ Automacao: os smokes transacionais cobrem DRAFT, autorizacao, invariantes, versi
 
 ### Sprint 9 - Areas/tatames e programacao
 
-- Status: Lote 2 concluido e validado no Sandbox em 2026-09-18. Lote 1 permanece congelado.
-- Dependencias atendidas: Sprint 8 concluida e benchmark operacional incorporado em `docs/benchmark-operacional.md`.
-- Objetivo: organizar as lutas oficiais por numero global do evento e area operacional.
+- Status: concluida no recorte aprovado em 2026-09-18.
+- Dependencias atendidas: Sprint 8 concluida e congelada; benchmark operacional incorporado em `docs/benchmark-operacional.md`.
+- Objetivo aprovado neste fechamento: organizar as lutas oficiais por numero global do evento e area operacional, e projetar a consulta publica/equipe da mesma persistencia.
 - Evidencias confirmadas:
   - `FESTIVAL.pdf` usa numeracao global de luta, de 1 a 44, enquanto a area varia;
   - a fila de uma area pode ser projetada filtrando a sequencia global;
   - `CHAVES_AREAS.pdf` identifica areas por numero e cor e tambem mostra area na visao da chave;
-  - `ZYCH_JIU_JITSU_CATEGORIA.pdf` demonstra futura projecao por equipe com chave, luta, duracao, resultado e area;
+  - `ZYCH_JIU_JITSU_CATEGORIA.pdf` demonstra visao derivada por equipe com chave, luta, duracao, resultado e area;
   - horario previsto automatico nao foi demonstrado.
 - Decisoes aprovadas:
   - uma area por grupo/subchave; todas as suas lutas permanecem juntas;
   - numero global de luta, recalculavel no DRAFT;
   - numeracao congelada depois da publicacao ou inicio;
   - WO, resultado, cancelamento e ausencia preservam numero e lacuna historica.
-- Lote 1 entregue:
-  - entidade de area por evento;
-  - area vinculada ao grupo/subchave e numero global para cada confronto oficial;
+- Concluido:
+  - entidade de area por evento, identificada por numero e nome/cor;
+  - area vinculada ao grupo/subchave e `fight_number` global para cada confronto oficial;
   - fila por area derivada da numeracao global;
   - DRAFT com reordenacao atomica e publicacao/congelamento;
   - preservacao historica depois de resultado e WO;
   - operacoes transacionais, RLS, auditoria e smoke SQL aprovado;
-  - visao administrativa server-side e mobile.
-- Validacao:
-  - migration principal e duas correcoes incrementais aplicadas no Sandbox;
-  - smoke SQL transacional aprovado;
-  - smoke autenticado aprovado para area, atribuicao integral da subchave, numeracao global, reordenacao, movimentacao, publicacao, congelamento, RLS/RPC, auditoria e viewport de 390 px;
-  - TypeScript e build de producao aprovados.
-- Lote 2 entregue:
+  - visao administrativa server-side e mobile;
   - projecao publica `get_public_event_schedule` sem SELECT anonimo nas tabelas administrativas;
   - rota `/eventos/[id]/programacao` com ordem global e filtros de area, categoria e equipe;
-  - luta dependente exibida como `Vencedor da luta N` ate o resultado resolver o atleta;
-  - WO e resultado posteriores refletem na consulta sem renumerar.
-- Validacao do Lote 2:
-  - smoke SQL transacional aprovado;
-  - smoke publico autenticado/anonimo aprovado para draft invisivel, ordem global, filtro de area/equipe, dependente sem atleta inventado, WO, RLS e viewport de 390 px;
-  - TypeScript, lint e build de producao aprovados.
-- Fora da sprint: professor operacional, pesagem, premiacao, placar, horario calculado e chamada ao vivo.
+  - luta dependente exibida como `Vencedor da luta N` ate o resultado resolver o atleta.
+- Validacao:
+  - migrations `202609180001` a `202609180004` aplicadas no Sandbox;
+  - smokes SQL transacionais de programacao administrativa e publica aprovados com rollback;
+  - smoke autenticado aprovado para area, atribuicao integral da subchave, numeracao global, reordenacao, movimentacao, publicacao, congelamento, RLS/RPC, auditoria e viewport de 390 px;
+  - smoke publico aprovado para draft invisivel, ordem global, filtros, dependente, WO, RLS e 390 px;
+  - MC-SIM proprio da Sprint 9 (`runId fc464214`) aprovado ponta a ponta, com cleanup sem residuos;
+  - TypeScript, lint e build de producao aprovados nos lotes da sprint.
+- Fora deste fechamento (gaps conhecidos do benchmark):
+  - duracao da categoria;
+  - professor operacional;
+  - pesagem;
+  - premiacao;
+  - placar;
+  - horario automatico;
+  - chamada ao vivo.
+
+Revisao: o recorte de areas e programacao possui implementacao real e foi validado no Sandbox. O MC-SIM cobriu criacao de areas, atribuicao integral da subchave, numeracao global, reordenacao em DRAFT, publicacao/congelamento, consulta publica, filtros, dependente sem atleta inventado, resultado posterior, WO sem renumerar, visao por equipe, mobile 390px e recusa de leitura anonima das tabelas administrativas.
+
+Automacao: `npm run mc-sim:sprint9` em `automacao/`. Os smokes transacionais e Playwright dos lotes 1 e 2 permanecem evidencias dos incrementos. Nao reabrir Sprint 8, dominio de areas, regra de numeracao, area por subchave ou RLS ja validada.
+
+#### Fechamento
+
+Nucleo da Sprint 9 comprovado no Sandbox. A sprint fecha neste recorte. Nao iniciar Sprint 10.
 
 ### Marco posterior sem numero definido - Financeiro e encerramento
 
@@ -660,7 +671,7 @@ Automacao: jornada completa com multiplos papeis, regressao de isolamento, naveg
 
 | Risco | Impacto | Tratamento |
 |---|---|---|
-| Dominios esportivos fora do fechamento da Sprint 8 | Impedem operacao esportiva alem de chaves e resultados | Definir contrato proprio antes de pesagem, area/tatame, programacao, premiacao ou placar |
+| Dominios esportivos fora do fechamento das Sprints 8 e 9 | Impedem operacao alem de chaves, resultados e programacao oficial | Contrato proprio antes de duracao, professor operacional, pesagem, premiacao, placar, horario ou chamada ao vivo |
 | Politica financeira indefinida | Bloqueia pagamento real e fechamento | Decisao comercial antes da promocao do Sandbox |
 | Dados de menores | Risco legal e reputacional | Minimizar exposicao, registrar consentimento e revisar LGPD |
 | Prototipo confundido com sistema real | Expectativa e testes incorretos | Rotular mocks e migrar modulo a modulo |
@@ -679,3 +690,12 @@ Ao finalizar uma sprint, registrar aqui somente:
 - proxima sprint pronta.
 
 Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste documento.
+
+### 2026-09-18 — Sprint 9
+
+- data de conclusao: 2026-09-18;
+- entregas verificadas: areas, atribuicao integral da subchave, `fight_number` global, reordenacao em DRAFT, publicacao/congelamento, programacao publica e visao por equipe;
+- testes: smokes SQL dos lotes 1 e 2; smokes autenticado e publico; MC-SIM `runId fc464214` com cleanup completed;
+- decisoes: area por subchave, numeracao global congelada apos publicar/iniciar, WO sem renumerar;
+- divida tecnica aceita: duracao da categoria, professor operacional, pesagem, premiacao, placar, horario automatico e chamada ao vivo;
+- proxima sprint: Sprint 10 permanece planejada e nao foi iniciada.

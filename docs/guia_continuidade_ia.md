@@ -4,7 +4,7 @@
 
 Este arquivo é o ponto de entrada para uma IA ou pessoa continuar o projeto sem depender do histórico da conversa. Leia-o antes de implementar.
 
-**Objetivo atual:** a Sprint 8 está concluída e congelada. O Lote 2 da Sprint 9 está concluído e validado no Sandbox: programação pública oficial e visão/filtro por equipe derivados da mesma programação persistida. O Lote 1 (áreas, numeração global, freeze) permanece congelado. Pesagem, premiação, placar, horário automático e professor operacional permanecem fora deste recorte.
+**Objetivo atual:** a Sprint 9 está concluída e congelada no recorte aprovado: áreas, atribuição integral da subchave, `fight_number` global, reordenação em DRAFT, publicação/congelamento, programação pública e visão por equipe. A Sprint 8 permanece congelada. Não iniciar a Sprint 10. Duração, professor operacional, pesagem, premiação, placar, horário automático e chamada ao vivo permanecem fora.
 
 MC-SIM r1 e r2 são evidências permanentes. Não alterá-los para cenário novo.
 
@@ -262,15 +262,19 @@ O MC-SIM próprio da Sprint 8 (`runId 4d17a535`) validou a jornada completa da c
 
 Pesagem, área/tatame, programação, premiação e placar por pontos não fazem parte deste fechamento. Não reabrir o domínio da Sprint 8 ao implementar módulos posteriores.
 
-### Sprint 9: áreas/tatames e programação
+### Sprint 9: concluída no recorte aprovado
 
-`FESTIVAL.pdf` comprova número global de luta e área por confronto; `CHAVES_AREAS.pdf` comprova identificação da área por número/cor e sua presença na visão da chave. `ZYCH_JIU_JITSU_CATEGORIA.pdf` demonstra a visão derivada por equipe. O MVP fixa uma área por grupo/subchave, congela a numeração após publicar ou iniciar, e projeta a programação pública/equipe da mesma fonte. Horário automático, pesagem, premiação, placar e professor operacional ficam fora.
+`FESTIVAL.pdf` comprova número global de luta e área por confronto; `CHAVES_AREAS.pdf` comprova identificação da área por número/cor e sua presença na visão da chave. `ZYCH_JIU_JITSU_CATEGORIA.pdf` demonstra a visão derivada por equipe. O MVP fixa uma área por grupo/subchave, congela a numeração após publicar ou iniciar, e projeta a programação pública/equipe da mesma fonte.
 
-O Lote 1 permanece em `supabase/migrations/202609180001_event_fight_scheduling.sql` e correções incrementais. O Lote 2 está em `supabase/migrations/202609180004_public_event_schedule.sql`, com smoke em `supabase/tests/public_event_schedule_smoke.sql`. Rotas: administrativa `/admin/eventos/[id]/programacao` e pública `/eventos/[id]/programacao`. A duração da categoria ainda não está modelada e não foi inventada nesta projeção.
+O Lote 1 permanece em `supabase/migrations/202609180001_event_fight_scheduling.sql` e correções incrementais. O Lote 2 está em `supabase/migrations/202609180004_public_event_schedule.sql`. Rotas: administrativa `/admin/eventos/[id]/programacao` e pública `/eventos/[id]/programacao`.
 
-### Sprint 10: segurança começa antes
+O MC-SIM próprio da Sprint 9 (`runId fc464214`) validou ponta a ponta áreas, atribuição integral da subchave, numeração global, reordenação em DRAFT, publicação/congelamento, programação pública, filtros, dependente `Vencedor da luta N`, resultado/WO sem renumerar, visão por equipe, mobile 390px, segurança pública e cleanup sem resíduos. Executar em `automação/` com `npm run mc-sim:sprint9` contra uma instância única.
 
-RLS, autorização financeira e proteção de segredos já são obrigatórias nas sprints anteriores. Esta sprint consolida a liberação; não serve para justificar uma integração insegura temporária.
+Não reabrir Sprint 8 nem o domínio já validado de áreas, numeração ou RLS. Duração, professor operacional, pesagem, premiação, placar, horário automático e chamada ao vivo ficam fora. Não iniciar Sprint 10.
+
+### Sprint 10: não iniciada
+
+RLS, autorização financeira e proteção de segredos já são obrigatórias nas sprints anteriores. Esta sprint permanece planejada e consolida a liberação; não serve para justificar uma integração insegura temporária.
 
 ## 10. Como verificar no ambiente atual
 
@@ -361,4 +365,4 @@ Atualizar o status operacional. Este guia descreve o checkpoint de partida; atua
 
 ### Texto para o usuário entregar a outra IA
 
-> Continue o projeto Meu Camp em /home/nune/Meus Projetos/jiu. Leia primeiro docs/guia_continuidade_ia.md e os documentos indicados nele. Preserve as alterações existentes e confira o estado real do código e do Sandbox. A Sprint 5 foi concluída; a Sprint 6 possui uma base de pagamentos, mas ainda precisa de persistência, checkout e webhook. Continue a implementação autorizada com automação pareada, sem resetar dados, expor segredos, usar produção ou inventar decisões comerciais. Registre evidências novas antes de concluir qualquer sprint e avance conforme as dependências do plano. Faça perguntas apenas para decisões ou acessos realmente indispensáveis, enquanto executa o trabalho independente disponível.
+> Continue o projeto Meu Camp em /home/nune/Meus Projetos/jiu. Leia primeiro docs/guia_continuidade_ia.md e os documentos indicados nele. Preserve as alterações existentes e confira o estado real do código e do Sandbox. A Sprint 9 está concluída no recorte de áreas e programação; a Sprint 8 permanece congelada. Não iniciar a Sprint 10. Continue a implementação autorizada com automação pareada, sem resetar dados, expor segredos, usar produção ou inventar decisões comerciais. Registre evidências novas antes de concluir qualquer sprint e avance conforme as dependências do plano. Faça perguntas apenas para decisões ou acessos realmente indispensáveis, enquanto executa o trabalho independente disponível.

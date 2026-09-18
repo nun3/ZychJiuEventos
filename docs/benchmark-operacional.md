@@ -264,6 +264,16 @@ As fontes sustentam o seguinte núcleo para a Sprint 9:
 - **DECISÃO DE PRODUTO:** WO, resultado, cancelamento ou ausência não renumeram; lacunas históricas são preservadas.
 - **DECISÃO DE PRODUTO:** a futura identidade do professor operacional continua pendente e não bloqueia o primeiro lote.
 
-## Benchmark do lote atual
+## Gaps conhecidos após o fechamento da Sprint 9
 
-Este lote implementa a consulta pública `LUTA → ÁREA → CATEGORIA → EQUIPE` observada em `FESTIVAL.pdf` e a visão derivada por equipe de `ZYCH_JIU_JITSU_CATEGORIA.pdf`, sem duplicar a programação. A duração por categoria ainda não está modelada no MEU CAMP e permanece pendente. Professor operacional, pesagem, premiação e placar continuam fora.
+O recorte aprovado cobre área, numeração global, freeze, programação pública e visão por equipe derivadas da mesma persistência. A consulta pública segue `LUTA → ÁREA → CATEGORIA → EQUIPE` de `FESTIVAL.pdf` e a visão por equipe de `ZYCH_JIU_JITSU_CATEGORIA.pdf`, sem duplicar a programação.
+
+Permanecem fora deste fechamento, com evidência no benchmark e sem implementação:
+
+- duração da categoria, observada em `ZYCH_JIU_JITSU_CATEGORIA.pdf` e ainda sem campo no domínio;
+- professor operacional;
+- pesagem;
+- premiação;
+- placar;
+- horário automático, não demonstrado nas fontes;
+- chamada ao vivo.
