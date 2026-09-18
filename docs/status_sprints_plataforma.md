@@ -580,9 +580,33 @@ Revisao: chaves DRAFT/publicadas, consulta publica e resultados/WO possuem imple
 
 Automacao: os smokes transacionais cobrem DRAFT, autorizacao, invariantes, versionamento, auditoria, resultados, WO, avanco e colocacoes. Os smokes Playwright cobrem a operacao autenticada, reflexo publico, protecao das tabelas administrativas e responsividade. O MC-SIM Sprint 8 foi aprovado em identidade propria, sem reutilizar r1/r2, e executou cleanup confirmado.
 
-### Sprint 9 - Financeiro e encerramento
+### Sprint 9 - Areas/tatames e programacao
 
-- Status: bloqueada
+- Status: em andamento; contrato do Lote 1 aprovado e nenhuma migration aplicada ainda.
+- Dependencias atendidas: Sprint 8 concluida e benchmark operacional incorporado em `docs/benchmark-operacional.md`.
+- Objetivo: organizar as lutas oficiais por numero global do evento e area operacional.
+- Evidencias confirmadas:
+  - `FESTIVAL.pdf` usa numeracao global de luta, de 1 a 44, enquanto a area varia;
+  - a fila de uma area pode ser projetada filtrando a sequencia global;
+  - `CHAVES_AREAS.pdf` identifica areas por numero e cor e tambem mostra area na visao da chave;
+  - `ZYCH_JIU_JITSU_CATEGORIA.pdf` demonstra futura projecao por equipe com chave, luta, duracao, resultado e area;
+  - horario previsto automatico nao foi demonstrado.
+- Decisoes aprovadas:
+  - uma area por grupo/subchave; todas as suas lutas permanecem juntas;
+  - numero global de luta, recalculavel no DRAFT;
+  - numeracao congelada depois da publicacao ou inicio;
+  - WO, resultado, cancelamento e ausencia preservam numero e lacuna historica.
+- Primeiro lote:
+  - entidade de area por evento;
+  - atribuicao de numero global e area para cada confronto oficial;
+  - fila por area derivada da numeracao global;
+  - operacoes transacionais, RLS, auditoria e smoke SQL;
+  - visao administrativa server-side e mobile.
+- Fora do lote: pesagem, premiacao, placar, horario calculado e visao por equipe/professor.
+
+### Marco posterior sem numero definido - Financeiro e encerramento
+
+- Status: bloqueado
 - Bloqueio: taxas, recebimento, estornos e formato do fechamento.
 - Dependencias: Sprints 6 a 8.
 - Objetivo: consolidar o evento e apresentar valores auditaveis.

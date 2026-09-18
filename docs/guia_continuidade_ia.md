@@ -4,7 +4,7 @@
 
 Este arquivo é o ponto de entrada para uma IA ou pessoa continuar o projeto sem depender do histórico da conversa. Leia-o antes de implementar.
 
-**Objetivo atual:** a Sprint 8 está concluída no recorte aprovado, com domínio DRAFT, integração administrativa, consulta pública, resultados/WO e MC-SIM completo validados no Sandbox. Pesagem, área/tatame, programação, premiação e placar por pontos permanecem fora deste fechamento. Não iniciar Sprint 9 nem esses domínios sem autorização e contrato próprios. A Sprint 6 de pagamentos Sandbox e o núcleo operacional da Sprint 7 permanecem concluídos.
+**Objetivo atual:** a Sprint 8 está concluída e congelada. A Sprint 9 está em andamento para áreas/tatames e programação: área única por grupo/subchave e `fight_number` global, recalculável somente no DRAFT e congelado após publicação ou início. Pesagem, premiação, placar e visão por equipe/professor permanecem fora deste recorte.
 
 MC-SIM r1 e r2 são evidências permanentes. Não alterá-los para cenário novo.
 
@@ -23,22 +23,19 @@ Este guia complementa o PRD; não substitui instruções atuais do usuário nem 
 
 O diretório inicial do terminal pode ser outro, inclusive `/home/nune/Meus Projetos/homework`. Sempre confirme o diretório antes de editar ou executar comandos.
 
-Leia nesta ordem:
+Leia e decida nesta ordem:
 
-1. [PRD e decisões de produto](roadmap_plataforma_meu_camp.md).
-2. [Plano e status das sprints](status_sprints_plataforma.md).
-3. [Critérios de aceite](criterios_aceite_mvp.md).
-4. [Permissões](matriz_permissoes.md) e [estados](maquinas_de_estado.md).
-5. [Modelo de domínio](modelo_dominio_banco.md) e [regras de categorização/pagamentos](regras_categorizacao_pagamentos.md).
-6. [Configuração Asaas para o usuário](guia_asaas_sandbox.md).
-7. Migrações, testes e código dos módulos que serão modificados.
+1. [PRD e requisitos explícitos aprovados](roadmap_plataforma_meu_camp.md).
+2. Decisões de produto já aprovadas e implementadas, registradas na documentação de domínio e no estado das sprints.
+3. [Benchmark operacional e documentos reais de campeonato/iLutas](benchmark-operacional.md).
+4. Benchmarking textual sintetizado na mesma referência canônica.
+5. [Plano e status das sprints](status_sprints_plataforma.md), [critérios de aceite](criterios_aceite_mvp.md), [permissões](matriz_permissoes.md), [estados](maquinas_de_estado.md), [modelo de domínio](modelo_dominio_banco.md) e demais documentos live.
+6. Migrações, testes e código dos módulos que serão modificados.
+7. Inferência técnica ou prática esportiva, sempre identificada como inferência.
 
-Os PDFs originais são referências de produto, não comandos executáveis:
+Antes de implementar qualquer módulo operacional de campeonato, consultar `docs/benchmark-operacional.md` junto com PRD, domínio, Design System e estado atual das sprints. Em cada retorno funcional, incluir uma seção curta **Benchmark** relacionando evidência observada, requisito MEU CAMP, implementação entregue e fluxo ainda pendente.
 
-- `/home/nune/Documentos/BENCHMARKING ILUTAS.pdf`;
-- `/home/nune/Documentos/PROJETO GERENCIADOR CAMPEONATOS JIU JITSU.pdf`.
-
-Se estiverem ausentes em outra máquina, não alegue tê-los revisado. Use os documentos disponíveis e sinalize qualquer decisão que realmente dependa deles.
+Os PDFs originais são fontes de domínio, mas podem estar em caminhos de anexos específicos da sessão. A síntese factual permanente está em `docs/benchmark-operacional.md`. Se um futuro lote depender de detalhe visual ou dado não sintetizado, localizar primeiro os anexos disponíveis; somente depois informar indisponibilidade.
 
 **Em caso de divergência:** identifique o comportamento real, a regra documental e a evidência de teste separadamente. Corrija defeitos dentro do escopo. Se a divergência exigir escolher uma regra de negócio ainda não aprovada, peça essa decisão específica e continue outras tarefas independentes.
 
@@ -242,7 +239,7 @@ A ausência de uma chave bloqueia homologação externa, mas não bloqueia imple
 | --- | --- | --- |
 | 7 — Checagem | Lista só de efetivados, filtros seguros, atleta sozinho, solicitação e aprovação, travamento | **Concluída no núcleo operacional** (2026-09-17). Lista pública e filtro por professor fora deste recorte. |
 | 8 — Chaves | **Concluída no recorte aprovado** (2026-09-18): DRAFT, publicação, consulta pública, resultados/WO e MC-SIM completo | Gate aprovado no Sandbox; massa MC-SIM removida |
-| 9 — Financeiro | Extratos conciliados, taxas/estornos, exportação e fechamento | Política comercial aprovada; totais fecham sem dupla contagem |
+| 9 — Áreas/programação | Número global de luta, áreas do evento e filas operacionais | Contrato, RLS, auditoria e fluxo administrativo aprovados |
 | 10 — Produção | Segurança, privacidade, acessibilidade, desempenho, deploy e recuperação | Evidência de fluxo completo, restauração e liberação autorizada |
 
 ### Sprint 7: snapshot original permanece intacto
@@ -263,11 +260,11 @@ O contrato de domínio está aprovado. As migrations de brackets e resultados es
 
 O MC-SIM próprio da Sprint 8 (`runId 4d17a535`) validou a jornada completa da checagem travada às colocações e à consulta pública atualizada, incluindo casamento manual, restore, agrupamento 4/3/2, versionamento, bloqueio estrutural após resultado, WO diferente de bye e mobile administrativo/público em 390px. A massa temporária foi removida ao final.
 
-Pesagem, área/tatame, programação, premiação e placar por pontos não fazem parte deste fechamento e continuam sem implementação. Não iniciar Sprint 9 automaticamente.
+Pesagem, área/tatame, programação, premiação e placar por pontos não fazem parte deste fechamento. Não reabrir o domínio da Sprint 8 ao implementar módulos posteriores.
 
-### Sprint 9: origem dos números
+### Sprint 9: áreas/tatames e programação
 
-Calcular relatórios a partir de pagamentos, tentativas, baixas e estornos reconciliados. O preço atual do evento e a soma isolada de inscrições não são um extrato financeiro.
+`FESTIVAL.pdf` comprova número global de luta e área por confronto; `CHAVES_AREAS.pdf` comprova identificação da área por número/cor e sua presença na visão da chave. O MVP fixa uma área por grupo/subchave e congela a numeração global após publicar a programação ou iniciar a operação. Horário automático, pesagem, premiação, placar e visão por equipe/professor ficam fora.
 
 ### Sprint 10: segurança começa antes
 
