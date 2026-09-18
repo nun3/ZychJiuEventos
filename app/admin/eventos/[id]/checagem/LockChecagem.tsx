@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { lockEventChecagem } from './actions'
 
 export default function LockChecagem({ eventId }: { eventId: string }) {
+  const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)
 
@@ -16,6 +18,7 @@ export default function LockChecagem({ eventId }: { eventId: string }) {
         setMessage(null)
         const result = await lockEventChecagem(formData)
         setMessage({ ok: result.ok, text: result.message })
+        if (result.ok) router.refresh()
       })}
     >
       <input type="hidden" name="event_id" value={eventId} />

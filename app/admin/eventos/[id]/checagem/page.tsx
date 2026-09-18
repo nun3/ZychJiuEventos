@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { createClient } from '@/lib/supabase/server'
 import type { Json } from '@/lib/supabase/database.types'
+import EventActions from '../../EventActions'
 import EventRegistrationsList, { type EventRegistrationItem } from './EventRegistrationsList'
 import ReviewCategoryChange from './ReviewCategoryChange'
 import LockChecagem from './LockChecagem'
@@ -140,6 +141,27 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
           </Alert>
 
           {!locked && event.status === 'checagem' ? <LockChecagem eventId={event.id} /> : null}
+
+          {locked && event.status === 'checagem' ? (
+            <section className="mt-mc-24 rounded-mc-medium border border-mc-border bg-mc-surface p-mc-16" aria-labelledby="advance-to-brackets-title">
+              <h2 id="advance-to-brackets-title" className="font-mc-display text-mc-h3 text-mc-text-primary">Avançar para chaves</h2>
+              <p className="mt-mc-8 text-sm text-mc-text-secondary">
+                A lista oficial está travada. Esta ação só muda a fase do evento. A geração das chaves continua na tela de chaves.
+              </p>
+              <div className="mt-mc-12">
+                <EventActions eventId={event.id} status={event.status} checkingLocked />
+              </div>
+            </section>
+          ) : null}
+
+          {event.status === 'chaves' ? (
+            <Alert className="mt-mc-24" variant="success" title="Fase de chaves aberta">
+              A checagem permanece travada. Gere as chaves na operação correspondente.
+              <Link href={`/admin/eventos/${event.id}/chaves`} className="mt-mc-12 inline-flex min-h-10 items-center font-semibold text-mc-action hover:underline">
+                Ir para as chaves
+              </Link>
+            </Alert>
+          ) : null}
 
           {pendingRequests?.length ? (
             <section aria-labelledby="pending-category-changes-title" className="mt-mc-24">

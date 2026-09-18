@@ -102,9 +102,11 @@ export async function createEvent(formData: FormData): Promise<EventActionResult
   return { ok: true, eventId: event.id, message: intent === 'publicar' ? 'Evento publicado com sucesso.' : 'Rascunho salvo com sucesso.' }
 }
 
+type EventTransitionStatus = 'publicado' | 'inscricao' | 'pagamento' | 'checagem' | 'chaves' | 'concluido' | 'cancelado'
+
 async function editableEvent(eventId: string) {
   const supabase = createClient()
-  const { data: event } = await supabase.from('events').select('id, status').eq('id', eventId).maybeSingle()
+  const { data: event } = await supabase.from('events').select('id, status, checagem_travada_em').eq('id', eventId).maybeSingle()
   return { supabase, event }
 }
 
@@ -126,9 +128,12 @@ export async function updateEvent(formData: FormData): Promise<EventActionResult
   return { ok: true, message: 'Evento atualizado com sucesso.', eventId }
 }
 
-export async function transitionEvent(eventId: string, status: 'publicado' | 'inscricao' | 'checagem' | 'cancelado'): Promise<EventActionResult> {
+export async function transitionEvent(eventId: string, status: EventTransitionStatus): Promise<EventActionResult> {
   const { supabase, event } = await editableEvent(eventId)
   if (!event) return failure('Evento não encontrado ou sem permissão.')
+  if (status === 'chaves' && !event.checagem_travada_em) {
+    return failure('Trave a checagem antes de avançar para as chaves.')
+  }
   const { error } = await supabase.from('events').update({ status }).eq('id', eventId)
   if (error?.code === '23514') return failure('Transição de estado inválida.')
   if (error) return failure('Não foi possível alterar o estado do evento.')
@@ -136,7 +141,17 @@ export async function transitionEvent(eventId: string, status: 'publicado' | 'in
   revalidatePath('/admin/eventos')
   revalidatePath(`/eventos/${eventId}`)
   revalidatePath(`/admin/eventos/${eventId}/checagem`)
-  const messages = { publicado: 'Evento publicado.', inscricao: 'Inscrições abertas.', checagem: 'Checagem aberta.', cancelado: 'Evento cancelado.' }
+  revalidatePath(`/admin/eventos/${eventId}/chaves`)
+  revalidatePath(`/admin/eventos/${eventId}/resultados`)
+  const messages: Record<EventTransitionStatus, string> = {
+    publicado: 'Evento publicado.',
+    inscricao: 'Inscrições abertas.',
+    pagamento: 'Fase de pagamento aberta.',
+    checagem: 'Checagem aberta.',
+    chaves: 'Fase de chaves aberta.',
+    concluido: 'Evento concluído.',
+    cancelado: 'Evento cancelado.',
+  }
   return { ok: true, message: messages[status] }
 }
 

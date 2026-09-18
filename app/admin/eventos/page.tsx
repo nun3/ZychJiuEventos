@@ -51,6 +51,7 @@ type EventItem = {
   local: string
   status: string
   timezone: string
+  checagem_travada_em: string | null
 }
 
 function EventStatus({ status }: { status: string }) {
@@ -65,7 +66,7 @@ function EventLinks({ event }: { event: EventItem }) {
         {event.status === 'rascunho' ? <Link href={`/admin/eventos/${event.id}/editar`} className="inline-flex min-h-10 items-center text-mc-action hover:underline">Editar</Link> : null}
         {event.status !== 'rascunho' ? <Link href={`/eventos/${event.id}`} className="inline-flex min-h-10 items-center text-mc-action hover:underline">Página pública</Link> : null}
       </div>
-      <EventActions eventId={event.id} status={event.status} />
+      <EventActions eventId={event.id} status={event.status} checkingLocked={Boolean(event.checagem_travada_em)} />
     </div>
   )
 }
@@ -80,7 +81,7 @@ export default async function OrganizerEventsPage() {
   if (!membership) redirect('/dashboard?erro=sem_permissao')
 
   const { data: events, error } = await supabase.from('events')
-    .select('id, nome, data_evento, local, status, timezone').eq('organization_id', membership.organization_id)
+    .select('id, nome, data_evento, local, status, timezone, checagem_travada_em').eq('organization_id', membership.organization_id)
     .order('data_evento', { ascending: true })
   const organization = membership.organizations as unknown as { nome: string } | null
   const eventItems = (events || []) as EventItem[]

@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { ArrowLeft, Info } from 'lucide-react'
 import InternalNavigation from '@/components/InternalNavigation'
 import { Alert, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
+import EventActions from '../../EventActions'
 import ResultsWorkspace from './ResultsWorkspace'
 import { loadResultsPageData } from './data'
 
@@ -52,7 +53,23 @@ export default async function ResultadosPage({ params }: { params: { id: string 
                 actions={<StatusBadge variant={result.data.event.status === 'em_andamento' ? 'success' : 'info'}>Evento: {result.data.event.status.replaceAll('_', ' ')}</StatusBadge>}
               />
 
-              {!['chaves', 'em_andamento'].includes(result.data.event.status) ? (
+              {result.data.event.status === 'em_andamento' ? (
+                <section className="mt-mc-24 rounded-mc-medium border border-mc-border bg-mc-surface p-mc-16" aria-labelledby="conclude-event-title">
+                  <h2 id="conclude-event-title" className="font-mc-display text-mc-h3 text-mc-text-primary">Concluir evento</h2>
+                  <p className="mt-mc-8 text-sm text-mc-text-secondary">
+                    Encerra a operação esportiva. Não gera relatório financeiro nem altera pagamentos.
+                  </p>
+                  <div className="mt-mc-12">
+                    <EventActions eventId={result.data.event.id} status={result.data.event.status} />
+                  </div>
+                </section>
+              ) : null}
+
+              {result.data.event.status === 'concluido' ? (
+                <Alert className="mt-mc-24" variant="info" icon={<Info size={20} />} title="Evento concluído">
+                  A operação esportiva permanece somente leitura. O relatório financeiro não faz parte deste encerramento.
+                </Alert>
+              ) : !['chaves', 'em_andamento'].includes(result.data.event.status) ? (
                 <Alert className="mt-mc-24" variant="warning" icon={<Info size={20} />} title="Operação indisponível nesta fase">
                   Avance o evento para “chaves” antes de iniciar as lutas. O primeiro início muda o evento para “em andamento”.
                 </Alert>
