@@ -4,7 +4,7 @@
 
 Este arquivo é o ponto de entrada para uma IA ou pessoa continuar o projeto sem depender do histórico da conversa. Leia-o antes de implementar.
 
-**Objetivo atual:** a Sprint 9 está concluída e congelada no recorte aprovado: áreas, atribuição integral da subchave, `fight_number` global, reordenação em DRAFT, publicação/congelamento, programação pública e visão por equipe. A Sprint 8 permanece congelada. Não iniciar a Sprint 10. Duração, professor operacional, pesagem, premiação, placar, horário automático e chamada ao vivo permanecem fora.
+**Objetivo atual:** a Sprint 10 está concluída no recorte aprovado de checklist operacional: pesagem e premiação por subchave. As Sprints 8 e 9 permanecem congeladas. Não iniciar preparação para produção. Duração, professor operacional, pesagem individual, placar, horário automático e chamada ao vivo permanecem fora.
 
 MC-SIM r1 e r2 são evidências permanentes. Não alterá-los para cenário novo.
 
@@ -270,11 +270,17 @@ O Lote 1 permanece em `supabase/migrations/202609180001_event_fight_scheduling.s
 
 O MC-SIM próprio da Sprint 9 (`runId fc464214`) validou ponta a ponta áreas, atribuição integral da subchave, numeração global, reordenação em DRAFT, publicação/congelamento, programação pública, filtros, dependente `Vencedor da luta N`, resultado/WO sem renumerar, visão por equipe, mobile 390px, segurança pública e cleanup sem resíduos. Executar em `automação/` com `npm run mc-sim:sprint9` contra uma instância única.
 
-Não reabrir Sprint 8 nem o domínio já validado de áreas, numeração ou RLS. Duração, professor operacional, pesagem, premiação, placar, horário automático e chamada ao vivo ficam fora. Não iniciar Sprint 10.
+Não reabrir Sprint 8 nem o domínio já validado de áreas, numeração ou RLS. Duração, professor operacional, pesagem individual, placar, horário automático e chamada ao vivo ficam fora.
 
-### Sprint 10: não iniciada
+### Sprint 10: concluída no recorte de checklist operacional
 
-RLS, autorização financeira e proteção de segredos já são obrigatórias nas sprints anteriores. Esta sprint permanece planejada e consolida a liberação; não serve para justificar uma integração insegura temporária.
+`CHAVES_AREAS.pdf` registra por chave/subchave “Pesagem Realizada?”, “Premiação Realizada?” e “Resultado Registrado?”. Resultado permanece no domínio da Sprint 8. Este recorte digitaliza só os dois checkboxes operacionais na subchave, sem peso medido nem medalha individual.
+
+A migration está em `supabase/migrations/202609180005_group_weigh_in_awards.sql`. A UI entra em `/admin/eventos/[id]/resultados`. Executar `npm run test:checklist` em `automação/` contra uma instância única. Não reabrir Sprints 8 e 9. Não iniciar preparação para produção.
+
+### Preparação para produção: não iniciada
+
+RLS, autorização financeira e proteção de segredos já são obrigatórias nas sprints anteriores. A consolidação de liberação permanece planejada; não serve para justificar uma integração insegura temporária.
 
 ## 10. Como verificar no ambiente atual
 
@@ -365,4 +371,4 @@ Atualizar o status operacional. Este guia descreve o checkpoint de partida; atua
 
 ### Texto para o usuário entregar a outra IA
 
-> Continue o projeto Meu Camp em /home/nune/Meus Projetos/jiu. Leia primeiro docs/guia_continuidade_ia.md e os documentos indicados nele. Preserve as alterações existentes e confira o estado real do código e do Sandbox. A Sprint 9 está concluída no recorte de áreas e programação; a Sprint 8 permanece congelada. Não iniciar a Sprint 10. Continue a implementação autorizada com automação pareada, sem resetar dados, expor segredos, usar produção ou inventar decisões comerciais. Registre evidências novas antes de concluir qualquer sprint e avance conforme as dependências do plano. Faça perguntas apenas para decisões ou acessos realmente indispensáveis, enquanto executa o trabalho independente disponível.
+> Continue o projeto Meu Camp em /home/nune/Meus Projetos/jiu. Leia primeiro docs/guia_continuidade_ia.md e os documentos indicados nele. Preserve as alterações existentes e confira o estado real do código e do Sandbox. A Sprint 10 está concluída no recorte de pesagem e premiação operacionais por subchave; as Sprints 8 e 9 permanecem congeladas. Não iniciar preparação para produção. Continue a implementação autorizada com automação pareada, sem resetar dados, expor segredos, usar produção ou inventar decisões comerciais. Registre evidências novas antes de concluir qualquer sprint e avance conforme as dependências do plano. Faça perguntas apenas para decisões ou acessos realmente indispensáveis, enquanto executa o trabalho independente disponível.

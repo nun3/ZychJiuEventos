@@ -187,7 +187,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 - Origem: `CHAVES_AREAS.pdf`.
 - A folha da chave possui controle “Pesagem Realizada?”.
-- Situação no MEU CAMP: não implementado; fora do lote atual de áreas/programação.
+- Situação no MEU CAMP: checklist operacional por subchave implementado na Sprint 10. Peso medido, tolerância e desclassificação não foram modelados.
 
 ### Premiação
 
@@ -195,7 +195,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 - Origem: `CHAVES_AREAS.pdf`.
 - A folha da chave possui controle “Premiação Realizada?”.
-- Situação no MEU CAMP: não implementado; fora do lote atual.
+- Situação no MEU CAMP: checklist operacional por subchave implementado na Sprint 10, somente após o resultado da mesma subchave. Distribuição individual de medalhas não foi modelada.
 
 ### Encerramento
 
@@ -209,7 +209,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 - Origem: `CHAVES_AREAS.pdf`.
 - A devolução da chave, pesagem, premiação e registro do resultado funcionam como checklist operacional de fechamento da chave.
-- Situação no MEU CAMP: apenas resultados estão implementados.
+- Situação no MEU CAMP: resultado, pesagem operacional e premiação operacional da subchave estão implementados.
 
 ## O que não está provado
 
@@ -228,7 +228,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 - Processo digital de entrega/devolução da chave ao coordenador.
 - Significado normativo das categorias diferentes entre atletas de algumas linhas do `FESTIVAL.pdf`.
 - Programação de eventos com mais de um dia ou mais de uma sessão.
-- Regras de pesagem, premiação e placar.
+- Regras esportivas de pesagem (peso medido, tolerância, desclassificação) e placar.
 
 ## Decisões MEU CAMP divergentes ou complementares
 
@@ -264,16 +264,21 @@ As fontes sustentam o seguinte núcleo para a Sprint 9:
 - **DECISÃO DE PRODUTO:** WO, resultado, cancelamento ou ausência não renumeram; lacunas históricas são preservadas.
 - **DECISÃO DE PRODUTO:** a futura identidade do professor operacional continua pendente e não bloqueia o primeiro lote.
 
-## Gaps conhecidos após o fechamento da Sprint 9
+## Decisões MEU CAMP para a Sprint 10
 
-O recorte aprovado cobre área, numeração global, freeze, programação pública e visão por equipe derivadas da mesma persistência. A consulta pública segue `LUTA → ÁREA → CATEGORIA → EQUIPE` de `FESTIVAL.pdf` e a visão por equipe de `ZYCH_JIU_JITSU_CATEGORIA.pdf`, sem duplicar a programação.
+- **DECISÃO DE PRODUTO:** a unidade operacional de pesagem e premiação é a subchave/`bracket_group`.
+- **DECISÃO DE PRODUTO:** pesagem e premiação são confirmações operacionais, sem peso medido nem medalha individual neste recorte.
+- **DECISÃO DE PRODUTO:** premiação só pode ser confirmada depois que as colocações da subchave já existirem no domínio de resultados.
+- **DECISÃO DE PRODUTO:** desfazer pesagem é permitido somente enquanto a premiação da mesma subchave não estiver confirmada.
 
-Permanecem fora deste fechamento, com evidência no benchmark e sem implementação:
+## Gaps conhecidos após o fechamento da Sprint 10
+
+O recorte aprovado cobre o checklist operacional de pesagem e premiação por subchave, ao lado do resultado já existente. Permanecem fora:
 
 - duração da categoria, observada em `ZYCH_JIU_JITSU_CATEGORIA.pdf` e ainda sem campo no domínio;
 - professor operacional;
-- pesagem;
-- premiação;
+- peso medido, tolerância e desclassificação;
 - placar;
 - horário automático, não demonstrado nas fontes;
-- chamada ao vivo.
+- chamada ao vivo;
+- distribuição física de medalhas e ranking.

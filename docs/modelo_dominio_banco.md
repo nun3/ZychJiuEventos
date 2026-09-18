@@ -158,7 +158,8 @@ Representam a operacao esportiva depois do fechamento da checagem.
 
 - `brackets`: chave por categoria e versao publicada
 - `matches`: confronto, rodada, atletas, vencedor e status
-- `weigh_ins`: pesagem, resultado, observacao e operador
+- `weigh_ins`: planejada historicamente como pesagem individual; nao foi criada
+- `bracket_group_operations`: checklist operacional de pesagem e premiacao por subchave, com operador e horario
 
 ### event_audit_logs
 

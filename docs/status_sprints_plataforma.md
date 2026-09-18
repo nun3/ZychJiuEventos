@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprint 9 concluida no recorte aprovado em 2026-09-18. Nao iniciar Sprint 10.
+Sprint 10 concluida no recorte de pesagem e premiacao operacionais em 2026-09-18. Nao iniciar preparacao para producao.
 
 ## 5. Backlog ordenado por sprints
 
@@ -617,8 +617,7 @@ Automacao: os smokes transacionais cobrem DRAFT, autorizacao, invariantes, versi
 - Fora deste fechamento (gaps conhecidos do benchmark):
   - duracao da categoria;
   - professor operacional;
-  - pesagem;
-  - premiacao;
+  - pesagem individual, tolerancia e desclassificacao;
   - placar;
   - horario automatico;
   - chamada ao vivo.
@@ -629,7 +628,7 @@ Automacao: `npm run mc-sim:sprint9` em `automacao/`. Os smokes transacionais e P
 
 #### Fechamento
 
-Nucleo da Sprint 9 comprovado no Sandbox. A sprint fecha neste recorte. Nao iniciar Sprint 10.
+Nucleo da Sprint 9 comprovado no Sandbox. A sprint fecha neste recorte. Nao reabrir areas, numeracao ou programacao.
 
 ### Marco posterior sem numero definido - Financeiro e encerramento
 
@@ -648,7 +647,48 @@ Revisao: extratos precisam derivar de pagamentos/tentativas/estornos conciliados
 
 Automacao: bruto/taxas/liquido, pagamento unificado sem dupla contagem, baixa manual, estornos total/parcial, exportacao e fechamento repetido.
 
-### Sprint 10 - Preparacao para producao
+### Sprint 10 - Pesagem e premiacao operacional
+
+- Status: concluida no recorte aprovado em 2026-09-18.
+- Dependencias atendidas: Sprints 8 e 9 concluídas e congeladas; `CHAVES_AREAS.pdf` como fonte do checklist por subchave.
+- Objetivo aprovado neste fechamento: digitalizar os controles “Pesagem Realizada?” e “Premiação Realizada?” na subchave, sem criar pesagem esportiva detalhada.
+- Evidencias confirmadas:
+  - `CHAVES_AREAS.pdf` registra por chave/subchave pesagem, premiacao e resultado;
+  - resultado ja estava no dominio da Sprint 8;
+  - as fontes nao demonstram peso medido, tolerancia, desclassificacao ou medalha individual.
+- Decisoes aprovadas:
+  - unidade operacional = subchave/`bracket_group`;
+  - pesagem e premiacao sao confirmacoes operacionais com operador e horario;
+  - premiacao somente apos colocacoes da subchave;
+  - desfazer pesagem somente se a premiacao ainda nao estiver confirmada.
+- Concluido:
+  - tabela `bracket_group_operations` 1:1 com a subchave;
+  - RPCs de confirmar/desfazer pesagem e premiacao, mais leitura `get_event_group_checklists`;
+  - UI no workspace de resultados, com os tres controles juntos;
+  - resultado derivado do dominio atual, sem duplicar regra;
+  - programacao/area e confrontos preservados.
+- Validacao:
+  - migration `202609180005_group_weigh_in_awards.sql` aplicada no Sandbox;
+  - smoke SQL transacional aprovado com rollback;
+  - smoke autenticado aprovado para pendente, confirmar pesagem, bloquear premiacao, liberar apos resultado, recusa publica e viewport de 390 px;
+  - TypeScript, lint e build de producao aprovados.
+- Fora deste fechamento:
+  - peso medido, tolerancia e desclassificacao;
+  - professor operacional;
+  - placar;
+  - horario automatico;
+  - chamada ao vivo;
+  - distribuicao fisica de medalhas e ranking.
+
+Revisao: o checklist operacional da subchave possui implementacao real e foi validado no Sandbox. Nao reabrir Sprints 8 e 9.
+
+Automacao: `npm run test:checklist` em `automacao/`. O smoke SQL permanece evidencia transacional.
+
+#### Fechamento
+
+Nucleo da Sprint 10 comprovado no Sandbox neste recorte. Nao iniciar preparacao para producao.
+
+### Marco posterior - Preparacao para producao
 
 - Status: planejada
 - Dependencia: funcionalidades selecionadas para o primeiro lancamento.
@@ -663,7 +703,7 @@ Automacao: bruto/taxas/liquido, pagamento unificado sem dupla contagem, baixa ma
   - remocao de mocks do fluxo publicado.
 - Criterios de saida: criterio de liberacao do PRD integralmente atendido.
 
-Revisao: seguranca financeira, RLS e tratamento de segredos sao criterios da Sprint 6, nao tarefas adiadas para esta sprint. Revisar dependencias, remover caminhos mockados publicados e ensaiar restauracao antes da liberacao. A auditoria de dependencias continua sendo um gate de producao.
+Revisao: seguranca financeira, RLS e tratamento de segredos sao criterios da Sprint 6, nao tarefas adiadas para esta etapa. Revisar dependencias, remover caminhos mockados publicados e ensaiar restauracao antes da liberacao. A auditoria de dependencias continua sendo um gate de producao.
 
 Automacao: jornada completa com multiplos papeis, regressao de isolamento, navegacao por teclado, tamanhos de tela, falhas de rede, repeticao de webhook, recuperacao de backup e smoke de deploy.
 
@@ -671,7 +711,7 @@ Automacao: jornada completa com multiplos papeis, regressao de isolamento, naveg
 
 | Risco | Impacto | Tratamento |
 |---|---|---|
-| Dominios esportivos fora do fechamento das Sprints 8 e 9 | Impedem operacao alem de chaves, resultados e programacao oficial | Contrato proprio antes de duracao, professor operacional, pesagem, premiacao, placar, horario ou chamada ao vivo |
+| Dominios esportivos fora do fechamento das Sprints 8 a 10 | Impedem operacao alem de chaves, resultados, programacao e checklist operacional | Contrato proprio antes de duracao, professor operacional, pesagem individual, placar, horario ou chamada ao vivo |
 | Politica financeira indefinida | Bloqueia pagamento real e fechamento | Decisao comercial antes da promocao do Sandbox |
 | Dados de menores | Risco legal e reputacional | Minimizar exposicao, registrar consentimento e revisar LGPD |
 | Prototipo confundido com sistema real | Expectativa e testes incorretos | Rotular mocks e migrar modulo a modulo |
@@ -699,3 +739,12 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - decisoes: area por subchave, numeracao global congelada apos publicar/iniciar, WO sem renumerar;
 - divida tecnica aceita: duracao da categoria, professor operacional, pesagem, premiacao, placar, horario automatico e chamada ao vivo;
 - proxima sprint: Sprint 10 permanece planejada e nao foi iniciada.
+
+### 2026-09-18 — Sprint 10
+
+- data de conclusao: 2026-09-18;
+- entregas verificadas: pesagem e premiacao operacionais por subchave, com operador, horario e resultado derivado do dominio atual;
+- testes: smoke SQL com rollback; smoke autenticado de UI, recusa publica e 390 px;
+- decisoes: unidade = subchave; premiacao apos colocacoes; desfazer pesagem so sem premiacao confirmada;
+- divida tecnica aceita: duracao, professor operacional, peso medido, placar, horario automatico, chamada ao vivo e medalha individual;
+- proxima etapa: preparacao para producao permanece planejada e nao foi iniciada.
