@@ -547,6 +547,44 @@ export type Database = {
           },
         ]
       }
+      event_areas: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          number: number
+          schedule_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          number: number
+          schedule_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          number?: number
+          schedule_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_areas_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "event_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_audit_logs: {
         Row: {
           action: string
@@ -701,6 +739,143 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_schedule_groups: {
+        Row: {
+          area_id: string
+          assigned_at: string
+          group_id: string
+          schedule_id: string
+          updated_at: string
+        }
+        Insert: {
+          area_id: string
+          assigned_at?: string
+          group_id: string
+          schedule_id: string
+          updated_at?: string
+        }
+        Update: {
+          area_id?: string
+          assigned_at?: string
+          group_id?: string
+          schedule_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_schedule_groups_area_id_schedule_id_fkey"
+            columns: ["area_id", "schedule_id"]
+            isOneToOne: false
+            referencedRelation: "event_areas"
+            referencedColumns: ["id", "schedule_id"]
+          },
+          {
+            foreignKeyName: "event_schedule_groups_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: true
+            referencedRelation: "bracket_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_schedule_groups_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "event_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_schedule_matches: {
+        Row: {
+          created_at: string
+          fight_number: number
+          match_id: string
+          schedule_id: string
+        }
+        Insert: {
+          created_at?: string
+          fight_number: number
+          match_id: string
+          schedule_id: string
+        }
+        Update: {
+          created_at?: string
+          fight_number?: number
+          match_id?: string
+          schedule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_schedule_matches_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "bracket_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_schedule_matches_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "event_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_schedules: {
+        Row: {
+          created_at: string
+          created_by: string
+          event_id: string
+          id: string
+          published_at: string | null
+          published_by: string | null
+          status: Database["public"]["Enums"]["event_schedule_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          event_id: string
+          id?: string
+          published_at?: string | null
+          published_by?: string | null
+          status?: Database["public"]["Enums"]["event_schedule_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          event_id?: string
+          id?: string
+          published_at?: string | null
+          published_by?: string | null
+          status?: Database["public"]["Enums"]["event_schedule_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_schedules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_schedules_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_schedules_published_by_fkey"
+            columns: ["published_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1340,11 +1515,19 @@ export type Database = {
         Args: { target_bracket_id: string }
         Returns: undefined
       }
+      assert_event_schedule_complete: {
+        Args: { target_schedule_id: string }
+        Returns: undefined
+      }
       assert_registration_can_request_category_change: {
         Args: {
           target_registration: Database["public"]["Tables"]["registrations"]["Row"]
         }
         Returns: undefined
+      }
+      assign_schedule_group: {
+        Args: { target_area_id: string; target_group_id: string }
+        Returns: Json
       }
       belt_order: { Args: { athlete_belt: string }; Returns: number }
       bracket_entry_to_json: {
@@ -1498,6 +1681,62 @@ export type Database = {
         }
         Returns: string
       }
+      ensure_event_schedule: {
+        Args: { target_event_id: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          event_id: string
+          id: string
+          published_at: string | null
+          published_by: string | null
+          status: Database["public"]["Enums"]["event_schedule_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "event_schedules"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      event_schedule_load_event: {
+        Args: { require_editable?: boolean; target_event_id: string }
+        Returns: {
+          checagem_travada_em: string | null
+          created_at: string
+          created_by: string
+          data_evento: string
+          id: string
+          imagem_cartaz_url: string | null
+          informacoes: string | null
+          local: string
+          nome: string
+          organization_id: string
+          regulamento_url: string | null
+          results_publicados: boolean
+          slug: string
+          status: Database["public"]["Enums"]["event_status"]
+          tabela_peso_url: string | null
+          timezone: string
+          updated_at: string
+          valor_inscricao: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "events"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      event_schedule_require_operator: {
+        Args: { target_event: Database["public"]["Tables"]["events"]["Row"] }
+        Returns: undefined
+      }
+      event_schedule_require_viewer: {
+        Args: { target_event: Database["public"]["Tables"]["events"]["Row"] }
+        Returns: undefined
+      }
       flag_payment_customer_reconciliation: {
         Args: { actor_id: string; claim_token: string }
         Returns: undefined
@@ -1520,6 +1759,10 @@ export type Database = {
       }
       get_category_bracket_operation: {
         Args: { target_bracket_id: string }
+        Returns: Json
+      }
+      get_event_schedule_operation: {
+        Args: { target_event_id: string }
         Returns: Json
       }
       get_public_event_brackets: {
@@ -1571,6 +1814,14 @@ export type Database = {
         Args: { target_bracket_id: string }
         Returns: Json
       }
+      publish_event_schedule: {
+        Args: { target_event_id: string }
+        Returns: Json
+      }
+      reconcile_event_schedule: {
+        Args: { target_schedule_id: string }
+        Returns: undefined
+      }
       record_bracket_match_outcome: {
         Args: {
           outcome: Database["public"]["Enums"]["match_status"]
@@ -1590,6 +1841,10 @@ export type Database = {
       release_payment_issuance_claim: {
         Args: { claim_token: string; target_payment_id: string }
         Returns: undefined
+      }
+      reorder_event_schedule: {
+        Args: { ordered_match_ids: string[]; target_event_id: string }
+        Returns: Json
       }
       replace_bracket_composition: {
         Args: { groups_payload: Json; target_bracket_id: string }
@@ -1628,12 +1883,29 @@ export type Database = {
         Args: { groups_payload: Json; target_bracket_id: string }
         Returns: Json
       }
+      save_event_area: {
+        Args: {
+          area_name: string
+          area_number: number
+          target_area_id: string
+          target_event_id: string
+        }
+        Returns: Json
+      }
+      set_event_area_active: {
+        Args: { next_active: boolean; target_area_id: string }
+        Returns: Json
+      }
       settle_payment_manually: {
         Args: { reason_text: string; target_payment_id: string }
         Returns: Json
       }
       start_category_bracket: {
         Args: { target_bracket_id: string }
+        Returns: Json
+      }
+      unassign_schedule_group: {
+        Args: { target_group_id: string }
         Returns: Json
       }
       update_managed_athlete: {
@@ -1663,6 +1935,7 @@ export type Database = {
       bracket_topology: "final_2" | "copo_3" | "semi_4"
       change_request_status: "pendente" | "aprovada" | "recusada"
       event_phase_type: "inscricao" | "pagamento" | "checagem" | "chaves"
+      event_schedule_status: "draft" | "publicada"
       event_status:
         | "rascunho"
         | "publicado"
@@ -1835,6 +2108,7 @@ export const Constants = {
       bracket_topology: ["final_2", "copo_3", "semi_4"],
       change_request_status: ["pendente", "aprovada", "recusada"],
       event_phase_type: ["inscricao", "pagamento", "checagem", "chaves"],
+      event_schedule_status: ["draft", "publicada"],
       event_status: [
         "rascunho",
         "publicado",
