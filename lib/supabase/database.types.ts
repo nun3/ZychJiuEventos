@@ -197,6 +197,55 @@ export type Database = {
           },
         ]
       }
+      bracket_group_operations: {
+        Row: {
+          awards_confirmed_at: string | null
+          awards_confirmed_by: string | null
+          group_id: string
+          updated_at: string
+          weigh_in_confirmed_at: string | null
+          weigh_in_confirmed_by: string | null
+        }
+        Insert: {
+          awards_confirmed_at?: string | null
+          awards_confirmed_by?: string | null
+          group_id: string
+          updated_at?: string
+          weigh_in_confirmed_at?: string | null
+          weigh_in_confirmed_by?: string | null
+        }
+        Update: {
+          awards_confirmed_at?: string | null
+          awards_confirmed_by?: string | null
+          group_id?: string
+          updated_at?: string
+          weigh_in_confirmed_at?: string | null
+          weigh_in_confirmed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bracket_group_operations_awards_confirmed_by_fkey"
+            columns: ["awards_confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bracket_group_operations_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: true
+            referencedRelation: "bracket_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bracket_group_operations_weigh_in_confirmed_by_fkey"
+            columns: ["weigh_in_confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bracket_matches: {
         Row: {
           created_at: string
@@ -1534,6 +1583,43 @@ export type Database = {
         Args: { include_internal_id?: boolean; target_entry_id: string }
         Returns: Json
       }
+      bracket_group_checklist_prepare: {
+        Args: { target_group_id: string }
+        Returns: {
+          checagem_travada_em: string | null
+          created_at: string
+          created_by: string
+          data_evento: string
+          id: string
+          imagem_cartaz_url: string | null
+          informacoes: string | null
+          local: string
+          nome: string
+          organization_id: string
+          regulamento_url: string | null
+          results_publicados: boolean
+          slug: string
+          status: Database["public"]["Enums"]["event_status"]
+          tabela_peso_url: string | null
+          timezone: string
+          updated_at: string
+          valor_inscricao: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "events"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      bracket_group_checklist_to_json: {
+        Args: { target_group_id: string }
+        Returns: Json
+      }
+      bracket_group_has_completed_result: {
+        Args: { target_group_id: string }
+        Returns: boolean
+      }
       bracket_group_placements_to_json: {
         Args: { include_internal_ids?: boolean; target_group_id: string }
         Returns: Json
@@ -1627,6 +1713,14 @@ export type Database = {
       claim_payment_customer: { Args: { actor_id: string }; Returns: Json }
       claim_payment_issuance: {
         Args: { actor_id: string; target_payment_id: string }
+        Returns: Json
+      }
+      confirm_bracket_group_awards: {
+        Args: { target_group_id: string }
+        Returns: Json
+      }
+      confirm_bracket_group_weigh_in: {
+        Args: { target_group_id: string }
         Returns: Json
       }
       clear_bracket_composition: {
@@ -1761,6 +1855,10 @@ export type Database = {
         Args: { target_bracket_id: string }
         Returns: Json
       }
+      get_event_group_checklists: {
+        Args: { target_event_id: string }
+        Returns: Json
+      }
       get_event_schedule_operation: {
         Args: { target_event_id: string }
         Returns: Json
@@ -1810,6 +1908,7 @@ export type Database = {
         Args: { target_event_id: string }
         Returns: Json
       }
+      protect_bracket_group_operations: { Args: never; Returns: unknown }
       public_category_bracket_to_json: {
         Args: { target_bracket_id: string }
         Returns: Json
@@ -1913,6 +2012,14 @@ export type Database = {
         Returns: Json
       }
       unassign_schedule_group: {
+        Args: { target_group_id: string }
+        Returns: Json
+      }
+      undo_bracket_group_awards: {
+        Args: { target_group_id: string }
+        Returns: Json
+      }
+      undo_bracket_group_weigh_in: {
         Args: { target_group_id: string }
         Returns: Json
       }
