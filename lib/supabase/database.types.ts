@@ -1769,6 +1769,10 @@ export type Database = {
         Args: { target_event_id: string }
         Returns: Json
       }
+      get_public_event_schedule: {
+        Args: { target_event_id: string }
+        Returns: Json
+      }
       has_organization_role: {
         Args: {
           allowed_roles: Database["public"]["Enums"]["organization_role"][]
@@ -1808,6 +1812,10 @@ export type Database = {
       }
       public_category_bracket_to_json: {
         Args: { target_bracket_id: string }
+        Returns: Json
+      }
+      public_schedule_side_to_json: {
+        Args: { target_match_id: string; target_side: string }
         Returns: Json
       }
       publish_category_bracket: {
@@ -1887,7 +1895,7 @@ export type Database = {
         Args: {
           area_name: string
           area_number: number
-          target_area_id: string
+          target_area_id: string | null
           target_event_id: string
         }
         Returns: Json

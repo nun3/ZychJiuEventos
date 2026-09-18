@@ -66,7 +66,7 @@ export async function saveArea(formData: FormData): Promise<ScheduleActionState>
   if (!supabase) return { ok: false, message: 'Sua sessão expirou.' }
   const { data, error } = await supabase.rpc('save_event_area', {
     target_event_id: eventId,
-    target_area_id: areaId!,
+    target_area_id: areaId,
     area_number: number,
     area_name: name,
   })
