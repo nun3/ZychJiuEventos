@@ -551,10 +551,10 @@ Nucleo operacional da Sprint 7 esta comprovado no Sandbox. A sprint fecha neste 
 
 ### Sprint 8 - Chaves e operacao esportiva
 
-- Status: dominio de banco/DRAFT validado; integracao da aplicacao pendente.
+- Status: chaves DRAFT/publicadas e resultados/WO validados no Sandbox; operacao esportiva parcial.
 - Dependencia atendida neste recorte: Sprint 7 (nucleo operacional concluido) e contrato de dominio aprovado.
 - Objetivo: gerar, versionar e publicar chaves; registrar pesagem e resultados.
-- Concluido no dominio persistente:
+- Concluido:
   - migration de brackets aplicada no Sandbox;
   - topologias `final_2`, `copo_3` e `semi_4`, com 5+ por agrupamento 2/3/4 no recorte atual;
   - `sem_confronto` para N=1;
@@ -562,17 +562,23 @@ Nucleo operacional da Sprint 7 esta comprovado no Sandbox. A sprint fecha neste 
   - publish, regenerate/versionamento, RLS/permissoes e auditoria;
   - consumo da alocacao vigente por `current_category_id`;
   - smoke SQL aprovado no Sandbox com rollback e sem massa residual.
+  - Types regenerados e integracao por Server Actions e leitura server-side;
+  - UI administrativa real para composicao DRAFT, publicacao e operacao de confrontos;
+  - consulta publica sem IDs internos ou dados administrativos;
+  - migration `202609170006_bracket_match_results.sql` aplicada no Sandbox;
+  - vitoria normal e WO separados, avanco automatico, bloqueios de resultado invalido e protecao contra update direto;
+  - conclusao e colocacoes derivadas para `final_2`, `copo_3` e `semi_4`;
+  - smoke SQL de resultados aprovado com rollback;
+  - smokes de UI autenticada e publica aprovados, incluindo 390px sem overflow.
 - Pendente:
-  - Types regenerados apos o schema final;
-  - Server Actions e UI real de casamento DRAFT;
-  - consulta publica de chaves;
-  - resultado, WO, pesagem, area/tatame, programacao e premiacao;
+  - pesagem, area/tatame, programacao e premiacao;
+  - placar por pontos, fora do lote atual de resultados;
   - MC-SIM completo da Sprint 8 pela aplicacao.
 - Criterios de saida: algoritmo deterministico, testado e auditavel para todas as quantidades aprovadas.
 
-Revisao: o dominio DRAFT de chaves e confrontos foi criado e validado no Sandbox. As telas existentes continuam prototipos e nao representam a integracao real. Pesagem e resultados ainda nao existem.
+Revisao: chaves DRAFT/publicadas, consulta publica e resultados/WO possuem implementacao real e foram validados no Sandbox. Pesagem, area/tatame, programacao e premiacao ainda nao existem.
 
-Automacao: o smoke transacional cobre o dominio DRAFT, autorizacao, invariantes, versionamento e auditoria. A validacao completa pela aplicacao e os cenarios de WO/resultados permanecem pendentes.
+Automacao: os smokes transacionais cobrem DRAFT, autorizacao, invariantes, versionamento, auditoria, resultados, WO, avanco e colocacoes. Os smokes Playwright cobrem a operacao autenticada, reflexo publico, protecao das tabelas administrativas e responsividade. O MC-SIM completo da Sprint 8 permanece pendente.
 
 ### Sprint 9 - Financeiro e encerramento
 
@@ -614,7 +620,7 @@ Automacao: jornada completa com multiplos papeis, regressao de isolamento, naveg
 
 | Risco | Impacto | Tratamento |
 |---|---|---|
-| Integracao da aplicacao com chaves pendente | Bloqueia operacao esportiva completa | Types, Server Actions, UI DRAFT e MC-SIM da Sprint 8 |
+| Dominios de operacao esportiva ainda parciais | Bloqueia a operacao completa no evento | Definir e implementar pesagem, area/tatame, programacao, premiacao e MC-SIM da Sprint 8 |
 | Politica financeira indefinida | Bloqueia pagamento real e fechamento | Decisao comercial antes da promocao do Sandbox |
 | Dados de menores | Risco legal e reputacional | Minimizar exposicao, registrar consentimento e revisar LGPD |
 | Prototipo confundido com sistema real | Expectativa e testes incorretos | Rotular mocks e migrar modulo a modulo |
