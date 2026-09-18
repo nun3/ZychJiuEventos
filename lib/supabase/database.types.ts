@@ -704,6 +704,7 @@ export type Database = {
           created_at: string
           faixa_max_ordem: number
           faixa_min_ordem: number
+          fight_duration_minutes: number | null
           genero: string
           id: string
           idade_max: number
@@ -719,6 +720,7 @@ export type Database = {
           created_at?: string
           faixa_max_ordem: number
           faixa_min_ordem: number
+          fight_duration_minutes?: number | null
           genero: string
           id?: string
           idade_max: number
@@ -734,6 +736,7 @@ export type Database = {
           created_at?: string
           faixa_max_ordem?: number
           faixa_min_ordem?: number
+          fight_duration_minutes?: number | null
           genero?: string
           id?: string
           idade_max?: number
@@ -2001,6 +2004,10 @@ export type Database = {
       }
       set_event_area_active: {
         Args: { next_active: boolean; target_area_id: string }
+        Returns: Json
+      }
+      set_event_category_duration: {
+        Args: { duration_minutes: number | null; target_category_id: string }
         Returns: Json
       }
       settle_payment_manually: {
