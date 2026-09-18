@@ -266,4 +266,4 @@ As fontes sustentam o seguinte núcleo para a Sprint 9:
 
 ## Benchmark do lote atual
 
-O próximo lote implementará a relação `LUTA global → ÁREA` observada em `FESTIVAL.pdf` e a identificação número/cor da área presente em `CHAVES_AREAS.pdf`. A duração por categoria e as projeções por equipe/professor demonstradas em `ZYCH_JIU_JITSU_CATEGORIA.pdf` permanecem previstas, mas somente entram quando seus contratos específicos estiverem aprovados.
+Este lote implementa a consulta pública `LUTA → ÁREA → CATEGORIA → EQUIPE` observada em `FESTIVAL.pdf` e a visão derivada por equipe de `ZYCH_JIU_JITSU_CATEGORIA.pdf`, sem duplicar a programação. A duração por categoria ainda não está modelada no MEU CAMP e permanece pendente. Professor operacional, pesagem, premiação e placar continuam fora.

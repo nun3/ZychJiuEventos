@@ -4,7 +4,7 @@
 
 Este arquivo é o ponto de entrada para uma IA ou pessoa continuar o projeto sem depender do histórico da conversa. Leia-o antes de implementar.
 
-**Objetivo atual:** a Sprint 8 está concluída e congelada. O Lote 1 da Sprint 9 está concluído e validado no Sandbox: áreas/tatames, área única por grupo/subchave, `fight_number` global, reordenação no DRAFT, publicação/congelamento, RLS, auditoria e UI administrativa mobile. Pesagem, premiação, placar e visão por equipe/professor permanecem fora deste recorte.
+**Objetivo atual:** a Sprint 8 está concluída e congelada. O Lote 2 da Sprint 9 está concluído e validado no Sandbox: programação pública oficial e visão/filtro por equipe derivados da mesma programação persistida. O Lote 1 (áreas, numeração global, freeze) permanece congelado. Pesagem, premiação, placar, horário automático e professor operacional permanecem fora deste recorte.
 
 MC-SIM r1 e r2 são evidências permanentes. Não alterá-los para cenário novo.
 
@@ -264,9 +264,9 @@ Pesagem, área/tatame, programação, premiação e placar por pontos não fazem
 
 ### Sprint 9: áreas/tatames e programação
 
-`FESTIVAL.pdf` comprova número global de luta e área por confronto; `CHAVES_AREAS.pdf` comprova identificação da área por número/cor e sua presença na visão da chave. O MVP fixa uma área por grupo/subchave e congela a numeração global após publicar a programação ou iniciar a operação. Horário automático, pesagem, premiação, placar e visão por equipe/professor ficam fora.
+`FESTIVAL.pdf` comprova número global de luta e área por confronto; `CHAVES_AREAS.pdf` comprova identificação da área por número/cor e sua presença na visão da chave. `ZYCH_JIU_JITSU_CATEGORIA.pdf` demonstra a visão derivada por equipe. O MVP fixa uma área por grupo/subchave, congela a numeração após publicar ou iniciar, e projeta a programação pública/equipe da mesma fonte. Horário automático, pesagem, premiação, placar e professor operacional ficam fora.
 
-O Lote 1 foi aplicado e aprovado no Sandbox em 2026-09-18. A implementação está em `supabase/migrations/202609180001_event_fight_scheduling.sql`, com correções incrementais `202609180002_schedule_constraint_resolution.sql` e `202609180003_schedule_read_projection.sql`; o smoke canônico está em `supabase/tests/event_fight_scheduling_smoke.sql`. A rota administrativa é `/admin/eventos/[id]/programacao`.
+O Lote 1 permanece em `supabase/migrations/202609180001_event_fight_scheduling.sql` e correções incrementais. O Lote 2 está em `supabase/migrations/202609180004_public_event_schedule.sql`, com smoke em `supabase/tests/public_event_schedule_smoke.sql`. Rotas: administrativa `/admin/eventos/[id]/programacao` e pública `/eventos/[id]/programacao`. A duração da categoria ainda não está modelada e não foi inventada nesta projeção.
 
 ### Sprint 10: segurança começa antes
 
