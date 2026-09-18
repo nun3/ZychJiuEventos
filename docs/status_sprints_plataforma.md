@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprint 11 concluida no recorte de duracao oficial da luta por categoria em 2026-09-18. Sprints 8, 9 e 10 permanecem congeladas. Nao iniciar preparacao para producao.
+Sprint 11 concluida no recorte de duracao oficial da luta por categoria em 2026-09-18. Sprints 8, 9 e 10 permanecem congeladas. Transicoes administrativas inscricao→pagamento, checagem travada→chaves e em_andamento→concluido expostas pela UI em 2026-09-18. Nao iniciar Full Event Playwright nem preparacao para producao.
 
 ## 5. Backlog ordenado por sprints
 
@@ -793,4 +793,13 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - testes: smoke SQL com rollback; smoke autenticado de persistencia, projecoes, recusa publica e 390 px; TypeScript, lint e build;
 - decisoes: source of truth na categoria; nulo = nao configurada; sem snapshot em match;
 - divida tecnica aceita: professor operacional, peso medido, placar, horario automatico, chamada ao vivo e medalha individual;
-- proxima etapa: preparacao para producao permanece planejada e nao foi iniciada.
+- proxima etapa: transicoes de estado pela UI ficaram como marco seguinte, sem reabrir esta sprint.
+
+### 2026-09-18 — Transicoes de estado pela UI
+
+- data de conclusao: 2026-09-18;
+- entregas verificadas: acoes administrativas `inscricao → pagamento`, `checagem travada → chaves` e `em_andamento → concluido`, com bloqueio de estado invalido, permissao owner/organizer e exigencia de lock para chaves;
+- testes: Playwright MCP na UI real (desktop e 390 px); `npm run test:transitions` em `automacao/`; TypeScript, lint e build;
+- decisoes: reutilizar `transitionEvent` e o trigger existente; lock e guarda de aplicacao, nao geracao automatica de chaves; concluir nao gera relatorio financeiro;
+- divida tecnica aceita: relatorio financeiro PRD, criar organizacao pela UI e Full Event E2E unico;
+- proxima etapa: Full Event Playwright permanece bloqueado so pelo relatorio financeiro e pela autenticacao headless; a jornada esportiva passou a ser navegavel.
