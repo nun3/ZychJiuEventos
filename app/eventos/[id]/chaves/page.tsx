@@ -131,7 +131,7 @@ export default async function PublicBracketsPage({ params }: { params: { id: str
         ) : (
           <div className="mt-mc-24 space-y-mc-24">
             <Alert variant="info" icon={<Info size={20} />} title="Consulta oficial">
-              Esta página acompanha a composição oficial, o avanço dos vencedores, WO e colocações. Programação e placar por pontos não fazem parte desta consulta.
+              Esta página acompanha a composição oficial, o avanço dos vencedores, WO e colocações. A ordem das lutas por área está na programação. Placar por pontos não faz parte desta consulta.
             </Alert>
 
             {bracketResult.brackets.map((bracket) => (

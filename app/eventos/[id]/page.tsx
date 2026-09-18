@@ -172,12 +172,16 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                     <p className="font-mc-interface text-mc-small text-mc-text-secondary">Inscrições indisponíveis nesta fase.</p>
                   )}
                 </div>
-                <div className="mt-mc-24 border-t border-mc-border pt-mc-24">
+                <div className="mt-mc-24 space-y-mc-12 border-t border-mc-border pt-mc-24">
                   <Link href={`/eventos/${event.id}/chaves`} className="inline-flex min-h-12 w-full items-center justify-center gap-mc-8 rounded-mc-medium border border-mc-border bg-mc-surface px-mc-16 font-mc-interface text-base font-semibold text-mc-text-primary transition-colors duration-mc-normal hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2">
                     <GitBranch aria-hidden="true" size={18} />
                     Consultar chaves
                   </Link>
-                  <p className="mt-mc-8 font-mc-interface text-mc-caption text-mc-text-secondary">Somente versões oficiais publicadas.</p>
+                  <Link href={`/eventos/${event.id}/programacao`} className="inline-flex min-h-12 w-full items-center justify-center gap-mc-8 rounded-mc-medium border border-mc-border bg-mc-surface px-mc-16 font-mc-interface text-base font-semibold text-mc-text-primary transition-colors duration-mc-normal hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2">
+                    <Clock3 aria-hidden="true" size={18} />
+                    Consultar programação
+                  </Link>
+                  <p className="font-mc-interface text-mc-caption text-mc-text-secondary">Somente versões oficiais publicadas.</p>
                 </div>
               </Card>
             </aside>
