@@ -25,6 +25,7 @@ import {
   FiThumbsUp,
   FiArrowLeft,
   FiLogOut,
+  FiMap,
 } from 'react-icons/fi'
 import { getEventById } from '@/lib/eventStorage'
 
@@ -118,6 +119,14 @@ const mainMenuOptions: MenuOption[] = [
     href: '/admin/eventos/[id]/chaves',
     color: 'from-yellow-500 to-yellow-600',
     description: 'Gerenciar chaves e brackets',
+  },
+  {
+    id: 'programacao',
+    label: 'Programação',
+    icon: FiMap,
+    href: '/admin/eventos/[id]/programacao',
+    color: 'from-blue-600 to-blue-700',
+    description: 'Áreas e ordem das lutas',
   },
   {
     id: 'filiacao',

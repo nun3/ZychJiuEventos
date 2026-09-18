@@ -20,6 +20,8 @@ const errorMessages: Record<string, string> = {
   'Vencedor nao pertence ao confronto': 'O vencedor selecionado não pertence a este confronto.',
   'Sem permissao para operar chaves': 'Você não pode operar resultados deste evento.',
   'Operacao concorrente na chave desta categoria': 'A chave foi alterada por outra operação. Atualize e tente novamente.',
+  'Todas as subchaves oficiais devem possuir area': 'Atribua todas as subchaves na programação antes de iniciar as lutas.',
+  'Todas as lutas oficiais devem estar numeradas': 'Conclua a fila da programação antes de iniciar as lutas.',
 }
 
 function validPayload(data: Json) {
