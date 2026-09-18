@@ -81,7 +81,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 - Origem: `CHAVES_AREAS.pdf`.
 - A categoria operacional combina idade, faixa, peso, gênero e, quando necessário, subdivisão por letra.
 - A duração aparece por chave/categoria com exemplos de 2, 2,50, 3, 3,50 e 4 minutos.
-- Situação no MEU CAMP: eixos e subdivisão por subchaves existem; duração de luta ainda não está modelada.
+- Situação no MEU CAMP: eixos e subdivisão por subchaves existem; a duração oficial da luta fica em `event_categories.fight_duration_minutes` e é projetada ao vivo.
 
 **EVIDÊNCIA DE BENCHMARK**
 
@@ -175,7 +175,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 - Origem: `ZYCH_JIU_JITSU_CATEGORIA.pdf`.
 - Uma visão filtrada por equipe reúne chave, 1ª/2ª luta, categoria, duração, resultado, atleta, equipe e área.
-- Situação no MEU CAMP: estrutura relacional de equipe e gestores existe; projeção operacional ainda pendente.
+- Situação no MEU CAMP: a visão por equipe deriva da programação pública; a duração oficial da categoria aparece quando configurada.
 
 **INFERÊNCIA**
 
@@ -271,14 +271,22 @@ As fontes sustentam o seguinte núcleo para a Sprint 9:
 - **DECISÃO DE PRODUTO:** premiação só pode ser confirmada depois que as colocações da subchave já existirem no domínio de resultados.
 - **DECISÃO DE PRODUTO:** desfazer pesagem é permitido somente enquanto a premiação da mesma subchave não estiver confirmada.
 
-## Gaps conhecidos após o fechamento da Sprint 10
+## Decisões MEU CAMP para a Sprint 11
 
-O recorte aprovado cobre o checklist operacional de pesagem e premiação por subchave, ao lado do resultado já existente. Permanecem fora:
+- **DECISÃO DE PRODUTO:** a duração oficial da luta pertence à categoria do evento (`event_categories.fight_duration_minutes`), não ao confronto.
+- **DECISÃO DE PRODUTO:** nulo significa “não configurada”; projeções públicas omitem Tempo nesse caso.
+- **DECISÃO DE PRODUTO:** a duração não é eixo de categorização e pode ser editada sem nova versão do conjunto de regras.
+- **DECISÃO DE PRODUTO:** não há snapshot em match/chave neste recorte, porque o nome da categoria já é projetado por join ao vivo.
+- **DECISÃO DE PRODUTO:** valores positivos de 0,5 a 20 minutos, em passos de 0,5, cobrem o benchmark observado (2, 2,50, 3, 3,50 e 4) sem inventar cronômetro ou horário.
 
-- duração da categoria, observada em `ZYCH_JIU_JITSU_CATEGORIA.pdf` e ainda sem campo no domínio;
+## Gaps conhecidos após o fechamento da Sprint 11
+
+O recorte aprovado cobre duração oficial da categoria e sua projeção nas chaves, programação, visão por equipe e resultados. Permanecem fora:
+
 - professor operacional;
 - peso medido, tolerância e desclassificação;
 - placar;
 - horário automático, não demonstrado nas fontes;
 - chamada ao vivo;
+- cálculo de término ou descanso entre lutas;
 - distribuição física de medalhas e ranking.

@@ -4,7 +4,7 @@
 
 Este arquivo é o ponto de entrada para uma IA ou pessoa continuar o projeto sem depender do histórico da conversa. Leia-o antes de implementar.
 
-**Objetivo atual:** a Sprint 10 está concluída no recorte aprovado de checklist operacional: pesagem e premiação por subchave. As Sprints 8 e 9 permanecem congeladas. Não iniciar preparação para produção. Duração, professor operacional, pesagem individual, placar, horário automático e chamada ao vivo permanecem fora.
+**Objetivo atual:** a Sprint 11 está concluída no recorte de duração oficial da luta por categoria. As Sprints 8, 9 e 10 permanecem congeladas. Não iniciar preparação para produção. Professor operacional, pesagem individual, placar, horário automático e chamada ao vivo permanecem fora.
 
 MC-SIM r1 e r2 são evidências permanentes. Não alterá-los para cenário novo.
 
@@ -270,13 +270,21 @@ O Lote 1 permanece em `supabase/migrations/202609180001_event_fight_scheduling.s
 
 O MC-SIM próprio da Sprint 9 (`runId fc464214`) validou ponta a ponta áreas, atribuição integral da subchave, numeração global, reordenação em DRAFT, publicação/congelamento, programação pública, filtros, dependente `Vencedor da luta N`, resultado/WO sem renumerar, visão por equipe, mobile 390px, segurança pública e cleanup sem resíduos. Executar em `automação/` com `npm run mc-sim:sprint9` contra uma instância única.
 
-Não reabrir Sprint 8 nem o domínio já validado de áreas, numeração ou RLS. Duração, professor operacional, pesagem individual, placar, horário automático e chamada ao vivo ficam fora.
+Não reabrir Sprint 8 nem o domínio já validado de áreas, numeração ou RLS. Professor operacional, pesagem individual, placar, horário automático e chamada ao vivo ficam fora.
 
 ### Sprint 10: concluída no recorte de checklist operacional
 
 `CHAVES_AREAS.pdf` registra por chave/subchave “Pesagem Realizada?”, “Premiação Realizada?” e “Resultado Registrado?”. Resultado permanece no domínio da Sprint 8. Este recorte digitaliza só os dois checkboxes operacionais na subchave, sem peso medido nem medalha individual.
 
 A migration está em `supabase/migrations/202609180005_group_weigh_in_awards.sql`. A UI entra em `/admin/eventos/[id]/resultados`. Executar `npm run test:checklist` em `automação/` contra uma instância única. Não reabrir Sprints 8 e 9. Não iniciar preparação para produção.
+
+### Sprint 11: duração oficial da luta
+
+`CHAVES_AREAS.pdf` exibe `Tempo: X minutos` na chave. `ZYCH_JIU_JITSU_CATEGORIA.pdf` projeta a mesma duração na visão por equipe. A source of truth é `event_categories.fight_duration_minutes`, nula quando não configurada. Não há snapshot em `bracket_matches` nem em `category_brackets`: as projeções fazem join ao vivo, no mesmo padrão do nome da categoria.
+
+A duração não é eixo de categorização e pode ser editada sem criar versão nova do rule set. Owner, organizer e platform admin alteram via RPC `set_event_category_duration`. O público recebe só `durationMinutes` nas RPCs já existentes.
+
+A migration está em `supabase/migrations/202609180006_category_fight_duration.sql`. UI administrativa em `/admin/eventos/[id]/configuracao`; projeções em chaves, programação, resultados, consulta pública e visão por equipe. Executar `npm run test:duration` em `automação/` contra uma instância única. Não reabrir Sprints 8, 9 e 10. Não implementar cronômetro, placar, horário automático, chamada ou cálculo de término.
 
 ### Preparação para produção: não iniciada
 
@@ -325,6 +333,8 @@ Comandos adicionais disponíveis nessa pasta:
 ```bash
 npm run test:smoke
 npm run test:write
+npm run test:checklist
+npm run test:duration
 npm run test:bdd -- --grep @sprint5
 npx playwright show-report
 ```
@@ -371,4 +381,4 @@ Atualizar o status operacional. Este guia descreve o checkpoint de partida; atua
 
 ### Texto para o usuário entregar a outra IA
 
-> Continue o projeto Meu Camp em /home/nune/Meus Projetos/jiu. Leia primeiro docs/guia_continuidade_ia.md e os documentos indicados nele. Preserve as alterações existentes e confira o estado real do código e do Sandbox. A Sprint 10 está concluída no recorte de pesagem e premiação operacionais por subchave; as Sprints 8 e 9 permanecem congeladas. Não iniciar preparação para produção. Continue a implementação autorizada com automação pareada, sem resetar dados, expor segredos, usar produção ou inventar decisões comerciais. Registre evidências novas antes de concluir qualquer sprint e avance conforme as dependências do plano. Faça perguntas apenas para decisões ou acessos realmente indispensáveis, enquanto executa o trabalho independente disponível.
+> Continue o projeto Meu Camp em /home/nune/Meus Projetos/jiu. Leia primeiro docs/guia_continuidade_ia.md e os documentos indicados nele. Preserve as alterações existentes e confira o estado real do código e do Sandbox. A Sprint 11 cobre a duração oficial da luta por categoria; as Sprints 8, 9 e 10 permanecem congeladas. Não iniciar preparação para produção. Continue a implementação autorizada com automação pareada, sem resetar dados, expor segredos, usar produção ou inventar decisões comerciais. Registre evidências novas antes de concluir qualquer sprint e avance conforme as dependências do plano. Faça perguntas apenas para decisões ou acessos realmente indispensáveis, enquanto executa o trabalho independente disponível.

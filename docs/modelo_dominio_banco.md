@@ -93,6 +93,7 @@ Travamento operacional grava `checagem_travada_em` uma vez. Reabertura nao faz p
 - `peso_min_kg`, `peso_max_kg`
 - `genero`
 - `ordem`
+- `fight_duration_minutes` numérico nulo: duração oficial da luta em minutos. Não é eixo de categorização. Não é copiado para o confronto; as projeções de chave, programação e equipe fazem join ao vivo.
 
 ### registrations
 

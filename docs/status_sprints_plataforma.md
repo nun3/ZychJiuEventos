@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprint 10 concluida no recorte de pesagem e premiacao operacionais em 2026-09-18. Nao iniciar preparacao para producao.
+Sprint 11 concluida no recorte de duracao oficial da luta por categoria em 2026-09-18. Sprints 8, 9 e 10 permanecem congeladas. Nao iniciar preparacao para producao.
 
 ## 5. Backlog ordenado por sprints
 
@@ -688,6 +688,43 @@ Automacao: `npm run test:checklist` em `automacao/`. O smoke SQL permanece evide
 
 Nucleo da Sprint 10 comprovado no Sandbox neste recorte. Nao iniciar preparacao para producao.
 
+### Sprint 11 - Duracao oficial da luta
+
+- Status: concluida no recorte aprovado em 2026-09-18.
+- Dependencias atendidas: Sprints 8, 9 e 10 concluídas e congeladas; `CHAVES_AREAS.pdf` e `ZYCH_JIU_JITSU_CATEGORIA.pdf` como fonte de Tempo por categoria.
+- Objetivo aprovado neste recorte: modelar e exibir a duracao oficial da luta por categoria, sem cronometro, placar, horario automatico ou chamada.
+- Decisoes:
+  - source of truth = `event_categories.fight_duration_minutes`, nulo quando nao configurada;
+  - nao copiar para match nem snapshotar na chave; projecao por join ao vivo;
+  - duracao nao e eixo de categorizacao e pode ser editada sem nova versao;
+  - limites 0,5 a 20 minutos em passos de 0,5;
+  - owner/organizer/admin via RPC; publico so recebe `durationMinutes` nas RPCs existentes.
+- Concluido:
+  - migration `202609180006_category_fight_duration.sql`;
+  - RPC `set_event_category_duration`;
+  - projecoes em chaves, programacao, resultados, consulta publica e visao por equipe;
+  - edicao administrativa em `/admin/eventos/[id]/configuracao`.
+- Validacao:
+  - migration aplicada no Sandbox;
+  - smoke SQL transacional aprovado com rollback;
+  - smoke autenticado aprovado para categoria sem duracao, persistencia, projecoes admin/publica/equipe, recusa anonima e viewport de 390 px;
+  - TypeScript, lint e build de producao aprovados.
+- Fora deste recorte:
+  - horario automatico;
+  - cronometro ao vivo;
+  - placar;
+  - chamada de luta;
+  - calculo de termino;
+  - descanso entre lutas.
+
+Revisao: o Tempo da categoria possui implementacao real e foi validado no Sandbox. Nao reabrir Sprints 8, 9 e 10.
+
+Automacao: `npm run test:duration` em `automacao/`. O smoke SQL permanece evidencia transacional.
+
+#### Fechamento
+
+Nucleo da Sprint 11 comprovado no Sandbox neste recorte. Nao iniciar preparacao para producao.
+
 ### Marco posterior - Preparacao para producao
 
 - Status: planejada
@@ -711,7 +748,7 @@ Automacao: jornada completa com multiplos papeis, regressao de isolamento, naveg
 
 | Risco | Impacto | Tratamento |
 |---|---|---|
-| Dominios esportivos fora do fechamento das Sprints 8 a 10 | Impedem operacao alem de chaves, resultados, programacao e checklist operacional | Contrato proprio antes de duracao, professor operacional, pesagem individual, placar, horario ou chamada ao vivo |
+| Dominios esportivos fora do fechamento das Sprints 8 a 11 | Impedem operacao alem de chaves, resultados, programacao, checklist e duracao oficial | Contrato proprio antes de professor operacional, pesagem individual, placar, horario ou chamada ao vivo |
 | Politica financeira indefinida | Bloqueia pagamento real e fechamento | Decisao comercial antes da promocao do Sandbox |
 | Dados de menores | Risco legal e reputacional | Minimizar exposicao, registrar consentimento e revisar LGPD |
 | Prototipo confundido com sistema real | Expectativa e testes incorretos | Rotular mocks e migrar modulo a modulo |
@@ -747,4 +784,13 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - testes: smoke SQL com rollback; smoke autenticado de UI, recusa publica e 390 px;
 - decisoes: unidade = subchave; premiacao apos colocacoes; desfazer pesagem so sem premiacao confirmada;
 - divida tecnica aceita: duracao, professor operacional, peso medido, placar, horario automatico, chamada ao vivo e medalha individual;
+- proxima etapa: preparacao para producao permanece planejada e nao foi iniciada.
+
+### 2026-09-18 — Sprint 11
+
+- data de conclusao: 2026-09-18;
+- entregas verificadas: duracao oficial da luta por categoria, edicao administrativa, projecao em chaves, programacao, visao por equipe e resultados;
+- testes: smoke SQL com rollback; smoke autenticado de persistencia, projecoes, recusa publica e 390 px; TypeScript, lint e build;
+- decisoes: source of truth na categoria; nulo = nao configurada; sem snapshot em match;
+- divida tecnica aceita: professor operacional, peso medido, placar, horario automatico, chamada ao vivo e medalha individual;
 - proxima etapa: preparacao para producao permanece planejada e nao foi iniciada.
