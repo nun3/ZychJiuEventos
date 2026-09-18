@@ -4,7 +4,7 @@
 
 Este arquivo é o ponto de entrada para uma IA ou pessoa continuar o projeto sem depender do histórico da conversa. Leia-o antes de implementar.
 
-**Objetivo atual:** a Sprint 8 possui domínio DRAFT, integração administrativa, consulta pública e operação de resultados/WO validados no Sandbox. Permanecem fora deste recorte pesagem, área/tatame, programação, premiação e o MC-SIM completo da Sprint 8. Não iniciar esses domínios, correção de faixa, flags de realocação nem reabertura da checagem sem o respectivo contrato aprovado. A Sprint 6 de pagamentos Sandbox e o núcleo operacional da Sprint 7 permanecem concluídos.
+**Objetivo atual:** a Sprint 8 está concluída no recorte aprovado, com domínio DRAFT, integração administrativa, consulta pública, resultados/WO e MC-SIM completo validados no Sandbox. Pesagem, área/tatame, programação, premiação e placar por pontos permanecem fora deste fechamento. Não iniciar Sprint 9 nem esses domínios sem autorização e contrato próprios. A Sprint 6 de pagamentos Sandbox e o núcleo operacional da Sprint 7 permanecem concluídos.
 
 MC-SIM r1 e r2 são evidências permanentes. Não alterá-los para cenário novo.
 
@@ -241,7 +241,7 @@ A ausência de uma chave bloqueia homologação externa, mas não bloqueia imple
 | Sprint | Trabalho exigido | Gate de saída |
 | --- | --- | --- |
 | 7 — Checagem | Lista só de efetivados, filtros seguros, atleta sozinho, solicitação e aprovação, travamento | **Concluída no núcleo operacional** (2026-09-17). Lista pública e filtro por professor fora deste recorte. |
-| 8 — Chaves | DRAFT, publicação, consulta pública e resultados/WO validados no Sandbox | Pesagem, operação de área/tatame, programação, premiação e MC-SIM completo |
+| 8 — Chaves | **Concluída no recorte aprovado** (2026-09-18): DRAFT, publicação, consulta pública, resultados/WO e MC-SIM completo | Gate aprovado no Sandbox; massa MC-SIM removida |
 | 9 — Financeiro | Extratos conciliados, taxas/estornos, exportação e fechamento | Política comercial aprovada; totais fecham sem dupla contagem |
 | 10 — Produção | Segurança, privacidade, acessibilidade, desempenho, deploy e recuperação | Evidência de fluxo completo, restauração e liberação autorizada |
 
@@ -257,11 +257,13 @@ A Sprint 7 fecha o núcleo operacional. Não contornar a hidratação quebrada d
 
 A identidade pública dos inscritos ainda depende da decisão do PRD. Não publicar CPF, nascimento completo, contatos, dados de menores ou pagamentos por reutilização de consultas internas.
 
-### Sprint 8: chaves e resultados validados; operação esportiva parcial
+### Sprint 8: concluída no recorte aprovado
 
 O contrato de domínio está aprovado. As migrations de brackets e resultados estão aplicadas no Sandbox. A aplicação integra Types, Server Actions e UI real para geração, casamento DRAFT, warnings de mesma equipe, restore, publicação e consulta pública. A operação registra vitória normal e WO, avança vencedores, conclui grupos e deriva colocações em `final_2`, `copo_3` e `semi_4`; `sem_confronto` permanece sem luta ou campeão automático. Os smokes SQL foram aprovados com rollback e os smokes de UI autenticada e pública passaram sem massa residual.
 
-Ainda faltam pesagem, área/tatame, programação, premiação e o MC-SIM completo da Sprint 8 pela aplicação. Placar por pontos também não faz parte do lote de resultados atual.
+O MC-SIM próprio da Sprint 8 (`runId 4d17a535`) validou a jornada completa da checagem travada às colocações e à consulta pública atualizada, incluindo casamento manual, restore, agrupamento 4/3/2, versionamento, bloqueio estrutural após resultado, WO diferente de bye e mobile administrativo/público em 390px. A massa temporária foi removida ao final.
+
+Pesagem, área/tatame, programação, premiação e placar por pontos não fazem parte deste fechamento e continuam sem implementação. Não iniciar Sprint 9 automaticamente.
 
 ### Sprint 9: origem dos números
 
