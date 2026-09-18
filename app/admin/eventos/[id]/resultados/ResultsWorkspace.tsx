@@ -2,10 +2,18 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, CheckCircle2, Flag, Play, Trophy, Users } from 'lucide-react'
+import { AlertTriangle, Award, CheckCircle2, Flag, Play, Scale, Trophy, Users } from 'lucide-react'
 import { Alert, Button, Card, EmptyState, StatusBadge } from '@/components/ui'
-import { recordBracketMatchOutcome, startCategoryBracket, type ResultActionState } from './actions'
-import type { ResultBracket, ResultMatch, ResultsPageData } from './data'
+import {
+  confirmGroupAwards,
+  confirmGroupWeighIn,
+  recordBracketMatchOutcome,
+  startCategoryBracket,
+  undoGroupAwards,
+  undoGroupWeighIn,
+  type ResultActionState,
+} from './actions'
+import type { GroupChecklistState, ResultBracket, ResultGroup, ResultMatch, ResultsPageData } from './data'
 
 const bracketStatusNames = {
   publicada: 'Publicada',
@@ -29,6 +37,140 @@ function statusBadge(status: ResultBracket['status']) {
 
 function matchLabel(match: ResultMatch) {
   return match.round === 'semifinal' ? `Semifinal ${match.order}` : 'Final'
+}
+
+function formatWhen(value: string | null) {
+  if (!value) return null
+  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))
+}
+
+function confirmedCaption(state: GroupChecklistState) {
+  const when = formatWhen(state.confirmedAt)
+  if (!when) return null
+  return state.confirmedByName ? `${state.confirmedByName} · ${when}` : when
+}
+
+function GroupChecklist({
+  eventId,
+  group,
+  disabled,
+  onAction,
+}: {
+  eventId: string
+  group: ResultGroup
+  disabled: boolean
+  onAction: (action: () => Promise<ResultActionState>) => void
+}) {
+  function formData(values: Record<string, string>) {
+    const form = new FormData()
+    Object.entries(values).forEach(([key, value]) => form.set(key, value))
+    return form
+  }
+
+  const rows = [
+    {
+      key: 'weighIn',
+      label: 'Pesagem',
+      state: group.weighIn,
+      confirmLabel: 'Marcar pesagem como realizada',
+      undoLabel: 'Desfazer confirmação da pesagem',
+      confirm: () => confirmGroupWeighIn(formData({ event_id: eventId, group_id: group.groupId })),
+      undo: () => undoGroupWeighIn(formData({ event_id: eventId, group_id: group.groupId })),
+      canConfirm: group.weighIn.status === 'pendente',
+      showConfirm: group.weighIn.status === 'pendente',
+      confirmDisabledReason: undefined,
+      canUndo: group.weighIn.status === 'realizada' && group.awards.status !== 'realizada',
+    },
+    {
+      key: 'result',
+      label: 'Resultado',
+      state: {
+        status: group.resultStatus === 'registrado' ? 'realizada' : 'pendente',
+        confirmedAt: null,
+        confirmedBy: null,
+        confirmedByName: null,
+      } satisfies GroupChecklistState,
+      confirmLabel: null,
+      undoLabel: null,
+      confirm: null,
+      undo: null,
+      canConfirm: false,
+      showConfirm: false,
+      confirmDisabledReason: undefined,
+      canUndo: false,
+    },
+    {
+      key: 'awards',
+      label: 'Premiação',
+      state: group.awards,
+      confirmLabel: 'Marcar premiação como realizada',
+      undoLabel: 'Desfazer confirmação da premiação',
+      confirm: () => confirmGroupAwards(formData({ event_id: eventId, group_id: group.groupId })),
+      undo: () => undoGroupAwards(formData({ event_id: eventId, group_id: group.groupId })),
+      canConfirm: group.awards.status === 'pendente' && group.resultStatus === 'registrado',
+      showConfirm: group.awards.status === 'pendente',
+      confirmDisabledReason: group.resultStatus !== 'registrado' ? 'Conclua o resultado da subchave antes de marcar a premiação.' : undefined,
+      canUndo: group.awards.status === 'realizada',
+    },
+  ] as const
+
+  return (
+    <section aria-label={`Checklist operacional da subchave ${group.label}`} className="border-b border-mc-border p-mc-16">
+      <ul className="space-y-mc-12">
+        {rows.map((row) => {
+          const done = row.state.status === 'realizada' || (row.key === 'result' && group.resultStatus === 'registrado')
+          const caption = row.key === 'result'
+            ? (group.resultStatus === 'registrado' ? 'Colocações derivadas do domínio atual' : 'Aguardando o registro das lutas')
+            : confirmedCaption(row.state)
+          return (
+            <li key={row.key} className="flex min-w-0 flex-col gap-mc-8 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="font-semibold text-mc-text-primary">{row.label}</p>
+                <div className="mt-mc-4 flex flex-wrap items-center gap-mc-8">
+                  <StatusBadge variant={done ? 'success' : 'warning'}>
+                    {row.key === 'result'
+                      ? (group.resultStatus === 'registrado' ? 'Registrado' : 'Pendente')
+                      : (row.state.status === 'realizada' ? 'Realizada' : 'Pendente')}
+                  </StatusBadge>
+                  {caption ? <p className="text-sm text-mc-text-secondary">{caption}</p> : null}
+                </div>
+              </div>
+              {row.confirm && row.showConfirm ? (
+                <div className="flex flex-col gap-mc-8 sm:flex-row">
+                  <Button
+                    className="gap-mc-8"
+                    disabled={disabled || !row.canConfirm}
+                    title={row.confirmDisabledReason}
+                    onClick={() => onAction(row.confirm)}
+                  >
+                    {row.key === 'weighIn' ? <Scale aria-hidden="true" size={18} /> : <Award aria-hidden="true" size={18} />}
+                    {row.confirmLabel}
+                  </Button>
+                  {row.canUndo ? (
+                    <Button
+                      variant="outline"
+                      disabled={disabled}
+                      onClick={() => onAction(row.undo!)}
+                    >
+                      {row.undoLabel}
+                    </Button>
+                  ) : null}
+                </div>
+              ) : row.canUndo ? (
+                <Button
+                  variant="outline"
+                  disabled={disabled}
+                  onClick={() => onAction(row.undo!)}
+                >
+                  {row.undoLabel}
+                </Button>
+              ) : null}
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
 }
 
 export default function ResultsWorkspace({ data }: { data: ResultsPageData }) {
@@ -164,25 +306,33 @@ export default function ResultsWorkspace({ data }: { data: ResultsPageData }) {
           <Alert className="mt-mc-16" variant="info" title="Sem confronto">
             Esta categoria não possui luta, vencedor ou colocação automática.
           </Alert>
-        ) : selected.status === 'publicada' ? (
-          <Alert className="mt-mc-16" variant="warning" icon={<AlertTriangle size={20} />} title="Operação ainda não iniciada">
-            Inicie a chave para liberar o registro dos confrontos. O primeiro início também avança o evento para “em andamento”.
-          </Alert>
         ) : (
-          <div className="mt-mc-16 space-y-mc-16">
-            {selected.groups.map((group) => (
-              <Card key={group.groupId} className="overflow-hidden">
-                <header className="flex flex-wrap items-center justify-between gap-mc-8 border-b border-mc-border bg-mc-surface-secondary p-mc-16">
-                  <div>
-                    <h3 className="font-mc-display text-mc-h3 text-mc-text-primary">Grupo {group.label}</h3>
-                    <p className="mt-mc-4 text-sm text-mc-text-secondary">{topologyNames[group.topology]}</p>
-                  </div>
-                  <StatusBadge variant={group.status === 'concluido' ? 'success' : 'info'}>
-                    {group.status === 'concluido' ? 'Grupo concluído' : 'Em operação'}
-                  </StatusBadge>
-                </header>
+          <>
+            {selected.status === 'publicada' ? (
+              <Alert className="mt-mc-16" variant="warning" icon={<AlertTriangle size={20} />} title="Operação ainda não iniciada">
+                Inicie a chave para liberar o registro dos confrontos. O primeiro início também avança o evento para “em andamento”. Pesagem já pode ser confirmada.
+              </Alert>
+            ) : null}
+            <div className="mt-mc-16 space-y-mc-16">
+              {selected.groups.map((group) => (
+                <Card key={group.groupId} className="overflow-hidden">
+                  <header className="flex flex-wrap items-center justify-between gap-mc-8 border-b border-mc-border bg-mc-surface-secondary p-mc-16">
+                    <div>
+                      <h3 className="font-mc-display text-mc-h3 text-mc-text-primary">Grupo {group.label}</h3>
+                      <p className="mt-mc-4 text-sm text-mc-text-secondary">{topologyNames[group.topology]}</p>
+                    </div>
+                    <StatusBadge variant={group.status === 'concluido' ? 'success' : 'info'}>
+                      {group.status === 'concluido' ? 'Grupo concluído' : group.status === 'aguardando' ? 'Aguardando' : 'Em operação'}
+                    </StatusBadge>
+                  </header>
 
-                <div className="space-y-mc-12 p-mc-16">
+                  <GroupChecklist
+                    eventId={data.event.id}
+                    group={group}
+                    disabled={isPending}
+                    onAction={runAction}
+                  />
+                  <div className="space-y-mc-12 p-mc-16">
                   {group.matches.map((match) => {
                     const winner = match.winnerEntryId === match.sideA?.entryId ? match.sideA : match.sideB
                     const selectedWinner = winnerByMatch[match.matchId] || ''
@@ -299,7 +449,8 @@ export default function ResultsWorkspace({ data }: { data: ResultsPageData }) {
                 ) : null}
               </Card>
             ))}
-          </div>
+            </div>
+          </>
         )}
       </section>
     </div>

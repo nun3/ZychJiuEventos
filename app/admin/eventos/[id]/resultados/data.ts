@@ -25,6 +25,13 @@ export type ResultPlacement = {
   athlete: ResultSide
 }
 
+export type GroupChecklistState = {
+  status: 'pendente' | 'realizada'
+  confirmedAt: string | null
+  confirmedBy: string | null
+  confirmedByName: string | null
+}
+
 export type ResultGroup = {
   groupId: string
   label: string
@@ -32,6 +39,9 @@ export type ResultGroup = {
   status: 'aguardando' | 'em_andamento' | 'concluido'
   matches: ResultMatch[]
   placements: ResultPlacement[]
+  weighIn: GroupChecklistState
+  awards: GroupChecklistState
+  resultStatus: 'pendente' | 'registrado'
 }
 
 export type ResultBracket = {
@@ -111,6 +121,37 @@ function parsePlacement(value: Json): ResultPlacement | null {
   return place !== null && athlete ? { place, athlete } : null
 }
 
+const pendingChecklist: GroupChecklistState = {
+  status: 'pendente',
+  confirmedAt: null,
+  confirmedBy: null,
+  confirmedByName: null,
+}
+
+function parseChecklistState(value: Json | undefined): GroupChecklistState {
+  const source = record(value)
+  const status = text(source?.status)
+  if (status !== 'realizada') return pendingChecklist
+  return {
+    status,
+    confirmedAt: text(source?.confirmedAt),
+    confirmedBy: text(source?.confirmedBy),
+    confirmedByName: text(source?.confirmedByName),
+  }
+}
+
+function parseChecklist(value: Json): { groupId: string; weighIn: GroupChecklistState; awards: GroupChecklistState; resultStatus: ResultGroup['resultStatus'] } | null {
+  const source = record(value)
+  const groupId = text(source?.groupId)
+  if (!groupId) return null
+  return {
+    groupId,
+    weighIn: parseChecklistState(source?.weighIn),
+    awards: parseChecklistState(source?.awards),
+    resultStatus: text(source?.resultStatus) === 'registrado' ? 'registrado' : 'pendente',
+  }
+}
+
 function parseGroup(value: Json): ResultGroup | null {
   const source = record(value)
   if (!source) return null
@@ -135,6 +176,9 @@ function parseGroup(value: Json): ResultGroup | null {
     placements: Array.isArray(source.placements)
       ? source.placements.map(parsePlacement).filter((placement): placement is ResultPlacement => Boolean(placement))
       : [],
+    weighIn: pendingChecklist,
+    awards: pendingChecklist,
+    resultStatus: 'pendente',
   }
 }
 
@@ -213,9 +257,36 @@ export async function loadResultsPageData(eventId: string): Promise<ResultsLoadR
     return { kind: 'error', message: 'Não foi possível carregar os confrontos.' }
   }
 
+  const { data: checklistPayload, error: checklistError } = await supabase.rpc('get_event_group_checklists', {
+    target_event_id: event.id,
+  })
+  if (checklistError) return { kind: 'error', message: 'Não foi possível carregar o checklist operacional.' }
+  const checklistRecord = record(checklistPayload)
+  const checklistGroups = checklistRecord && Array.isArray(checklistRecord.groups) ? checklistRecord.groups : []
+  const checklists = new Map(
+    checklistGroups
+      .map(parseChecklist)
+      .filter((item): item is NonNullable<ReturnType<typeof parseChecklist>> => Boolean(item))
+      .map((item) => [item.groupId, item]),
+  )
+
   const brackets = operations
     .map((operation) => parseBracket(operation.data))
     .filter((bracket): bracket is ResultBracket => Boolean(bracket))
+    .map((bracket) => ({
+      ...bracket,
+      groups: bracket.groups.map((group) => {
+        const checklist = checklists.get(group.groupId)
+        return checklist
+          ? {
+              ...group,
+              weighIn: checklist.weighIn,
+              awards: checklist.awards,
+              resultStatus: checklist.resultStatus,
+            }
+          : group
+      }),
+    }))
     .sort((a, b) => a.category.localeCompare(b.category, 'pt-BR'))
 
   return {

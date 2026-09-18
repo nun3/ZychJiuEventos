@@ -22,6 +22,15 @@ const errorMessages: Record<string, string> = {
   'Operacao concorrente na chave desta categoria': 'A chave foi alterada por outra operação. Atualize e tente novamente.',
   'Todas as subchaves oficiais devem possuir area': 'Atribua todas as subchaves na programação antes de iniciar as lutas.',
   'Todas as lutas oficiais devem estar numeradas': 'Conclua a fila da programação antes de iniciar as lutas.',
+  'Pesagem ja realizada': 'A pesagem desta subchave já foi confirmada.',
+  'Pesagem ainda pendente': 'A pesagem desta subchave ainda está pendente.',
+  'Premiacao ja realizada; pesagem nao pode ser desfeita': 'Desfaça a premiação antes de desfazer a pesagem.',
+  'Premiacao exige resultado concluido da subchave': 'Conclua o resultado da subchave antes de marcar a premiação.',
+  'Premiacao ja realizada': 'A premiação desta subchave já foi confirmada.',
+  'Premiacao ainda pendente': 'A premiação desta subchave ainda está pendente.',
+  'Somente subchave oficial pode ter checklist operacional': 'Publique a chave antes de operar pesagem ou premiação.',
+  'Evento fora da fase operacional': 'Pesagem e premiação só podem ser operadas nas fases de chaves, em andamento ou concluído.',
+  'Checklist operacional so pode ser alterado pela operacao autorizada': 'O checklist só pode ser alterado pela operação autorizada.',
 }
 
 function validPayload(data: Json) {
@@ -39,11 +48,80 @@ async function authenticatedClient() {
   return user ? supabase : null
 }
 
+function validChecklist(data: Json) {
+  return Boolean(
+    data
+    && typeof data === 'object'
+    && !Array.isArray(data)
+    && typeof data.groupId === 'string',
+  )
+}
+
 function refresh(eventId: string) {
   revalidatePath(`/admin/eventos/${eventId}/resultados`)
   revalidatePath(`/admin/eventos/${eventId}/chaves`)
   revalidatePath(`/eventos/${eventId}/chaves`)
   revalidatePath(`/eventos/${eventId}`)
+}
+
+async function runGroupChecklist(
+  eventId: string,
+  groupId: string,
+  rpc: 'confirm_bracket_group_weigh_in' | 'undo_bracket_group_weigh_in' | 'confirm_bracket_group_awards' | 'undo_bracket_group_awards',
+  success: string,
+  fallback: string,
+): Promise<ResultActionState> {
+  if (!uuidPattern.test(eventId) || !uuidPattern.test(groupId)) {
+    return { ok: false, message: 'Subchave inválida.' }
+  }
+  const supabase = await authenticatedClient()
+  if (!supabase) return { ok: false, message: 'Sua sessão expirou.' }
+  const { data, error } = await supabase.rpc(rpc, { target_group_id: groupId })
+  if (error || !validChecklist(data)) {
+    return { ok: false, message: errorMessages[error?.message || ''] || fallback }
+  }
+  refresh(eventId)
+  return { ok: true, message: success }
+}
+
+export async function confirmGroupWeighIn(formData: FormData): Promise<ResultActionState> {
+  return runGroupChecklist(
+    String(formData.get('event_id') || ''),
+    String(formData.get('group_id') || ''),
+    'confirm_bracket_group_weigh_in',
+    'Pesagem marcada como realizada.',
+    'Não foi possível confirmar a pesagem.',
+  )
+}
+
+export async function undoGroupWeighIn(formData: FormData): Promise<ResultActionState> {
+  return runGroupChecklist(
+    String(formData.get('event_id') || ''),
+    String(formData.get('group_id') || ''),
+    'undo_bracket_group_weigh_in',
+    'Confirmação da pesagem desfeita.',
+    'Não foi possível desfazer a pesagem.',
+  )
+}
+
+export async function confirmGroupAwards(formData: FormData): Promise<ResultActionState> {
+  return runGroupChecklist(
+    String(formData.get('event_id') || ''),
+    String(formData.get('group_id') || ''),
+    'confirm_bracket_group_awards',
+    'Premiação marcada como realizada.',
+    'Não foi possível confirmar a premiação.',
+  )
+}
+
+export async function undoGroupAwards(formData: FormData): Promise<ResultActionState> {
+  return runGroupChecklist(
+    String(formData.get('event_id') || ''),
+    String(formData.get('group_id') || ''),
+    'undo_bracket_group_awards',
+    'Confirmação da premiação desfeita.',
+    'Não foi possível desfazer a premiação.',
+  )
 }
 
 export async function startCategoryBracket(formData: FormData): Promise<ResultActionState> {

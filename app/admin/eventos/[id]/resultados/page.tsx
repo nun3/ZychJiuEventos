@@ -42,7 +42,7 @@ export default async function ResultadosPage({ params }: { params: { id: string 
             <>
               <PageHeader
                 title={`Resultados — ${result.data.event.name}`}
-                description="Opere cada chave publicada, registre vitória normal ou WO e acompanhe o avanço até as colocações."
+                description="Confirme pesagem e premiação por subchave. O resultado continua vindo das lutas já operadas."
                 breadcrumb={
                   <Link href={`/admin/eventos/${result.data.event.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
                     <ArrowLeft aria-hidden="true" size={18} />
