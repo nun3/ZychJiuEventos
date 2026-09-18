@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from 'react'
 import { ArrowDown, ArrowUp, Lock, MapPinned, Plus, Send, Unlink } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Alert, Button, Card, Input, Select, StatusBadge } from '@/components/ui'
+import { formatFightDurationLabel } from '@/lib/events/fight-duration'
 import {
   assignGroup,
   publishSchedule,
@@ -202,7 +203,9 @@ export default function ScheduleWorkspace({ data }: { data: SchedulePageData }) 
                 <div key={group.groupId} className="grid gap-mc-12 p-mc-16 md:grid-cols-[1fr_minmax(15rem,20rem)_auto] md:items-center">
                   <div>
                     <p className="font-semibold text-mc-text-primary">{group.category} — Subchave {group.label}</p>
-                    <p className="mt-mc-4 text-sm text-mc-text-secondary">{group.matches.length} {group.matches.length === 1 ? 'luta' : 'lutas'} · {group.topology.replace('_', ' ')}</p>
+                    <p className="mt-mc-4 text-sm text-mc-text-secondary">
+                      {group.matches.length} {group.matches.length === 1 ? 'luta' : 'lutas'} · {group.topology.replace('_', ' ')} · {formatFightDurationLabel(group.durationMinutes) || 'Duração não definida'}
+                    </p>
                   </div>
                   {editable ? (
                     <div>

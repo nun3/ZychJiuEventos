@@ -1,8 +1,11 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { parseFightDurationInput } from '@/lib/events/fight-duration'
 import { createClient } from '@/lib/supabase/server'
 import { zonedLocalToUtc } from '@/lib/timezone'
+
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export type EventActionResult = { ok: boolean; message: string; eventId?: string }
 const failure = (message: string): EventActionResult => ({ ok: false, message })
@@ -155,11 +158,17 @@ export async function createCategoryRuleSet(formData: FormData): Promise<EventAc
   const { data: current } = await supabase.from('category_rule_sets').select('versao').eq('event_id', eventId).order('versao', { ascending: false }).limit(1).maybeSingle()
   const { data: rule, error } = await supabase.from('category_rule_sets').insert({ event_id: eventId, nome, versao: (current?.versao || 0) + 1, ativo: false }).select('id').single()
   if (error || !rule) return failure('Não foi possível criar a versão de categorias.')
+  const duration = parseFightDurationInput(text(formData, 'fight_duration_minutes'))
+  if (!duration.ok) {
+    await supabase.from('category_rule_sets').delete().eq('id', rule.id)
+    return failure('Informe uma duração entre 0,5 e 20 minutos, em passos de 0,5, ou deixe em branco.')
+  }
   const category = {
     rule_set_id: rule.id, nome: text(formData, 'category_name'), idade_min: Number(text(formData, 'idade_min')),
     idade_max: Number(text(formData, 'idade_max')), faixa_min_ordem: Number(text(formData, 'faixa_min')),
     faixa_max_ordem: Number(text(formData, 'faixa_max')), peso_min_kg: Number(text(formData, 'peso_min')),
     peso_max_kg: Number(text(formData, 'peso_max')), genero: text(formData, 'genero'), ordem: 1,
+    fight_duration_minutes: duration.value,
   }
   if (!category.nome || !category.genero || category.idade_max < category.idade_min || category.faixa_max_ordem < category.faixa_min_ordem || category.peso_max_kg < category.peso_min_kg) {
     await supabase.from('category_rule_sets').delete().eq('id', rule.id)
@@ -176,4 +185,47 @@ export async function createCategoryRuleSet(formData: FormData): Promise<EventAc
   revalidatePath(`/admin/eventos/${eventId}/configuracao`)
   revalidatePath(`/eventos/${eventId}`)
   return { ok: true, message: `Versão ${(current?.versao || 0) + 1} criada com sucesso.` }
+}
+
+const durationErrors: Record<string, string> = {
+  'Sessao obrigatoria': 'Sua sessão expirou.',
+  'Categoria obrigatoria': 'Categoria inválida.',
+  'Categoria inexistente': 'A categoria não foi encontrada.',
+  'Duracao da luta invalida': 'Informe uma duração entre 0,5 e 20 minutos, em passos de 0,5, ou deixe em branco.',
+  'Sem permissao para configurar categorias': 'Você não pode configurar a duração deste evento.',
+}
+
+function refreshDuration(eventId: string) {
+  revalidatePath(`/admin/eventos/${eventId}/configuracao`)
+  revalidatePath(`/admin/eventos/${eventId}/chaves`)
+  revalidatePath(`/admin/eventos/${eventId}/programacao`)
+  revalidatePath(`/admin/eventos/${eventId}/resultados`)
+  revalidatePath(`/eventos/${eventId}`)
+  revalidatePath(`/eventos/${eventId}/chaves`)
+  revalidatePath(`/eventos/${eventId}/programacao`)
+}
+
+export async function setEventCategoryDuration(formData: FormData): Promise<EventActionResult> {
+  const eventId = text(formData, 'event_id')
+  const categoryId = text(formData, 'category_id')
+  if (!uuidPattern.test(eventId) || !uuidPattern.test(categoryId)) return failure('Categoria inválida.')
+  const duration = parseFightDurationInput(text(formData, 'duration_minutes'))
+  if (!duration.ok) return failure(durationErrors['Duracao da luta invalida'])
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return failure('Sua sessão expirou.')
+  const { data, error } = await supabase.rpc('set_event_category_duration', {
+    target_category_id: categoryId,
+    duration_minutes: duration.value,
+  })
+  const payload = data && typeof data === 'object' && !Array.isArray(data) ? data : null
+  if (error || !payload || payload.kind !== 'category_duration') {
+    const mapped = error?.message ? durationErrors[error.message] : undefined
+    return failure(mapped || 'Não foi possível salvar a duração da luta.')
+  }
+  refreshDuration(eventId)
+  return {
+    ok: true,
+    message: duration.value == null ? 'Duração removida desta categoria.' : `Duração salva: ${duration.value.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} min.`,
+  }
 }

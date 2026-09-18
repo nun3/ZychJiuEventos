@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Input } from '@/components/ui/Input'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { formatFightDurationLabel } from '@/lib/events/fight-duration'
 import {
   generateCategoryBracket,
   publishCategoryBracket,
@@ -244,6 +245,7 @@ export default function BracketWorkspace({ data }: { data: BracketPageData }) {
           {data.categories.map((category) => {
             const bracket = category.draft || category.published
             const selected = category.id === selectedCategory.id
+            const duration = formatFightDurationLabel(category.durationMinutes)
             return (
               <button
                 key={category.id}
@@ -258,7 +260,7 @@ export default function BracketWorkspace({ data }: { data: BracketPageData }) {
                 }`}
               >
                 <span className="block font-semibold text-mc-text-primary">{category.name}</span>
-                <span className="mt-mc-4 block text-sm text-mc-text-secondary">{category.athleteCount} {category.athleteCount === 1 ? 'atleta' : 'atletas'} · {category.gender}</span>
+                <span className="mt-mc-4 block text-sm text-mc-text-secondary">{category.athleteCount} {category.athleteCount === 1 ? 'atleta' : 'atletas'} · {category.gender}{duration ? ` · ${duration}` : ''}</span>
                 <span className="mt-mc-8 block">{bracketBadge(bracket)}</span>
               </button>
             )
@@ -276,6 +278,7 @@ export default function BracketWorkspace({ data }: { data: BracketPageData }) {
               </div>
               <p className="mt-mc-4 text-sm text-mc-text-secondary">
                 {selectedCategory.athleteCount} {selectedCategory.athleteCount === 1 ? 'atleta efetivado' : 'atletas efetivados'}
+                {` · ${formatFightDurationLabel(selectedCategory.durationMinutes) || 'Duração não definida'}`}
                 {selectedCategory.published && draft ? ` · versão ${selectedCategory.published.version} publicada preservada` : ''}
               </p>
             </div>

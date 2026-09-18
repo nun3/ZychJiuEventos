@@ -6,6 +6,7 @@ import { ArrowLeft, CalendarDays, Clock3, Download, FileText, GitBranch, MapPin,
 import ModernNavbar from '@/components/ModernNavbar'
 import ModernFooter from '@/components/ModernFooter'
 import { Card, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
+import { formatFightDurationLabel, parseFightDurationMinutes } from '@/lib/events/fight-duration'
 import { createClient } from '@/lib/supabase/server'
 
 const publicStatuses = ['publicado', 'inscricao', 'pagamento', 'checagem', 'chaves', 'em_andamento', 'concluido'] as const
@@ -29,7 +30,7 @@ export default async function EventPage({ params }: { params: { id: string } }) 
   if (!event) notFound()
   const [{ data: phases }, { data: rules }] = await Promise.all([
     supabase.from('event_phases').select('id, tipo, inicio, fim').eq('event_id', event.id).order('inicio'),
-    supabase.from('category_rule_sets').select('id, nome, versao, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg)').eq('event_id', event.id).eq('ativo', true).order('versao', { ascending: false }).limit(1),
+    supabase.from('category_rule_sets').select('id, nome, versao, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg, fight_duration_minutes)').eq('event_id', event.id).eq('ativo', true).order('versao', { ascending: false }).limit(1),
   ])
   const date = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${event.data_evento}T12:00:00Z`))
   const dateTime = (value: string) => new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: event.timezone }).format(new Date(value))
@@ -130,12 +131,18 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                     <h2 className="font-mc-display text-mc-h2 text-mc-text-primary">Categorias — versão {rules[0].versao}</h2>
                   </div>
                   <ul className="mt-mc-16 grid gap-mc-12 md:grid-cols-2">
-                    {rules[0].event_categories.map((category) => (
+                    {rules[0].event_categories.map((category) => {
+                      const duration = formatFightDurationLabel(parseFightDurationMinutes(category.fight_duration_minutes), 'long')
+                      return (
                       <li key={category.id} className="rounded-mc-small border border-mc-border bg-mc-surface-secondary p-mc-16">
                         <p className="font-mc-interface text-mc-small font-semibold text-mc-text-primary">{category.nome}</p>
-                        <p className="mt-mc-4 font-mc-interface text-mc-caption text-mc-text-secondary">{category.genero} · {category.idade_min}–{category.idade_max} anos · {category.peso_min_kg}–{category.peso_max_kg} kg</p>
+                        <p className="mt-mc-4 font-mc-interface text-mc-caption text-mc-text-secondary">
+                          {category.genero} · {category.idade_min}–{category.idade_max} anos · {category.peso_min_kg}–{category.peso_max_kg} kg
+                          {duration ? ` · ${duration}` : ''}
+                        </p>
                       </li>
-                    ))}
+                      )
+                    })}
                   </ul>
                 </Card>
               ) : null}

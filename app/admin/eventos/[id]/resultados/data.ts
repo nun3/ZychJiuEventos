@@ -1,6 +1,7 @@
 import 'server-only'
 
 import type { Json } from '@/lib/supabase/database.types'
+import { parseFightDurationMinutes } from '@/lib/events/fight-duration'
 import { createClient } from '@/lib/supabase/server'
 
 export type ResultSide = {
@@ -48,6 +49,7 @@ export type ResultBracket = {
   bracketId: string
   categoryId: string
   category: string
+  durationMinutes: number | null
   version: number
   mode: 'competicao' | 'sem_confronto'
   status: 'publicada' | 'em_andamento' | 'concluida'
@@ -203,6 +205,7 @@ function parseBracket(value: Json): ResultBracket | null {
     bracketId,
     categoryId,
     category,
+    durationMinutes: parseFightDurationMinutes(source.durationMinutes),
     version,
     mode,
     status: status as ResultBracket['status'],

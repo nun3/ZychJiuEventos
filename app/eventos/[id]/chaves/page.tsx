@@ -5,6 +5,7 @@ import ModernFooter from '@/components/ModernFooter'
 import ModernNavbar from '@/components/ModernNavbar'
 import { Alert, Card, EmptyState, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
 import { getPublicEventBrackets, type PublicBracketGroup } from '@/lib/events/public-brackets'
+import { formatFightDurationLabel } from '@/lib/events/fight-duration'
 import { createClient } from '@/lib/supabase/server'
 
 const publicStatuses = ['publicado', 'inscricao', 'pagamento', 'checagem', 'chaves', 'em_andamento', 'concluido'] as const
@@ -134,12 +135,15 @@ export default async function PublicBracketsPage({ params }: { params: { id: str
               Esta página acompanha a composição oficial, o avanço dos vencedores, WO e colocações. A ordem das lutas por área está na programação. Placar por pontos não faz parte desta consulta.
             </Alert>
 
-            {bracketResult.brackets.map((bracket) => (
+            {bracketResult.brackets.map((bracket) => {
+              const duration = formatFightDurationLabel(bracket.durationMinutes, 'long')
+              return (
               <Card key={bracket.category} className="overflow-hidden">
                 <header className="flex flex-col gap-mc-12 border-b border-mc-border bg-mc-surface-secondary p-mc-16 sm:flex-row sm:items-center sm:justify-between sm:p-mc-24">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">Categoria</p>
                     <h2 className="mt-mc-4 break-words font-mc-display text-mc-h2 text-mc-text-primary">{bracket.category}</h2>
+                    {duration ? <p className="mt-mc-8 text-sm font-semibold text-mc-text-primary">{duration}</p> : null}
                   </div>
                   <StatusBadge variant={bracket.status === 'concluida' ? 'success' : bracket.status === 'em_andamento' ? 'info' : 'warning'}>
                     {bracket.status === 'concluida' ? 'Concluída' : bracket.status === 'em_andamento' ? 'Em andamento' : 'Publicada'}
@@ -164,7 +168,8 @@ export default async function PublicBracketsPage({ params }: { params: { id: str
                   </div>
                 )}
               </Card>
-            ))}
+              )
+            })}
           </div>
         )}
       </PageContainer>

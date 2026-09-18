@@ -19,6 +19,7 @@ import {
   StatusBadge,
 } from '@/components/ui'
 import { getPublicEventSchedule, type PublicScheduleMatch } from '@/lib/events/public-schedule'
+import { formatFightDurationLabel } from '@/lib/events/fight-duration'
 import { createClient } from '@/lib/supabase/server'
 
 const publicStatuses = ['publicado', 'inscricao', 'pagamento', 'checagem', 'chaves', 'em_andamento', 'concluido'] as const
@@ -50,6 +51,7 @@ function matchesFilters(match: PublicScheduleMatch, filters: SearchParams) {
 }
 
 function MatchRecord({ match }: { match: PublicScheduleMatch }) {
+  const duration = formatFightDurationLabel(match.durationMinutes, 'long')
   return (
     <MobileRecord aria-label={`Luta ${match.fightNumber}`}>
       <MobileRecordHeader>
@@ -62,7 +64,7 @@ function MatchRecord({ match }: { match: PublicScheduleMatch }) {
         </StatusBadge>
       </MobileRecordHeader>
       <MobileRecordMeta>
-        Área {match.areaNumber} — {match.areaName} · {match.category} · Subchave {match.groupLabel} · {roundLabel(match)}
+        Área {match.areaNumber} — {match.areaName} · {match.category} · Subchave {match.groupLabel} · {roundLabel(match)}{duration ? ` · ${duration}` : ''}
       </MobileRecordMeta>
       <div className="mt-mc-16 grid min-w-0 gap-mc-8 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-start">
         <p className={`break-words font-semibold ${match.winner === match.sideA.name ? 'text-mc-success' : 'text-mc-text-primary'}`}>
@@ -147,7 +149,7 @@ export default async function PublicSchedulePage({
         ) : (
           <div className="mt-mc-24 space-y-mc-24">
             <Alert variant="info" icon={<Info size={20} />} title="Consulta oficial">
-              A fila segue o número global da luta. Filtre por área, categoria ou equipe. A duração da categoria ainda não faz parte desta consulta.
+              A fila segue o número global da luta. Filtre por área, categoria ou equipe. A duração oficial aparece como Tempo quando a organização a configurou.
             </Alert>
 
             <Card className="p-mc-16 sm:p-mc-24">

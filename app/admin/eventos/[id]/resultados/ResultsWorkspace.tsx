@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, Award, CheckCircle2, Flag, Play, Scale, Trophy, Users } from 'lucide-react'
 import { Alert, Button, Card, EmptyState, StatusBadge } from '@/components/ui'
+import { formatFightDurationLabel } from '@/lib/events/fight-duration'
 import {
   confirmGroupAwards,
   confirmGroupWeighIn,
@@ -262,6 +263,7 @@ export default function ResultsWorkspace({ data }: { data: ResultsPageData }) {
                 }`}
               >
                 <span className="block font-semibold text-mc-text-primary">{bracket.category}</span>
+                <span className="mt-mc-4 block text-sm text-mc-text-secondary">{formatFightDurationLabel(bracket.durationMinutes) || 'Duração não definida'}</span>
                 <span className="mt-mc-8 block">{statusBadge(bracket.status)}</span>
               </button>
             )
@@ -277,7 +279,7 @@ export default function ResultsWorkspace({ data }: { data: ResultsPageData }) {
                 <h2 id="selected-result-title" className="font-mc-display text-mc-h2 text-mc-text-primary">{selected.category}</h2>
                 {statusBadge(selected.status)}
               </div>
-              <p className="mt-mc-4 text-sm text-mc-text-secondary">Versão {selected.version}</p>
+              <p className="mt-mc-4 text-sm text-mc-text-secondary">Versão {selected.version} · {formatFightDurationLabel(selected.durationMinutes) || 'Duração não definida'}</p>
             </div>
             {selected.status === 'publicada' && selected.mode === 'competicao' ? (
               <Button

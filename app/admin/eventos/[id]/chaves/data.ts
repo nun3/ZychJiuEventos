@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { parseFightDurationMinutes } from '@/lib/events/fight-duration'
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -62,6 +63,7 @@ export type BracketCategoryView = {
   id: string
   name: string
   gender: string
+  durationMinutes: number | null
   athleteCount: number
   draft: BracketView | null
   published: BracketView | null
@@ -239,7 +241,7 @@ export async function loadBracketPageData(eventId: string): Promise<BracketPageL
 
   const { data: categoryRows, error: categoriesError } = await supabase
     .from('event_categories')
-    .select('id, nome, genero')
+    .select('id, nome, genero, fight_duration_minutes')
     .in('id', categoryIds)
 
   if (categoriesError) return { kind: 'error', message: 'Não foi possível carregar as categorias.' }
@@ -289,6 +291,7 @@ export async function loadBracketPageData(eventId: string): Promise<BracketPageL
         id: category.id,
         name: category.nome,
         gender: category.genero,
+        durationMinutes: parseFightDurationMinutes(category.fight_duration_minutes),
         athleteCount: athleteCountByCategory.get(category.id) || 0,
         draft: draftRow ? bracketViews.get(draftRow.id) || null : null,
         published: publishedRow ? bracketViews.get(publishedRow.id) || null : null,

@@ -2,6 +2,7 @@ import 'server-only'
 
 import { unstable_noStore as noStore } from 'next/cache'
 import type { Json } from '@/lib/supabase/database.types'
+import { parseFightDurationMinutes } from '@/lib/events/fight-duration'
 import { createClient } from '@/lib/supabase/server'
 
 export type PublicBracketSlot = {
@@ -39,6 +40,7 @@ export type PublicBracketGroup = {
 
 export type PublicBracket = {
   category: string
+  durationMinutes: number | null
   mode: 'competicao' | 'sem_confronto'
   status: 'publicada' | 'em_andamento' | 'concluida'
   athlete: { name: string; team: string | null } | null
@@ -138,7 +140,7 @@ function parseBracket(value: Json): PublicBracket | null {
   const athlete = athleteName ? { name: athleteName, team: text(athleteSource?.team) } : null
   const groups = Array.isArray(source.groups) ? source.groups.map(parseGroup).filter((group): group is PublicBracketGroup => Boolean(group)) : []
 
-  return { category, mode, status: status as PublicBracket['status'], athlete, groups }
+  return { category, durationMinutes: parseFightDurationMinutes(source.durationMinutes), mode, status: status as PublicBracket['status'], athlete, groups }
 }
 
 export async function getPublicEventBrackets(eventId: string): Promise<PublicBracketsResult> {

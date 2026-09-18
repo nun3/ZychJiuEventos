@@ -1,6 +1,7 @@
 import 'server-only'
 
 import type { Json } from '@/lib/supabase/database.types'
+import { parseFightDurationMinutes } from '@/lib/events/fight-duration'
 import { createClient } from '@/lib/supabase/server'
 
 export type ScheduleArea = {
@@ -29,6 +30,7 @@ export type ScheduleMatch = {
 export type ScheduleGroup = {
   groupId: string
   category: string
+  durationMinutes: number | null
   label: string
   topology: 'final_2' | 'copo_3' | 'semi_4'
   areaId: string | null
@@ -116,6 +118,7 @@ function parseGroup(value: Json): ScheduleGroup | null {
   return {
     groupId,
     category,
+    durationMinutes: parseFightDurationMinutes(group.durationMinutes),
     label,
     topology: topology as ScheduleGroup['topology'],
     areaId: stringValue(group.areaId),

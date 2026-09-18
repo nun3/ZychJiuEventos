@@ -2,6 +2,7 @@ import 'server-only'
 
 import { unstable_noStore as noStore } from 'next/cache'
 import type { Json } from '@/lib/supabase/database.types'
+import { parseFightDurationMinutes } from '@/lib/events/fight-duration'
 import { createClient } from '@/lib/supabase/server'
 
 export type PublicScheduleSide = {
@@ -15,6 +16,7 @@ export type PublicScheduleMatch = {
   areaNumber: number
   areaName: string
   category: string
+  durationMinutes: number | null
   groupLabel: string
   round: 'semifinal' | 'final'
   order: number
@@ -86,6 +88,7 @@ function parseMatch(value: Json): PublicScheduleMatch | null {
     areaNumber,
     areaName,
     category,
+    durationMinutes: parseFightDurationMinutes(match.durationMinutes),
     groupLabel,
     round,
     order,

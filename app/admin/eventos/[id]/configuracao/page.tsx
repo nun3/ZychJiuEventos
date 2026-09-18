@@ -13,7 +13,9 @@ import {
 import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { formatFightDurationLabel, parseFightDurationMinutes } from '@/lib/events/fight-duration'
 import { createClient } from '@/lib/supabase/server'
+import CategoryDurationEditor from './CategoryDurationEditor'
 import CategoryManager from './CategoryManager'
 
 type CategoryItem = {
@@ -24,20 +26,35 @@ type CategoryItem = {
   idade_max: number
   peso_min_kg: number
   peso_max_kg: number
+  fight_duration_minutes: number | string | null
 }
 
-const categoryColumns: Array<DataTableColumn<CategoryItem>> = [
-  { key: 'name', header: 'Categoria', render: (category) => <span className="font-semibold text-mc-text-primary">{category.nome}</span> },
-  { key: 'gender', header: 'Gênero', render: (category) => category.genero },
-  { key: 'age', header: 'Idade', render: (category) => `${category.idade_min}–${category.idade_max} anos` },
-  { key: 'weight', header: 'Peso', render: (category) => `${category.peso_min_kg}–${category.peso_max_kg} kg` },
-]
+function categoryColumns(eventId: string): Array<DataTableColumn<CategoryItem>> {
+  return [
+    { key: 'name', header: 'Categoria', render: (category) => <span className="font-semibold text-mc-text-primary">{category.nome}</span> },
+    { key: 'gender', header: 'Gênero', render: (category) => category.genero },
+    { key: 'age', header: 'Idade', render: (category) => `${category.idade_min}–${category.idade_max} anos` },
+    { key: 'weight', header: 'Peso', render: (category) => `${category.peso_min_kg}–${category.peso_max_kg} kg` },
+    {
+      key: 'duration',
+      header: 'Duração',
+      render: (category) => (
+        <CategoryDurationEditor
+          key={`${category.id}-${String(category.fight_duration_minutes ?? 'empty')}`}
+          eventId={eventId}
+          categoryId={category.id}
+          durationMinutes={parseFightDurationMinutes(category.fight_duration_minutes)}
+        />
+      ),
+    },
+  ]
+}
 
 export default async function EventConfigurationPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
   const { data: event } = await supabase.from('events').select('id, nome').eq('id', params.id).maybeSingle()
   if (!event) notFound()
-  const { data: ruleSets } = await supabase.from('category_rule_sets').select('id, nome, versao, ativo, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg)').eq('event_id', event.id).order('versao', { ascending: false })
+  const { data: ruleSets } = await supabase.from('category_rule_sets').select('id, nome, versao, ativo, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg, fight_duration_minutes)').eq('event_id', event.id).order('versao', { ascending: false })
   return (
     <div className="-mt-24 min-h-screen bg-mc-background">
       <InternalNavigation />
@@ -45,7 +62,7 @@ export default async function EventConfigurationPage({ params }: { params: { id:
         <PageContainer>
           <PageHeader
             title={`Categorias — ${event.nome}`}
-            description="Configure as regras usadas para determinar a categoria de cada inscrição. Cada inclusão cria uma nova versão imutável."
+            description="Os eixos de categorização continuam imutáveis em cada versão. A duração oficial da luta pode ser preenchida ou alterada depois, sem criar versão nova."
             breadcrumb={<Link href="/admin/eventos" className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline"><ArrowLeft aria-hidden="true" size={18} />Voltar para eventos</Link>}
           />
 
@@ -69,12 +86,22 @@ export default async function EventConfigurationPage({ params }: { params: { id:
                         </div>
                         <StatusBadge variant={rule.ativo ? 'success' : 'neutral'}>{rule.ativo ? 'Ativa' : 'Inativa'}</StatusBadge>
                       </header>
-                      <DataTable rows={rule.event_categories as CategoryItem[]} columns={categoryColumns} getRowKey={(category) => category.id} caption={`Categorias da versão ${rule.versao}`} className="hidden rounded-none border-0 md:block" />
+                      <DataTable rows={rule.event_categories as CategoryItem[]} columns={categoryColumns(event.id)} getRowKey={(category) => category.id} caption={`Categorias da versão ${rule.versao}`} className="hidden rounded-none border-0 md:block" />
                       <div className="space-y-mc-8 p-mc-12 md:hidden">
                         {(rule.event_categories as CategoryItem[]).map((category) => (
                           <MobileRecord key={category.id} className="bg-mc-surface-secondary p-mc-12">
                             <MobileRecordTitle className="text-base leading-5">{category.nome}</MobileRecordTitle>
-                            <MobileRecordMeta className="mt-mc-8">{category.genero} · {category.idade_min}–{category.idade_max} anos · {category.peso_min_kg}–{category.peso_max_kg} kg</MobileRecordMeta>
+                            <MobileRecordMeta className="mt-mc-8">
+                              {category.genero} · {category.idade_min}–{category.idade_max} anos · {category.peso_min_kg}–{category.peso_max_kg} kg · {formatFightDurationLabel(parseFightDurationMinutes(category.fight_duration_minutes)) || 'Duração não definida'}
+                            </MobileRecordMeta>
+                            <div className="mt-mc-12">
+                              <CategoryDurationEditor
+                                key={`${category.id}-${String(category.fight_duration_minutes ?? 'empty')}`}
+                                eventId={event.id}
+                                categoryId={category.id}
+                                durationMinutes={parseFightDurationMinutes(category.fight_duration_minutes)}
+                              />
+                            </div>
                           </MobileRecord>
                         ))}
                       </div>

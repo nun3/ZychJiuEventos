@@ -16,7 +16,7 @@ export default function CategoryManager({ eventId }: { eventId: string }) {
       <input type="hidden" name="event_id" value={eventId} />
       <div className="md:col-span-2">
         <h2 className="font-mc-display text-mc-h2 text-mc-text-primary">Nova versão de categorias</h2>
-        <p className="mt-mc-4 font-mc-interface text-sm text-mc-text-secondary">A criação preserva as versões anteriores do conjunto.</p>
+        <p className="mt-mc-4 font-mc-interface text-sm text-mc-text-secondary">A criação preserva as versões anteriores do conjunto. A duração oficial da luta é operacional e pode ficar em branco.</p>
       </div>
       {message ? <Alert role="status" className="md:col-span-2">{message}</Alert> : null}
       <FormField id="rule-name" label="Nome do conjunto" required><Input name="rule_name" required placeholder="Categorias CBJJ" /></FormField>
@@ -34,6 +34,9 @@ export default function CategoryManager({ eventId }: { eventId: string }) {
         <FormField id="minimum-weight" label="Peso mínimo" required><Input name="peso_min" type="number" min="0" step="0.01" defaultValue="0" required /></FormField>
         <FormField id="maximum-weight" label="Peso máximo" required><Input name="peso_max" type="number" min="0" step="0.01" defaultValue="76" required /></FormField>
       </div>
+      <FormField id="fight-duration" label="Duração da luta (minutos)">
+        <Input name="fight_duration_minutes" type="number" inputMode="decimal" min="0.5" max="20" step="0.5" placeholder="Opcional" />
+      </FormField>
       <Button type="submit" disabled={pending} size="large" className="md:col-span-2">{pending ? 'Criando...' : 'Criar versão'}</Button>
     </form>
   )
