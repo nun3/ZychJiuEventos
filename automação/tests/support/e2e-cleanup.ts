@@ -1,13 +1,14 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import type { BrowserContext } from '@playwright/test';
 import type { Database } from '../../../lib/supabase/database.types';
 
 export const SANDBOX_HOST = 'kfvypacjzlzwwblsbpwj.supabase.co';
 
-const EVENT_PREFIXES = ['Evento E2E ', 'Checkout E2E', 'Checagem E2E'] as const;
-const ATHLETE_PREFIXES = ['Atleta E2E '] as const;
-const TEAM_PREFIXES = ['E2E Equipe '] as const;
+const EVENT_PREFIXES = ['Evento E2E ', 'Checkout E2E', 'Checagem E2E', 'MC-SIM Full Event'] as const;
+const ATHLETE_PREFIXES = ['Atleta E2E ', 'MC-SIM Full Event Atleta'] as const;
+const TEAM_PREFIXES = ['E2E Equipe ', 'MC-SIM Full Event Equipe'] as const;
 const ORG_EXACT = ['Checkout E2E', 'Checagem E2E', 'Operação E2E'] as const;
 
 export type CleanupPlan = {
@@ -85,6 +86,39 @@ export async function resolveOwnerId(actor: SupabaseClient<Database>) {
   const { data, error } = await actor.auth.signInWithPassword({ email, password });
   if (error || !data.user) throw new Error(`Login owner: ${error?.message || 'falhou'}`);
   return data.user.id;
+}
+
+export async function applyOwnerSession(context: BrowserContext, baseURL: string) {
+  const { actor } = await createCleanupClients();
+  await resolveOwnerId(actor);
+  const { data: { session } } = await actor.auth.getSession();
+  if (!session) throw new Error('Sessão owner ausente.');
+  await context.addCookies([{
+    name: `sb-${SANDBOX_HOST.split('.')[0]}-auth-token`,
+    value: JSON.stringify(session),
+    url: baseURL,
+    httpOnly: false,
+    secure: false,
+    sameSite: 'Lax',
+  }]);
+}
+
+export async function deleteEventOperationalGraph(admin: SupabaseClient<Database>, eventIds: string[]) {
+  const ids = unique(eventIds);
+  if (!ids.length) return;
+  await checked('cleanup schedules', admin.from('event_schedules').delete().in('event_id', ids));
+  const { data: brackets, error: bracketError } = await admin.from('category_brackets').select('id').in('event_id', ids);
+  if (bracketError) throw new Error(`cleanup brackets lookup: ${bracketError.message}`);
+  const bracketIds = (brackets || []).map((row) => row.id);
+  if (!bracketIds.length) return;
+  const { data: groups, error: groupError } = await admin.from('bracket_groups').select('id').in('bracket_id', bracketIds);
+  if (groupError) throw new Error(`cleanup groups lookup: ${groupError.message}`);
+  const groupIds = (groups || []).map((row) => row.id);
+  if (groupIds.length) await checked('cleanup matches', admin.from('bracket_matches').delete().in('group_id', groupIds));
+  await checked('cleanup entries', admin.from('bracket_entries').delete().in('bracket_id', bracketIds));
+  if (groupIds.length) await checked('cleanup groups', admin.from('bracket_groups').delete().in('id', groupIds));
+  await checked('cleanup participants', admin.from('bracket_participants').delete().in('bracket_id', bracketIds));
+  await checked('cleanup brackets', admin.from('category_brackets').delete().in('id', bracketIds));
 }
 
 export async function buildCleanupPlan(admin: SupabaseClient<Database>, ownerUserId: string): Promise<CleanupPlan> {
@@ -391,6 +425,7 @@ export async function executeCleanup(admin: SupabaseClient<Database>, plan: Clea
   const teamIds = plan.teams.map((team) => team.id);
   const orgIds = plan.disposableOrgs.map((org) => org.id);
 
+  await deleteEventOperationalGraph(admin, eventIds);
   if (plan.changeRequestIds.length) await checked('change requests', admin.from('category_change_requests').delete().in('id', plan.changeRequestIds));
   if (plan.auditLogIds.length) await checked('audit', admin.from('event_audit_logs').delete().in('id', plan.auditLogIds));
   if (plan.registrations.length) await checked('payment_registrations', admin.from('payment_registrations').delete().in('registration_id', plan.registrations));

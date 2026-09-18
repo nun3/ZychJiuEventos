@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprint 11 concluida no recorte de duracao oficial da luta por categoria em 2026-09-18. Sprints 8, 9 e 10 permanecem congeladas. Transicoes administrativas inscricao→pagamento, checagem travada→chaves e em_andamento→concluido expostas pela UI em 2026-09-18. Nao iniciar Full Event Playwright nem preparacao para producao.
+Sprint 11 concluida no recorte de duracao oficial da luta por categoria em 2026-09-18. Sprints 8, 9 e 10 permanecem congeladas. Transicoes administrativas inscricao→pagamento, checagem travada→chaves e em_andamento→concluido expostas pela UI em 2026-09-18. Full Event E2E canonico aprovado em 2026-09-18 (`npm run mc-sim:full-event`, runId 26c05fa5, residualCount 0). Nao iniciar relatorio financeiro nem preparacao para producao.
 
 ## 5. Backlog ordenado por sprints
 
@@ -801,5 +801,14 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - entregas verificadas: acoes administrativas `inscricao → pagamento`, `checagem travada → chaves` e `em_andamento → concluido`, com bloqueio de estado invalido, permissao owner/organizer e exigencia de lock para chaves;
 - testes: Playwright MCP na UI real (desktop e 390 px); `npm run test:transitions` em `automacao/`; TypeScript, lint e build;
 - decisoes: reutilizar `transitionEvent` e o trigger existente; lock e guarda de aplicacao, nao geracao automatica de chaves; concluir nao gera relatorio financeiro;
-- divida tecnica aceita: relatorio financeiro PRD, criar organizacao pela UI e Full Event E2E unico;
-- proxima etapa: Full Event Playwright permanece bloqueado so pelo relatorio financeiro e pela autenticacao headless; a jornada esportiva passou a ser navegavel.
+- divida tecnica aceita: relatorio financeiro PRD e criar organizacao pela UI;
+- proxima etapa: Full Event E2E canonico passou a ser o marco seguinte, sem reabrir as Sprints 8 a 11.
+
+### 2026-09-18 — Full Event E2E canonico
+
+- data de conclusao: 2026-09-18;
+- entregas verificadas: jornada esportiva unica de criacao do evento ate `concluido`, com baixa manual (sem Asaas), checagem travada, chaves `final_2`/`copo_3`/`semi_4`, programacao com duas areas, pesagem, resultado normal, WO distinto de bye, premiação apos resultado e cleanup com residualCount 0;
+- testes: `BASE_URL=http://localhost:3102 npm run mc-sim:full-event` em `automacao/`; runId `26c05fa5`; duracao 211475 ms; 28 etapas; cookie Supabase ja aprovado;
+- decisoes: massa propria `MC-SIM Full Event — <runId>` na organizacao primaria do owner; categorias auxiliares no mesmo rule set porque a UI cria uma categoria por versao; realocacao omitida para nao destruir as topologias; janelas de fase avancadas com o padrao ja usado no runbook MC-SIM;
+- divida tecnica aceita: relatorio financeiro PRD, criar organizacao pela UI, professor operacional, pesagem individual, placar, horario automatico e chamada ao vivo;
+- proxima etapa: nao iniciar relatorio financeiro nem preparacao para producao.
