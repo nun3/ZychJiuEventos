@@ -582,7 +582,7 @@ Automacao: os smokes transacionais cobrem DRAFT, autorizacao, invariantes, versi
 
 ### Sprint 9 - Areas/tatames e programacao
 
-- Status: em andamento; contrato do Lote 1 aprovado e nenhuma migration aplicada ainda.
+- Status: Lote 1 concluido e validado no Sandbox em 2026-09-18.
 - Dependencias atendidas: Sprint 8 concluida e benchmark operacional incorporado em `docs/benchmark-operacional.md`.
 - Objetivo: organizar as lutas oficiais por numero global do evento e area operacional.
 - Evidencias confirmadas:
@@ -596,12 +596,19 @@ Automacao: os smokes transacionais cobrem DRAFT, autorizacao, invariantes, versi
   - numero global de luta, recalculavel no DRAFT;
   - numeracao congelada depois da publicacao ou inicio;
   - WO, resultado, cancelamento e ausencia preservam numero e lacuna historica.
-- Primeiro lote:
+- Lote 1 entregue:
   - entidade de area por evento;
-  - atribuicao de numero global e area para cada confronto oficial;
+  - area vinculada ao grupo/subchave e numero global para cada confronto oficial;
   - fila por area derivada da numeracao global;
-  - operacoes transacionais, RLS, auditoria e smoke SQL;
+  - DRAFT com reordenacao atomica e publicacao/congelamento;
+  - preservacao historica depois de resultado e WO;
+  - operacoes transacionais, RLS, auditoria e smoke SQL aprovado;
   - visao administrativa server-side e mobile.
+- Validacao:
+  - migration principal e duas correcoes incrementais aplicadas no Sandbox;
+  - smoke SQL transacional aprovado;
+  - smoke autenticado aprovado para area, atribuicao integral da subchave, numeracao global, reordenacao, movimentacao, publicacao, congelamento, RLS/RPC, auditoria e viewport de 390 px;
+  - TypeScript e build de producao aprovados.
 - Fora do lote: pesagem, premiacao, placar, horario calculado e visao por equipe/professor.
 
 ### Marco posterior sem numero definido - Financeiro e encerramento
