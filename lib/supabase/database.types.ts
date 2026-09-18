@@ -1347,6 +1347,14 @@ export type Database = {
         Returns: undefined
       }
       belt_order: { Args: { athlete_belt: string }; Returns: number }
+      bracket_entry_to_json: {
+        Args: { include_internal_id?: boolean; target_entry_id: string }
+        Returns: Json
+      }
+      bracket_group_placements_to_json: {
+        Args: { include_internal_ids?: boolean; target_group_id: string }
+        Returns: Json
+      }
       bracket_has_results: {
         Args: { target_bracket_id: string }
         Returns: boolean
@@ -1354,6 +1362,10 @@ export type Database = {
       bracket_partition_sizes: {
         Args: { athlete_count: number }
         Returns: number[]
+      }
+      bracket_resolve_match_side: {
+        Args: { target_match_id: string; target_side: string }
+        Returns: string
       }
       bracket_same_team_warnings: {
         Args: { target_bracket_id: string }
@@ -1401,6 +1413,10 @@ export type Database = {
       category_bracket_lock: {
         Args: { target_category_id: string; target_event_id: string }
         Returns: undefined
+      }
+      category_bracket_operation_to_json: {
+        Args: { target_bracket_id: string }
+        Returns: Json
       }
       category_bracket_require_staff: {
         Args: { target_event: Database["public"]["Tables"]["events"]["Row"] }
@@ -1502,6 +1518,10 @@ export type Database = {
         Args: { target_category_id: string; target_event_id: string }
         Returns: Json
       }
+      get_category_bracket_operation: {
+        Args: { target_bracket_id: string }
+        Returns: Json
+      }
       get_public_event_brackets: {
         Args: { target_event_id: string }
         Returns: Json
@@ -1543,8 +1563,20 @@ export type Database = {
         Args: { target_event_id: string }
         Returns: Json
       }
+      public_category_bracket_to_json: {
+        Args: { target_bracket_id: string }
+        Returns: Json
+      }
       publish_category_bracket: {
         Args: { target_bracket_id: string }
+        Returns: Json
+      }
+      record_bracket_match_outcome: {
+        Args: {
+          outcome: Database["public"]["Enums"]["match_status"]
+          target_match_id: string
+          target_winner_entry_id: string
+        }
         Returns: Json
       }
       regenerate_category_bracket: {
@@ -1598,6 +1630,10 @@ export type Database = {
       }
       settle_payment_manually: {
         Args: { reason_text: string; target_payment_id: string }
+        Returns: Json
+      }
+      start_category_bracket: {
+        Args: { target_bracket_id: string }
         Returns: Json
       }
       update_managed_athlete: {
