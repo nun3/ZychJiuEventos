@@ -62,7 +62,7 @@ export function operationalProfessorFixture() {
         email,
         password,
         email_confirm: true,
-        user_metadata: { nome_completo: managerName, tipo_cadastro: 'professor' },
+        user_metadata: { nome_completo: managerName, tipo_cadastro: 'professor', data_nascimento: '1990-01-01' },
       });
       if (created.error || !created.data.user) throw new Error(`Criação do gestor: ${created.error?.message || 'sem usuário'}`);
       professorId = created.data.user.id;

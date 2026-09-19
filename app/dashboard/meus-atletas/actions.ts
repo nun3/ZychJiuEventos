@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { isAdministrativeOrganizationRole } from '@/lib/auth/organization-context'
 import { getAuthenticatedOrganizationContext } from '@/lib/auth/organization-context-server'
 import { allowsPublicOrganization, getPublicOrganizationScope } from '@/lib/events/public-organization'
+import { parseSignupRole } from '@/lib/auth/signup-role'
 import { createClient } from '@/lib/supabase/server'
 
 export type AthleteActionResult = { ok: boolean; message: string }
@@ -17,6 +18,9 @@ export async function createTeam(formData: FormData): Promise<AthleteActionResul
   const supabase = createClient()
   const { data: authData } = await supabase.auth.getUser()
   if (!authData.user) return failure('Sua sessão expirou. Entre novamente.')
+  if (parseSignupRole(authData.user.user_metadata?.tipo_cadastro) === 'atleta') {
+    return failure('Atleta independente seleciona uma equipe já existente. Não cria equipe.')
+  }
 
   const scope = getPublicOrganizationScope()
   if (scope.mode === 'blocked') return failure('O contexto da organização está indisponível.')
@@ -58,6 +62,11 @@ export async function createManagedAthlete(formData: FormData): Promise<AthleteA
   }
 
   const supabase = createClient()
+  const { data: authData } = await supabase.auth.getUser()
+  if (!authData.user) return failure('Sua sessão expirou. Entre novamente.')
+  if (parseSignupRole(authData.user.user_metadata?.tipo_cadastro) === 'atleta') {
+    return failure('Atleta independente conclui o próprio cadastro esportivo. Não cadastra outros atletas por aqui.')
+  }
   const { data: team } = await supabase.from('teams').select('organization_id').eq('id', teamId).maybeSingle()
   if (!team || !allowsPublicOrganization(team.organization_id)) {
     return failure('A equipe não pertence à organização ativa.')

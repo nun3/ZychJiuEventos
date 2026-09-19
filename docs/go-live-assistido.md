@@ -108,4 +108,4 @@ Com `PUBLIC_ORGANIZATION_ID` definido, home, `/eventos` e URLs públicas do even
 
 ## 7. Fora deste recorte
 
-Onboarding self-service, convite de membros, atleta independente, console admin, Asaas Live, exportação, benchmark de tatame (placar, cronômetro, chamada, horário automático, pesagem individual).
+Onboarding self-service, convite de membros, console admin, Asaas Live, exportação, benchmark de tatame (placar, cronômetro, chamada, horário automático, pesagem individual). Atleta independente e enforcement de maioridade no cadastro público saíram deste recorte em 2026-09-19.

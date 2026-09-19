@@ -930,3 +930,12 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - decisoes: nao alterar dominio; nao iniciar producao; marcar so o que tem evidencia; preservar historico das sprints;
 - divida tecnica aceita: onboarding de organizacao, membros, atleta independente, regra de menor, correcao auditada de dados, Asaas producao, observabilidade e prototipos com `localStorage`;
 - proxima etapa: recorte de go-live. Nao iniciar lote operacional novo nem preparacao para producao.
+
+### 2026-09-19 — Lote atleta independente / menor
+
+- data: 2026-09-19;
+- entregas verificadas: cadastro publico com maioridade no servidor, menor sem login, atleta independente completa cadastro esportivo em equipe ja existente da organizacao ativa (`create_self_athlete`) e reutiliza a inscricao propria;
+- testes: unit `adult-birth-date`; smoke SQL `self_athlete_smoke.sql`; TypeScript/build;
+- decisoes: nao criar equipe nem "Sem equipe"; nao nascer `athletes` no signUp; nao alterar Sprint 7, PIX/boleto, onboarding nem convites;
+- divida tecnica aceita: onboarding de organizacao, membros, correcao auditada de dados alem da categoria, Asaas producao, observabilidade;
+- proxima etapa: aplicar a migration no Sandbox (e depois Production). PIX/boleto permanece bloqueado. Nao criar evento real neste lote.

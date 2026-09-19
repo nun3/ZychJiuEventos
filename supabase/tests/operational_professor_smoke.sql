@@ -25,9 +25,9 @@ declare
 begin
   insert into auth.users(id, email, raw_user_meta_data)
     values
-      (owner, owner::text || '@example.invalid', jsonb_build_object('nome_completo', 'Owner smoke', 'tipo_cadastro', 'organizador')),
-      (professor, professor::text || '@example.invalid', jsonb_build_object('nome_completo', 'Professor cadastral smoke', 'tipo_cadastro', 'professor')),
-      (stranger, stranger::text || '@example.invalid', jsonb_build_object('nome_completo', 'Estranho smoke', 'tipo_cadastro', 'atleta'));
+      (owner, owner::text || '@example.invalid', jsonb_build_object('nome_completo', 'Owner smoke', 'tipo_cadastro', 'organizador', 'data_nascimento', '1990-01-01')),
+      (professor, professor::text || '@example.invalid', jsonb_build_object('nome_completo', 'Professor cadastral smoke', 'tipo_cadastro', 'professor', 'data_nascimento', '1990-01-01')),
+      (stranger, stranger::text || '@example.invalid', jsonb_build_object('nome_completo', 'Estranho smoke', 'tipo_cadastro', 'atleta', 'data_nascimento', '1990-01-01'));
   insert into public.organizations(id, nome, slug, created_by)
     values (org, 'Org operacional smoke', org::text, owner);
   insert into public.organization_members(organization_id, user_id, role)

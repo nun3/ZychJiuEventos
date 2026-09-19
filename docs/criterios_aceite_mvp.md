@@ -14,7 +14,7 @@ Notas:
 
 - Cadastro, login, logout e recuperação foram integrados ao Supabase Auth na Sprint 2. `login.feature` cobre navegação, credencial inválida, abertura do cadastro e link expirado. Recuperação com conta real de teste foi registrada no checkpoint de 2026-09-03.
 - Acúmulo de papéis: `tipo_cadastro`, `organization_members` e `athlete_managers` coexistentes. Não há UI de convite ou gestão de membros.
-- Responsável acessa menores via `athlete_managers.relationship_type = responsavel` (`athletes.feature`). A regra “menor não cria conta própria” ainda não é enforced no cadastro público.
+- Responsável acessa menores via `athlete_managers.relationship_type = responsavel` (`athletes.feature`). Conta pública exige data de nascimento e 18 anos ou mais (`registerPublicAccount`, trigger `handle_new_auth_user`). Menor não cria login; é cadastrado por Professor ou Responsável em Meus Atletas.
 - Isolamento: RLS + smoke SQL da Sprint 1 (duas organizações) + `authorization.feature` (visitante e usuário sem vínculo). Não há feature Playwright dedicada a duas organizações.
 
 ## Meus Atletas
@@ -40,7 +40,7 @@ Evidência: `events.feature`; `event-status-transitions.feature` (página públi
 
 ## Inscrição
 
-- [ ] Atleta maior pode fazer a própria inscrição.
+- [x] Atleta maior pode fazer a própria inscrição.
 - [x] Professor/responsável pode selecionar múltiplos atletas gerenciados.
 - [x] Sistema bloqueia inscrição fora da fase de inscrição.
 - [x] Sistema calcula idade pela data completa na data do evento.
@@ -49,7 +49,7 @@ Evidência: `events.feature`; `event-status-transitions.feature` (página públi
 - [x] Inscricao confirmada preserva snapshot dos dados esportivos, categoria, preco, regras e termos aceitos.
 - [x] Não é possível duplicar inscrição ativa do mesmo atleta no evento.
 
-Gap explícito: inscrição própria do atleta maior. O cadastro `atleta` cria conta e perfil; não cria registro em `athletes` nem fluxo de autoinscrição. `athletes.user_id` existe para vínculo posterior. O fluxo comprovado é professor/responsável (`registrations.feature`, Full Event).
+Gap fechado em 2026-09-19: atleta independente cria só a conta; depois conclui o cadastro esportivo em `/dashboard/completar-cadastro-esportivo` (`create_self_athlete`) escolhendo equipe já existente da organização ativa. Com `athletes.user_id`, a inscrição própria reutiliza `/eventos/[id]/inscricao/cadastrar-atleta`. Menor continua só via Professor/Responsável.
 
 ## Checagem e categoria
 
@@ -95,8 +95,6 @@ Ainda não entregues, e portanto não marcadas acima:
 
 - onboarding self-service de organização;
 - gestão/convite de membros na UI;
-- atleta independente completo (autoinscrição);
-- enforcement da regra de menor sem login próprio;
 - solicitação auditada de correção de dados além da categoria;
 - indicadores do PRD §8;
 - console platform admin;

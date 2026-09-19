@@ -57,17 +57,18 @@ Then('o botão {string} deve estar disponível', async ({ page }, label: string)
 });
 
 When('seleciona a opção de cadastro {string}', async ({ page }, profile: string) => {
-  await page.getByRole('button', { name: new RegExp(`${profile}.*Cadastro`, 'i') }).click();
+  await page.getByRole('button', { name: new RegExp(`^${profile}\\b`, 'i') }).click();
 });
 
-Then('o modal {string} deve ser exibido', async ({ page }, title: string) => {
-  await expect(page.getByRole('heading', { name: title })).toBeVisible();
+Then('o formulário de criar conta deve pedir nome, e-mail, senha e data de nascimento', async ({ page }) => {
+  await expect(page.getByLabel('Nome completo')).toBeVisible();
+  await expect(page.getByLabel('Data de nascimento')).toBeVisible();
+  await expect(page.getByLabel('E-mail')).toBeVisible();
+  await expect(page.getByLabel('Senha', { exact: true })).toBeVisible();
 });
 
-Then('as etapas {string}, {string}, {string} e {string} devem estar disponíveis', async ({ page }, ...steps: string[]) => {
-  for (const step of steps) {
-    await expect(page.getByRole('button', { name: step, exact: true })).toBeVisible();
-  }
+Then('a orientação de que menor é cadastrado por Professor ou Responsável deve ser exibida', async ({ page }) => {
+  await expect(page.getByText(/Menor de idade é cadastrado por Professor ou Responsável/i)).toBeVisible();
 });
 
 Given('o usuário acessa um link de recuperação expirado', async ({ page }) => {

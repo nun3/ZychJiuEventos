@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { adultBirthDateMessages, evaluateAdultBirthDate } from '@/lib/auth/adult-birth-date'
 import { createClient } from '@/lib/supabase/server'
 
 export type ProfileActionResult = { ok: boolean; message: string }
@@ -15,14 +16,17 @@ export async function updateMyProfile(formData: FormData): Promise<ProfileAction
   const dataNascimento = String(formData.get('data_nascimento') || '').trim()
 
   if (nome.length < 3) return { ok: false, message: 'Informe o nome completo.' }
-  if (dataNascimento && !/^\d{4}-\d{2}-\d{2}$/.test(dataNascimento)) {
-    return { ok: false, message: 'Data de nascimento inválida.' }
+  if (!dataNascimento) return { ok: false, message: adultBirthDateMessages.missing }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dataNascimento)) {
+    return { ok: false, message: adultBirthDateMessages.invalid }
   }
+  const birth = evaluateAdultBirthDate(dataNascimento)
+  if (!birth.ok) return { ok: false, message: adultBirthDateMessages[birth.code] }
 
   const { error } = await supabase.from('profiles').update({
     nome_completo: nome,
     telefone: telefone || null,
-    data_nascimento: dataNascimento || null,
+    data_nascimento: birth.iso,
   }).eq('id', user.id)
 
   if (error) return { ok: false, message: 'Não foi possível salvar os dados. Tente novamente.' }

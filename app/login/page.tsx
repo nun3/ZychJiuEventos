@@ -1,7 +1,6 @@
 'use client'
 
 import { Suspense, useEffect, useState, type FormEvent } from 'react'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { ArrowRight, Briefcase, GraduationCap, ShieldCheck, User, Users } from 'lucide-react'
@@ -14,8 +13,7 @@ import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { createClient } from '@/lib/supabase/client'
-
-const NewAthleteModal = dynamic(() => import('@/components/Modals/NewAthleteModal'))
+import SignupAccountForm from './SignupAccountForm'
 
 const loginTabs = [
   { id: 'login', label: 'Entrar' },
@@ -50,7 +48,6 @@ function LoginPageContent() {
 
   const [mode, setMode] = useState<AuthMode>(initialMode)
   const [selectedRegisterType, setSelectedRegisterType] = useState<SignupRole | null>(null)
-  const [isNewAthleteModalOpen, setIsNewAthleteModalOpen] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'error' | 'success'; message: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [hydrated, setHydrated] = useState(false)
@@ -81,37 +78,9 @@ function LoginPageContent() {
     window.location.assign(redirectTo)
   }
 
-  const handleModalSubmit = async (data: any) => {
-    setFeedback(null)
-    if (data.senha !== data.confirmarSenha) {
-      setFeedback({ type: 'error', message: 'As senhas informadas não coincidem.' })
-      return
-    }
-
-    const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
-      email: String(data.email || '').trim(),
-      password: String(data.senha || ''),
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?redirectTo=/dashboard`,
-        data: { nome_completo: data.nomeCompleto, tipo_cadastro: selectedRegisterType },
-      },
-    })
-
-    if (error) {
-      setFeedback({ type: 'error', message: error.message })
-      return
-    }
-
-    setIsNewAthleteModalOpen(false)
-    setSelectedRegisterType(null)
-    setMode('login')
-    setFeedback({ type: 'success', message: 'Cadastro recebido. Verifique seu e-mail para confirmar a conta.' })
-  }
-
   const openRegistration = (registerType: SignupRole) => {
     setSelectedRegisterType(registerType)
-    setIsNewAthleteModalOpen(true)
+    setFeedback(null)
   }
 
   const content = modeContent[mode]
@@ -142,6 +111,7 @@ function LoginPageContent() {
                     onClick={() => {
                       setMode(tab.id)
                       setFeedback(null)
+                      if (tab.id !== 'register') setSelectedRegisterType(null)
                     }}
                     aria-current={mode === tab.id ? 'page' : undefined}
                     className={`min-h-12 border-b-2 px-mc-8 pb-mc-12 font-mc-interface text-xs font-semibold transition-colors duration-mc-normal sm:text-sm ${
@@ -192,29 +162,35 @@ function LoginPageContent() {
 
               {mode === 'register' ? (
                 <div className="mt-mc-32">
-                  <p className="font-mc-interface text-sm leading-6 text-mc-text-secondary">Selecione o tipo de cadastro:</p>
-                  <div className="mt-mc-16 divide-y divide-mc-border border-y border-mc-border">
-                    <button type="button" onClick={() => openRegistration('atleta')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><User aria-hidden="true" size={21} /></span>
-                      <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Atleta</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para participar de eventos e competições.</span></span>
-                      <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
-                    </button>
-                    <button type="button" onClick={() => openRegistration('professor')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><GraduationCap aria-hidden="true" size={21} /></span>
-                      <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Professor</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para gerenciar equipe e inscrever atletas vinculados.</span></span>
-                      <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
-                    </button>
-                    <button type="button" onClick={() => openRegistration('organizador')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><Briefcase aria-hidden="true" size={21} /></span>
-                      <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Organizador</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para criar e gerenciar eventos.</span></span>
-                      <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
-                    </button>
-                    <button type="button" onClick={() => openRegistration('responsavel')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><Users aria-hidden="true" size={21} /></span>
-                      <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Responsável</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para inscrever atletas menores de idade.</span></span>
-                      <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
-                    </button>
-                  </div>
+                  {selectedRegisterType ? (
+                    <SignupAccountForm role={selectedRegisterType} onBack={() => setSelectedRegisterType(null)} />
+                  ) : (
+                    <>
+                      <p className="font-mc-interface text-sm leading-6 text-mc-text-secondary">Selecione o tipo de cadastro. Somente maiores de 18 anos criam login.</p>
+                      <div className="mt-mc-16 divide-y divide-mc-border border-y border-mc-border">
+                        <button type="button" onClick={() => openRegistration('atleta')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><User aria-hidden="true" size={21} /></span>
+                          <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Atleta</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para participar de eventos e competições.</span></span>
+                          <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
+                        </button>
+                        <button type="button" onClick={() => openRegistration('professor')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><GraduationCap aria-hidden="true" size={21} /></span>
+                          <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Professor</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para gerenciar equipe e inscrever atletas vinculados, inclusive menores.</span></span>
+                          <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
+                        </button>
+                        <button type="button" onClick={() => openRegistration('organizador')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><Briefcase aria-hidden="true" size={21} /></span>
+                          <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Organizador</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para criar e gerenciar eventos.</span></span>
+                          <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
+                        </button>
+                        <button type="button" onClick={() => openRegistration('responsavel')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><Users aria-hidden="true" size={21} /></span>
+                          <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Responsável</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para cadastrar e inscrever atletas menores de idade.</span></span>
+                          <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : null}
 
@@ -237,20 +213,6 @@ function LoginPageContent() {
           </div>
         </PageContainer>
       </section>
-
-      {isNewAthleteModalOpen ? (
-        <NewAthleteModal
-          open={isNewAthleteModalOpen}
-          onClose={() => {
-            setIsNewAthleteModalOpen(false)
-            setSelectedRegisterType(null)
-          }}
-          onSubmit={handleModalSubmit}
-          mode="create"
-          showPasswordFields={true}
-          registerType={selectedRegisterType || 'atleta'}
-        />
-      ) : null}
 
       <ModernFooter />
     </main>

@@ -4,6 +4,7 @@ import { CalendarDays, ClipboardList, Lock, Mail, Shield, UserRound, UsersRound 
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 import { getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
+import { Alert } from '@/components/ui/Alert'
 import { Card } from '@/components/ui/Card'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -65,6 +66,13 @@ export default async function MeuPerfilPage() {
           title="Meu perfil"
           description="Veja quem você é na plataforma, o que pode alterar e como acessar atletas, inscrições e segurança da conta."
         />
+
+        {actor?.needsSportsProfile ? (
+          <Alert variant="warning" role="status" className="mt-mc-24">
+            Seu cadastro esportivo ainda não está completo.{' '}
+            <Link href="/dashboard/completar-cadastro-esportivo" className="font-semibold text-mc-action hover:underline">Completar cadastro esportivo</Link>
+          </Alert>
+        ) : null}
 
         <section aria-labelledby="profile-identity-title" className="mt-mc-32">
           <Card className="overflow-hidden">

@@ -42,8 +42,8 @@ export default function ProfileForm({
         <FormField id="profile-phone" label="Telefone" description="Usado para contato operacional da conta.">
           <Input name="telefone" type="tel" defaultValue={telefone} autoComplete="tel" placeholder="(00) 00000-0000" />
         </FormField>
-        <FormField id="profile-birth" label="Data de nascimento">
-          <Input name="data_nascimento" type="date" defaultValue={dataNascimento} autoComplete="bday" max={new Date().toISOString().slice(0, 10)} />
+        <FormField id="profile-birth" label="Data de nascimento" required description="Obrigatória. Contas públicas são somente para maiores de 18 anos.">
+          <Input name="data_nascimento" type="date" required defaultValue={dataNascimento} autoComplete="bday" max={new Date().toISOString().slice(0, 10)} />
         </FormField>
       </div>
       <Button type="submit" disabled={isPending}>{isPending ? 'Salvando...' : 'Salvar alterações'}</Button>

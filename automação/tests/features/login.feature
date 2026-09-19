@@ -32,8 +32,8 @@ Feature: Fluxo de autenticação do portal Meu Camp
     Given o usuário está na tela de login
     When seleciona a aba "Criar conta"
     And seleciona a opção de cadastro "Atleta"
-    Then o modal "Cadastrar Novo Atleta" deve ser exibido
-    And as etapas "Dados Básicos", "Endereço", "Esporte" e "Responsável" devem estar disponíveis
+    Then o formulário de criar conta deve pedir nome, e-mail, senha e data de nascimento
+    And a orientação de que menor é cadastrado por Professor ou Responsável deve ser exibida
 
   @smoke @P0 @negative
   Scenario: tratar link de recuperação expirado

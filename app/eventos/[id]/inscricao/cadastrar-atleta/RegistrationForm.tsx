@@ -59,8 +59,13 @@ export default function RegistrationForm({ event, athletes, categories, register
           <EmptyState
             icon={<UsersRound size={34} />}
             title="Nenhum atleta gerenciado"
-            description="Cadastre um atleta antes de iniciar a inscrição."
-            action={<Link href="/dashboard/meus-atletas" className="font-mc-interface font-semibold text-mc-action hover:underline">Cadastrar atleta</Link>}
+            description="Cadastre um atleta gerenciado ou, se você for o atleta, complete o cadastro esportivo antes de se inscrever."
+            action={(
+              <span className="flex flex-col gap-mc-8 sm:flex-row sm:gap-mc-16">
+                <Link href="/dashboard/completar-cadastro-esportivo" className="font-mc-interface font-semibold text-mc-action hover:underline">Completar cadastro esportivo</Link>
+                <Link href="/dashboard/meus-atletas" className="font-mc-interface font-semibold text-mc-action hover:underline">Cadastrar atleta gerenciado</Link>
+              </span>
+            )}
             className="rounded-mc-medium border border-mc-border bg-mc-surface"
           />
         ) : (

@@ -15,6 +15,7 @@ import {
 import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge, type StatusBadgeProps } from '@/components/ui/StatusBadge'
+import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 import { createClient } from '@/lib/supabase/server'
 import { allowsPublicOrganization, getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { isPaymentsManualOnly } from '@/lib/payments/manual-only'
@@ -52,6 +53,10 @@ export default async function RegistrationsPage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login?redirectTo=%2Fdashboard%2Finscricoes')
+  const actor = await getDashboardActor()
+  if (actor?.needsSportsProfile) {
+    redirect('/dashboard/completar-cadastro-esportivo?redirectTo=%2Fdashboard%2Finscricoes')
+  }
   const [own, managed] = await Promise.all([
     supabase.from('athletes').select('id').eq('user_id', user.id),
     supabase.from('athlete_managers').select('athlete_id').eq('manager_id', user.id),

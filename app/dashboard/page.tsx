@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { ArrowRight, CalendarDays, ClipboardList, MapPin, Plus, UsersRound } from 'lucide-react'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 import { getPublicOrganizationScope } from '@/lib/events/public-organization'
@@ -25,8 +26,18 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
   }
   const isProfessor = Boolean(actor?.isProfessor)
   const canManageEvents = Boolean(actor?.canManageEvents)
+  const hasSelfAthlete = Boolean(actor?.hasSelfAthlete)
+  if (actor?.needsSportsProfile) {
+    redirect('/dashboard/completar-cadastro-esportivo')
+  }
 
   const operationalLinks = [
+    hasSelfAthlete ? {
+      href: '/eventos',
+      title: 'Fazer minha inscrição',
+      description: 'Cadastro esportivo concluído. Escolha um evento publicado para se inscrever.',
+      icon: CalendarDays,
+    } : null,
     canManageEvents ? {
       href: '/admin/eventos',
       title: 'Gerenciar eventos',
@@ -58,7 +69,9 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
             ? `${actor?.organization?.organizationName ? `${actor.organization.organizationName} · ` : ''}${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Você administra eventos. Daqui sai para atletas, inscrições e a operação do campeonato.`
             : isProfessor
               ? `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Gerencie sua equipe, inscreva atletas e acompanhe a checagem pública.`
-              : `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Acompanhe seus atletas, inscrições e os eventos publicados.`}
+              : hasSelfAthlete
+                ? `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Cadastro esportivo concluído. Você já pode fazer a própria inscrição nos eventos publicados.`
+                : `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Acompanhe seus atletas, inscrições e os eventos publicados.`}
           actions={canManageEvents ? (
             <Link
               href="/admin/eventos/novo"
@@ -66,6 +79,13 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
             >
               <Plus aria-hidden="true" size={18} />
               Novo evento
+            </Link>
+          ) : hasSelfAthlete ? (
+            <Link
+              href="/eventos"
+              className="inline-flex min-h-11 items-center justify-center gap-mc-8 rounded-mc-medium bg-mc-action px-mc-16 font-mc-interface text-sm font-semibold text-white transition-colors duration-mc-normal hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2"
+            >
+              Fazer minha inscrição
             </Link>
           ) : null}
         />
@@ -128,7 +148,9 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
                         {formatter.format(new Date(`${event.data_evento}T12:00:00Z`))}
                       </span>
                       {event.status === 'inscricao' ? (
-                        <Link href={`/eventos/${event.id}/inscricao/cadastrar-atleta`} className="text-mc-action hover:underline">Inscrever atletas</Link>
+                        <Link href={`/eventos/${event.id}/inscricao/cadastrar-atleta`} className="text-mc-action hover:underline">
+                          {hasSelfAthlete ? 'Fazer minha inscrição' : 'Inscrever atletas'}
+                        </Link>
                       ) : null}
                       {checkingStatuses.includes(event.status) ? (
                         <Link href={`/eventos/${event.id}/checagem`} className="text-mc-action hover:underline">Consultar checagem</Link>
@@ -142,7 +164,7 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
                 icon={<CalendarDays size={32} />}
                 title="Nenhuma competição publicada"
                 description="O calendário público mostra os eventos oficiais do MEU CAMP. Quando um campeonato for publicado, ele aparece aqui para inscrição e checagem."
-                action={<Link href="/eventos" className="inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">Abrir calendário público</Link>}
+                action={<Link href="/eventos" className="inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">{hasSelfAthlete ? 'Fazer minha inscrição' : 'Abrir calendário público'}</Link>}
                 className="mt-mc-16 rounded-mc-medium border border-mc-border bg-mc-surface"
               />
             )}

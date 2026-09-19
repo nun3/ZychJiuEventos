@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 import { getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 import { Alert } from '@/components/ui/Alert'
@@ -10,6 +11,10 @@ export default async function MeusAtletasPage() {
   const supabase = createClient()
   const { data: authData } = await supabase.auth.getUser()
   if (!authData.user) redirect('/login?redirectTo=/dashboard/meus-atletas')
+  const actor = await getDashboardActor()
+  if (actor?.needsSportsProfile) {
+    redirect('/dashboard/completar-cadastro-esportivo?redirectTo=/dashboard/meus-atletas')
+  }
 
   const scope = getPublicOrganizationScope()
   const releaseOrganizationId = scope.mode === 'restricted' ? scope.organizationId : null
@@ -58,7 +63,11 @@ export default async function MeusAtletasPage() {
       <PageContainer>
         <PageHeader title="Meus atletas" description="Veja quem você gerencia, a equipe de cada atleta e as ações de edição e inscrição." />
         <div className="mt-mc-32">
-          <AthletesManager teams={teamItems} athletes={athleteItems.map((athlete) => ({ id: athlete.id, nome: athlete.nome_completo, dataNascimento: athlete.data_nascimento, faixa: athlete.faixa, peso: athlete.peso_kg, equipe: (athlete.teams as unknown as { nome: string } | null)?.nome || 'Sem equipe' }))} />
+          <AthletesManager
+            canManageRoster={actor?.tipoCadastro !== 'atleta'}
+            teams={teamItems}
+            athletes={athleteItems.map((athlete) => ({ id: athlete.id, nome: athlete.nome_completo, dataNascimento: athlete.data_nascimento, faixa: athlete.faixa, peso: athlete.peso_kg, equipe: (athlete.teams as unknown as { nome: string } | null)?.nome || 'Sem equipe' }))}
+          />
         </div>
       </PageContainer>
     </main>

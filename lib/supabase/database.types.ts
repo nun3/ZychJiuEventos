@@ -1815,6 +1815,17 @@ export type Database = {
         Args: { team_name: string }
         Returns: string
       }
+      create_self_athlete: {
+        Args: {
+          athlete_belt: string
+          athlete_gender: string
+          athlete_weight: number
+          special_needs?: boolean
+          target_organization_id: string
+          target_team_id: string
+        }
+        Returns: string
+      }
       create_managed_athlete: {
         Args: {
           athlete_belt: string

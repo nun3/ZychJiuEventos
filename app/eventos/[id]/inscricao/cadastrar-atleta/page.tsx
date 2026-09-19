@@ -17,6 +17,9 @@ export default async function RegistrationPage({ params }: { params: { id: strin
     getDashboardActor(),
   ])
   if (!user) redirect(`/login?redirectTo=${encodeURIComponent(`/eventos/${params.id}/inscricao/cadastrar-atleta`)}`)
+  if (actor?.needsSportsProfile) {
+    redirect(`/dashboard/completar-cadastro-esportivo?redirectTo=${encodeURIComponent(`/eventos/${params.id}/inscricao/cadastrar-atleta`)}`)
+  }
   const event = await findPublicReleaseEvent(params.id, null)
   if (!event) notFound()
   const [phases, managers, athletes, rules, registrations] = await Promise.all([

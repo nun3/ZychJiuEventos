@@ -48,10 +48,18 @@ function AthleteLinks({ athleteId }: { athleteId: string }) {
   )
 }
 
-export default function AthletesManager({ teams, athletes }: { teams: TeamOption[]; athletes: AthleteListItem[] }) {
+export default function AthletesManager({
+  teams,
+  athletes,
+  canManageRoster = true,
+}: {
+  teams: TeamOption[]
+  athletes: AthleteListItem[]
+  canManageRoster?: boolean
+}) {
   const router = useRouter()
   const [query, setQuery] = useState('')
-  const [showTeamForm, setShowTeamForm] = useState(teams.length === 0)
+  const [showTeamForm, setShowTeamForm] = useState(canManageRoster && teams.length === 0)
   const [showAthleteForm, setShowAthleteForm] = useState(false)
   const [feedback, setFeedback] = useState<AthleteActionResult | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -100,13 +108,15 @@ export default function AthletesManager({ teams, athletes }: { teams: TeamOption
           <h2 className="font-mc-display text-mc-h2 text-mc-text-primary">Atletas cadastrados</h2>
           <p className="mt-mc-4 font-mc-interface text-sm text-mc-text-secondary">{athletes.length} {athletes.length === 1 ? 'atleta cadastrado' : 'atletas cadastrados'}</p>
         </div>
-        <div className="flex flex-col gap-mc-8 sm:flex-row">
-          <Button variant="outline" aria-expanded={showTeamForm} aria-controls="team-form" onClick={() => setShowTeamForm((value) => (teams.length === 0 ? true : !value))}>Nova equipe</Button>
-          <Button disabled={teams.length === 0} aria-expanded={showAthleteForm} aria-controls="athlete-form" onClick={() => setShowAthleteForm((value) => !value)} className="gap-mc-8"><Plus aria-hidden="true" size={18} />Novo atleta</Button>
-        </div>
+        {canManageRoster ? (
+          <div className="flex flex-col gap-mc-8 sm:flex-row">
+            <Button variant="outline" aria-expanded={showTeamForm} aria-controls="team-form" onClick={() => setShowTeamForm((value) => (teams.length === 0 ? true : !value))}>Nova equipe</Button>
+            <Button disabled={teams.length === 0} aria-expanded={showAthleteForm} aria-controls="athlete-form" onClick={() => setShowAthleteForm((value) => !value)} className="gap-mc-8"><Plus aria-hidden="true" size={18} />Novo atleta</Button>
+          </div>
+        ) : null}
       </div>
 
-      {showTeamForm ? (
+      {canManageRoster && showTeamForm ? (
         <Card id="team-form" variant="subtle" className="bg-mc-surface-secondary p-mc-16 sm:p-mc-24">
           <form onSubmit={submit(createTeam)} className="flex flex-col gap-mc-16 sm:flex-row sm:items-end">
             <FormField id="team-name" label="Nome da equipe" required className="flex-1">
@@ -117,7 +127,7 @@ export default function AthletesManager({ teams, athletes }: { teams: TeamOption
         </Card>
       ) : null}
 
-      {showAthleteForm ? (
+      {canManageRoster && showAthleteForm ? (
         <Card id="athlete-form" variant="subtle" className="bg-mc-surface-secondary p-mc-16 sm:p-mc-24">
           <form onSubmit={submit(createManagedAthlete)} className="grid gap-mc-16 md:grid-cols-2">
             <FormField id="athlete-name" label="Nome completo" required><Input name="nome" required minLength={3} /></FormField>
@@ -151,15 +161,19 @@ export default function AthletesManager({ teams, athletes }: { teams: TeamOption
           icon={<UserRound size={34} />}
           title={athletes.length === 0 ? 'Nenhum atleta cadastrado' : 'Nenhum atleta encontrado'}
           description={athletes.length === 0
-            ? (teams.length === 0
-              ? 'Crie a equipe primeiro. Depois cadastre os atletas que você gerencia como professor ou responsável.'
-              : 'Cadastre um atleta na sua equipe para editá-lo e inscrevê-lo nos eventos publicados.')
+            ? (!canManageRoster
+              ? 'Atleta independente não cria equipe. Conclua o cadastro esportivo escolhendo uma academia já existente da organização.'
+              : teams.length === 0
+                ? 'Crie a equipe primeiro. Depois cadastre os atletas que você gerencia como professor ou responsável.'
+                : 'Cadastre um atleta na sua equipe para editá-lo e inscrevê-lo nos eventos publicados.')
             : 'Tente buscar por outro nome.'}
-          action={athletes.length === 0 ? (
-            teams.length === 0
-              ? <Button variant="outline" onClick={() => setShowTeamForm(true)}>Criar equipe</Button>
-              : <Button onClick={() => setShowAthleteForm(true)} className="gap-mc-8"><Plus aria-hidden="true" size={18} />Cadastrar atleta</Button>
-          ) : undefined}
+          action={athletes.length === 0
+            ? (!canManageRoster
+              ? <Link href="/dashboard/completar-cadastro-esportivo" className="font-mc-interface font-semibold text-mc-action hover:underline">Completar cadastro esportivo</Link>
+              : teams.length === 0
+                ? <Button variant="outline" onClick={() => setShowTeamForm(true)}>Criar equipe</Button>
+                : <Button onClick={() => setShowAthleteForm(true)} className="gap-mc-8"><Plus aria-hidden="true" size={18} />Cadastrar atleta</Button>)
+            : undefined}
           className="rounded-mc-medium border border-mc-border bg-mc-surface"
         />
       ) : (

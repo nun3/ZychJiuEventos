@@ -65,7 +65,7 @@ Estado vigente (2026-09-19): Auth, perfil, recuperacao de senha, RLS e auditoria
 - Troca de equipe preserva historico auditavel.
 - Historico de inscricoes por atleta.
 
-Estado vigente (2026-09-19): o Professor nasce no cadastro/login, cria/assume equipe pela RPC `create_managed_team` sem membership administrativo e reutiliza Meus Atletas, inscricoes e a checagem publica. Responsavel gerencia menores sem login proprio do atleta. Permanecem pendentes o atleta independente completo (autoinscricao) e o enforcement de que menor nao cria conta no cadastro publico.
+Estado vigente (2026-09-19): o Professor nasce no cadastro/login, cria/assume equipe pela RPC `create_managed_team` sem membership administrativo e reutiliza Meus Atletas, inscricoes e a checagem publica. Responsavel gerencia menores sem login proprio do atleta. Conta publica exige maioridade. Atleta independente nao cria equipe: seleciona academia ja existente da organizacao ativa em Completar cadastro esportivo (`create_self_athlete`) e depois reutiliza a inscricao propria.
 
 ### 5.3 Eventos e categorias
 
@@ -86,7 +86,7 @@ Estado vigente (2026-09-19): CRUD, publicacao, cancelamento, conclusao, fuso, ar
 - Snapshot imutavel de atleta, equipe, categoria, preco, regra e termo aceito.
 - Estado inicial confirmado como `pendente_pagamento`.
 
-Estado vigente (2026-09-19): inscricao de atletas gerenciados, fase, duplicidade, idade, categorizacao, snapshot e `pendente_pagamento` estao entregues. Inscricao propria do atleta maior permanece pendente.
+Estado vigente (2026-09-19): inscricao de atletas gerenciados, fase, duplicidade, idade, categorizacao, snapshot e `pendente_pagamento` estao entregues. Inscricao propria do atleta maior usa o mesmo fluxo depois do cadastro esportivo (`athletes.user_id`).
 
 ### 5.5 Pagamentos
 
@@ -201,8 +201,6 @@ Pendencias de produto ainda no PRD, sem impedir o fluxo §3 operado pelo owner s
 
 - onboarding self-service de organizacao;
 - gestao/convite de membros na UI;
-- atleta independente completo;
-- enforcement da regra de menor sem login proprio;
 - solicitacao auditada de correcao de dados alem da categoria.
 
 Essas pendencias nao bloqueiam o teste local nem o fluxo operacional ja comprovado. Pagamentos reais e preparacao para producao dependem das decisoes comerciais e de liberacao. Nao iniciar preparacao para producao neste marco.

@@ -89,6 +89,11 @@
   - **Arquivo**: `app/dashboard/meu-perfil/page.tsx`  
   - **Função**: Wireframe para visualização/edição de dados do perfil do professor/organizador.
 
+- **Completar cadastro esportivo**
+  - **Rota**: `/dashboard/completar-cadastro-esportivo`
+  - **Arquivo**: `app/dashboard/completar-cadastro-esportivo/page.tsx`
+  - **Função**: Depois da conta, o atleta independente escolhe equipe já existente da organização ativa e informa faixa, peso e gênero. Cria `athletes.user_id` sem duplicar nem criar equipe.
+
 - **Meus Atletas - Lista**  
   - **Rota**: `/dashboard/meus-atletas`  
   - **Arquivo**: `app/dashboard/meus-atletas/page.tsx`  
