@@ -35,7 +35,7 @@ Chaves, pesagem, resultados e fechamento financeiro completo permanecem no produ
 
 - Administrador da plataforma: administra clientes, parametros globais, suporte e auditoria.
 - Organizador: opera apenas organizacoes e eventos em que possui vinculo.
-- Professor: gerencia equipe e atletas vinculados.
+- Professor: gerencia equipe e atletas vinculados. Nao e `organization_role`. A intencao de cadastro fica em `tipo_cadastro`; o vinculo operacional e `athlete_managers.relationship_type = professor`.
 - Responsavel: gerencia atletas dependentes, especialmente menores.
 - Atleta maior: administra o proprio perfil e inscricoes.
 - Publico: consulta somente eventos e informacoes publicadas.
@@ -61,6 +61,8 @@ Uma conta pode acumular papeis. A autorizacao depende do recurso, da organizacao
 - Menor nao possui login proprio.
 - Troca de equipe preserva historico auditavel.
 - Historico de inscricoes por atleta.
+
+Estado vigente (2026-09-19): o Professor nasce no cadastro/login, cria/assume equipe pela RPC `create_managed_team` sem membership administrativo e reutiliza Meus Atletas, inscricoes e a checagem publica.
 
 ### 5.3 Eventos e categorias
 
@@ -157,7 +159,8 @@ As metas numericas precisam de linha de base real. O MVP deve ao menos medir:
 - eventos concluidos preservam historico publico;
 - Supabase e a fundacao prevista;
 - Asaas deve ser avaliado primeiro em Sandbox; a contratacao definitiva ainda nao esta aprovada;
-- na checagem publica, o MEU CAMP exibe o nome completo de competicao do atleta, equipe e categoria vigente. Dados pessoais, peso exato, dados financeiros e identificadores internos nao sao publicos. Nao ha abreviacao automatica.
+- na checagem publica, o MEU CAMP exibe o nome completo de competicao do atleta, equipe e categoria vigente. Dados pessoais, peso exato, dados financeiros e identificadores internos nao sao publicos. Nao ha abreviacao automatica;
+- Professor e ator proprio do produto, sem `organization_role`: `tipo_cadastro = professor` define a experiencia inicial e `athlete_managers` autoriza a gestao dos atletas.
 
 ## 10. Decisoes pendentes e bloqueios
 

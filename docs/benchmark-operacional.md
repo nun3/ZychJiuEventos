@@ -169,7 +169,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 - Origem: `FESTIVAL.pdf`.
 - A programação apresenta, para cada atleta da luta, nome do atleta, equipe e professor.
-- Situação no MEU CAMP: atleta e equipe podem ser derivados dos participantes congelados; o “professor da luta” não possui contrato aprovado.
+- Situação no MEU CAMP: o Professor cadastral já nasce no produto, cria equipe e gerencia atletas vinculados; o “professor da luta” operacional continua sem contrato aprovado.
 
 **EVIDÊNCIA DE BENCHMARK**
 

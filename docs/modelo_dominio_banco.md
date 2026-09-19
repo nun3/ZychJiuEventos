@@ -32,6 +32,8 @@ Uma conta pode exercer mais de um papel. Papeis globais ficam em `platform_user_
 - `organization_id` FK obrigatoria para `organizations.id`
 - `created_at`, `updated_at`
 
+A RPC `create_managed_team` cria um tenant tecnico para a equipe do gestor autenticado e nao grava `organization_members`. O professor nao recebe `owner`, `organizer`, `staff` nem `finance`.
+
 ### athletes
 
 - `id` UUID, PK

@@ -44,7 +44,7 @@
 - [x] Organizador aprova ou recusa com histórico.
 - [x] Lista travada não aceita alterações comuns.
 
-Filtros entregues na checagem autenticada e na lista pública: categoria e equipe. Filtro por professor permanece fora. A lista pública usa o nome completo de competição do snapshot.
+Filtros entregues na checagem autenticada e na lista pública: categoria e equipe. Filtro por professor permanece fora. A lista pública usa o nome completo de competição do snapshot. O Professor cadastral nasce no login, cria equipe e gerencia atletas vinculados sem papel administrativo de evento.
 
 ## Pagamento
 

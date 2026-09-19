@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprints 8 a 12 e o Full Event BDD permanecem congelados. Sprint 13 lote 1 entregue em 2026-09-19: checagem publica com nome completo de competicao (`npm run test:public-checking`). Nao iniciar exportacao nem preparacao para producao.
+Sprints 8 a 13 lote 1 e o Full Event BDD permanecem congelados. Sprint 13 lote 2 entregue em 2026-09-19: Professor como ator cadastral (`npm run test:professor`). Nao transformar Professor em organization_role. Nao iniciar exportacao nem preparacao para producao.
 
 ## 5. Backlog ordenado por sprints
 
@@ -662,7 +662,7 @@ Automacao: `npm run test:unit` cobre a derivacao; `BASE_URL=http://localhost:310
 
 ### Sprint 13 - Checagem publica e gaps do PRD
 
-- Status: lote 1 concluido em 2026-09-19 com a lista publica de checagem.
+- Status: lote 1 (checagem publica) e lote 2 (Professor cadastral) concluidos em 2026-09-19.
 - Dependencias atendidas: Sprint 7 autenticada, identidade publica decidida no PRD, Sprints 8 a 12 congeladas.
 - Entregas do lote 1:
   - RPC `get_public_event_checking` para anon/authenticated;
@@ -675,6 +675,20 @@ Automacao: `npm run test:unit` cobre a derivacao; `BASE_URL=http://localhost:310
   - exportacao e preparacao para producao.
 
 Automacao: `BASE_URL=http://localhost:3102 npm run test:public-checking`.
+
+- Status do lote 2: concluido em 2026-09-19 com o Professor como ator real do produto.
+- Entregas do lote 2:
+  - `tipo_cadastro = professor` no cadastro/login;
+  - RPC `create_managed_team` sem `organization_role`;
+  - painel, Meus Atletas, inscricoes e checagem publica reutilizados;
+  - isolamento administrativo comprovado.
+- Fora deste lote:
+  - professor operacional da luta;
+  - filtro por professor;
+  - organizacoes pela UI;
+  - exportacao e preparacao para producao.
+
+Automacao do lote 2: `BASE_URL=http://localhost:3102 npm run test:professor`.
 
 ### Sprint 10 - Pesagem e premiacao operacional
 
@@ -876,4 +890,13 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - testes: `BASE_URL=http://localhost:3102 npm run test:public-checking` 3/3; smoke SQL transacional com rollback; TypeScript/build;
 - decisoes: identidade = `athlete_snapshot.nome_completo`; alocacao vigente = `coalesce(current_category_id, category_id)`; sem SELECT anonimo nas tabelas administrativas; sem filtro por professor;
 - divida tecnica aceita: papel Professor novo, filtro por professor, exportacao e preparacao para producao;
-- proxima etapa: nao iniciar exportacao nem preparacao para producao. Nao reabrir o Full Event nem as Sprints 8 a 12.
+- proxima etapa: Sprint 13 lote 2 — Professor como ator cadastral, sem organization_role.
+
+### 2026-09-19 — Sprint 13 lote 2: Professor como ator real
+
+- data de conclusao: 2026-09-19;
+- entregas verificadas: cadastro/login de Professor, equipe propria sem membership administrativo, atletas vinculados, inscricao, checagem publica reutilizada e recusa de administracao de evento;
+- testes: `BASE_URL=http://localhost:3102 npm run test:professor` 2/2; smoke SQL transacional com rollback; TypeScript/build;
+- decisoes: Professor nao e `organization_role`; intencao em `tipo_cadastro`; vinculo em `athlete_managers`; tenant tecnico so para hospedar equipe;
+- divida tecnica aceita: professor operacional, filtro por professor, organizacoes pela UI, exportacao e preparacao para producao;
+- proxima etapa: nao iniciar exportacao nem preparacao para producao. Nao reabrir o Full Event nem as Sprints 8 a 13 lote 1.
