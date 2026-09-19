@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { CalendarDays, MapPin, Plus } from 'lucide-react'
+import { getAdministrativeOrganizationContext } from '@/lib/auth/organization-context-server'
 import { createClient } from '@/lib/supabase/server'
 import InternalNavigation from '@/components/InternalNavigation'
 import { Alert } from '@/components/ui/Alert'
@@ -81,14 +82,12 @@ export default async function OrganizerEventsPage() {
   const { data: authData } = await supabase.auth.getUser()
   if (!authData.user) redirect('/admin/autenticacao?redirectTo=%2Fadmin%2Feventos')
 
-  const { data: membership } = await supabase.from('organization_members')
-    .select('organization_id, role, organizations(nome)').in('role', ['owner', 'organizer']).limit(1).maybeSingle()
-  if (!membership) redirect('/dashboard?erro=sem_permissao')
+  const organization = await getAdministrativeOrganizationContext()
+  if (organization.status !== 'resolved') redirect('/dashboard?erro=sem_permissao')
 
   const { data: events, error } = await supabase.from('events')
-    .select('id, nome, data_evento, local, status, timezone, checagem_travada_em').eq('organization_id', membership.organization_id)
+    .select('id, nome, data_evento, local, status, timezone, checagem_travada_em').eq('organization_id', organization.context.organizationId)
     .order('data_evento', { ascending: true })
-  const organization = membership.organizations as unknown as { nome: string } | null
   const eventItems = (events || []) as EventItem[]
 
   const columns: Array<DataTableColumn<EventItem>> = [
@@ -123,7 +122,7 @@ export default async function OrganizerEventsPage() {
         <PageContainer>
           <PageHeader
             title="Eventos"
-            description={<>Organização: <strong className="font-semibold text-mc-text-primary">{organization?.nome || 'Organização'}</strong> · Papel: <strong className="font-semibold text-mc-text-primary">{membership.role}</strong></>}
+            description={<>Organização: <strong className="font-semibold text-mc-text-primary">{organization.context.organizationName || 'Organização'}</strong> · Papel: <strong className="font-semibold text-mc-text-primary">{organization.context.role}</strong></>}
             actions={(
               <Link
                 href="/admin/eventos/novo"

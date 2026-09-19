@@ -14,6 +14,7 @@ import {
 import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge, type StatusBadgeProps } from '@/components/ui/StatusBadge'
+import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 
 const statusLabels: Record<string, string> = {
@@ -52,12 +53,15 @@ function RegistrationStatus({ status }: { status: string }) {
 export default async function AthleteRegistrationsPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
   const [{ data: athlete }, { data: registrations, error }] = await Promise.all([
-    supabase.from('athletes').select('id, nome_completo').eq('id', params.id).maybeSingle(),
-    supabase.from('registrations').select('id, numero, status, valor, created_at, events(nome, data_evento, local, status), category_snapshot').eq('athlete_id', params.id).order('created_at', { ascending: false }),
+    supabase.from('athletes').select('id, nome_completo, organization_id').eq('id', params.id).maybeSingle(),
+    supabase.from('registrations').select('id, numero, status, valor, created_at, events(nome, data_evento, local, status, organization_id), category_snapshot').eq('athlete_id', params.id).order('created_at', { ascending: false }),
   ])
-  if (!athlete) notFound()
+  if (!athlete || !allowsPublicOrganization(athlete.organization_id)) notFound()
 
-  const items: RegistrationItem[] = (registrations || []).map((registration) => {
+  const items: RegistrationItem[] = (registrations || []).filter((registration) => {
+    const event = registration.events as unknown as { organization_id?: string } | null
+    return allowsPublicOrganization(event?.organization_id || '')
+  }).map((registration) => {
     const event = registration.events as unknown as { nome: string; data_evento: string; local: string; status: string } | null
     const snapshot = registration.category_snapshot
     const category = snapshot && typeof snapshot === 'object' && !Array.isArray(snapshot) && typeof snapshot.nome === 'string' ? snapshot.nome : 'A definir'

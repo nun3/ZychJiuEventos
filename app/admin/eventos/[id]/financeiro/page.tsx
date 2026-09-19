@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import AdminEventNav, { adminEventBackLink } from '@/components/AdminEventNav'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 import { createPrivilegedClient } from '@/lib/supabase/admin'
 import { loadEventClosing } from './data'
@@ -34,7 +35,7 @@ export default async function FinancialPage({ params }: { params: { id: string }
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(`/admin/autenticacao?redirectTo=${encodeURIComponent(`/admin/eventos/${params.id}/financeiro`)}`)
   const { data: event } = await supabase.from('events').select('id, nome, organization_id').eq('id', params.id).maybeSingle()
-  if (!event) notFound()
+  if (!event || !allowsPublicOrganization(event.organization_id)) notFound()
   const [{ data: membership }, { data: platformRole }] = await Promise.all([
     supabase.from('organization_members').select('role').eq('organization_id', event.organization_id).eq('user_id', user.id).in('role', ['owner', 'organizer', 'finance']).limit(1).maybeSingle(),
     supabase.from('platform_user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle(),

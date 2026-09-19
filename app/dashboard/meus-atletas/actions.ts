@@ -1,6 +1,9 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { isAdministrativeOrganizationRole } from '@/lib/auth/organization-context'
+import { getAuthenticatedOrganizationContext } from '@/lib/auth/organization-context-server'
+import { allowsPublicOrganization, getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 
 export type AthleteActionResult = { ok: boolean; message: string }
@@ -15,17 +18,20 @@ export async function createTeam(formData: FormData): Promise<AthleteActionResul
   const { data: authData } = await supabase.auth.getUser()
   if (!authData.user) return failure('Sua sessão expirou. Entre novamente.')
 
-  const { data: membership } = await supabase
-    .from('organization_members')
-    .select('organization_id')
-    .in('role', ['owner', 'organizer'])
-    .limit(1)
-    .maybeSingle()
+  const scope = getPublicOrganizationScope()
+  if (scope.mode === 'blocked') return failure('O contexto da organização está indisponível.')
+  const organization = await getAuthenticatedOrganizationContext()
+  if (scope.mode === 'restricted' && organization.status !== 'resolved') {
+    return failure('Você não possui vínculo com a organização desta release.')
+  }
 
-  const { error } = membership
+  const canInsertInOrganization = organization.status === 'resolved' && (
+    scope.mode === 'restricted' || isAdministrativeOrganizationRole(organization.context.role)
+  )
+  const { error } = canInsertInOrganization
     ? await supabase.from('teams').insert({
       nome,
-      organization_id: membership.organization_id,
+      organization_id: organization.context.organizationId,
       created_by: authData.user.id,
     })
     : await supabase.rpc('create_managed_team', { team_name: nome }).then((result) => ({ error: result.error }))
@@ -52,6 +58,10 @@ export async function createManagedAthlete(formData: FormData): Promise<AthleteA
   }
 
   const supabase = createClient()
+  const { data: team } = await supabase.from('teams').select('organization_id').eq('id', teamId).maybeSingle()
+  if (!team || !allowsPublicOrganization(team.organization_id)) {
+    return failure('A equipe não pertence à organização ativa.')
+  }
   const { error } = await supabase.rpc('create_managed_athlete', {
     target_team_id: teamId,
     athlete_name: nome,
@@ -86,7 +96,15 @@ export async function updateManagedAthlete(formData: FormData): Promise<AthleteA
     return failure('Preencha todos os campos obrigatórios com valores válidos.')
   }
 
-  const { error } = await createClient().rpc('update_managed_athlete', {
+  const supabase = createClient()
+  const [{ data: athlete }, { data: team }] = await Promise.all([
+    supabase.from('athletes').select('organization_id').eq('id', athleteId).maybeSingle(),
+    supabase.from('teams').select('organization_id').eq('id', teamId).maybeSingle(),
+  ])
+  if (!athlete || !team || !allowsPublicOrganization(athlete.organization_id) || !allowsPublicOrganization(team.organization_id)) {
+    return failure('O atleta ou a equipe não pertencem à organização ativa.')
+  }
+  const { error } = await supabase.rpc('update_managed_athlete', {
     target_athlete_id: athleteId,
     target_team_id: teamId,
     athlete_name: nome,
@@ -110,7 +128,10 @@ export async function updateManagedAthlete(formData: FormData): Promise<AthleteA
 
 export async function linkAthleteToCurrentUser(athleteId: string): Promise<AthleteActionResult> {
   if (!athleteId) return failure('Atleta inválido.')
-  const { error } = await createClient().rpc('link_athlete_to_current_user', { target_athlete_id: athleteId })
+  const supabase = createClient()
+  const { data: athlete } = await supabase.from('athletes').select('organization_id').eq('id', athleteId).maybeSingle()
+  if (!athlete || !allowsPublicOrganization(athlete.organization_id)) return failure('O atleta não pertence à organização ativa.')
+  const { error } = await supabase.rpc('link_athlete_to_current_user', { target_athlete_id: athleteId })
   if (error?.message.includes('maior de idade')) return failure('Somente atletas maiores de idade podem ser vinculados à própria conta.')
   if (error?.message.includes('outra conta')) return failure('Este atleta já está vinculado a outra conta.')
   if (error) return failure('Não foi possível vincular o atleta à sua conta.')

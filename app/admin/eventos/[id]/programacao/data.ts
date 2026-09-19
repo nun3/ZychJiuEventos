@@ -2,6 +2,7 @@ import 'server-only'
 
 import type { Json } from '@/lib/supabase/database.types'
 import { parseFightDurationMinutes } from '@/lib/events/fight-duration'
+import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 
 export type ScheduleArea = {
@@ -167,7 +168,7 @@ export async function loadSchedulePageData(eventId: string): Promise<ScheduleLoa
     .eq('id', eventId)
     .maybeSingle()
   if (eventError) return { kind: 'error', message: 'Não foi possível carregar o evento.' }
-  if (!event) return { kind: 'not_found' }
+  if (!event || !allowsPublicOrganization(event.organization_id)) return { kind: 'not_found' }
 
   const [{ data: membership }, { data: platformRole }] = await Promise.all([
     supabase

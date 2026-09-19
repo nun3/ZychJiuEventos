@@ -55,7 +55,7 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
         <PageHeader
           title={actor?.name?.trim() ? `Olá, ${actor.name.trim().split(' ')[0]}` : canManageEvents ? 'Painel do organizador' : isProfessor ? 'Painel do professor' : 'Painel'}
           description={canManageEvents
-            ? `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Você administra eventos. Daqui sai para atletas, inscrições e a operação do campeonato.`
+            ? `${actor?.organization?.organizationName ? `${actor.organization.organizationName} · ` : ''}${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Você administra eventos. Daqui sai para atletas, inscrições e a operação do campeonato.`
             : isProfessor
               ? `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Gerencie sua equipe, inscreva atletas e acompanhe a checagem pública.`
               : `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Acompanhe seus atletas, inscrições e os eventos publicados.`}

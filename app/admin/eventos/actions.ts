@@ -1,7 +1,9 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { getAdministrativeOrganizationContext } from '@/lib/auth/organization-context-server'
 import { parseFightDurationInput } from '@/lib/events/fight-duration'
+import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 import { zonedLocalToUtc } from '@/lib/timezone'
 
@@ -59,13 +61,12 @@ export async function createEvent(formData: FormData): Promise<EventActionResult
   const supabase = createClient()
   const { data: authData } = await supabase.auth.getUser()
   if (!authData.user) return failure('Sua sessão expirou. Entre novamente.')
-  const { data: membership } = await supabase.from('organization_members').select('organization_id')
-    .in('role', ['owner', 'organizer']).limit(1).maybeSingle()
-  if (!membership) return failure('Você não possui permissão para criar eventos.')
+  const organization = await getAdministrativeOrganizationContext()
+  if (organization.status !== 'resolved') return failure('Você não possui permissão para criar eventos.')
 
   const slug = `${slugify(nome) || 'evento'}-${Date.now().toString(36)}`
   const { data: event, error: eventError } = await supabase.from('events').insert({
-    organization_id: membership.organization_id, nome, slug, data_evento: dataEvento,
+    organization_id: organization.context.organizationId, nome, slug, data_evento: dataEvento,
     timezone, local, informacoes: informacoes || null, valor_inscricao: valorInscricao,
     created_by: authData.user.id, status: 'rascunho',
   }).select('id').single()
@@ -80,9 +81,9 @@ export async function createEvent(formData: FormData): Promise<EventActionResult
   }
   try {
     const [imagemCartaz, regulamento, tabelaPeso] = await Promise.all([
-      uploadAsset(supabase, membership.organization_id, event.id, 'banner', formData.get('banner') as File | null),
-      uploadAsset(supabase, membership.organization_id, event.id, 'regulamento', formData.get('regulamento') as File | null),
-      uploadAsset(supabase, membership.organization_id, event.id, 'tabela-peso', formData.get('tabela_peso') as File | null),
+      uploadAsset(supabase, organization.context.organizationId, event.id, 'banner', formData.get('banner') as File | null),
+      uploadAsset(supabase, organization.context.organizationId, event.id, 'regulamento', formData.get('regulamento') as File | null),
+      uploadAsset(supabase, organization.context.organizationId, event.id, 'tabela-peso', formData.get('tabela_peso') as File | null),
     ])
     if (imagemCartaz || regulamento || tabelaPeso) {
       await supabase.from('events').update({
@@ -106,7 +107,8 @@ type EventTransitionStatus = 'publicado' | 'inscricao' | 'pagamento' | 'checagem
 
 async function editableEvent(eventId: string) {
   const supabase = createClient()
-  const { data: event } = await supabase.from('events').select('id, status, checagem_travada_em').eq('id', eventId).maybeSingle()
+  const { data: event } = await supabase.from('events').select('id, status, checagem_travada_em, organization_id').eq('id', eventId).maybeSingle()
+  if (event && !allowsPublicOrganization(event.organization_id)) return { supabase, event: null }
   return { supabase, event }
 }
 
@@ -169,6 +171,8 @@ export async function createCategoryRuleSet(formData: FormData): Promise<EventAc
   const eventId = text(formData, 'event_id')
   const nome = text(formData, 'rule_name')
   if (!eventId || nome.length < 3) return failure('Informe o nome do conjunto de regras.')
+  const { event } = await editableEvent(eventId)
+  if (!event) return failure('Evento não encontrado ou sem permissão.')
   const supabase = createClient()
   const { data: current } = await supabase.from('category_rule_sets').select('versao').eq('event_id', eventId).order('versao', { ascending: false }).limit(1).maybeSingle()
   const { data: rule, error } = await supabase.from('category_rule_sets').insert({ event_id: eventId, nome, versao: (current?.versao || 0) + 1, ativo: false }).select('id').single()
@@ -226,6 +230,8 @@ export async function setEventCategoryDuration(formData: FormData): Promise<Even
   if (!uuidPattern.test(eventId) || !uuidPattern.test(categoryId)) return failure('Categoria inválida.')
   const duration = parseFightDurationInput(text(formData, 'duration_minutes'))
   if (!duration.ok) return failure(durationErrors['Duracao da luta invalida'])
+  const { event } = await editableEvent(eventId)
+  if (!event) return failure('Evento não encontrado ou sem permissão.')
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return failure('Sua sessão expirou.')

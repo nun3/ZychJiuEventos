@@ -14,6 +14,7 @@ import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { formatFightDurationLabel, parseFightDurationMinutes } from '@/lib/events/fight-duration'
+import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 import CategoryDurationEditor from './CategoryDurationEditor'
 import CategoryManager from './CategoryManager'
@@ -52,8 +53,8 @@ function categoryColumns(eventId: string): Array<DataTableColumn<CategoryItem>> 
 
 export default async function EventConfigurationPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
-  const { data: event } = await supabase.from('events').select('id, nome').eq('id', params.id).maybeSingle()
-  if (!event) notFound()
+  const { data: event } = await supabase.from('events').select('id, nome, organization_id').eq('id', params.id).maybeSingle()
+  if (!event || !allowsPublicOrganization(event.organization_id)) notFound()
   const { data: ruleSets } = await supabase.from('category_rule_sets').select('id, nome, versao, ativo, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg, fight_duration_minutes)').eq('event_id', event.id).order('versao', { ascending: false })
   return (
     <div className="min-h-screen bg-mc-background">

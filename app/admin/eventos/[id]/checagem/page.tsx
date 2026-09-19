@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 import type { Json } from '@/lib/supabase/database.types'
 import EventActions from '../../EventActions'
@@ -49,7 +50,7 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
     .eq('id', params.id)
     .maybeSingle()
 
-  if (!event) notFound()
+  if (!event || !allowsPublicOrganization(event.organization_id)) notFound()
 
   const [{ data: membership }, { data: platformRole }] = await Promise.all([
     supabase.from('organization_members').select('role').eq('organization_id', event.organization_id).eq('user_id', user.id).in('role', ['owner', 'organizer']).limit(1).maybeSingle(),

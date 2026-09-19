@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { isPaymentsManualOnly } from '@/lib/payments/manual-only'
 import { Alert } from '@/components/ui/Alert'
 import { Card } from '@/components/ui/Card'
@@ -31,7 +32,7 @@ export default async function PaymentSummary({ params }: { params: { id: string 
   if (!user) redirect(`/login?redirectTo=${encodeURIComponent(`/dashboard/pagamentos/${params.id}`)}`)
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.id)) notFound()
   const { data: payment, error } = await supabase.from('payments')
-    .select('id, external_reference, valor_total, metodo, status, events(nome), payment_registrations(registration_id, amount)')
+    .select('id, external_reference, valor_total, metodo, status, events(nome, organization_id), payment_registrations(registration_id, amount)')
     .eq('id', params.id).eq('created_by', user.id).maybeSingle()
   if (error) {
     return (
@@ -42,7 +43,7 @@ export default async function PaymentSummary({ params }: { params: { id: string 
       </main>
     )
   }
-  if (!payment) notFound()
+  if (!payment || !allowsPublicOrganization(payment.events?.organization_id || '')) notFound()
 
   return (
     <main className="py-mc-32 sm:py-mc-48">

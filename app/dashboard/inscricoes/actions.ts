@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import type { Database } from '@/lib/supabase/database.types'
 import { revalidatePath } from 'next/cache'
 
@@ -40,6 +41,11 @@ async function reserve(formData: FormData): Promise<ReservePaymentState> {
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
   if (!uuid.test(eventId) || !['pix', 'boleto'].includes(method) || !registrationIds.length || registrationIds.length > 100 || registrationIds.some(id => !uuid.test(id)) || new Set(registrationIds).size !== registrationIds.length) {
     return { error: 'Selecione inscrições e uma forma de pagamento.', summary: null }
+  }
+
+  const { data: event } = await supabase.from('events').select('organization_id').eq('id', eventId).maybeSingle()
+  if (!event || !allowsPublicOrganization(event.organization_id)) {
+    return { error: 'Este evento não pertence à organização ativa.', summary: null }
   }
 
   // The browser supplies IDs and method only. Permissions and total belong to the RPC.

@@ -16,6 +16,7 @@ import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge, type StatusBadgeProps } from '@/components/ui/StatusBadge'
 import { createClient } from '@/lib/supabase/server'
+import { allowsPublicOrganization, getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { isPaymentsManualOnly } from '@/lib/payments/manual-only'
 import type { Json } from '@/lib/supabase/database.types'
 import PaymentCheckout, { type CheckoutRegistration } from './PaymentCheckout'
@@ -56,13 +57,19 @@ export default async function RegistrationsPage() {
     supabase.from('athlete_managers').select('athlete_id').eq('manager_id', user.id),
   ])
   const ids = Array.from(new Set([...(own.data || []).map(a => a.id), ...(managed.data || []).map(a => a.athlete_id)]))
+  const scope = getPublicOrganizationScope()
   const result = ids.length ? await supabase.from('registrations')
-    .select('id, numero, athlete_id, event_id, status, valor, athlete_snapshot, category_snapshot, operational_professor_name, events(id, nome)')
+    .select('id, numero, athlete_id, event_id, status, valor, athlete_snapshot, category_snapshot, operational_professor_name, events(id, nome, organization_id)')
     .in('athlete_id', ids).order('created_at', { ascending: false }) : { data: [], error: null }
-  const payments = await supabase.from('payments').select('id, status, valor_total, metodo, events(nome), payment_registrations(registration_id)').eq('created_by', user.id).order('created_at', { ascending: false })
-  const error = own.error || managed.error || result.error || payments.error
-  const reserved = new Set((payments.data || []).filter(p => ['aguardando', 'pago'].includes(p.status)).flatMap(p => p.payment_registrations.map(r => r.registration_id)))
-  const checkoutRows: CheckoutRegistration[] = (result.data || []).filter(r => !reserved.has(r.id)).map(r => ({
+  const payments = await supabase.from('payments').select('id, status, valor_total, metodo, events(nome, organization_id), payment_registrations(registration_id)').eq('created_by', user.id).order('created_at', { ascending: false })
+  const inReleaseOrganization = (organizationId?: string | null) => (
+    organizationId ? allowsPublicOrganization(organizationId) : scope.mode === 'unrestricted'
+  )
+  const scopedRegistrations = (result.data || []).filter((registration) => inReleaseOrganization(registration.events?.organization_id))
+  const scopedPayments = (payments.data || []).filter((payment) => inReleaseOrganization(payment.events?.organization_id))
+  const error = own.error || managed.error || result.error || payments.error || scope.mode === 'blocked'
+  const reserved = new Set(scopedPayments.filter(p => ['aguardando', 'pago'].includes(p.status)).flatMap(p => p.payment_registrations.map(r => r.registration_id)))
+  const checkoutRows: CheckoutRegistration[] = scopedRegistrations.filter(r => !reserved.has(r.id)).map(r => ({
     id: r.id,
     eventId: r.event_id,
     eventName: r.events?.nome || 'Evento',
@@ -71,7 +78,7 @@ export default async function RegistrationsPage() {
     status: r.status,
     amount: r.valor,
   }))
-  const rows = result.data || []
+  const rows = scopedRegistrations
   const columns: Array<DataTableColumn<(typeof rows)[number]>> = [
     {
       key: 'event',
@@ -154,12 +161,12 @@ export default async function RegistrationsPage() {
         </div>
 
         {!error && <PaymentCheckout registrations={checkoutRows} manualOnly={isPaymentsManualOnly()} />}
-        {!error && !!payments.data?.length && (
+        {!error && !!scopedPayments.length && (
           <section className="mt-mc-32" aria-labelledby="reserved-payments-title">
             <h2 id="reserved-payments-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Pagamentos reservados</h2>
             <p className="mt-mc-8 font-mc-interface text-sm text-mc-text-secondary">A reserva guarda o valor. O status muda quando o organizador registra a baixa.</p>
             <ul className="mt-mc-16 divide-y divide-mc-border overflow-hidden rounded-mc-medium border border-mc-border bg-mc-surface">
-              {payments.data.map((payment) => (
+              {scopedPayments.map((payment) => (
                 <li key={payment.id}>
                   <Link href={`/dashboard/pagamentos/${payment.id}`} className="flex min-h-14 flex-col gap-mc-8 px-mc-16 py-mc-16 transition-colors hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus sm:flex-row sm:items-center sm:justify-between">
                     <span>

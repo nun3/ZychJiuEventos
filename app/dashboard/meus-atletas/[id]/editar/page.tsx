@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { PageContainer } from '@/components/ui/PageContainer'
@@ -9,7 +10,7 @@ import EditAthleteForm from './EditAthleteForm'
 export default async function EditAthletePage({ params }: { params: { id: string } }) {
   const supabase = createClient()
   const { data: athlete } = await supabase.from('athletes').select('*').eq('id', params.id).maybeSingle()
-  if (!athlete) notFound()
+  if (!athlete || !allowsPublicOrganization(athlete.organization_id)) notFound()
 
   const [{ data: teams }, { data: auditLogs }] = await Promise.all([
     supabase.from('teams').select('id, nome').eq('organization_id', athlete.organization_id).order('nome'),

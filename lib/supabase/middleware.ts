@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { getSupabaseConfig } from './config'
 import type { Database } from './database.types'
 
@@ -38,9 +39,13 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && pathname.startsWith('/admin') && !isAdminLogin) {
+    const scope = getPublicOrganizationScope()
+    const membershipQuery = scope.mode === 'restricted'
+      ? supabase.from('organization_members').select('organization_id').eq('organization_id', scope.organizationId).limit(1)
+      : supabase.from('organization_members').select('organization_id').limit(1)
     const [{ data: isAdmin }, { data: memberships }] = await Promise.all([
       supabase.rpc('is_platform_admin'),
-      supabase.from('organization_members').select('organization_id').limit(1),
+      scope.mode === 'blocked' ? Promise.resolve({ data: [] as Array<{ organization_id: string }> }) : membershipQuery,
     ])
 
     if (!isAdmin && (!memberships || memberships.length === 0)) {

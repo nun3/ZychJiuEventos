@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -12,6 +13,9 @@ export async function listEligibleCategoryChanges(registrationId: string): Promi
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
+  const { data: registration } = await supabase.from('registrations').select('events(organization_id)').eq('id', registrationId).maybeSingle()
+  const organizationId = (registration?.events as { organization_id?: string } | null)?.organization_id
+  if (!organizationId || !allowsPublicOrganization(organizationId)) return []
   const { data, error } = await supabase.rpc('list_eligible_category_changes', { target_registration_id: registrationId })
   if (error || !data) return []
   return data
@@ -27,6 +31,11 @@ export async function requestCategoryChange(formData: FormData): Promise<{ ok: b
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, message: 'Sua sessão expirou.' }
+  const { data: registration } = await supabase.from('registrations').select('events(organization_id)').eq('id', registrationId).maybeSingle()
+  const organizationId = (registration?.events as { organization_id?: string } | null)?.organization_id
+  if (!organizationId || !allowsPublicOrganization(organizationId)) {
+    return { ok: false, message: 'Esta inscrição não pertence à organização ativa.' }
+  }
   const { data, error } = await supabase.rpc('request_category_change', {
     target_registration_id: registrationId,
     requested_category_id: categoryId,

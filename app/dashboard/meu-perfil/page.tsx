@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { CalendarDays, ClipboardList, Lock, Mail, Shield, UserRound, UsersRound } from 'lucide-react'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
+import { getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { PageContainer } from '@/components/ui/PageContainer'
@@ -36,18 +37,26 @@ export default async function MeuPerfilPage() {
   if (!user) redirect('/login?redirectTo=/dashboard/meu-perfil')
 
   const actor = await getDashboardActor()
-  const [{ data: profile }, { data: teams }, { count: managedCount }, { data: membership }] = await Promise.all([
+  const organization = actor?.organization ?? null
+  const scope = getPublicOrganizationScope()
+  const releaseOrganizationId = scope.mode === 'restricted' ? scope.organizationId : null
+  let teamsQuery = supabase.from('teams').select('id, nome').eq('created_by', user.id).order('nome')
+  if (releaseOrganizationId) teamsQuery = teamsQuery.eq('organization_id', releaseOrganizationId)
+  const [{ data: profile }, { data: teams }, { data: managedAthletes }] = await Promise.all([
     supabase.from('profiles').select('nome_completo, cpf, telefone, data_nascimento, created_at').eq('id', user.id).maybeSingle(),
-    supabase.from('teams').select('id, nome').eq('created_by', user.id).order('nome'),
-    supabase.from('athlete_managers').select('athlete_id', { count: 'exact', head: true }).eq('manager_id', user.id),
-    supabase.from('organization_members').select('role, organizations(nome)').in('role', ['owner', 'organizer']).limit(1).maybeSingle(),
+    teamsQuery,
+    supabase.from('athlete_managers').select('athlete_id, athletes(organization_id)').eq('manager_id', user.id),
   ])
+  const managedCount = (managedAthletes || []).filter((link) => {
+    const athlete = link.athletes as unknown as { organization_id: string } | null
+    if (!releaseOrganizationId) return true
+    return athlete?.organization_id === releaseOrganizationId
+  }).length
 
   const name = profile?.nome_completo?.trim() || actor?.name?.trim() || user.email?.split('@')[0] || 'Sua conta'
   const initial = name.charAt(0).toUpperCase()
   const roleLabel = actor?.tipoCadastro ? roleLabels[actor.tipoCadastro] : null
-  const organization = membership?.organizations as unknown as { nome: string } | null
-  const organizationName = organization?.nome || null
+  const organizationName = organization?.organizationName || null
 
   return (
     <main className="py-mc-32 sm:py-mc-48">
@@ -121,7 +130,7 @@ export default async function MeuPerfilPage() {
                   <div className="grid gap-mc-4 sm:grid-cols-[10rem_1fr]">
                     <dt className="text-mc-text-secondary">Organização</dt>
                     <dd className="font-semibold text-mc-text-primary">
-                      {organizationName ? `${organizationName} · ${membership?.role === 'owner' ? 'proprietário' : 'organizador'}` : 'Nenhuma organização administrativa'}
+                      {organizationName ? `${organizationName} · ${organization?.role === 'owner' ? 'proprietário' : organization?.role === 'organizer' ? 'organizador' : organization?.role}` : 'Nenhuma organização administrativa'}
                     </dd>
                   </div>
                   <div className="grid gap-mc-4 sm:grid-cols-[10rem_1fr]">
