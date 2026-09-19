@@ -20,7 +20,7 @@
 
 - [x] Admin/organizador cria evento com datas, local, regras, fases e categorias.
 - [x] Evento publicado aparece ordenado pela data.
-- [ ] Público consulta detalhes, tabela de peso e lista permitida de inscritos.
+- [x] Público consulta detalhes, tabela de peso e lista permitida de inscritos.
 - [ ] Evento concluído aparece no histórico com resultados publicados.
 - [ ] Evento cancelado não aceita novas inscrições.
 - [x] Todas as datas respeitam o fuso IANA configurado no evento.
@@ -44,7 +44,7 @@
 - [x] Organizador aprova ou recusa com histórico.
 - [x] Lista travada não aceita alterações comuns.
 
-Filtros entregues na checagem autenticada: categoria e equipe. Filtro por professor e lista pública de checagem não fazem parte do núcleo operacional fechado da Sprint 7; a lista pública permanece bloqueada pela identidade do inscrito no PRD.
+Filtros entregues na checagem autenticada e na lista pública: categoria e equipe. Filtro por professor permanece fora. A lista pública usa o nome completo de competição do snapshot.
 
 ## Pagamento
 

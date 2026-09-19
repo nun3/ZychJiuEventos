@@ -59,7 +59,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 - Origem: `PROJETO_GERENCIADOR_CAMPEONATOS_JIU_JITSU_1.pdf`.
 - A lista de checagem contém somente pagamentos efetivados, identifica atleta sozinho, admite solicitação de mudança/correção e é travada antes das chaves.
-- Situação no MEU CAMP: núcleo autenticado, realocação aprovada e travamento estão concluídos; lista pública continua pendente da decisão de identidade pública.
+- Situação no MEU CAMP: núcleo autenticado, realocação aprovada e travamento estão concluídos; a lista pública em `/eventos/[id]/checagem` exibe nome completo de competição, equipe e categoria vigente das efetivadas.
 
 **EVIDÊNCIA DE BENCHMARK**
 

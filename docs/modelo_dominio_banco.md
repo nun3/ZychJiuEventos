@@ -116,6 +116,8 @@ Nao ha flags em `category_rule_sets` nesta versao. A politica acima e o default 
 
 Restricao unica: um atleta nao pode possuir duas inscricoes ativas no mesmo evento.
 
+A checagem publica le somente inscricoes `efetivada` pela RPC `get_public_event_checking`. A identidade publica e `athlete_snapshot.nome_completo`. A categoria vigente e `coalesce(current_category_id, category_id)`. Nao ha SELECT anonimo em `registrations`.
+
 ### payments
 
 - `id` UUID, PK

@@ -107,7 +107,7 @@ Referencias tecnicas: [criacao de cobranca](https://docs.asaas.com/reference/cre
 - Solicitacao, aprovacao e recusa de mudanca com historico.
 - Travamento da checagem antes da geracao de chaves.
 
-Estado vigente (2026-09-17): o nucleo autenticado da checagem (lista de efetivadas, sozinho, realocacao operacional, aprovacao/recusa, travamento) esta entregue. A lista publica continua requisito do PRD e depende da identidade do inscrito. Correcao de faixa nao faz parte da realocacao do sozinho.
+Estado vigente (2026-09-19): o nucleo autenticado da checagem permanece entregue. A lista publica em `/eventos/[id]/checagem` exibe nome completo de competicao, equipe e categoria vigente das inscricoes efetivadas. Correcao de faixa nao faz parte da realocacao do sozinho. Filtro por professor permanece fora.
 
 ## 6. Fora do primeiro incremento operacional
 
@@ -156,7 +156,8 @@ As metas numericas precisam de linha de base real. O MVP deve ao menos medir:
 - pagamento unificado mistura somente inscricoes do mesmo evento;
 - eventos concluidos preservam historico publico;
 - Supabase e a fundacao prevista;
-- Asaas deve ser avaliado primeiro em Sandbox; a contratacao definitiva ainda nao esta aprovada.
+- Asaas deve ser avaliado primeiro em Sandbox; a contratacao definitiva ainda nao esta aprovada;
+- na checagem publica, o MEU CAMP exibe o nome completo de competicao do atleta, equipe e categoria vigente. Dados pessoais, peso exato, dados financeiros e identificadores internos nao sao publicos. Nao ha abreviacao automatica.
 
 ## 10. Decisoes pendentes e bloqueios
 
@@ -166,7 +167,6 @@ As metas numericas precisam de linha de base real. O MVP deve ao menos medir:
 - regras definitivas das chaves, especialmente grupos de 3 e 5;
 - formato final dos relatorios e fechamento;
 - politica de retencao, exclusao e direitos de imagem;
-- identidade publica dos inscritos: nome completo ou nome reduzido;
 - metas numericas dos indicadores de sucesso.
 
 Essas pendencias nao bloqueiam o teste local da migracao nem contas/eventos. Pagamentos reais, chaves e producao dependem das respectivas decisoes.

@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprint 11 concluida no recorte de duracao oficial da luta por categoria em 2026-09-18. Sprints 8 a 11 e o Full Event BDD permanecem congelados. Sprint 12 lote 2 entregue em 2026-09-19: taxa MEU CAMP fixa por inscricao efetivada, com snapshot historico (`npm run test:fee`). Nao iniciar preparacao para producao.
+Sprints 8 a 12 e o Full Event BDD permanecem congelados. Sprint 13 lote 1 entregue em 2026-09-19: checagem publica com nome completo de competicao (`npm run test:public-checking`). Nao iniciar exportacao nem preparacao para producao.
 
 ## 5. Backlog ordenado por sprints
 
@@ -660,6 +660,22 @@ Nucleo da Sprint 9 comprovado no Sandbox. A sprint fecha neste recorte. Nao reab
 
 Automacao: `npm run test:unit` cobre a derivacao; `BASE_URL=http://localhost:3102 npm run test:closing` cobre o lote 1; `BASE_URL=http://localhost:3102 npm run test:fee` cobre a taxa e o snapshot.
 
+### Sprint 13 - Checagem publica e gaps do PRD
+
+- Status: lote 1 concluido em 2026-09-19 com a lista publica de checagem.
+- Dependencias atendidas: Sprint 7 autenticada, identidade publica decidida no PRD, Sprints 8 a 12 congeladas.
+- Entregas do lote 1:
+  - RPC `get_public_event_checking` para anon/authenticated;
+  - rota `/eventos/[id]/checagem`;
+  - somente efetivadas, com nome completo de competicao, equipe e categoria vigente;
+  - filtros de categoria e equipe; atleta sozinho identificado.
+- Fora deste lote:
+  - filtro por professor;
+  - papel Professor novo;
+  - exportacao e preparacao para producao.
+
+Automacao: `BASE_URL=http://localhost:3102 npm run test:public-checking`.
+
 ### Sprint 10 - Pesagem e premiacao operacional
 
 - Status: concluida no recorte aprovado em 2026-09-18.
@@ -851,4 +867,13 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - testes: `npm run test:unit` em `automacao/`; `BASE_URL=http://localhost:3102 npm run test:fee` 3/3; `npm run test:closing` 2/2; TypeScript/build;
 - decisoes: valor em centavos em `event_platform_fees`, nao em `events`; snapshot em `payment_registrations.platform_fee_cents`; somente platform admin altera; ausencia de linha = zero; estorno remove a inscricao do bruto e da taxa;
 - divida tecnica aceita: exportacao, fechamento historico repetido e estorno parcial;
-- proxima etapa: nao iniciar preparacao para producao. Nao reabrir o Full Event nem as Sprints 8 a 11.
+- proxima etapa: Sprint 13 lote 1 — checagem publica com identidade aprovada.
+
+### 2026-09-19 — Sprint 13 lote 1: checagem publica
+
+- data de conclusao: 2026-09-19;
+- entregas verificadas: lista publica de efetivadas em `/eventos/[id]/checagem`, com nome completo de competicao, equipe, categoria vigente, sozinho e filtros de categoria/equipe;
+- testes: `BASE_URL=http://localhost:3102 npm run test:public-checking` 3/3; smoke SQL transacional com rollback; TypeScript/build;
+- decisoes: identidade = `athlete_snapshot.nome_completo`; alocacao vigente = `coalesce(current_category_id, category_id)`; sem SELECT anonimo nas tabelas administrativas; sem filtro por professor;
+- divida tecnica aceita: papel Professor novo, filtro por professor, exportacao e preparacao para producao;
+- proxima etapa: nao iniciar exportacao nem preparacao para producao. Nao reabrir o Full Event nem as Sprints 8 a 12.
