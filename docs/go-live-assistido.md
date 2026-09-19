@@ -57,24 +57,38 @@ Não alterar atletas, eventos ou checagem MC-SIM.
 
 ## 4. Backup e restore
 
-Nenhum backup foi executado neste lote. Plano do projeto (PITR/retenção) = não comprovado aqui.
+Verificado em 2026-09-19 01:25 America/Sao_Paulo (−03). Restore **não** foi executado. Nenhum dump/export foi gerado. Nenhum backup pontual foi criado.
 
-### Backup (aguardar autorização; não altera dados)
+### Evidência comprovada
 
-1. Abrir [Database → Backups](https://supabase.com/dashboard/project/kfvypacjzlzwwblsbpwj/database/backups).
-2. Registrar data, hora e tipo (automático diário ou dump pontual).
-3. Se o plano permitir download/export, guardar o arquivo fora do repositório.
-4. Anotar o identificador do backup neste documento quando existir.
+| Item | Fato |
+| --- | --- |
+| Projeto | `kfvypacjzlzwwblsbpwj` (`zigjiu`), região `us-west-2`, compute `t4g.nano` |
+| Plano | Free Plan (texto do painel) |
+| Home do projeto | **Last backup: No backups** |
+| Scheduled backups | [Database → Backups → Scheduled](https://supabase.com/dashboard/project/kfvypacjzlzwwblsbpwj/database/backups/scheduled): “Free Plan does not include project backups.” Sem lista, sem data, sem identificador. |
+| PITR | [Database → Backups → Point in time](https://supabase.com/dashboard/project/kfvypacjzlzwwblsbpwj/database/backups/pitr): “Point in Time Recovery is a Pro Plan add-on.” CLI: `pitr_enabled: false`. |
+| API Management | `GET /v1/projects/kfvypacjzlzwwblsbpwj/database/backups` em 2026-09-19 01:22:11 −03: `backups: null`, `physical_backup_data: {}`, `pitr_enabled: false`, `walg_enabled: true`. |
+| Backup automático existente | **Não encontrado.** |
+| Backup pontual criado neste lote | **Não.** O plano atual não oferece criação de backup agendado nem PITR. Não foi contornado. |
 
-### Restore (não executar agora)
+`walg_enabled: true` **não** é backup existente: o painel e a lista da API não mostram cópia, data nem identificador restaurável.
 
-1. Restaurar pelo mesmo painel o backup identificado.
-2. Conferir tabelas críticas: `organizations`, `organization_members`, `profiles`, `events`, `registrations`, `payments`, `payment_registrations`, `webhook_events`, `event_audit_logs`, eventos `MC-SIM%`.
+Dump/export lógico (`supabase db dump`) é recomendação documental do Free Plan. **Não executado** neste lote: não substitui backup da plataforma e exigiria credencial de banco + arquivo com dados reais fora do repositório.
+
+### Restore (não executar)
+
+Capacidade atual: **não comprovada** — não há backup listado para restaurar. A UI de Scheduled / PITR existe, mas o Free Plan não inclui backups de projeto e o PITR não está habilitado.
+
+Quando existir backup restaurável (upgrade Pro com cópia diária, ou add-on PITR):
+
+1. Restaurar pelo painel o backup identificado.
+2. Conferir: `organizations`, `organization_members`, `profiles`, `events`, `registrations`, `payments`, `payment_registrations`, `webhook_events`, `event_audit_logs`, eventos `MC-SIM%`.
 3. Não reaplicar migrations do HEAD sobre um restore do mesmo projeto, salvo o painel indicar schema incompleto.
 
 ### Antes de qualquer limpeza E2E futura
 
-Backup primeiro. Só então apagar orgs/eventos E2E. Não apagar MC-SIM nem profiles/Auth desconhecidos sem confirmação.
+É necessário um ponto de recuperação **real** (backup Pro/PITR ou export lógico autorizado e guardado fora do repo). Hoje esse ponto **não existe**. Não apagar MC-SIM nem profiles/Auth desconhecidos sem confirmação.
 
 ## 5. Migrations
 
