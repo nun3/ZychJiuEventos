@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { unstable_noStore as noStore } from 'next/cache'
-import { ArrowLeft, CalendarDays, Clock3, Download, FileText, GitBranch, MapPin, Trophy, UsersRound } from 'lucide-react'
+import { ArrowLeft, CalendarDays, ClipboardList, Clock3, Download, FileText, GitBranch, MapPin, Trophy, UsersRound } from 'lucide-react'
 import ModernNavbar from '@/components/ModernNavbar'
 import ModernFooter from '@/components/ModernFooter'
 import { Card, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
@@ -180,6 +180,12 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                   )}
                 </div>
                 <div className="mt-mc-24 space-y-mc-12 border-t border-mc-border pt-mc-24">
+                  {['checagem', 'chaves', 'em_andamento', 'concluido'].includes(event.status) ? (
+                    <Link href={`/eventos/${event.id}/checagem`} className="inline-flex min-h-12 w-full items-center justify-center gap-mc-8 rounded-mc-medium border border-mc-border bg-mc-surface px-mc-16 font-mc-interface text-base font-semibold text-mc-text-primary transition-colors duration-mc-normal hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2">
+                      <ClipboardList aria-hidden="true" size={18} />
+                      Consultar checagem
+                    </Link>
+                  ) : null}
                   <Link href={`/eventos/${event.id}/chaves`} className="inline-flex min-h-12 w-full items-center justify-center gap-mc-8 rounded-mc-medium border border-mc-border bg-mc-surface px-mc-16 font-mc-interface text-base font-semibold text-mc-text-primary transition-colors duration-mc-normal hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2">
                     <GitBranch aria-hidden="true" size={18} />
                     Consultar chaves
