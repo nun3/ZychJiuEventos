@@ -51,7 +51,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 - Eventos aparecem ordenados por data; o usuário escolhe inscrição própria ou de vários atletas e confirma os dados antes de concluir.
 - O cadastro de “Meus Atletas” é reutilizado entre eventos.
 - PIX e boleto aparecem como meios de pagamento individual ou agrupado.
-- Situação no MEU CAMP: núcleo de eventos, Meus Atletas, inscrições múltiplas, PIX/boleto e pagamento agrupado já existe; alguns critérios de aceite históricos ainda precisam de reconciliação documental.
+- Situação no MEU CAMP: núcleo de eventos, Meus Atletas, inscrições múltiplas, PIX/boleto e pagamento agrupado já existe. Inscrição própria do atleta maior permanece pendente; professor/responsável cobrem o fluxo comprovado.
 
 ### Checagem
 
@@ -59,13 +59,13 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 - Origem: `PROJETO_GERENCIADOR_CAMPEONATOS_JIU_JITSU_1.pdf`.
 - A lista de checagem contém somente pagamentos efetivados, identifica atleta sozinho, admite solicitação de mudança/correção e é travada antes das chaves.
-- Situação no MEU CAMP: núcleo autenticado, realocação aprovada e travamento estão concluídos; a lista pública em `/eventos/[id]/checagem` exibe nome completo de competição, equipe e categoria vigente das efetivadas.
+- Situação no MEU CAMP: núcleo autenticado, realocação de categoria do sozinho, travamento e lista pública estão concluídos. `/eventos/[id]/checagem` exibe nome completo de competição, equipe, professor operacional da inscrição e categoria vigente das efetivadas. Solicitação de correção de outros dados (faixa etc.) permanece fora da realocação.
 
 **EVIDÊNCIA DE BENCHMARK**
 
 - Origem: `BENCHMARKING_ILUTAS_1.pdf`.
 - Lista pública e alteração de inscrição reduzem trabalho manual do organizador.
-- Situação no MEU CAMP: solicitações auditadas existem, mas alteração direta de inscrição não foi adotada.
+- Situação no MEU CAMP: solicitações auditadas de categoria existem. Alteração direta de inscrição não foi adotada. Solicitação auditada de correção de faixa ou outros dados cadastrais permanece pendente e não é requisito automático deste benchmark.
 
 ### Categorias
 
@@ -117,7 +117,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 - Origem: `ZYCH_JIU_JITSU_CATEGORIA.pdf`.
 - A projeção por equipe possui coluna de resultado e identifica se o atleta está na 1ª ou 2ª luta da chave.
-- Situação no MEU CAMP: dados necessários existem, mas essa projeção específica ainda não foi implementada.
+- Situação no MEU CAMP: a programação pública e a visão por equipe projetam categoria, duração, resultado e área quando configurados. A visão ZYCH completa (1ª/2ª luta da chave + área + resultado no mesmo recorte de folha) permanece evidência de benchmark, não requisito.
 
 ### Áreas/tatames
 
@@ -126,20 +126,20 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 - Origem: `CHAVES_AREAS.pdf`.
 - A área aparece na visão da chave inteira, com número e cor. As chaves estão distribuídas entre três áreas.
 - A folha também possui campo manual de número da área.
-- Situação no MEU CAMP: não existe entidade persistente de área.
+- Situação no MEU CAMP: entidade de área por evento existe, identificada por número e nome/cor. A área pertence à subchave/grupo (Sprint 9, congelada).
 
 **EVIDÊNCIA DE BENCHMARK**
 
 - Origem: `FESTIVAL.pdf`.
 - Cada luta global está ligada a uma área numérica.
 - A área varia ao longo da sequência global; filtrar os números globais por área produz a fila daquela área.
-- Situação no MEU CAMP: `bracket_matches` identifica a luta, mas não possui alocação de área.
+- Situação no MEU CAMP: cada confronto oficial recebe área da subchave e `fight_number` global. A fila de uma área deriva da ordem crescente desses números.
 
 **EVIDÊNCIA DE BENCHMARK**
 
 - Origem: `ZYCH_JIU_JITSU_CATEGORIA.pdf`.
 - A área de luta é exibida na visão derivada por equipe e chave.
-- Situação no MEU CAMP: projeção futura.
+- Situação no MEU CAMP: a área aparece na programação pública e na visão por equipe. A folha ZYCH completa permanece benchmark.
 
 ### Programação
 
@@ -150,13 +150,13 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 - Cada luta normalmente ocupa duas linhas, uma por atleta.
 - O valor `39 e 44` para uma atleta evidencia participação em duas lutas globais da mesma programação.
 - Isso comprova número de luta global no evento; não há número local de luta por área.
-- Situação no MEU CAMP: número global e programação ainda não existem.
+- Situação no MEU CAMP: número global e programação pública existem (`/eventos/[id]/programacao` e `/admin/eventos/[id]/programacao`). Sprint 9 congelada.
 
 **EVIDÊNCIA DE BENCHMARK**
 
 - Origem: `CHAVES_AREAS.pdf`.
 - Há campo de horário da chave e horários de entrega/devolução da folha, todos para preenchimento manual.
-- Situação no MEU CAMP: não há horário previsto. Os documentos não demonstram cálculo automático de horários.
+- Situação no MEU CAMP: não há horário previsto automático. Os documentos não demonstram cálculo automático de horários; isso permanece evidência de benchmark, não requisito.
 
 **INFERÊNCIA**
 
@@ -203,7 +203,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 - Origem: `PROJETO_GERENCIADOR_CAMPEONATOS_JIU_JITSU_1.pdf`.
 - O encerramento prevê evento realizado e relatório financeiro sintético e analítico.
-- Situação no MEU CAMP: histórico público de resultados está parcialmente disponível; o fechamento financeiro entrega totais de inscrições, receita bruta, Taxa MEU CAMP (snapshot por inscrição efetivada) e receita líquida na tela `/admin/eventos/[id]/financeiro`. Exportação e fechamento histórico repetido permanecem fora.
+- Situação no MEU CAMP: histórico público de resultados está disponível para evento concluído. O fechamento financeiro entrega totais de inscrições, receita bruta, Taxa MEU CAMP (snapshot por inscrição efetivada) e receita líquida em `/admin/eventos/[id]/financeiro`. Exportação de arquivo não faz parte automaticamente do fechamento.
 
 **EVIDÊNCIA DE BENCHMARK**
 
@@ -224,7 +224,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 - Se lutas de uma mesma chave devem obrigatoriamente permanecer na mesma área.
 - Se cores das áreas são obrigatórias, exclusivas ou escolhidas de uma paleta fixa.
 - Regras de conflito simultâneo para atleta, equipe ou professor.
-- Identidade do professor operacional: aprovada como treinador informado por inscrição, com snapshot histórico.
+- Identidade do professor operacional: aprovada e entregue como treinador informado por inscrição, com snapshot histórico. Não reabrir o modelo.
 - Processo digital de entrega/devolução da chave ao coordenador.
 - Significado normativo das categorias diferentes entre atletas de algumas linhas do `FESTIVAL.pdf`.
 - Programação de eventos com mais de um dia ou mais de uma sessão.
@@ -262,7 +262,8 @@ As fontes sustentam o seguinte núcleo para a Sprint 9:
 - **DECISÃO DE PRODUTO:** enquanto a programação estiver em DRAFT, grupos podem ser movidos e a numeração global pode ser recalculada.
 - **DECISÃO DE PRODUTO:** após a publicação ou início da operação, a numeração fica congelada.
 - **DECISÃO DE PRODUTO:** WO, resultado, cancelamento ou ausência não renumeram; lacunas históricas são preservadas.
-- **DECISÃO DE PRODUTO:** a futura identidade do professor operacional continua pendente e não bloqueia o primeiro lote.
+- **DECISÃO DE PRODUTO (Sprint 9):** a futura identidade do professor operacional continua pendente e não bloqueia o primeiro lote.
+- **EVOLUÇÃO (2026-09-19):** professor operacional entregue na Sprint 13 lote 3, com cardinalidade 1 por inscrição e snapshot histórico. Não reabre a Sprint 9.
 
 ## Decisões MEU CAMP para a Sprint 10
 
@@ -281,12 +282,22 @@ As fontes sustentam o seguinte núcleo para a Sprint 9:
 
 ## Gaps conhecidos após o fechamento da Sprint 11
 
-O recorte aprovado cobre duração oficial da categoria e sua projeção nas chaves, programação, visão por equipe e resultados. Permanecem fora:
+O recorte aprovado cobre duração oficial da categoria e sua projeção nas chaves, programação, visão por equipe e resultados.
 
-- professor operacional;
-- peso medido, tolerância e desclassificação;
+Evolução posterior (não reabre a Sprint 11):
+
+- professor operacional: entregue na Sprint 13 lote 3;
+- pesagem e premiação operacionais por subchave: já estavam na Sprint 10;
+- fechamento financeiro: entregue na Sprint 12.
+
+Permanecem evidência de benchmark / futuro, sem virar requisito automático:
+
 - placar;
-- horário automático, não demonstrado nas fontes;
+- cronômetro;
 - chamada ao vivo;
+- horário automático, não demonstrado nas fontes;
+- pesagem individual (peso medido, tolerância e desclassificação);
+- visão ZYCH completa;
+- exportações não aprovadas;
 - cálculo de término ou descanso entre lutas;
 - distribuição física de medalhas e ranking.

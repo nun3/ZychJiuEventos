@@ -5,6 +5,7 @@
 - Produto: Meu Camp
 - Versao: 1.0
 - Status: aprovado para refinamento e execucao tecnica
+- Estado operacional registrado em 2026-09-19: fluxo §3, Sprints 8–13 e Full Event BDD comprovados; pendencias de go-live listadas nas secoes 10 e 11
 - Fonte primaria: PDFs de projeto e benchmarking fornecidos pelo cliente
 - Escopo detalhado: `docs/escopo_funcional_plataforma.md`
 - Criterios verificaveis: `docs/criterios_aceite_mvp.md`
@@ -29,7 +30,7 @@ Entregar um fluxo confiavel desde o cadastro da conta ate a checagem do evento:
 7. atletas efetivados aparecem na checagem publica;
 8. solicitacoes de categoria sao aprovadas ou recusadas com auditoria.
 
-Chaves, pesagem, resultados e fechamento financeiro completo permanecem no produto, mas entram depois que esse fluxo estiver validado.
+Estado vigente (2026-09-19): o fluxo acima esta entregue e comprovado pelo Full Event BDD canonico. Chaves, pesagem operacional por subchave, resultados, areas, programacao, duracao oficial e fechamento financeiro foram entregues nas Sprints 8–12 e permanecem congelados. Nao sao trabalho futuro do primeiro incremento; ja fazem parte do produto operacional atual. Exportacao, placar, cronometro, chamada ao vivo, horario automatico e pesagem individual continuam fora deste recorte.
 
 ## 4. Publicos e papeis
 
@@ -53,6 +54,8 @@ Uma conta pode acumular papeis. A autorizacao depende do recurso, da organizacao
 - Isolamento entre organizacoes por RLS.
 - Auditoria de operacoes sensiveis.
 
+Estado vigente (2026-09-19): Auth, perfil, recuperacao de senha, RLS e auditoria de operacoes sensiveis estao entregues. O modelo de organizacoes, membros e papeis existe. Permanecem pendentes o onboarding self-service de organizacao e a gestao/convite de membros na UI.
+
 ### 5.2 Equipes e Meus Atletas
 
 - Cadastro e edicao de atleta gerenciado.
@@ -62,7 +65,7 @@ Uma conta pode acumular papeis. A autorizacao depende do recurso, da organizacao
 - Troca de equipe preserva historico auditavel.
 - Historico de inscricoes por atleta.
 
-Estado vigente (2026-09-19): o Professor nasce no cadastro/login, cria/assume equipe pela RPC `create_managed_team` sem membership administrativo e reutiliza Meus Atletas, inscricoes e a checagem publica.
+Estado vigente (2026-09-19): o Professor nasce no cadastro/login, cria/assume equipe pela RPC `create_managed_team` sem membership administrativo e reutiliza Meus Atletas, inscricoes e a checagem publica. Responsavel gerencia menores sem login proprio do atleta. Permanecem pendentes o atleta independente completo (autoinscricao) e o enforcement de que menor nao cria conta no cadastro publico.
 
 ### 5.3 Eventos e categorias
 
@@ -72,6 +75,8 @@ Estado vigente (2026-09-19): o Professor nasce no cadastro/login, cria/assume eq
 - Conjuntos versionados de categorias por idade, genero, faixa e peso.
 - Lista publica ordenada por data e pagina de detalhes.
 
+Estado vigente (2026-09-19): CRUD, publicacao, cancelamento, conclusao, fuso, arquivos, categorias e lista publica estao entregues. Evento concluido permanece consultavel com resultados publicados. Evento cancelado nao aceita novas inscricoes.
+
 ### 5.4 Inscricoes
 
 - Inscricao propria ou de varios atletas gerenciados.
@@ -80,6 +85,8 @@ Estado vigente (2026-09-19): o Professor nasce no cadastro/login, cria/assume eq
 - Categorizacao automatica explicavel.
 - Snapshot imutavel de atleta, equipe, categoria, preco, regra e termo aceito.
 - Estado inicial confirmado como `pendente_pagamento`.
+
+Estado vigente (2026-09-19): inscricao de atletas gerenciados, fase, duplicidade, idade, categorizacao, snapshot e `pendente_pagamento` estao entregues. Inscricao propria do atleta maior permanece pendente.
 
 ### 5.5 Pagamentos
 
@@ -109,7 +116,20 @@ Referencias tecnicas: [criacao de cobranca](https://docs.asaas.com/reference/cre
 - Solicitacao, aprovacao e recusa de mudanca com historico.
 - Travamento da checagem antes da geracao de chaves.
 
-Estado vigente (2026-09-19): o nucleo autenticado da checagem permanece entregue. A lista publica em `/eventos/[id]/checagem` exibe nome completo de competicao, equipe, professor operacional da inscricao e categoria vigente das inscricoes efetivadas. Correcao de faixa nao faz parte da realocacao do sozinho.
+Estado vigente (2026-09-19): o nucleo autenticado da checagem permanece entregue. A lista publica em `/eventos/[id]/checagem` exibe nome completo de competicao, equipe, professor operacional da inscricao e categoria vigente das inscricoes efetivadas. Correcao de categoria/realocacao do sozinho esta entregue. Solicitacao auditada de correcao de outros dados, como faixa, permanece pendente e nao faz parte da realocacao do sozinho.
+
+### 5.7 Operacao esportiva e encerramento
+
+Entregue e congelado nas Sprints 8–12, depois da validacao do fluxo §3:
+
+- chaves apos lock, versionamento, `final_2`/`copo_3`/`semi_4` e tentativa de evitar mesma equipe na primeira luta;
+- resultados, WO e colocacoes publicados;
+- areas, numero global e programacao publica;
+- duracao oficial da luta por categoria;
+- pesagem e premiacao operacionais por subchave;
+- fechamento financeiro sintetico e analitico, com Taxa MEU CAMP snapshotada.
+
+Nao inclui automaticamente: exportacao, placar, cronometro, chamada ao vivo, horario automatico nem pesagem individual.
 
 ## 6. Fora do primeiro incremento operacional
 
@@ -118,7 +138,7 @@ Estado vigente (2026-09-19): o nucleo autenticado da checagem permanece entregue
 - Filiacao federativa completa.
 - Certificados e notificacoes por SMS/WhatsApp.
 - Multiplos gateways ativos simultaneamente.
-- Algoritmo definitivo de chaves antes da aprovacao das regras de 3 e 5 atletas.
+- Algoritmo de chaves diferente do recorte ja aprovado na Sprint 8.
 - Split automatico ou repasse financeiro antes da definicao comercial.
 
 Telas existentes desses assuntos podem continuar como prototipo, mas nao devem ser apresentadas como funcionalidades operacionais.
@@ -165,15 +185,27 @@ As metas numericas precisam de linha de base real. O MVP deve ao menos medir:
 
 ## 10. Decisoes pendentes e bloqueios
 
+Pendencias comerciais e de liberacao:
+
 - tarifa da plataforma, incidencia e responsavel pelo custo do gateway;
 - modelo de recebimento e eventual split/repasse;
 - cancelamento, estorno parcial, chargeback e prazos;
-- regras definitivas das chaves, especialmente grupos de 3 e 5;
-- formato final dos relatorios e fechamento;
+- contratacao definitiva do Asaas em producao; o adaptador Sandbox nao e homologacao de producao;
+- regras definitivas das chaves se o produto quiser alterar o recorte ja aprovado de 2, 3 e 4 (5+ por agrupamento);
+- formato comercial final dos relatorios (exportacao e fechamento historico repetido). O fechamento sintetico/analitico com bruto, taxa snapshot e liquido ja foi entregue;
 - politica de retencao, exclusao e direitos de imagem;
-- metas numericas dos indicadores de sucesso.
+- metas numericas dos indicadores de sucesso; a instrumentacao do §8 ainda nao existe;
+- observabilidade de producao: backup, logs, monitoramento e procedimento de rollback.
 
-Essas pendencias nao bloqueiam o teste local da migracao nem contas/eventos. Pagamentos reais, chaves e producao dependem das respectivas decisoes.
+Pendencias de produto ainda no PRD, sem impedir o fluxo §3 operado pelo owner seedado:
+
+- onboarding self-service de organizacao;
+- gestao/convite de membros na UI;
+- atleta independente completo;
+- enforcement da regra de menor sem login proprio;
+- solicitacao auditada de correcao de dados alem da categoria.
+
+Essas pendencias nao bloqueiam o teste local nem o fluxo operacional ja comprovado. Pagamentos reais e preparacao para producao dependem das decisoes comerciais e de liberacao. Nao iniciar preparacao para producao neste marco.
 
 ## 11. Criterio de liberacao do MVP
 
@@ -186,6 +218,20 @@ O MVP somente pode ser liberado quando:
 - webhook repetido nao duplicar baixa nem inscricao;
 - backup, logs, monitoramento e procedimento de rollback estiverem documentados;
 - dados mockados nao forem misturados a dados reais no fluxo publicado.
+
+Inventario vigente de `localStorage` (2026-09-19), sem correcao neste marco:
+
+Rotas/prototipos que ainda leem `lib/eventStorage` (localStorage):
+
+- `/admin/eventos/[id]/gerenciar`
+- `/admin/eventos/[id]/regulamento`
+- `/admin/eventos/[id]/pesagem` (prototipo; a pesagem operacional real esta em resultados)
+- `/admin/eventos/[id]/placar`
+- `/admin/eventos/[id]/secretaria`
+- `/admin/eventos/[id]/filiacao`
+- `/admin/eventos/[id]/tarefas`
+
+Navegaveis a partir do produto real: checagem, chaves, programacao, resultados e financeiro linkam de volta para `/gerenciar`. A listagem `/admin/eventos` nao aponta para esse hub; o caminho operacional publicado usa Configurar, checagem, chaves, programacao, resultados e financeiro com persistencia Supabase.
 
 ## 12. Governanca de escopo
 

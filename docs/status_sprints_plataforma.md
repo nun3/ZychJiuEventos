@@ -37,11 +37,12 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 - Status: concluida documentalmente
 - Resultado: escopo consolidado, PRD, criterios de aceite, estados, permissoes, regras e modelo relacional definidos.
 - Entrega tecnica: `supabase/migrations/202608270001_initial_domain.sql` criada, aplicada e validada no Sandbox.
-- Observacao: a migracao para dados reais iniciou pela autenticacao; os modulos funcionais ainda possuem mocks a substituir nas sprints seguintes.
+- Observacao original: a migracao para dados reais iniciou pela autenticacao; os modulos funcionais ainda possuem mocks a substituir nas sprints seguintes.
+- Evolucao (2026-09-19): autenticacao, Meus Atletas, eventos, inscricao, pagamento, checagem, chaves, programacao, checklist, duracao, fechamento, Professor e professor operacional passaram a persistencia real. Permanecem prototipos com `localStorage` inventariados no PRD §11. Nao corrigir neste marco.
 
 ### Proximo marco
 
-Sprints 8 a 13 e o Full Event BDD permanecem congelados. O Professor cadastral e o professor operacional da inscricao ja nascem no produto (`npm run test:operational-professor`) e nao sao organization_role. Nao iniciar exportacao nem preparacao para producao.
+Reconciliacao documental do MVP concluida em 2026-09-19. Sprints 8 a 13 e o Full Event BDD permanecem congelados. O proximo recorte de produto e o go-live (onboarding de org, membros, atleta independente, regra de menor), nao um lote operacional novo. Nao iniciar exportacao nem preparacao para producao.
 
 ## 5. Backlog ordenado por sprints
 
@@ -466,7 +467,7 @@ Pré-requisitos: migrações de reserva já aplicadas; URL/chaves públicas e `S
   - travamento unico, sem reabertura, com trilha de auditoria.
 - Criterio de saida: lista travada e imutavel para operacoes comuns e pronta para originar chaves. **Atendido.**
 
-Revisao vigente: a alocacao operacional e `coalesce(current_category_id, category_id)`. Snapshot e `category_id` original permanecem imutaveis. Aprovacao, recusa e travamento sao atomicos, auditados e recusam concorrencia/segunda decisao. A identidade publica dos inscritos ainda depende de decisao do PRD; CPF, nascimento completo e dados de pagamento nunca entram em consulta publica.
+Revisao vigente: a alocacao operacional e `coalesce(current_category_id, category_id)`. Snapshot e `category_id` original permanecem imutaveis. Aprovacao, recusa e travamento sao atomicos, auditados e recusam concorrencia/segunda decisao. CPF, nascimento completo e dados de pagamento nunca entram em consulta publica. Evolucao: a identidade publica foi decidida no PRD e entregue na Sprint 13 lote 1 (nome completo de competicao, equipe e categoria vigente).
 
 MC-SIM r1 (`24fa57c3-…`, travado em `2026-09-17T14:00:59Z`) e MC-SIM r2 (`0c5d6eff-…`, travado em `2026-09-17T14:46:53Z`) sao evidencias permanentes do runbook. Nao reabrir, nao reciclar para cenario novo, nao usar como massa descartavel de E2E.
 
@@ -531,17 +532,19 @@ Evento novo. Atleta A sozinho no Leve (70 kg) → Medio adjacente → solicitaca
 | Bloqueios pos-lock | request/review recusam `Checagem travada` | smoke; r2 lock | aprovado |
 | Filtros categoria e equipe | `EventRegistrationsList` | BDD; UI smoke r1/r2 | aprovado |
 | Filtro por professor | `operational_professor_name` da inscricao | `npm run test:operational-professor`; smoke SQL | aprovado |
-| Lista publica de checagem | — | identidade publica ainda e decisao de PRD | pendente de produto |
+| Lista publica de checagem | — | identidade publica ainda e decisao de PRD | pendente de produto na Sprint 7; entregue na Sprint 13 lote 1 |
 | Correcao de faixa/dados | — | fluxo distinto, fora da realocacao | futuro / decisao de modelo |
 | Flags de realocacao no rule set | default de plataforma no SQL | divida consciente, sem schema | futuro |
 
 #### Fora deste fechamento (nao bloquear o nucleo)
 
-- lista publica e filtro por professor;
-- correcao de faixa/dados cadastrais;
-- configuracao por evento/rule set dos eixos de realocacao;
-- unlock da checagem;
-- Sprint 8 (chaves), check-in, pesagem.
+Registro original da Sprint 7. Evolucao posterior, sem reabrir esta sprint:
+
+- lista publica e filtro por professor: entregues na Sprint 13;
+- correcao de faixa/dados cadastrais: permanece pendente;
+- configuracao por evento/rule set dos eixos de realocacao: permanece fora;
+- unlock da checagem: permanece fora;
+- Sprint 8 (chaves), check-in, pesagem: chaves e pesagem operacional entregues depois; check-in nao foi modelado.
 
 Automacao proporcional: BDD de lista/sozinho; smokes SQL de realocacao e lock; RPCs autenticadas; MC-SIM r1 e r2. A hidratacao quebrada do login E2E no Playwright permanece limitacao de infraestrutura; o smoke de UI autenticado usou cookie de sessao do owner, nao `waitForTimeout`.
 
@@ -614,13 +617,11 @@ Automacao: os smokes transacionais cobrem DRAFT, autorizacao, invariantes, versi
   - smoke publico aprovado para draft invisivel, ordem global, filtros, dependente, WO, RLS e 390 px;
   - MC-SIM proprio da Sprint 9 (`runId fc464214`) aprovado ponta a ponta, com cleanup sem residuos;
   - TypeScript, lint e build de producao aprovados nos lotes da sprint.
-- Fora deste fechamento (gaps conhecidos do benchmark):
-  - duracao da categoria;
-  - professor operacional;
-  - pesagem individual, tolerancia e desclassificacao;
-  - placar;
-  - horario automatico;
-  - chamada ao vivo.
+- Fora deste fechamento (gaps conhecidos do benchmark na data da Sprint 9):
+  - duracao da categoria — entregue na Sprint 11;
+  - professor operacional — entregue na Sprint 13 lote 3;
+  - pesagem individual, tolerancia e desclassificacao — permanece benchmark;
+  - placar, horario automatico e chamada ao vivo — permanecem benchmark.
 
 Revisao: o recorte de areas e programacao possui implementacao real e foi validado no Sandbox. O MC-SIM cobriu criacao de areas, atribuicao integral da subchave, numeracao global, reordenacao em DRAFT, publicacao/congelamento, consulta publica, filtros, dependente sem atleta inventado, resultado posterior, WO sem renumerar, visao por equipe, mobile 390px e recusa de leitura anonima das tabelas administrativas.
 
@@ -669,10 +670,10 @@ Automacao: `npm run test:unit` cobre a derivacao; `BASE_URL=http://localhost:310
   - rota `/eventos/[id]/checagem`;
   - somente efetivadas, com nome completo de competicao, equipe e categoria vigente;
   - filtros de categoria e equipe; atleta sozinho identificado.
-- Fora deste lote:
-  - filtro por professor;
-  - papel Professor novo;
-  - exportacao e preparacao para producao.
+- Fora deste lote (registro original do lote 1):
+  - filtro por professor — entregue no lote 3;
+  - papel Professor novo — entregue no lote 2;
+  - exportacao e preparacao para producao — permanecem fora.
 
 Automacao: `BASE_URL=http://localhost:3102 npm run test:public-checking`.
 
@@ -682,11 +683,11 @@ Automacao: `BASE_URL=http://localhost:3102 npm run test:public-checking`.
   - RPC `create_managed_team` sem `organization_role`;
   - painel, Meus Atletas, inscricoes e checagem publica reutilizados;
   - isolamento administrativo comprovado.
-- Fora deste lote:
-  - professor operacional da luta;
-  - filtro por professor;
-  - organizacoes pela UI;
-  - exportacao e preparacao para producao.
+- Fora deste lote (registro original do lote 2):
+  - professor operacional da luta — entregue no lote 3;
+  - filtro por professor — entregue no lote 3;
+  - organizacoes pela UI — permanece pendente;
+  - exportacao e preparacao para producao — permanecem fora.
 
 Automacao do lote 2: `BASE_URL=http://localhost:3102 npm run test:professor`.
 
@@ -730,12 +731,9 @@ Automacao do lote 3: `BASE_URL=http://localhost:3102 npm run test:operational-pr
   - smoke autenticado aprovado para pendente, confirmar pesagem, bloquear premiacao, liberar apos resultado, recusa publica e viewport de 390 px;
   - TypeScript, lint e build de producao aprovados.
 - Fora deste fechamento:
-  - peso medido, tolerancia e desclassificacao;
-  - professor operacional;
-  - placar;
-  - horario automatico;
-  - chamada ao vivo;
-  - distribuicao fisica de medalhas e ranking.
+  - peso medido, tolerancia e desclassificacao — permanece benchmark;
+  - professor operacional — entregue na Sprint 13 lote 3, sem reabrir esta sprint;
+  - placar, horario automatico, chamada ao vivo, medalha individual — permanecem benchmark.
 
 Revisao: o checklist operacional da subchave possui implementacao real e foi validado no Sandbox. Nao reabrir Sprints 8 e 9.
 
@@ -805,7 +803,7 @@ Automacao: jornada completa com multiplos papeis, regressao de isolamento, naveg
 
 | Risco | Impacto | Tratamento |
 |---|---|---|
-| Dominios esportivos fora do fechamento das Sprints 8 a 11 | Impedem operacao alem de chaves, resultados, programacao, checklist e duracao oficial | Contrato proprio antes de professor operacional, pesagem individual, placar, horario ou chamada ao vivo |
+| Dominios esportivos fora do fechamento das Sprints 8 a 13 | Nao impedem o fluxo operacional ja comprovado | Professor operacional entregue. Permanecem benchmark: pesagem individual, placar, horario automatico e chamada ao vivo |
 | Politica financeira indefinida | Bloqueia pagamento real e fechamento | Decisao comercial antes da promocao do Sandbox |
 | Dados de menores | Risco legal e reputacional | Minimizar exposicao, registrar consentimento e revisar LGPD |
 | Prototipo confundido com sistema real | Expectativa e testes incorretos | Rotular mocks e migrar modulo a modulo |
@@ -923,3 +921,12 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - decisoes: 1 professor por inscricao; nome snapshot independente; sem fallback de `athlete_managers`; sem IDs/e-mail/telefone na superficie publica;
 - divida tecnica aceita: multiplos professores, troca por luta, corner ao vivo, exportacao e preparacao para producao;
 - proxima etapa: Sprint 13 lote 3 congelado. Nao reabrir o Full Event nem as Sprints 8 a 13. Nao iniciar exportacao nem preparacao para producao.
+
+### 2026-09-19 — Reconciliacao documental do MVP
+
+- data: 2026-09-19;
+- entregas verificadas: nenhuma mudanca funcional; `criterios_aceite_mvp.md`, `benchmark-operacional.md`, `roadmap_plataforma_meu_camp.md` e este status sincronizados com o estado comprovado;
+- testes: validacao apenas documental/diff;
+- decisoes: nao alterar dominio; nao iniciar producao; marcar so o que tem evidencia; preservar historico das sprints;
+- divida tecnica aceita: onboarding de organizacao, membros, atleta independente, regra de menor, correcao auditada de dados, Asaas producao, observabilidade e prototipos com `localStorage`;
+- proxima etapa: recorte de go-live. Nao iniciar lote operacional novo nem preparacao para producao.
