@@ -944,7 +944,7 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 
 - data: 2026-09-19;
 - entregas verificadas: contrato `registration_correction_requests` (nome, faixa, peso, equipe), RPCs de pedido/decisao, caminho controlado em `protect_registration_snapshot`, UI em `/dashboard/inscricoes` e `/admin/eventos/[id]/checagem`;
-- testes: unit `registration-correction`; smoke SQL `registration_correction_smoke.sql`; TypeScript/build;
+- testes: unit `registration-correction`; smoke SQL `registration_correction_smoke.sql` no Sandbox `kfvypacjzlzwwblsbpwj` (rollback);
 - decisoes: nao reutilizar Sprint 7; nao recategorizar; fail closed apos lock; sincronizar cadastro mestre quando as regras atuais permitem;
 - divida tecnica aceita: onboarding de organizacao, membros, Asaas producao, observabilidade, data de nascimento/genero/professor operacional/categoria neste contrato;
-- proxima etapa: aplicar a migration no Sandbox. Sem Vercel, Production ou push.
+- proxima etapa: PIX/boleto permanece bloqueado. Sem Vercel, Production ou push.

@@ -15,7 +15,7 @@ declare
   event uuid := gen_random_uuid();
   rules uuid := gen_random_uuid();
   cat_leve uuid := gen_random_uuid();
-  cat_leve_alt uuid := gen_random_uuid();
+  cat_medio uuid := gen_random_uuid();
   cat_pesado uuid := gen_random_uuid();
   athlete_self uuid := gen_random_uuid();
   athlete_managed uuid := gen_random_uuid();
@@ -62,7 +62,7 @@ begin
     id, rule_set_id, nome, idade_min, idade_max, faixa_min_ordem, faixa_max_ordem, peso_min_kg, peso_max_kg, genero, ordem
   ) values
     (cat_leve, rules, 'Adulto Leve', 18, 29, 1, 1, 0, 76, 'M', 1),
-    (cat_leve_alt, rules, 'Adulto Leve Alt', 18, 29, 1, 1, 0, 76, 'M', 2),
+    (cat_medio, rules, 'Adulto Medio', 18, 29, 1, 1, 76.01, 88, 'M', 2),
     (cat_pesado, rules, 'Adulto Pesado', 18, 29, 1, 1, 88.01, 100, 'M', 3);
   insert into public.athletes(id, organization_id, team_id, user_id, nome_completo, data_nascimento, genero, faixa, peso_kg)
     values
@@ -93,17 +93,17 @@ begin
     id, event_id, athlete_id, category_id, registered_by, status, valor,
     athlete_snapshot, category_snapshot, rule_set_version, terms_version, terms_accepted_at
   ) values
-    (reg_self, event, athlete_self, cat_leve_alt, self_user, 'efetivada', 80, snapshot, jsonb_build_object('nome', 'Adulto Leve Alt'), 1, 'MVP-2026-09', now()),
-    (reg_managed, event, athlete_managed, cat_leve, professor, 'efetivada', 80,
-      snapshot || jsonb_build_object('nome_completo', 'Atleta Gerenciado'), leve_snapshot, 1, 'MVP-2026-09', now()),
-    (reg_weight, event, athlete_weight, cat_leve, professor, 'efetivada', 80,
-      snapshot || jsonb_build_object('nome_completo', 'Atleta Peso'), leve_snapshot, 1, 'MVP-2026-09', now()),
-    (reg_team, event, athlete_team, cat_leve, professor, 'efetivada', 80,
-      snapshot || jsonb_build_object('nome_completo', 'Atleta Equipe'), leve_snapshot, 1, 'MVP-2026-09', now()),
-    (reg_lock, event, athlete_lock, cat_leve, professor, 'efetivada', 80,
-      snapshot || jsonb_build_object('nome_completo', 'Atleta Lock'), leve_snapshot, 1, 'MVP-2026-09', now()),
-    (reg_belt, event, athlete_belt, cat_leve, professor, 'efetivada', 80,
-      snapshot || jsonb_build_object('nome_completo', 'Atleta Faixa'), leve_snapshot, 1, 'MVP-2026-09', now());
+    (reg_self, event, athlete_self, cat_leve, self_user, 'efetivada', 80, snapshot, jsonb_build_object('nome', 'Adulto Leve'), 1, 'MVP-2026-09', now()),
+    (reg_managed, event, athlete_managed, cat_pesado, professor, 'efetivada', 80,
+      snapshot || jsonb_build_object('nome_completo', 'Atleta Gerenciado'), jsonb_build_object('nome', 'Adulto Pesado'), 1, 'MVP-2026-09', now()),
+    (reg_weight, event, athlete_weight, cat_medio, professor, 'efetivada', 80,
+      snapshot || jsonb_build_object('nome_completo', 'Atleta Peso'), jsonb_build_object('nome', 'Adulto Medio'), 1, 'MVP-2026-09', now()),
+    (reg_team, event, athlete_team, cat_pesado, professor, 'efetivada', 80,
+      snapshot || jsonb_build_object('nome_completo', 'Atleta Equipe'), jsonb_build_object('nome', 'Adulto Pesado'), 1, 'MVP-2026-09', now()),
+    (reg_lock, event, athlete_lock, cat_pesado, professor, 'efetivada', 80,
+      snapshot || jsonb_build_object('nome_completo', 'Atleta Lock'), jsonb_build_object('nome', 'Adulto Pesado'), 1, 'MVP-2026-09', now()),
+    (reg_belt, event, athlete_belt, cat_pesado, professor, 'efetivada', 80,
+      snapshot || jsonb_build_object('nome_completo', 'Atleta Faixa'), jsonb_build_object('nome', 'Adulto Pesado'), 1, 'MVP-2026-09', now());
 
   -- Terceiro nao autorizado.
   perform set_config('request.jwt.claim.sub', outsider::text, true);
@@ -168,7 +168,8 @@ begin
   if (select previous_value->>'nome_completo' from public.registration_correction_requests where id = request_nome) <> 'Atleta Proprio' then
     raise exception 'FAIL: previous name not auditable';
   end if;
-  if (select category_id from public.registrations where id = reg_self) is distinct from cat_leve then
+  if (select category_id from public.registrations where id = reg_self) is distinct from cat_leve
+     or (select current_category_id from public.registrations where id = reg_self) is not null then
     raise exception 'FAIL: name approval recategorized';
   end if;
 
@@ -190,7 +191,7 @@ begin
   if (select peso_kg from public.athletes where id = athlete_weight) is distinct from 90 then
     raise exception 'FAIL: master weight not synced';
   end if;
-  if (select category_id from public.registrations where id = reg_weight) is distinct from cat_leve
+  if (select category_id from public.registrations where id = reg_weight) is distinct from cat_medio
      or (select current_category_id from public.registrations where id = reg_weight) is not null then
     raise exception 'FAIL: weight correction recategorized silently';
   end if;
@@ -224,7 +225,7 @@ begin
   if (select athlete_snapshot->>'faixa' from public.registrations where id = reg_belt) <> 'Azul' then
     raise exception 'FAIL: registration belt not corrected';
   end if;
-  if (select category_id from public.registrations where id = reg_belt) is distinct from cat_leve
+  if (select category_id from public.registrations where id = reg_belt) is distinct from cat_pesado
      or (select current_category_id from public.registrations where id = reg_belt) is not null then
     raise exception 'FAIL: belt correction recategorized silently';
   end if;
@@ -248,12 +249,13 @@ begin
   then raise exception 'FAIL: direct write allowed'; end if;
 
   -- Fluxo existente de categoria permanece intacto.
-  select count(*) into category_count from public.category_change_requests;
   reset role;
+  select count(*) into category_count from public.category_change_requests;
   perform set_config('request.jwt.claim.sub', self_user::text, true);
   set local role authenticated;
-  category_request := (public.request_category_change(reg_self, cat_leve, 'motivo valido')->>'requestId')::uuid;
+  category_request := (public.request_category_change(reg_self, cat_medio, 'motivo valido')->>'requestId')::uuid;
   if category_request is null then raise exception 'FAIL: existing category request broken'; end if;
+  reset role;
   if (select count(*) from public.category_change_requests) <> category_count + 1 then
     raise exception 'FAIL: category request table mutated unexpectedly';
   end if;

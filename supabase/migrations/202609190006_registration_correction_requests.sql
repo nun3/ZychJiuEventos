@@ -166,7 +166,7 @@ begin
   if exists (
     select 1 from public.registration_correction_requests request
     where request.registration_id = target_registration.id
-      and request.requested_field = requested_field
+      and request.requested_field = request_registration_correction.requested_field
       and request.status = 'pendente'
   ) then raise exception 'Ja existe solicitacao pendente deste campo'; end if;
 
@@ -221,7 +221,7 @@ begin
   insert into public.registration_correction_requests (
     registration_id, requested_by, requested_field, previous_value, requested_value, reason
   ) values (
-    target_registration.id, actor, requested_field, previous_payload, requested_payload, normalized_reason
+    target_registration.id, actor, request_registration_correction.requested_field, previous_payload, requested_payload, normalized_reason
   ) returning id into new_request_id;
 
   insert into public.event_audit_logs (
@@ -232,12 +232,12 @@ begin
     'registration_correction_requested', 'registration_correction_request', new_request_id,
     jsonb_build_object(
       'registrationId', target_registration.id,
-      'field', requested_field,
+      'field', request_registration_correction.requested_field,
       'previousValue', previous_payload
     ),
     jsonb_build_object(
       'registrationId', target_registration.id,
-      'field', requested_field,
+      'field', request_registration_correction.requested_field,
       'requestedValue', requested_payload,
       'status', 'pendente'
     ),
