@@ -4,7 +4,7 @@
 
 Este arquivo é o ponto de entrada para uma IA ou pessoa continuar o projeto sem depender do histórico da conversa. Leia-o antes de implementar.
 
-**Objetivo atual:** o Full Event E2E canônico está entregue no playwright-bdd (`npm run bdd:full-event`). As transições administrativas `inscricao → pagamento`, `checagem travada → chaves` e `em_andamento → concluido` estão na UI. As Sprints 8 a 11 permanecem congeladas. Não iniciar relatório financeiro nem preparação para produção. Professor operacional, pesagem individual, placar, horário automático e chamada ao vivo permanecem fora.
+**Objetivo atual:** o Full Event BDD e as Sprints 8 a 11 estão congelados. A Sprint 12 lote 1 entregou o fechamento financeiro sem taxa (`npm run test:closing`). `platform fee: decisão pendente`. Não inventar percentual nem receita líquida. Não iniciar preparação para produção. Professor operacional, pesagem individual, placar, horário automático e chamada ao vivo permanecem fora.
 
 MC-SIM r1 e r2 são evidências permanentes. Não alterá-los para cenário novo.
 
@@ -381,4 +381,4 @@ Atualizar o status operacional. Este guia descreve o checkpoint de partida; atua
 
 ### Texto para o usuário entregar a outra IA
 
-> Continue o projeto Meu Camp em /home/nune/Meus Projetos/jiu. Leia primeiro docs/guia_continuidade_ia.md e os documentos indicados nele. Preserve as alterações existentes e confira o estado real do código e do Sandbox. O Full Event E2E canônico está entregue no playwright-bdd (`npm run bdd:full-event`). As transições administrativas inscricao→pagamento, checagem travada→chaves e em_andamento→concluido estão na UI. As Sprints 8 a 11 permanecem congeladas. Não iniciar relatório financeiro nem preparação para produção. Continue a implementação autorizada com automação pareada, sem resetar dados, expor segredos, usar produção ou inventar decisões comerciais. Registre evidências novas antes de concluir qualquer sprint e avance conforme as dependências do plano. Faça perguntas apenas para decisões ou acessos realmente indispensáveis, enquanto executa o trabalho independente disponível.
+> Continue o projeto Meu Camp em /home/nune/Meus Projetos/jiu. Leia primeiro docs/guia_continuidade_ia.md e os documentos indicados nele. Preserve as alterações existentes e confira o estado real do código e do Sandbox. O Full Event BDD e as Sprints 8 a 11 estão congelados. A Sprint 12 lote 1 entregou o fechamento financeiro sem taxa. platform fee: decisão pendente. Não inventar percentual nem receita líquida. Não iniciar preparação para produção. Continue a implementação autorizada com automação pareada, sem resetar dados, expor segredos, usar produção ou inventar decisões comerciais. Registre evidências novas antes de concluir qualquer sprint e avance conforme as dependências do plano. Faça perguntas apenas para decisões ou acessos realmente indispensáveis, enquanto executa o trabalho independente disponível.

@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprint 11 concluida no recorte de duracao oficial da luta por categoria em 2026-09-18. Sprints 8, 9 e 10 permanecem congeladas. Transicoes administrativas inscricao→pagamento, checagem travada→chaves e em_andamento→concluido expostas pela UI em 2026-09-18. Full Event E2E canonico aprovado em 2026-09-18 e convertido para playwright-bdd no mesmo dia (`npm run bdd:full-event`, residualCount 0). Nao iniciar relatorio financeiro nem preparacao para producao.
+Sprint 11 concluida no recorte de duracao oficial da luta por categoria em 2026-09-18. Sprints 8 a 11 e o Full Event BDD permanecem congelados. Sprint 12 lote 1 entregue em 2026-09-18: fechamento financeiro sem taxa da plataforma (`npm run test:closing`). Taxa e receita liquida continuam pendentes de decisao comercial. Nao iniciar preparacao para producao.
 
 ## 5. Backlog ordenado por sprints
 
@@ -630,22 +630,29 @@ Automacao: `npm run mc-sim:sprint9` em `automacao/`. Os smokes transacionais e P
 
 Nucleo da Sprint 9 comprovado no Sandbox. A sprint fecha neste recorte. Nao reabrir areas, numeracao ou programacao.
 
-### Marco posterior sem numero definido - Financeiro e encerramento
+### Sprint 12 - Encerramento financeiro
 
-- Status: bloqueado
-- Bloqueio: taxas, recebimento, estornos e formato do fechamento.
-- Dependencias: Sprints 6 a 8.
-- Objetivo: consolidar o evento e apresentar valores auditaveis.
-- Escopo:
-  - relatorio sintetico e analitico;
-  - receita bruta, taxas, estornos e receita liquida;
-  - fechamento e acesso historico;
-  - exportacao no formato aprovado.
-- Criterios de saida: totais reconciliam com inscricoes e pagamentos sem calculo por ponto flutuante.
+- Status: lote 1 concluido em 2026-09-18; taxa da plataforma e receita liquida permanecem bloqueadas.
+- Dependencias atendidas: pagamentos, baixa manual, webhook de estorno e Full Event BDD congelado.
+- Objetivo do lote 1: relatorio sintetico e analitico com dados que ja possuem source of truth.
+- Entregas do lote 1:
+  - inscricoes realizadas, canceladas e efetivadas;
+  - receita bruta em centavos, sem taxa nem liquido;
+  - visao analitica na mesma tela `/admin/eventos/[id]/financeiro`;
+  - conciliaçao operacional preservada.
+- Fonte das metricas:
+  - realizada = `registrations.status <> rascunho`;
+  - cancelada = `registrations.status = cancelada`;
+  - efetivada = `registrations.status = efetivada`;
+  - receita bruta = soma de `payment_registrations.amount` quando a inscricao esta `efetivada` e o pagamento esta `pago`.
+- Fora deste lote:
+  - `platform fee: decisao pendente`;
+  - receita liquida;
+  - exportacao e fechamento historico repetido;
+  - estorno parcial, inexistente no dominio atual.
+- Criterios de saida do lote 1: totais batem com a visao analitica sem ponto flutuante; pendente, cancelada e estornada nao entram na receita.
 
-Revisao: extratos precisam derivar de pagamentos/tentativas/estornos conciliados, nao do preco atual do evento nem de um status isolado. Fechamento deve bloquear divergencias e preservar o historico.
-
-Automacao: bruto/taxas/liquido, pagamento unificado sem dupla contagem, baixa manual, estornos total/parcial, exportacao e fechamento repetido.
+Automacao: `npm run test:unit` cobre a derivacao; `BASE_URL=http://localhost:3102 npm run test:closing` cobre a UI e a recusa sem permissao.
 
 ### Sprint 10 - Pesagem e premiacao operacional
 
@@ -820,4 +827,13 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - testes: `npx bddgen` descobriu `tests/features/full-event.feature`; `BASE_URL=http://localhost:3102 npm run bdd:full-event` em `automacao/` gerou `.features-gen/tests/features/full-event.feature.spec.js` e passou em ~3,9 min; relatorio HTML em `automacao/playwright-report`;
 - decisoes: manter o `defineBddConfig` existente (`tests/features/**/*.feature` + `tests/steps/**/*.ts`); steps finos via `createBdd(test)` reusando `full-event-journey.ts`; script `mc-sim:full-event` permanece apenas como wrapper nao oficial;
 - divida tecnica aceita: relatorio financeiro PRD, criar organizacao pela UI, professor operacional, pesagem individual, placar, horario automatico e chamada ao vivo;
-- proxima etapa: nao iniciar relatorio financeiro nem preparacao para producao.
+- proxima etapa: Sprint 12 lote 1 — fechamento financeiro sem taxa.
+
+### 2026-09-18 — Sprint 12 lote 1: fechamento sem taxa
+
+- data de conclusao: 2026-09-18;
+- entregas verificadas: totais de inscritas realizadas/canceladas/efetivadas e receita bruta na tela de financeiro, com visao analitica e sem taxa da plataforma;
+- testes: `npm run test:unit` em `automacao/` (derivacao em centavos); `BASE_URL=http://localhost:3102 npm run test:closing` 2/2; TypeScript/build; smoke visual desktop e 390px;
+- decisoes: reutilizar `registrations`, `payments` e `payment_registrations`; nao criar RPC; nao inventar percentual de taxa; estorno total remove a inscricao da receita porque o webhook ja grava `estornada` + `estornado`;
+- divida tecnica aceita: `platform fee: decisao pendente`, receita liquida, exportacao e fechamento historico;
+- proxima etapa: nao inventar taxa da plataforma nem iniciar preparacao para producao.
