@@ -3,6 +3,7 @@ import { LoginPage } from '../pages/LoginPage';
 import { paymentFixture, type PaymentFixture } from './payment-fixture';
 import { checagemFixture, type ChecagemFixture } from './checagem-fixture';
 import { operationalEventFixture, type OperationalEventFixture } from './operational-event-fixture';
+import { createFullEventJourney, type FullEventJourney } from './full-event-journey';
 import type { APIResponse } from '@playwright/test';
 
 type ScenarioData = {
@@ -19,6 +20,7 @@ export const test = base.extend<{
   paymentData: PaymentFixture;
   checagemData: ChecagemFixture;
   liveEventData: OperationalEventFixture;
+  fullEvent: FullEventJourney;
   webhookState: { response?: APIResponse };
 }>({
   webhookState: async ({}, use) => use({}),
@@ -50,6 +52,21 @@ export const test = base.extend<{
       await use(data);
     } finally {
       await data.cleanup();
+    }
+  },
+  fullEvent: async ({ page, context, browser }, use, testInfo) => {
+    base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para a jornada Full Event no Sandbox.');
+    testInfo.setTimeout(480_000);
+    const journey = await createFullEventJourney({
+      page,
+      context,
+      browser,
+      baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    });
+    try {
+      await use(journey);
+    } finally {
+      await journey.cleanup();
     }
   },
   loginPage: async ({ page }, use) => use(new LoginPage(page)),
