@@ -7,6 +7,7 @@ import { createFullEventJourney, type FullEventJourney } from './full-event-jour
 import { financialClosingFixture, type FinancialClosingFixture } from './financial-closing-fixture';
 import { platformFeeFixture, type PlatformFeeFixture } from './platform-fee-fixture';
 import { publicCheckingFixture, type PublicCheckingFixture } from './public-checking-fixture';
+import { professorFixture, type ProfessorFixture } from './professor-fixture';
 import type { APIResponse } from '@playwright/test';
 
 type ScenarioData = {
@@ -27,6 +28,7 @@ export const test = base.extend<{
   closingData: FinancialClosingFixture;
   platformFeeData: PlatformFeeFixture;
   publicCheckingData: PublicCheckingFixture;
+  professorData: ProfessorFixture;
   webhookState: { response?: APIResponse };
 }>({
   webhookState: async ({}, use) => use({}),
@@ -84,6 +86,17 @@ export const test = base.extend<{
   publicCheckingData: async ({}, use) => {
     base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para fixtures de checagem pública no Sandbox.');
     const data = publicCheckingFixture();
+    try {
+      await data.setup();
+      await use(data);
+    } finally {
+      await data.cleanup();
+    }
+  },
+  professorData: async ({}, use, testInfo) => {
+    base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para fixtures de professor no Sandbox.');
+    testInfo.setTimeout(120_000);
+    const data = professorFixture();
     try {
       await data.setup();
       await use(data);

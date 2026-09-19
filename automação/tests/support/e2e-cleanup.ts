@@ -9,7 +9,7 @@ export const SANDBOX_HOST = 'kfvypacjzlzwwblsbpwj.supabase.co';
 const EVENT_PREFIXES = ['Evento E2E ', 'Checkout E2E', 'Checagem E2E', 'MC-SIM Full Event'] as const;
 const ATHLETE_PREFIXES = ['Atleta E2E ', 'MC-SIM Full Event Atleta'] as const;
 const TEAM_PREFIXES = ['E2E Equipe ', 'MC-SIM Full Event Equipe'] as const;
-const ORG_EXACT = ['Checkout E2E', 'Checagem E2E', 'Checagem Pública E2E', 'Operação E2E', 'Fechamento E2E', 'Taxa E2E'] as const;
+const ORG_EXACT = ['Checkout E2E', 'Checagem E2E', 'Checagem Pública E2E', 'Operação E2E', 'Fechamento E2E', 'Taxa E2E', 'Professor E2E evento'] as const;
 
 export type CleanupPlan = {
   protectedOrgIds: string[];
@@ -133,7 +133,7 @@ export async function buildCleanupPlan(admin: SupabaseClient<Database>, ownerUse
   if (!protectedOrgIds.length) throw new Error('Nenhuma organização permanente do owner encontrada. Cleanup abortado.');
 
   const allOrgs = await must('orgs', admin.from('organizations').select('id, nome'));
-  const disposableOrgs = (allOrgs || []).filter((org) => ORG_EXACT.includes(org.nome as typeof ORG_EXACT[number]) || startsWithAny(org.nome, ['Checkout E2E', 'Checagem E2E']));
+  const disposableOrgs = (allOrgs || []).filter((org) => ORG_EXACT.includes(org.nome as typeof ORG_EXACT[number]) || startsWithAny(org.nome, ['Checkout E2E', 'Checagem E2E', 'Professor E2E']));
   if (disposableOrgs.some((org) => protectedOrgIds.includes(org.id))) {
     throw new Error('Organização permanente do owner coincidiu com org técnica. Cleanup abortado.');
   }
