@@ -8,6 +8,7 @@ import { financialClosingFixture, type FinancialClosingFixture } from './financi
 import { platformFeeFixture, type PlatformFeeFixture } from './platform-fee-fixture';
 import { publicCheckingFixture, type PublicCheckingFixture } from './public-checking-fixture';
 import { professorFixture, type ProfessorFixture } from './professor-fixture';
+import { operationalProfessorFixture, type OperationalProfessorFixture } from './operational-professor-fixture';
 import type { APIResponse } from '@playwright/test';
 
 type ScenarioData = {
@@ -29,6 +30,7 @@ export const test = base.extend<{
   platformFeeData: PlatformFeeFixture;
   publicCheckingData: PublicCheckingFixture;
   professorData: ProfessorFixture;
+  operationalProfessorData: OperationalProfessorFixture;
   webhookState: { response?: APIResponse };
 }>({
   webhookState: async ({}, use) => use({}),
@@ -97,6 +99,17 @@ export const test = base.extend<{
     base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para fixtures de professor no Sandbox.');
     testInfo.setTimeout(120_000);
     const data = professorFixture();
+    try {
+      await data.setup();
+      await use(data);
+    } finally {
+      await data.cleanup();
+    }
+  },
+  operationalProfessorData: async ({}, use, testInfo) => {
+    base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para fixtures de professor operacional no Sandbox.');
+    testInfo.setTimeout(120_000);
+    const data = operationalProfessorFixture();
     try {
       await data.setup();
       await use(data);

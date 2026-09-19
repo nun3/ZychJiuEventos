@@ -54,7 +54,8 @@
     "test:closing": "bddgen && playwright test --grep @closing --grep-invert @platform-fee",
     "test:fee": "bddgen && playwright test --grep @platform-fee",
     "test:public-checking": "bddgen && playwright test --grep @public-checking",
-    "test:professor": "bddgen && playwright test --grep @professor"
+    "test:professor": "bddgen && playwright test --grep @professor",
+    "test:operational-professor": "bddgen && playwright test --grep @operational-professor"
   },
   "dependencies": {
     "playwright": "1.51.1"
