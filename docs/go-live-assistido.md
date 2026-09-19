@@ -27,33 +27,21 @@ Efeito:
 
 Código Asaas permanece no repositório. Para a Vercel, gravar `PAYMENTS_MANUAL_ONLY=true` no ambiente de Production **antes** do deploy futuro. Este lote não faz deploy.
 
-## 3. Criar a organização real (não executar sem nome)
+## 3. Organização real
 
-Não criar agora: faltam nome oficial da organização, slug e e-mail do owner.
+Criada em 2026-09-19 01:35 America/Sao_Paulo (−03) no projeto `kfvypacjzlzwwblsbpwj`.
 
-Quando o cliente fornecer esses três dados, no SQL Editor do **mesmo** projeto, como papel com bypass de RLS (postgres / service role), nesta ordem:
+| Campo | Valor |
+| --- | --- |
+| Nome | MEU CAMP |
+| Slug | `meu-camp` |
+| Organização | `8c13e5c0…d4db` |
+| Owner | usuário já existente no Auth/profile; `4e5465eb…328e`; `role = owner` |
+| Eventos / equipes / atletas / inscrições / pagamentos desta org | 0 |
 
-1. Confirmar que o owner já existe em `auth.users` e `profiles` (cadastro no MEU CAMP).
-2. Inserir a organização **nova** (não usar `Organização Teste Ricardo`):
+Não foi criado evento, equipe, atleta, inscrição nem pagamento. Não foi chamado Asaas. MC-SIM r1/r2 e as 5 organizações anteriores (incluindo `Organização Teste Ricardo` e resíduos E2E) permaneceram inalterados. Contagem de organizações: 5 → 6.
 
-```sql
-insert into public.organizations (nome, slug, created_by)
-values ('<NOME_OFICIAL>', '<slug-unico>', '<user_id_do_owner>')
-returning id, nome, slug;
-```
-
-3. Vincular o owner:
-
-```sql
-insert into public.organization_members (organization_id, user_id, role)
-values ('<organization_id>', '<user_id_do_owner>', 'owner');
-```
-
-4. Conferir: a org nova aparece só para esse usuário; MC-SIM r1/r2 e a org Ricardo permanecem inalterados.
-
-A policy `organizations_admin_insert` exige `is_platform_admin()`. Sem linha em `platform_user_roles`, a criação pela UI do app **não** funciona. O procedimento acima é SQL assistido, coerente com o recorte.
-
-Não alterar atletas, eventos ou checagem MC-SIM.
+A policy `organizations_admin_insert` continua exigindo `is_platform_admin()`. Esta criação foi assistida com service role. Não foi inserida linha em `platform_user_roles`.
 
 ## 4. Backup e restore
 
