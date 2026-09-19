@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprints 8 a 13 e o Full Event BDD permanecem congelados. O Professor cadastral ja nasce no produto (`npm run test:professor`) e nao e organization_role. Nao iniciar exportacao nem preparacao para producao.
+Sprints 8 a 13 lotes 1 e 2 e o Full Event BDD permanecem congelados. Sprint 13 lote 3 entregue em 2026-09-19: professor operacional por inscricao (`npm run test:operational-professor`). Nao transformar Professor em organization_role. Nao iniciar exportacao nem preparacao para producao.
 
 ## 5. Backlog ordenado por sprints
 
@@ -530,7 +530,7 @@ Evento novo. Atleta A sozinho no Leve (70 kg) → Medio adjacente → solicitaca
 | Travamento unico, sem reabertura | `lock_event_checagem` + trigger | smoke lock; r1 e r2 travados | aprovado |
 | Bloqueios pos-lock | request/review recusam `Checagem travada` | smoke; r2 lock | aprovado |
 | Filtros categoria e equipe | `EventRegistrationsList` | BDD; UI smoke r1/r2 | aprovado |
-| Filtro por professor | — | — | nao entregue |
+| Filtro por professor | `operational_professor_name` da inscricao | `npm run test:operational-professor`; smoke SQL | aprovado |
 | Lista publica de checagem | — | identidade publica ainda e decisao de PRD | pendente de produto |
 | Correcao de faixa/dados | — | fluxo distinto, fora da realocacao | futuro / decisao de modelo |
 | Flags de realocacao no rule set | default de plataforma no SQL | divida consciente, sem schema | futuro |
@@ -662,7 +662,7 @@ Automacao: `npm run test:unit` cobre a derivacao; `BASE_URL=http://localhost:310
 
 ### Sprint 13 - Checagem publica e gaps do PRD
 
-- Status: lote 1 (checagem publica) e lote 2 (Professor cadastral) concluidos e congelados em 2026-09-19.
+- Status: lotes 1, 2 e 3 concluidos em 2026-09-19. Lotes 1 e 2 permanecem congelados.
 - Dependencias atendidas: Sprint 7 autenticada, identidade publica decidida no PRD, Sprints 8 a 12 congeladas.
 - Entregas do lote 1:
   - RPC `get_public_event_checking` para anon/authenticated;
@@ -689,6 +689,20 @@ Automacao: `BASE_URL=http://localhost:3102 npm run test:public-checking`.
   - exportacao e preparacao para producao.
 
 Automacao do lote 2: `BASE_URL=http://localhost:3102 npm run test:professor`.
+
+- Status do lote 3: concluido em 2026-09-19 com professor operacional por inscricao.
+- Entregas do lote 3:
+  - `operational_professor_name` e referencia opcional `operational_professor_user_id`;
+  - preenchimento no fluxo de inscricao;
+  - projecao publica na checagem e na programacao;
+  - filtro por professor operacional, sem IDs nem dados de conta.
+- Fora deste lote:
+  - multiplos professores por atleta;
+  - troca de professor por luta;
+  - corner em tempo real;
+  - exportacao e preparacao para producao.
+
+Automacao do lote 3: `BASE_URL=http://localhost:3102 npm run test:operational-professor`.
 
 ### Sprint 10 - Pesagem e premiacao operacional
 
@@ -899,4 +913,13 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - testes: `BASE_URL=http://localhost:3102 npm run test:professor` 2/2; smoke SQL transacional com rollback; TypeScript/build;
 - decisoes: Professor nao e `organization_role`; intencao em `tipo_cadastro`; vinculo em `athlete_managers`; tenant tecnico so para hospedar equipe;
 - divida tecnica aceita: professor operacional, filtro por professor, organizacoes pela UI, exportacao e preparacao para producao;
-- proxima etapa: Sprint 13 lote 2 congelado. Nao reabrir o Full Event nem as Sprints 8 a 13. Nao iniciar exportacao nem preparacao para producao.
+- proxima etapa: Sprint 13 lote 2 congelado. Nao reabrir o Full Event nem as Sprints 8 a 13 lotes 1 e 2. Nao iniciar exportacao nem preparacao para producao.
+
+### 2026-09-19 — Sprint 13 lote 3: professor operacional
+
+- data de conclusao: 2026-09-19;
+- entregas verificadas: professor operacional por inscricao, snapshot historico, vinculo opcional de conta, projecao e filtro na checagem/programacao;
+- testes: `BASE_URL=http://localhost:3102 npm run test:operational-professor`; smoke SQL transacional com rollback; TypeScript/build;
+- decisoes: 1 professor por inscricao; nome snapshot independente; sem fallback de `athlete_managers`; sem IDs/e-mail/telefone na superficie publica;
+- divida tecnica aceita: multiplos professores, troca por luta, corner ao vivo, exportacao e preparacao para producao;
+- proxima etapa: nao reabrir Sprints 8 a 13 lotes 1 e 2 nem o Full Event. Nao iniciar exportacao nem preparacao para producao.

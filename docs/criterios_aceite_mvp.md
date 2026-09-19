@@ -39,12 +39,12 @@
 ## Checagem e categoria
 
 - [x] Somente inscrições pagas ou baixadas manualmente aparecem na checagem.
-- [ ] Lista permite filtros por categoria, equipe e professor sem expor dados indevidos.
+- [x] Lista permite filtros por categoria, equipe e professor sem expor dados indevidos.
 - [x] Atleta sozinho pode solicitar mudança elegível.
 - [x] Organizador aprova ou recusa com histórico.
 - [x] Lista travada não aceita alterações comuns.
 
-Filtros entregues na checagem autenticada e na lista pública: categoria e equipe. Filtro por professor permanece fora. A lista pública usa o nome completo de competição do snapshot. O Professor cadastral nasce no login, cria equipe e gerencia atletas vinculados sem papel administrativo de evento.
+Filtros da checagem autenticada e da lista pública: categoria, equipe e professor operacional da inscrição. A lista pública usa o nome completo de competição do snapshot. O Professor cadastral permanece distinto do professor operacional.
 
 ## Pagamento
 

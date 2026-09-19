@@ -108,9 +108,13 @@ Travamento operacional grava `checagem_travada_em` uma vez. Reabertura nao faz p
 - `registered_by` FK para `profiles.id`
 - `status`: `rascunho`, `pendente_pagamento`, `efetivada`, `expirada`, `cancelada`, `estornada`
 - `valor`
+- `operational_professor_name` texto nulo: snapshot historico do treinador informado neste evento
+- `operational_professor_user_id` FK opcional para `profiles.id`, com `on delete set null`
 - `created_at`, `updated_at`
 
-A inscricao preserva um snapshot imutavel dos dados usados no aceite: nome, nascimento, genero, faixa, peso, equipe, categoria, valor, versao das regras e versao dos termos. Mudancas futuras no perfil do atleta nao alteram o historico. A posicao operacional na checagem usa a alocacao vigente (`coalesce(current_category_id, category_id)`), alterada somente por solicitacao aprovada.
+A inscricao preserva um snapshot imutavel dos dados usados no aceite: nome, nascimento, genero, faixa, peso, equipe, categoria, valor, versao das regras, versao dos termos e professor operacional. Mudancas futuras no perfil do atleta ou da conta Professor nao alteram o historico. A posicao operacional na checagem usa a alocacao vigente (`coalesce(current_category_id, category_id)`), alterada somente por solicitacao aprovada.
+
+O professor operacional nao e `organization_role`, nao e cardinalidade por luta ou por equipe e nao e derivado de `athlete_managers`, `teams.created_by` ou owner da equipe.
 
 Realocacao na checagem (atleta sozinho) e distinta da categorizacao de inscricao. Destinos sao classes adjacentes no mesmo `category_rule_set` da categoria original: subir 1 classe de peso; idade ±1 classe; um eixo por movimento; genero e intervalo de faixa congelados. Sobreposicao ou duplicidade de intervalos no grupo falha fechado. `category_is_eligible_for_registration` nao governa esse destino.
 
@@ -118,7 +122,7 @@ Nao ha flags em `category_rule_sets` nesta versao. A politica acima e o default 
 
 Restricao unica: um atleta nao pode possuir duas inscricoes ativas no mesmo evento.
 
-A checagem publica le somente inscricoes `efetivada` pela RPC `get_public_event_checking`. A identidade publica e `athlete_snapshot.nome_completo`. A categoria vigente e `coalesce(current_category_id, category_id)`. Nao ha SELECT anonimo em `registrations`.
+A checagem publica le somente inscricoes `efetivada` pela RPC `get_public_event_checking`. A identidade publica e `athlete_snapshot.nome_completo`. A categoria vigente e `coalesce(current_category_id, category_id)`. O professor publico e `operational_professor_name`. Nao ha SELECT anonimo em `registrations`. A programacao publica acrescenta o mesmo nome no lado da luta.
 
 ### payments
 

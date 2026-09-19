@@ -109,7 +109,7 @@ Referencias tecnicas: [criacao de cobranca](https://docs.asaas.com/reference/cre
 - Solicitacao, aprovacao e recusa de mudanca com historico.
 - Travamento da checagem antes da geracao de chaves.
 
-Estado vigente (2026-09-19): o nucleo autenticado da checagem permanece entregue. A lista publica em `/eventos/[id]/checagem` exibe nome completo de competicao, equipe e categoria vigente das inscricoes efetivadas. Correcao de faixa nao faz parte da realocacao do sozinho. Filtro por professor permanece fora.
+Estado vigente (2026-09-19): o nucleo autenticado da checagem permanece entregue. A lista publica em `/eventos/[id]/checagem` exibe nome completo de competicao, equipe, professor operacional da inscricao e categoria vigente das inscricoes efetivadas. Correcao de faixa nao faz parte da realocacao do sozinho.
 
 ## 6. Fora do primeiro incremento operacional
 
@@ -161,6 +161,7 @@ As metas numericas precisam de linha de base real. O MVP deve ao menos medir:
 - Asaas deve ser avaliado primeiro em Sandbox; a contratacao definitiva ainda nao esta aprovada;
 - na checagem publica, o MEU CAMP exibe o nome completo de competicao do atleta, equipe e categoria vigente. Dados pessoais, peso exato, dados financeiros e identificadores internos nao sao publicos. Nao ha abreviacao automatica;
 - Professor e ator proprio do produto, sem `organization_role`: `tipo_cadastro = professor` define a experiencia inicial e `athlete_managers` autoriza a gestao dos atletas.
+- Professor operacional e o treinador informado para o atleta naquele evento, com cardinalidade 1 por inscricao. O nome historico fica em `registrations.operational_professor_name`. A referencia a conta Professor e opcional. `athlete_managers` nao e fallback.
 
 ## 10. Decisoes pendentes e bloqueios
 

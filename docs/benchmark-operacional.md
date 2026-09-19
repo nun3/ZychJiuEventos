@@ -169,7 +169,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 - Origem: `FESTIVAL.pdf`.
 - A programação apresenta, para cada atleta da luta, nome do atleta, equipe e professor.
-- Situação no MEU CAMP: o Professor cadastral já nasce no produto, cria equipe e gerencia atletas vinculados; o “professor da luta” operacional continua sem contrato aprovado.
+- Situação no MEU CAMP: o professor operacional é o treinador informado na inscrição daquele atleta naquele evento. A mesma luta e a mesma equipe podem ter professores diferentes. Todas as lutas da inscrição usam o mesmo snapshot.
 
 **EVIDÊNCIA DE BENCHMARK**
 
@@ -179,7 +179,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 **INFERÊNCIA**
 
-- O professor exibido em `FESTIVAL.pdf` pode ser treinador operacional, gestor cadastral ou responsável pela equipe. Os documentos não definem essa identidade nem sua cardinalidade.
+- O professor exibido em `FESTIVAL.pdf` é o treinador informado por atleta/inscrição, não um professor único da luta nem da equipe. Pode coincidir com o Professor cadastral, mas não o substitui.
 
 ### Pesagem
 
@@ -224,7 +224,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 - Se lutas de uma mesma chave devem obrigatoriamente permanecer na mesma área.
 - Se cores das áreas são obrigatórias, exclusivas ou escolhidas de uma paleta fixa.
 - Regras de conflito simultâneo para atleta, equipe ou professor.
-- Identidade exata do professor exibido na programação.
+- Identidade do professor operacional: aprovada como treinador informado por inscrição, com snapshot histórico.
 - Processo digital de entrega/devolução da chave ao coordenador.
 - Significado normativo das categorias diferentes entre atletas de algumas linhas do `FESTIVAL.pdf`.
 - Programação de eventos com mais de um dia ou mais de uma sessão.
