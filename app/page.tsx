@@ -5,5 +5,5 @@ import HomeClient from './HomeClient'
 
 export default async function Home() {
   const events = await getPublicEvents()
-  return <main className="relative min-h-screen bg-[#f8fafc]"><ModernNavbar /><HomeClient events={events} /><ModernFooter /></main>
+  return <main className="relative min-h-screen bg-mc-background"><ModernNavbar /><HomeClient events={events} /><ModernFooter /></main>
 }

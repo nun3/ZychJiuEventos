@@ -21,10 +21,10 @@ export default function EventsClient({ events }: { events: Event[] }) {
 
   return (
     <>
-      <EventFilters onFilterChange={setFilters} />
+      {events.length ? <EventFilters onFilterChange={setFilters} /> : null}
       <ModernEventGrid
         events={events}
-        filters={filters}
+        filters={events.length ? filters : undefined}
         onEventClick={(event) => router.push(`/eventos/${event.id}`)}
       />
     </>

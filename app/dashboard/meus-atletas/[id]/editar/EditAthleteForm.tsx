@@ -2,6 +2,11 @@
 
 import { FormEvent, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { Alert } from '@/components/ui/Alert'
+import { Button } from '@/components/ui/Button'
+import { FormField } from '@/components/ui/FormField'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import type { AthleteActionResult } from '../../actions'
 import { linkAthleteToCurrentUser, updateManagedAthlete } from '../../actions'
 
@@ -41,22 +46,61 @@ export default function EditAthleteForm({ athlete, teams, canSelfLink }: { athle
     if (result.ok) router.refresh()
   })
 
-  return <div className="space-y-6">
-    {feedback && <p role="status" className={`rounded-lg border px-4 py-3 text-sm ${feedback.ok ? 'border-green-200 bg-green-50 text-green-700' : 'border-red-200 bg-red-50 text-red-700'}`}>{feedback.message}</p>}
-    <form onSubmit={handleUpdate} className="grid gap-4 md:grid-cols-2">
-      <input type="hidden" name="athlete_id" value={athlete.id} />
-      <label className="text-sm font-semibold">Nome completo<input name="nome" required minLength={3} defaultValue={athlete.nome} className="mt-1 w-full rounded-lg border px-3 py-2" /></label>
-      <label className="text-sm font-semibold">CPF <span className="font-normal text-gray-400">(opcional)</span><input name="cpf" defaultValue={athlete.cpf} className="mt-1 w-full rounded-lg border px-3 py-2" /></label>
-      <label className="text-sm font-semibold">Nascimento<input name="data_nascimento" type="date" required defaultValue={athlete.nascimento} max={new Date().toISOString().slice(0, 10)} className="mt-1 w-full rounded-lg border px-3 py-2" /></label>
-      <label className="text-sm font-semibold">Gênero<select name="genero" required defaultValue={athlete.genero} className="mt-1 w-full rounded-lg border px-3 py-2"><option value="F">Feminino</option><option value="M">Masculino</option><option value="O">Outro</option></select></label>
-      <label className="text-sm font-semibold">Equipe<select name="team_id" required value={teamId} onChange={(event) => setTeamId(event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2">{teams.map((team) => <option key={team.id} value={team.id}>{team.nome}</option>)}</select></label>
-      <label className="text-sm font-semibold">Faixa<input name="faixa" required defaultValue={athlete.faixa} className="mt-1 w-full rounded-lg border px-3 py-2" /></label>
-      <label className="text-sm font-semibold">Peso (kg)<input name="peso_kg" type="number" min="1" max="300" step="0.01" required defaultValue={athlete.peso} className="mt-1 w-full rounded-lg border px-3 py-2" /></label>
-      <label className="flex items-center gap-2 text-sm"><input name="possui_necessidade_especial" type="checkbox" defaultChecked={athlete.necessidades} /> Possui necessidade especial</label>
-      {teamChanged && <label className="text-sm font-semibold md:col-span-2">Motivo da troca de equipe<input name="change_reason" required minLength={3} className="mt-1 w-full rounded-lg border px-3 py-2" placeholder="Informe o motivo para a auditoria" /></label>}
-      <div className="flex gap-3 md:col-span-2"><button disabled={isPending} className="rounded-lg bg-primary-blue px-6 py-2 font-semibold text-white disabled:opacity-50">{isPending ? 'Salvando...' : 'Salvar alterações'}</button></div>
-    </form>
-    {canSelfLink && !athlete.userId && <div className="rounded-xl border border-blue-200 bg-blue-50 p-4"><h2 className="font-semibold text-blue-900">Atleta maior de idade</h2><p className="mt-1 text-sm text-blue-700">Vincule este cadastro à sua conta para representar o próprio atleta.</p><button type="button" disabled={isPending} onClick={handleLink} className="mt-3 rounded-lg border border-primary-blue px-4 py-2 text-sm font-semibold text-primary-blue">Vincular à minha conta</button></div>}
-    {athlete.userId && <p className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">Este atleta possui uma conta vinculada.</p>}
-  </div>
+  return (
+    <div className="space-y-mc-24">
+      {feedback ? <Alert variant={feedback.ok ? 'success' : 'error'} role="status">{feedback.message}</Alert> : null}
+      <form onSubmit={handleUpdate} className="grid gap-mc-16 md:grid-cols-2">
+        <input type="hidden" name="athlete_id" value={athlete.id} />
+        <FormField id="edit-athlete-name" label="Nome completo" required>
+          <Input name="nome" required minLength={3} defaultValue={athlete.nome} />
+        </FormField>
+        <FormField id="edit-athlete-cpf" label={<>CPF <span className="font-normal text-mc-text-secondary">(opcional)</span></>}>
+          <Input name="cpf" defaultValue={athlete.cpf} inputMode="numeric" />
+        </FormField>
+        <FormField id="edit-athlete-birth" label="Nascimento" required>
+          <Input name="data_nascimento" type="date" required defaultValue={athlete.nascimento} max={new Date().toISOString().slice(0, 10)} />
+        </FormField>
+        <FormField id="edit-athlete-gender" label="Gênero" required>
+          <Select name="genero" required defaultValue={athlete.genero}>
+            <option value="F">Feminino</option>
+            <option value="M">Masculino</option>
+            <option value="O">Outro</option>
+          </Select>
+        </FormField>
+        <FormField id="edit-athlete-team" label="Equipe" required>
+          <Select name="team_id" required value={teamId} onChange={(event) => setTeamId(event.target.value)}>
+            {teams.map((team) => <option key={team.id} value={team.id}>{team.nome}</option>)}
+          </Select>
+        </FormField>
+        <FormField id="edit-athlete-belt" label="Faixa" required>
+          <Input name="faixa" required defaultValue={athlete.faixa} />
+        </FormField>
+        <FormField id="edit-athlete-weight" label="Peso (kg)" required>
+          <Input name="peso_kg" type="number" min="1" max="300" step="0.01" required defaultValue={athlete.peso} />
+        </FormField>
+        <label className="flex min-h-11 items-center gap-mc-8 font-mc-interface text-sm text-mc-text-primary md:col-span-2">
+          <input name="possui_necessidade_especial" type="checkbox" defaultChecked={athlete.necessidades} className="h-4 w-4 rounded border-mc-border text-mc-action focus:ring-mc-focus" />
+          Possui necessidade especial
+        </label>
+        {teamChanged ? (
+          <FormField id="edit-athlete-reason" label="Motivo da troca de equipe" required className="md:col-span-2" description="O motivo fica no histórico de auditoria.">
+            <Input name="change_reason" required minLength={3} placeholder="Informe o motivo" />
+          </FormField>
+        ) : null}
+        <div className="md:col-span-2">
+          <Button type="submit" disabled={isPending}>{isPending ? 'Salvando...' : 'Salvar alterações'}</Button>
+        </div>
+      </form>
+      {canSelfLink && !athlete.userId ? (
+        <Alert variant="info">
+          <p className="font-semibold">Atleta maior de idade</p>
+          <p className="mt-mc-4">Vincule este cadastro à sua conta para representar o próprio atleta.</p>
+          <Button type="button" variant="outline" disabled={isPending} onClick={handleLink} className="mt-mc-12">
+            Vincular à minha conta
+          </Button>
+        </Alert>
+      ) : null}
+      {athlete.userId ? <Alert variant="success">Este atleta possui uma conta vinculada.</Alert> : null}
+    </div>
+  )
 }

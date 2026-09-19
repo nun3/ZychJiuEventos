@@ -44,7 +44,7 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
     {
       href: '/dashboard/inscricoes',
       title: 'Inscrições e pagamentos',
-      description: 'Acompanhe as inscrições e os pagamentos que você gerencia.',
+      description: 'Acompanhe inscrições, reservas e o status de pagamento. A baixa é feita pelo organizador.',
       icon: ClipboardList,
     },
   ].filter((item): item is NonNullable<typeof item> => Boolean(item))
@@ -53,12 +53,12 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
     <main className="py-mc-32 sm:py-mc-48">
       <PageContainer>
         <PageHeader
-          title={canManageEvents ? 'Painel do organizador' : isProfessor ? 'Painel do professor' : 'Painel'}
+          title={actor?.name?.trim() ? `Olá, ${actor.name.trim().split(' ')[0]}` : canManageEvents ? 'Painel do organizador' : isProfessor ? 'Painel do professor' : 'Painel'}
           description={canManageEvents
-            ? 'Acesse as áreas principais para conduzir suas competições.'
+            ? `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Você administra eventos. Daqui sai para atletas, inscrições e a operação do campeonato.`
             : isProfessor
-              ? 'Gerencie sua equipe, inscreva atletas e acompanhe a checagem pública.'
-              : 'Acompanhe inscrições e os eventos publicados.'}
+              ? `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Gerencie sua equipe, inscreva atletas e acompanhe a checagem pública.`
+              : `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Acompanhe seus atletas, inscrições e os eventos publicados.`}
           actions={canManageEvents ? (
             <Link
               href="/admin/eventos/novo"
@@ -141,7 +141,8 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
               <EmptyState
                 icon={<CalendarDays size={32} />}
                 title="Nenhuma competição publicada"
-                description="Os eventos publicados aparecerão aqui."
+                description="O calendário público mostra os eventos oficiais do MEU CAMP. Quando um campeonato for publicado, ele aparece aqui para inscrição e checagem."
+                action={<Link href="/eventos" className="inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">Abrir calendário público</Link>}
                 className="mt-mc-16 rounded-mc-medium border border-mc-border bg-mc-surface"
               />
             )}

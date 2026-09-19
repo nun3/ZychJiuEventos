@@ -7,65 +7,35 @@ import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 
-const eventTypes = [
-  'Todos',
-  'Campeonato',
-  'Seminário',
-  'Desafio/Confrontos',
-  'Curso/Workshop',
-  'MMA',
-  'Camp',
-  'Aulão',
-]
-
-const sports = [
-  'Todas',
-  'Aikido',
-  'Capoeira',
-  'Grappling',
-  'Jiu-Jitsu',
-  'Judo',
-  'Karatê',
-  'Kickboxing',
-  'Krav Maga',
-  'Kung Fu',
-  'MuayThai',
-  'ParaJiu-Jitsu',
-  'Sambo',
-  'Submission (NO-GI)',
-  'Taekwondo',
-  'Wrestling',
-]
-
 const states = [
-  'Todos',
-  'AC - Acre',
-  'AL - Alagoas',
-  'AP - Amapá',
-  'AM - Amazonas',
-  'BA - Bahia',
-  'CE - Ceará',
-  'DF - Distrito Federal',
-  'ES - Espírito Santo',
-  'GO - Goiás',
-  'MA - Maranhão',
-  'MT - Mato Grosso',
-  'MS - Mato Grosso do Sul',
-  'MG - Minas Gerais',
-  'PA - Pará',
-  'PB - Paraíba',
-  'PR - Paraná',
-  'PE - Pernambuco',
-  'PI - Piauí',
-  'RJ - Rio de Janeiro',
-  'RN - Rio Grande do Norte',
-  'RS - Rio Grande do Sul',
-  'RO - Rondônia',
-  'RR - Roraima',
-  'SC - Santa Catarina',
-  'SP - São Paulo',
-  'SE - Sergipe',
-  'TO - Tocantins',
+  { value: 'Todos', label: 'Todos' },
+  { value: 'AC', label: 'AC — Acre' },
+  { value: 'AL', label: 'AL — Alagoas' },
+  { value: 'AP', label: 'AP — Amapá' },
+  { value: 'AM', label: 'AM — Amazonas' },
+  { value: 'BA', label: 'BA — Bahia' },
+  { value: 'CE', label: 'CE — Ceará' },
+  { value: 'DF', label: 'DF — Distrito Federal' },
+  { value: 'ES', label: 'ES — Espírito Santo' },
+  { value: 'GO', label: 'GO — Goiás' },
+  { value: 'MA', label: 'MA — Maranhão' },
+  { value: 'MT', label: 'MT — Mato Grosso' },
+  { value: 'MS', label: 'MS — Mato Grosso do Sul' },
+  { value: 'MG', label: 'MG — Minas Gerais' },
+  { value: 'PA', label: 'PA — Pará' },
+  { value: 'PB', label: 'PB — Paraíba' },
+  { value: 'PR', label: 'PR — Paraná' },
+  { value: 'PE', label: 'PE — Pernambuco' },
+  { value: 'PI', label: 'PI — Piauí' },
+  { value: 'RJ', label: 'RJ — Rio de Janeiro' },
+  { value: 'RN', label: 'RN — Rio Grande do Norte' },
+  { value: 'RS', label: 'RS — Rio Grande do Sul' },
+  { value: 'RO', label: 'RO — Rondônia' },
+  { value: 'RR', label: 'RR — Roraima' },
+  { value: 'SC', label: 'SC — Santa Catarina' },
+  { value: 'SP', label: 'SP — São Paulo' },
+  { value: 'SE', label: 'SE — Sergipe' },
+  { value: 'TO', label: 'TO — Tocantins' },
 ]
 
 interface EventFiltersProps {
@@ -121,8 +91,8 @@ export default function EventFilters({ onFilterChange }: EventFiltersProps) {
         ) : null}
       </div>
 
-      <div className="mt-mc-16 grid gap-mc-16 lg:grid-cols-2 xl:grid-cols-4">
-        <div className="space-y-1.5 lg:col-span-2 xl:col-span-1">
+      <div className="mt-mc-16 grid gap-mc-16 md:grid-cols-[minmax(0,1.4fr)_minmax(12rem,0.8fr)]">
+        <div className="space-y-1.5">
           <label htmlFor="event-search" className="block font-mc-interface text-sm font-semibold text-mc-text-primary">Nome do evento</label>
           <div className="relative">
             <Search aria-hidden="true" size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-mc-text-secondary" />
@@ -135,19 +105,9 @@ export default function EventFilters({ onFilterChange }: EventFiltersProps) {
             />
           </div>
         </div>
-        <FormField id="event-type" label="Tipo">
-          <Select id="event-type" value={filters.eventType} onChange={(event) => handleFilterChange('eventType', event.target.value)}>
-            {eventTypes.map((type) => <option key={type} value={type}>{type}</option>)}
-          </Select>
-        </FormField>
-        <FormField id="event-sport" label="Modalidade">
-          <Select id="event-sport" value={filters.sport} onChange={(event) => handleFilterChange('sport', event.target.value)}>
-            {sports.map((sport) => <option key={sport} value={sport}>{sport}</option>)}
-          </Select>
-        </FormField>
         <FormField id="event-state" label="Estado">
           <Select id="event-state" value={filters.state} onChange={(event) => handleFilterChange('state', event.target.value)}>
-            {states.map((state) => <option key={state} value={state}>{state}</option>)}
+            {states.map((state) => <option key={state.value} value={state.value}>{state.label}</option>)}
           </Select>
         </FormField>
       </div>

@@ -20,7 +20,7 @@ export default async function MeusAtletasPage() {
     return (
       <main className="py-mc-32 sm:py-mc-48">
         <PageContainer>
-          <PageHeader title="Atletas" description="Consulte os atletas e equipes disponíveis para a organização." />
+          <PageHeader title="Meus atletas" description="Consulte os atletas e equipes que você gerencia." />
           <Alert variant="error" role="alert" className="mt-mc-24">Não foi possível carregar os atletas. Tente novamente.</Alert>
         </PageContainer>
       </main>
@@ -36,7 +36,7 @@ export default async function MeusAtletasPage() {
   return (
     <main className="py-mc-32 sm:py-mc-48">
       <PageContainer>
-        <PageHeader title="Atletas" description="Gerencie sua equipe e os atletas vinculados a você." />
+        <PageHeader title="Meus atletas" description="Veja quem você gerencia, a equipe de cada atleta e as ações de edição e inscrição." />
         <div className="mt-mc-32">
           <AthletesManager teams={teamItems} athletes={athleteItems.map((athlete) => ({ id: athlete.id, nome: athlete.nome_completo, dataNascimento: athlete.data_nascimento, faixa: athlete.faixa, peso: athlete.peso_kg, equipe: (athlete.teams as unknown as { nome: string } | null)?.nome || 'Sem equipe' }))} />
         </div>

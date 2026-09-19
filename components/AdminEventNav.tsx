@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 const surfaces = [
-  { segment: 'configuracao', label: 'Configurar' },
+  { segment: 'configuracao', label: 'Configuração' },
   { segment: 'checagem', label: 'Checagem' },
   { segment: 'financeiro', label: 'Financeiro' },
   { segment: 'chaves', label: 'Chaves' },
@@ -33,8 +33,8 @@ export default function AdminEventNav({ eventId, current }: { eventId: string; c
               key={item.segment}
               href={href}
               aria-current={active ? 'page' : undefined}
-              className={`inline-flex min-h-11 items-center px-mc-12 font-mc-interface text-sm font-semibold transition-colors duration-mc-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus ${
-                active ? 'border-b-2 border-mc-action text-mc-action' : 'border-b-2 border-transparent text-mc-text-secondary hover:text-mc-text-primary'
+              className={`inline-flex min-h-12 items-center px-mc-12 font-mc-interface text-sm font-semibold transition-colors duration-mc-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus ${
+                active ? 'border-b-2 border-mc-action bg-mc-action/5 text-mc-action' : 'border-b-2 border-transparent text-mc-text-secondary hover:text-mc-text-primary'
               }`}
             >
               {item.label}

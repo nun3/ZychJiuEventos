@@ -99,7 +99,15 @@ export default async function AthleteRegistrationsPage({ params }: { params: { i
         />
         <div className="mt-mc-32">
           {error ? <Alert variant="error" role="alert">Não foi possível carregar as inscrições.</Alert> : null}
-          {!error && !items.length ? <EmptyState icon={<ClipboardList size={34} />} title="Nenhuma inscrição encontrada" description="Este atleta ainda não possui inscrições." className="rounded-mc-medium border border-mc-border bg-mc-surface" /> : null}
+          {!error && !items.length ? (
+            <EmptyState
+              icon={<ClipboardList size={34} />}
+              title="Nenhuma inscrição deste atleta"
+              description="Quando este atleta for inscrito em um evento publicado, o histórico aparece aqui."
+              action={<Link href="/eventos" className="inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">Ver eventos publicados</Link>}
+              className="rounded-mc-medium border border-mc-border bg-mc-surface"
+            />
+          ) : null}
           {!error && items.length ? (
             <>
               <DataTable rows={items} columns={columns} getRowKey={(item) => item.id} caption={`Inscrições de ${athlete.nome_completo}`} className="hidden md:block" tableClassName="min-w-[820px]" />

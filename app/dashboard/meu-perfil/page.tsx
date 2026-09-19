@@ -1,284 +1,209 @@
 import Link from 'next/link'
-import { FiUser, FiEdit, FiUsers, FiClipboard, FiAward, FiCreditCard, FiChevronRight, FiMapPin, FiFlag, FiTrendingUp, FiCalendar, FiStar } from 'react-icons/fi'
-import { FaFacebook, FaInstagram, FaYoutube, FaLinkedin, FaTwitter } from 'react-icons/fa'
+import { redirect } from 'next/navigation'
+import { CalendarDays, ClipboardList, Lock, Mail, Shield, UserRound, UsersRound } from 'lucide-react'
+import { getDashboardActor } from '@/lib/auth/dashboard-actor'
+import { createClient } from '@/lib/supabase/server'
+import { Card } from '@/components/ui/Card'
+import { PageContainer } from '@/components/ui/PageContainer'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import ProfileForm from './ProfileForm'
 
-const menuItems = [
-  { href: '/dashboard/meu-perfil', label: 'Meu Perfil', icon: FiUser, active: true },
-  { href: '/dashboard/alterar-cadastro', label: 'Alterar Meu Cadastro', icon: FiEdit },
-  { href: '/dashboard/meus-atletas', label: 'Meus Atletas', icon: FiUsers },
-  { href: '/dashboard/inscricoes', label: 'Inscrições Realizadas', icon: FiClipboard },
-  { href: '/dashboard/minhas-filiacoes', label: 'Minhas Filiações', icon: FiAward },
-  { href: '/dashboard/meus-ingressos', label: 'Meus Ingressos', icon: FiCreditCard },
-]
+const roleLabels = {
+  atleta: 'Atleta',
+  professor: 'Professor',
+  organizador: 'Organizador',
+  responsavel: 'Responsável',
+} as const
 
-const profile = {
-  name: 'Ricardo Zych',
-  age: 43,
-  belt: 'Preta',
-  weight: '77.00',
-  city: 'Pato Branco',
-  state: 'PR',
-  country: 'Brasil',
-  team: 'Zych Jiu Jitsu',
-  professor: 'Ricardo Zych',
-  medals: [
-    { type: 'gold', label: 'Ouro', wins: 0, total: 0, percentage: 0 },
-    { type: 'silver', label: 'Prata', wins: 4, total: 4, percentage: 100 },
-    { type: 'bronze', label: 'Bronze', wins: 1, total: 4, percentage: 25 },
-  ],
-  stats: {
-    championships: 4,
-  },
-  social: [
-    { label: 'facebook', href: '#', icon: FaFacebook },
-    { label: 'instagram', href: '#', icon: FaInstagram },
-    { label: 'youtube', href: '#', icon: FaYoutube },
-    { label: 'linkedin', href: '#', icon: FaLinkedin },
-    { label: 'twitter', href: '#', icon: FaTwitter },
-  ],
+const dateFormatter = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' })
+
+function formatCpf(value: string | null) {
+  if (!value) return 'Não informado'
+  const digits = value.replace(/\D/g, '')
+  if (digits.length !== 11) return value
+  return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
 }
 
-const upcomingEvents = [
-  {
-    title: '2º Festival Kids de Jiu-Jitsu',
-    date: '16 de Novembro de 2025',
-    city: 'Clevelândia/PR',
-  },
-  {
-    title: '1ª Copa Grêmio Industrial Kids de Jiu-Jitsu',
-    date: '07 de Dezembro de 2025',
-    city: 'Pato Branco/PR',
-  },
-]
+function formatBirth(value: string | null) {
+  if (!value) return 'Não informado'
+  return dateFormatter.format(new Date(`${value}T12:00:00Z`))
+}
 
-const pastEvents = [
-  { title: 'Copa Desterro Oeste Extremo Oeste Catarinense', date: '01/10/2023' },
-  { title: 'Campeonato Paranaense de Jiu-Jitsu – 2ª Etapa', date: '29/04/2023' },
-  { title: 'Paranaense de Jiu-Jitsu & Para Jiu-Jitsu – 2ª Etapa', date: '14/05/2022' },
-]
+export default async function MeuPerfilPage() {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login?redirectTo=/dashboard/meu-perfil')
 
-export default function MeuPerfilPage() {
+  const actor = await getDashboardActor()
+  const [{ data: profile }, { data: teams }, { count: managedCount }, { data: membership }] = await Promise.all([
+    supabase.from('profiles').select('nome_completo, cpf, telefone, data_nascimento, created_at').eq('id', user.id).maybeSingle(),
+    supabase.from('teams').select('id, nome').eq('created_by', user.id).order('nome'),
+    supabase.from('athlete_managers').select('athlete_id', { count: 'exact', head: true }).eq('manager_id', user.id),
+    supabase.from('organization_members').select('role, organizations(nome)').in('role', ['owner', 'organizer']).limit(1).maybeSingle(),
+  ])
+
+  const name = profile?.nome_completo?.trim() || actor?.name?.trim() || user.email?.split('@')[0] || 'Sua conta'
+  const initial = name.charAt(0).toUpperCase()
+  const roleLabel = actor?.tipoCadastro ? roleLabels[actor.tipoCadastro] : null
+  const organization = membership?.organizations as unknown as { nome: string } | null
+  const organizationName = organization?.nome || null
+
   return (
-    <div className="container mx-auto px-6 pt-6 pb-12">
-      <section className="rounded-2xl bg-white shadow-xl overflow-hidden">
-        <div className="relative bg-gradient-to-r from-[#0C3049] via-blue-800 to-[#0C3049] px-6 py-8 text-white">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
-          <div className="relative">
-            <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-wide mb-2">Meu Perfil</h1>
-            <p className="text-base text-blue-100">Bem-vindo, Ricardo! Acompanhe suas estatísticas e próximas competições.</p>
-          </div>
-        </div>
+    <main className="py-mc-32 sm:py-mc-48">
+      <PageContainer>
+        <PageHeader
+          title="Meu perfil"
+          description="Veja quem você é na plataforma, o que pode alterar e como acessar atletas, inscrições e segurança da conta."
+        />
 
-        <div className="grid gap-6 px-6 py-8 lg:grid-cols-[220px,1fr]">
-          <aside className="space-y-3">
-            {menuItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-sm font-semibold transition ${
-                    item.active
-                      ? 'border-primary-blue bg-primary-blue text-white shadow'
-                      : 'border-gray-200 text-gray-600 hover:border-primary-blue hover:text-primary-blue'
-                  }`}
-                >
-                  <Icon size={16} />
-                  {item.label}
-                </Link>
-              )
-            })}
-            <button className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition">
-              Sair da conta
-              <FiChevronRight size={14} />
-            </button>
-          </aside>
-
-          <div className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-[1.6fr,1fr]">
-              {/* Card Principal do Perfil - Design Premium */}
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-500 via-teal-600 to-teal-700 shadow-xl">
-                {/* Decoração de fundo */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
-                
-                <div className="relative px-8 py-8">
-                  {/* Header do Perfil */}
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="flex-1">
-                      <h2 className="text-3xl font-bold text-white uppercase tracking-wide mb-2">
-                        {profile.name}
-                      </h2>
-                      <p className="text-teal-100 text-base mb-3">
-                        ({profile.age} anos)
-                      </p>
-                      <p className="text-white/90 text-sm font-medium mb-4">
-                        Atleta de Jiu-Jitsu
-                      </p>
-                      <div className="flex items-center gap-4 text-white/90 text-sm">
-                        <div className="flex items-center gap-2">
-                          <FiMapPin size={16} />
-                          <span>{profile.city} - {profile.state}, {profile.country}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4 mt-3">
-                        <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-                          <FiFlag size={16} className="text-white" />
-                          <span className="text-white font-semibold">{profile.belt}</span>
-                        </div>
-                        <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-                          <FiTrendingUp size={16} className="text-white" />
-                          <span className="text-white font-semibold">{profile.weight} Kg</span>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Avatar Placeholder */}
-                    <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/30 flex items-center justify-center flex-shrink-0">
-                      <FiUser size={40} className="text-white" />
-                    </div>
-                  </div>
-
-                  {/* Equipe e Professor */}
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                      <p className="text-xs font-bold uppercase tracking-wider text-white/80 mb-1">Equipe</p>
-                      <p className="text-lg font-bold text-white">{profile.team}</p>
-                    </div>
-                    <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                      <p className="text-xs font-bold uppercase tracking-wider text-white/80 mb-1">Professor</p>
-                      <p className="text-lg font-bold text-white">{profile.professor}</p>
-                    </div>
-                  </div>
-
-                  {/* Participações em Campeonatos */}
-                  <div className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20 mb-6">
-                    <p className="text-xs font-bold uppercase tracking-wider text-white/80 mb-3">
-                      Participações em Campeonatos: {profile.stats.championships}
-                    </p>
-                    
-                    {/* Medalhas com Progress Bars */}
-                    <div className="space-y-4">
-                      {profile.medals.map((medal, index) => (
-                        <div key={index} className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <FiStar 
-                                size={20} 
-                                className={
-                                  medal.type === 'gold' ? 'text-yellow-300' :
-                                  medal.type === 'silver' ? 'text-gray-300' :
-                                  'text-amber-600'
-                                }
-                              />
-                              <span className="text-white font-semibold text-sm">{medal.label}</span>
-                            </div>
-                            <span className="text-white/90 text-sm font-medium">
-                              taxa de vitórias: {medal.wins} / {medal.percentage.toFixed(2)}%
-                            </span>
-                          </div>
-                          {/* Progress Bar */}
-                          <div className="w-full h-2.5 bg-white/20 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all duration-500 ${
-                                medal.type === 'gold' ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
-                                medal.type === 'silver' ? 'bg-gradient-to-r from-gray-300 to-gray-400' :
-                                'bg-gradient-to-r from-amber-600 to-amber-700'
-                              }`}
-                              style={{ width: `${medal.percentage}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Perfis Sociais */}
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-white/80 mb-3">
-                      Perfis Sociais de {profile.name}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.social.map((social) => {
-                        const Icon = social.icon
-                        return (
-                          <a
-                            key={social.label}
-                            href={social.href}
-                            className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/30 transition-all hover:scale-110"
-                            title={social.label}
-                          >
-                            <Icon size={18} />
-                          </a>
-                        )
-                      })}
-                    </div>
-                  </div>
+        <section aria-labelledby="profile-identity-title" className="mt-mc-32">
+          <Card className="overflow-hidden">
+            <div className="bg-mc-structure px-mc-16 py-mc-24 text-white sm:px-mc-24">
+              <div className="flex flex-col gap-mc-16 sm:flex-row sm:items-center">
+                <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-mc-full bg-white/15 font-mc-display text-2xl font-semibold" aria-hidden="true">
+                  {initial}
+                </span>
+                <div className="min-w-0">
+                  <p className="font-mc-interface text-xs font-semibold uppercase tracking-[0.16em] text-blue-200">Identidade</p>
+                  <h2 id="profile-identity-title" className="mt-mc-8 truncate font-mc-display text-mc-h2 text-white">{name}</h2>
+                  <p className="mt-mc-8 break-all font-mc-interface text-sm text-slate-200">{user.email}</p>
                 </div>
               </div>
-
-              <div className="space-y-6">
-                {/* Últimos Eventos - Design Premium */}
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0C3049] to-blue-900 shadow-xl">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
-                  <div className="relative px-6 py-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-base font-bold uppercase tracking-wide text-white flex items-center gap-2">
-                        <FiAward className="text-yellow-400" size={20} />
-                        Últimos eventos que participei
-                      </h3>
-                    </div>
-                    <ul className="space-y-3">
-                      {pastEvents.map((event, index) => (
-                        <li 
-                          key={event.title} 
-                          className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 p-4 hover:bg-white/15 transition-all"
-                        >
-                          <p className="font-semibold text-white text-sm mb-1 line-clamp-2">{event.title}</p>
-                          <div className="flex items-center gap-2 text-white/70 text-xs">
-                            <FiCalendar size={12} />
-                            <span>{event.date}</span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                {/* Próximos Eventos - Design Premium */}
-                <div className="rounded-2xl border-2 border-primary-blue bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg overflow-hidden">
-                  <div className="bg-gradient-to-r from-primary-blue to-blue-600 px-6 py-4">
-                    <h3 className="text-base font-bold uppercase tracking-wide text-white flex items-center gap-2">
-                      <FiCalendar className="text-white" size={18} />
-                      Veja os nossos próximos eventos
-                    </h3>
-                  </div>
-                  <div className="p-6 space-y-4">
-                    {upcomingEvents.map((event) => (
-                      <Link
-                        key={event.title}
-                        href="#"
-                        className="block bg-white rounded-xl border-2 border-gray-200 p-4 hover:border-primary-blue hover:shadow-md transition-all group"
-                      >
-                        <p className="font-bold text-gray-900 text-sm mb-2 group-hover:text-primary-blue transition">
-                          {event.title}
-                        </p>
-                        <div className="flex items-center gap-2 text-gray-600 text-xs">
-                          <FiCalendar size={12} />
-                          <span>{event.date}</span>
-                          <span className="text-gray-400">·</span>
-                          <FiMapPin size={12} />
-                          <span>{event.city}</span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
+              <div className="mt-mc-16 flex flex-wrap gap-mc-8">
+                {roleLabel ? <StatusBadge className="bg-white/15 text-white">{roleLabel}</StatusBadge> : null}
+                {actor?.isProfessor ? <StatusBadge className="bg-white/15 text-white">Gerencia equipe</StatusBadge> : null}
+                {actor?.canManageEvents ? <StatusBadge className="bg-white/15 text-white">Administra eventos</StatusBadge> : null}
               </div>
             </div>
+          </Card>
+        </section>
+
+        <div className="mt-mc-24 grid gap-mc-24 xl:grid-cols-[minmax(0,1.4fr)_minmax(20rem,0.8fr)]">
+          <div className="space-y-mc-24">
+            <section id="dados-pessoais" aria-labelledby="personal-data-title">
+              <Card className="p-mc-16 sm:p-mc-24">
+                <h2 id="personal-data-title" className="font-mc-display text-mc-h3 text-mc-text-primary">Dados pessoais</h2>
+                <p className="mt-mc-8 font-mc-interface text-sm text-mc-text-secondary">
+                  Nome, telefone e nascimento podem ser alterados. O CPF, quando existir, permanece como identificação da conta.
+                </p>
+                <dl className="mt-mc-16 grid gap-mc-12 border-y border-mc-border py-mc-16 font-mc-interface text-sm sm:grid-cols-2">
+                  <div>
+                    <dt className="text-mc-text-secondary">CPF</dt>
+                    <dd className="mt-mc-4 font-semibold text-mc-text-primary">{formatCpf(profile?.cpf ?? null)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-mc-text-secondary">Nascimento atual</dt>
+                    <dd className="mt-mc-4 font-semibold text-mc-text-primary">{formatBirth(profile?.data_nascimento ?? null)}</dd>
+                  </div>
+                </dl>
+                <div className="mt-mc-16">
+                  <ProfileForm
+                    nomeCompleto={profile?.nome_completo || ''}
+                    telefone={profile?.telefone || ''}
+                    dataNascimento={profile?.data_nascimento || ''}
+                  />
+                </div>
+              </Card>
+            </section>
+
+            <section aria-labelledby="sports-links-title">
+              <Card className="p-mc-16 sm:p-mc-24">
+                <h2 id="sports-links-title" className="font-mc-display text-mc-h3 text-mc-text-primary">Vínculos na plataforma</h2>
+                <p className="mt-mc-8 font-mc-interface text-sm text-mc-text-secondary">
+                  Somente o que já existe na sua conta: tipo de cadastro, equipes criadas e atletas que você gerencia.
+                </p>
+                <dl className="mt-mc-16 space-y-mc-16 font-mc-interface text-sm">
+                  <div className="grid gap-mc-4 sm:grid-cols-[10rem_1fr]">
+                    <dt className="text-mc-text-secondary">Tipo de cadastro</dt>
+                    <dd className="font-semibold text-mc-text-primary">{roleLabel || 'Não informado no cadastro'}</dd>
+                  </div>
+                  <div className="grid gap-mc-4 sm:grid-cols-[10rem_1fr]">
+                    <dt className="text-mc-text-secondary">Organização</dt>
+                    <dd className="font-semibold text-mc-text-primary">
+                      {organizationName ? `${organizationName} · ${membership?.role === 'owner' ? 'proprietário' : 'organizador'}` : 'Nenhuma organização administrativa'}
+                    </dd>
+                  </div>
+                  <div className="grid gap-mc-4 sm:grid-cols-[10rem_1fr]">
+                    <dt className="text-mc-text-secondary">Equipes</dt>
+                    <dd className="font-semibold text-mc-text-primary">
+                      {teams?.length ? teams.map((team) => team.nome).join(', ') : 'Nenhuma equipe criada por você'}
+                    </dd>
+                  </div>
+                  <div className="grid gap-mc-4 sm:grid-cols-[10rem_1fr]">
+                    <dt className="text-mc-text-secondary">Atletas gerenciados</dt>
+                    <dd className="font-semibold text-mc-text-primary">{managedCount ?? 0}</dd>
+                  </div>
+                </dl>
+              </Card>
+            </section>
           </div>
+
+          <aside className="space-y-mc-24">
+            <section aria-labelledby="account-security-title">
+              <Card className="p-mc-16 sm:p-mc-24">
+                <h2 id="account-security-title" className="font-mc-display text-mc-h3 text-mc-text-primary">Conta e segurança</h2>
+                <ul className="mt-mc-16 space-y-mc-16 font-mc-interface text-sm">
+                  <li className="flex items-start gap-mc-12">
+                    <Mail aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-mc-action" />
+                    <div>
+                      <p className="font-semibold text-mc-text-primary">E-mail de acesso</p>
+                      <p className="mt-mc-4 break-all text-mc-text-secondary">{user.email}</p>
+                      <p className="mt-mc-4 text-mc-text-secondary">O e-mail não é alterado por esta tela.</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-mc-12">
+                    <Lock aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-mc-action" />
+                    <div>
+                      <p className="font-semibold text-mc-text-primary">Senha</p>
+                      <p className="mt-mc-4 text-mc-text-secondary">Redefina pelo e-mail cadastrado, sem alterar a senha direto aqui.</p>
+                      <Link href="/recuperar-senha" className="mt-mc-8 inline-flex min-h-11 items-center font-semibold text-mc-action hover:underline">
+                        Recuperar senha
+                      </Link>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-mc-12">
+                    <Shield aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-mc-action" />
+                    <div>
+                      <p className="font-semibold text-mc-text-primary">Conta criada</p>
+                      <p className="mt-mc-4 text-mc-text-secondary">
+                        {profile?.created_at ? dateFormatter.format(new Date(profile.created_at)) : 'Data não disponível'}
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </Card>
+            </section>
+
+            <section aria-labelledby="profile-actions-title">
+              <Card className="divide-y divide-mc-border overflow-hidden">
+                <div className="p-mc-16 sm:p-mc-24">
+                  <h2 id="profile-actions-title" className="font-mc-display text-mc-h3 text-mc-text-primary">Ações</h2>
+                  <p className="mt-mc-8 font-mc-interface text-sm text-mc-text-secondary">Caminhos reais da sua conta.</p>
+                </div>
+                <Link href="/dashboard/meus-atletas" className="flex min-h-14 items-center gap-mc-12 px-mc-16 py-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary transition-colors hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus sm:px-mc-24">
+                  <UsersRound aria-hidden="true" size={18} className="text-mc-action" />
+                  Ver meus atletas
+                </Link>
+                <Link href="/dashboard/inscricoes" className="flex min-h-14 items-center gap-mc-12 px-mc-16 py-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary transition-colors hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus sm:px-mc-24">
+                  <ClipboardList aria-hidden="true" size={18} className="text-mc-action" />
+                  Ver inscrições e pagamentos
+                </Link>
+                <Link href="/eventos" className="flex min-h-14 items-center gap-mc-12 px-mc-16 py-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary transition-colors hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus sm:px-mc-24">
+                  <CalendarDays aria-hidden="true" size={18} className="text-mc-action" />
+                  Ver eventos publicados
+                </Link>
+                {actor?.canManageEvents ? (
+                  <Link href="/admin/eventos" className="flex min-h-14 items-center gap-mc-12 px-mc-16 py-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary transition-colors hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus sm:px-mc-24">
+                    <UserRound aria-hidden="true" size={18} className="text-mc-action" />
+                    Administrar eventos
+                  </Link>
+                ) : null}
+              </Card>
+            </section>
+          </aside>
         </div>
-      </section>
-    </div>
+      </PageContainer>
+    </main>
   )
 }
-

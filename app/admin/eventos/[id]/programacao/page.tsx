@@ -19,7 +19,7 @@ export default async function ProgramacaoPage({ params }: { params: { id: string
   if (result.kind === 'not_found') notFound()
 
   return (
-    <div className="-mt-24 min-h-screen bg-mc-background">
+    <div className="min-h-screen bg-mc-background">
       <InternalNavigation canManageEvents />
       <main className="py-mc-32 sm:py-mc-48">
         <PageContainer>

@@ -56,7 +56,7 @@ export default async function EventConfigurationPage({ params }: { params: { id:
   if (!event) notFound()
   const { data: ruleSets } = await supabase.from('category_rule_sets').select('id, nome, versao, ativo, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg, fight_duration_minutes)').eq('event_id', event.id).order('versao', { ascending: false })
   return (
-    <div className="-mt-24 min-h-screen bg-mc-background">
+    <div className="min-h-screen bg-mc-background">
       <InternalNavigation canManageEvents />
       <main className="py-mc-32 sm:py-mc-48">
         <PageContainer>

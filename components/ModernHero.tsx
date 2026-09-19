@@ -40,10 +40,10 @@ export default function ModernHero() {
               <ArrowRight aria-hidden="true" size={19} />
             </Link>
             <Link
-              href="/admin/autenticacao"
+              href="/sistema"
               className="inline-flex min-h-12 items-center justify-center rounded-mc-medium border border-white/60 bg-white/10 px-mc-24 font-mc-interface text-base font-semibold text-white transition-colors duration-mc-normal hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure"
             >
-              Organizar um evento
+              Conhecer o sistema
             </Link>
           </div>
         </div>

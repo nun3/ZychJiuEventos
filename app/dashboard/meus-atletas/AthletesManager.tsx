@@ -150,7 +150,16 @@ export default function AthletesManager({ teams, athletes }: { teams: TeamOption
         <EmptyState
           icon={<UserRound size={34} />}
           title={athletes.length === 0 ? 'Nenhum atleta cadastrado' : 'Nenhum atleta encontrado'}
-          description={athletes.length === 0 ? 'Cadastre um atleta na sua equipe para vê-lo aqui.' : 'Tente buscar por outro nome.'}
+          description={athletes.length === 0
+            ? (teams.length === 0
+              ? 'Crie a equipe primeiro. Depois cadastre os atletas que você gerencia como professor ou responsável.'
+              : 'Cadastre um atleta na sua equipe para editá-lo e inscrevê-lo nos eventos publicados.')
+            : 'Tente buscar por outro nome.'}
+          action={athletes.length === 0 ? (
+            teams.length === 0
+              ? <Button variant="outline" onClick={() => setShowTeamForm(true)}>Criar equipe</Button>
+              : <Button onClick={() => setShowAthleteForm(true)} className="gap-mc-8"><Plus aria-hidden="true" size={18} />Cadastrar atleta</Button>
+          ) : undefined}
           className="rounded-mc-medium border border-mc-border bg-mc-surface"
         />
       ) : (

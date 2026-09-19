@@ -110,7 +110,7 @@ export default async function RegistrationsPage() {
   return (
     <main className="py-mc-32 sm:py-mc-48">
       <PageContainer>
-        <PageHeader title="Inscrições realizadas" description="Consulte suas inscrições e as dos atletas que você gerencia." />
+        <PageHeader title="Inscrições e pagamentos" description="Consulte inscrições dos atletas que você gerencia e reserve o valor para a baixa manual do organizador. Esta tela não emite PIX nem boleto automaticamente." />
 
         <div className="mt-mc-32">
           {error ? <Alert variant="error" role="alert">Não foi possível carregar as inscrições.</Alert> : null}
@@ -118,7 +118,8 @@ export default async function RegistrationsPage() {
             <EmptyState
               icon={<ClipboardList size={34} />}
               title="Nenhuma inscrição encontrada"
-              description="As inscrições realizadas por você ou para seus atletas aparecerão aqui."
+              description="Quando você inscrever um atleta em um evento publicado, a inscrição aparece aqui com o status de pagamento."
+              action={<Link href="/eventos" className="inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">Ver eventos publicados</Link>}
               className="rounded-mc-medium border border-mc-border bg-mc-surface"
             />
           ) : null}
@@ -153,12 +154,27 @@ export default async function RegistrationsPage() {
         </div>
 
         {!error && <PaymentCheckout registrations={checkoutRows} manualOnly={isPaymentsManualOnly()} />}
-        {!error && !!payments.data?.length && <section className="mt-8" aria-label="Pagamentos reservados">
-          <h2 className="text-2xl font-bold">Pagamentos reservados</h2>
-          <ul className="mt-4 space-y-3">{payments.data.map(p => <li key={p.id}>
-            <Link className="text-primary-blue underline" href={`/dashboard/pagamentos/${p.id}`}>{p.events?.nome || 'Evento'} — {p.metodo.toUpperCase()} — {p.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} — {p.status}</Link>
-          </li>)}</ul>
-        </section>}
+        {!error && !!payments.data?.length && (
+          <section className="mt-mc-32" aria-labelledby="reserved-payments-title">
+            <h2 id="reserved-payments-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Pagamentos reservados</h2>
+            <p className="mt-mc-8 font-mc-interface text-sm text-mc-text-secondary">A reserva guarda o valor. O status muda quando o organizador registra a baixa.</p>
+            <ul className="mt-mc-16 divide-y divide-mc-border overflow-hidden rounded-mc-medium border border-mc-border bg-mc-surface">
+              {payments.data.map((payment) => (
+                <li key={payment.id}>
+                  <Link href={`/dashboard/pagamentos/${payment.id}`} className="flex min-h-14 flex-col gap-mc-8 px-mc-16 py-mc-16 transition-colors hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus sm:flex-row sm:items-center sm:justify-between">
+                    <span>
+                      <strong className="block font-mc-interface text-mc-text-primary">{payment.events?.nome || 'Evento'}</strong>
+                      <span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">{payment.metodo.toUpperCase()} · {payment.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                    </span>
+                    <StatusBadge variant={payment.status === 'pago' ? 'success' : payment.status === 'aguardando' ? 'warning' : 'error'}>
+                      {payment.status === 'aguardando' ? 'Aguardando baixa' : payment.status === 'pago' ? 'Pago' : payment.status.replaceAll('_', ' ')}
+                    </StatusBadge>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </PageContainer>
     </main>
   )

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { CalendarDays } from 'lucide-react'
 import NetflixEventCard from './NetflixEventCard'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -58,8 +59,16 @@ export default function ModernEventGrid({ events, filters, onEventClick }: { eve
       ) : (
         <EmptyState
           icon={<CalendarDays size={32} />}
-          title="Nenhum evento encontrado"
-          description="Tente remover alguns filtros para consultar todas as competições publicadas."
+          title={events.length ? 'Nenhum evento encontrado' : 'Nenhuma competição publicada'}
+          description={events.length
+            ? 'Nenhum evento corresponde aos filtros. Limpe a busca ou o período para ver o calendário completo.'
+            : 'O calendário público do MEU CAMP mostra os eventos oficiais quando eles forem publicados. Enquanto isso, conheça o sistema ou crie sua conta.'}
+          action={events.length ? undefined : (
+            <div className="flex flex-col items-center gap-mc-12 sm:flex-row">
+              <Link href="/sistema" className="inline-flex min-h-11 items-center justify-center rounded-mc-medium bg-mc-action px-mc-16 font-mc-interface text-sm font-semibold text-white hover:bg-mc-action/90">Conhecer o sistema</Link>
+              <Link href="/login?mode=register" className="inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">Criar conta</Link>
+            </div>
+          )}
           className="rounded-mc-large border border-mc-border bg-mc-surface-secondary"
         />
       )}

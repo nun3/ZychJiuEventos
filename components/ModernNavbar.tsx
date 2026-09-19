@@ -4,17 +4,15 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Award, Calendar, ChevronDown, ChevronUp, FileText, LogOut, Menu, Plus, Ticket, User, Users, X } from 'lucide-react'
+import { Calendar, ChevronDown, ChevronUp, ClipboardList, LayoutDashboard, LogOut, Menu, User, Users, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const accountLinks = [
-  { href: '/dashboard/meu-perfil', label: 'Meu Perfil', icon: User },
-  { href: '/dashboard/alterar-cadastro', label: 'Alterar Meu Cadastro', icon: FileText },
-  { href: '/dashboard/inscricoes', label: 'Inscrições Realizadas', icon: Calendar },
-  { href: '/dashboard/meus-atletas', label: 'Meus Atletas', icon: Users },
-  { href: '/dashboard/minhas-filiacoes', label: 'Filiações Registradas', icon: Award },
-  { href: '/dashboard/meus-ingressos', label: 'Meus Ingressos', icon: Ticket },
-  { href: '/admin/autenticacao', label: 'Criar Evento', icon: Plus },
+  { href: '/dashboard', label: 'Painel', icon: LayoutDashboard },
+  { href: '/dashboard/meu-perfil', label: 'Meu perfil', icon: User },
+  { href: '/dashboard/meus-atletas', label: 'Meus atletas', icon: Users },
+  { href: '/dashboard/inscricoes', label: 'Inscrições e pagamentos', icon: ClipboardList },
+  { href: '/eventos', label: 'Eventos publicados', icon: Calendar },
 ]
 
 const navLinks = [

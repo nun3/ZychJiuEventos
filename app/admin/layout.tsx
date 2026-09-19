@@ -11,7 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <>
       <ModernNavbar />
-      <div className="bg-[#f8fafc] pt-44 pb-12">{children}</div>
+      <div className="min-h-screen bg-mc-background pt-20">{children}</div>
       <ModernFooter />
     </>
   )

@@ -171,12 +171,8 @@ function LoginPageContent() {
                     <Input name="password" type="password" placeholder="Digite sua senha" required autoComplete="current-password" />
                   </FormField>
 
-                  <div className="flex flex-col gap-mc-12 font-mc-interface text-sm sm:flex-row sm:items-center sm:justify-between">
-                    <label className="flex min-h-11 items-center gap-mc-8 text-mc-text-secondary">
-                      <input type="checkbox" className="h-4 w-4 rounded border-mc-border text-mc-action focus:ring-mc-focus" />
-                      Manter conectado
-                    </label>
-                    <button type="button" onClick={() => setMode('recover')} className="min-h-11 text-left font-semibold text-mc-action hover:underline sm:text-right">
+                  <div className="flex justify-end font-mc-interface text-sm">
+                    <button type="button" onClick={() => setMode('recover')} className="min-h-11 font-semibold text-mc-action hover:underline">
                       Esqueci a senha
                     </button>
                   </div>

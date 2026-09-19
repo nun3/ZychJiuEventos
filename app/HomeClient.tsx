@@ -32,8 +32,8 @@ export default function HomeClient({ events }: { events: Event[] }) {
           </div>
 
           <div className="mt-mc-32">
-            <EventFilters onFilterChange={setFilters} />
-            <ModernEventGrid events={events} filters={filters} onEventClick={setSelectedEvent} />
+            {events.length ? <EventFilters onFilterChange={setFilters} /> : null}
+            <ModernEventGrid events={events} filters={events.length ? filters : undefined} onEventClick={setSelectedEvent} />
           </div>
         </PageContainer>
       </section>
@@ -52,6 +52,10 @@ export default function HomeClient({ events }: { events: Event[] }) {
             <div className="grid gap-mc-8 py-mc-24 sm:grid-cols-[9rem_1fr] sm:gap-mc-24">
               <h3 className="font-mc-interface font-semibold text-mc-text-primary">Atletas</h3>
               <p className="font-mc-interface leading-6 text-mc-text-secondary">Encontram eventos, realizam inscrições e acompanham sua participação.</p>
+            </div>
+            <div className="grid gap-mc-8 py-mc-24 sm:grid-cols-[9rem_1fr] sm:gap-mc-24">
+              <h3 className="font-mc-interface font-semibold text-mc-text-primary">Professores</h3>
+              <p className="font-mc-interface leading-6 text-mc-text-secondary">Gerenciam a equipe, inscrevem atletas e acompanham a checagem pública.</p>
             </div>
             <div className="grid gap-mc-8 py-mc-24 sm:grid-cols-[9rem_1fr] sm:gap-mc-24">
               <h3 className="font-mc-interface font-semibold text-mc-text-primary">Responsáveis</h3>

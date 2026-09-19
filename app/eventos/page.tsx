@@ -26,7 +26,7 @@ export default async function EventsPage() {
               Eventos
             </h1>
             <p className="mt-mc-12 font-mc-interface text-mc-body text-mc-text-secondary">
-              Encontre competições publicadas e consulte os detalhes de cada evento.
+              Encontre competições publicadas do MEU CAMP e consulte a ficha, a checagem e a programação de cada evento.
             </p>
           </div>
 

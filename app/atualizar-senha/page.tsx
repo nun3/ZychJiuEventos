@@ -1,7 +1,15 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import ModernFooter from '@/components/ModernFooter'
+import ModernNavbar from '@/components/ModernNavbar'
+import { Alert } from '@/components/ui/Alert'
+import { Button } from '@/components/ui/Button'
+import { FormField } from '@/components/ui/FormField'
+import { Input } from '@/components/ui/Input'
+import { PageContainer } from '@/components/ui/PageContainer'
 import { createClient } from '@/lib/supabase/client'
 
 export default function UpdatePasswordPage() {
@@ -29,14 +37,39 @@ export default function UpdatePasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f8fafc] px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-md space-y-5 rounded-2xl bg-white p-8 shadow-xl">
-        <h1 className="text-2xl font-bold text-[#0C3049]">Definir nova senha</h1>
-        {error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{error}</p>}
-        <label className="block text-sm font-semibold text-gray-700">Nova senha<input name="password" type="password" required minLength={8} autoComplete="new-password" className="mt-2 w-full rounded-lg border px-4 py-3" /></label>
-        <label className="block text-sm font-semibold text-gray-700">Confirmar nova senha<input name="confirmation" type="password" required minLength={8} autoComplete="new-password" className="mt-2 w-full rounded-lg border px-4 py-3" /></label>
-        <button disabled={loading} className="w-full rounded-lg bg-primary-blue py-3 font-semibold text-white disabled:opacity-50">{loading ? 'Atualizando...' : 'Atualizar senha'}</button>
-      </form>
+    <main className="min-h-screen bg-mc-background">
+      <ModernNavbar />
+      <section className="pt-28 sm:pt-32" aria-labelledby="update-password-title">
+        <PageContainer className="pb-mc-48 sm:pb-mc-64">
+          <div className="mx-auto grid max-w-5xl overflow-hidden rounded-mc-large border border-mc-border bg-mc-surface shadow-mc-elevated lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
+            <header className="bg-mc-structure p-mc-24 text-white sm:p-mc-32 lg:p-mc-48">
+              <p className="font-mc-interface text-xs font-semibold uppercase tracking-[0.18em] text-blue-200">Conta e segurança</p>
+              <h1 id="update-password-title" className="mt-mc-12 font-mc-display text-3xl font-semibold leading-tight sm:text-mc-h1">Definir nova senha</h1>
+              <p className="mt-mc-16 max-w-md font-mc-interface leading-6 text-slate-200">
+                Escolha uma senha nova para voltar ao painel. Depois do salvamento, você segue autenticado.
+              </p>
+            </header>
+            <div className="p-mc-24 sm:p-mc-32 lg:p-mc-48">
+              {error ? <Alert variant="error" role="alert" className="mb-mc-24">{error}</Alert> : null}
+              <form className="space-y-mc-24" onSubmit={handleSubmit}>
+                <FormField id="new-password" label="Nova senha" required>
+                  <Input name="password" type="password" required minLength={8} autoComplete="new-password" />
+                </FormField>
+                <FormField id="confirm-password" label="Confirmar nova senha" required>
+                  <Input name="confirmation" type="password" required minLength={8} autoComplete="new-password" />
+                </FormField>
+                <Button type="submit" size="large" disabled={loading} className="w-full">
+                  {loading ? 'Atualizando...' : 'Atualizar senha'}
+                </Button>
+              </form>
+              <p className="mt-mc-24 text-center font-mc-interface text-sm text-mc-text-secondary">
+                <Link href="/recuperar-senha" className="font-semibold text-mc-action hover:underline">Solicitar novo link</Link>
+              </p>
+            </div>
+          </div>
+        </PageContainer>
+      </section>
+      <ModernFooter />
     </main>
   )
 }
