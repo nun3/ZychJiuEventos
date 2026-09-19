@@ -59,7 +59,7 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
 
   const { data, error } = await supabase
     .from('registrations')
-    .select('id, numero, status, category_id, current_category_id, athlete_snapshot, category_snapshot, created_at, payment_registrations(payments(status))')
+    .select('id, numero, status, category_id, current_category_id, athlete_snapshot, category_snapshot, operational_professor_name, created_at, payment_registrations(payments(status))')
     .eq('event_id', event.id)
     .eq('status', 'efetivada')
     .order('numero', { ascending: true })
@@ -95,6 +95,7 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
       number: registration.numero,
       athleteName: textValue(athlete.nome_completo, 'Atleta não informado'),
       teamName: textValue(athlete.team_name),
+      professorName: textValue(registration.operational_professor_name, 'Sem professor informado'),
       categoryName: currentCategoryName,
       originalCategoryName: currentCategoryId === registration.category_id ? undefined : originalCategoryName,
       belt: textValue(athlete.faixa),

@@ -56,7 +56,7 @@ export default async function RegistrationsPage() {
   ])
   const ids = Array.from(new Set([...(own.data || []).map(a => a.id), ...(managed.data || []).map(a => a.athlete_id)]))
   const result = ids.length ? await supabase.from('registrations')
-    .select('id, numero, athlete_id, event_id, status, valor, athlete_snapshot, category_snapshot, events(id, nome)')
+    .select('id, numero, athlete_id, event_id, status, valor, athlete_snapshot, category_snapshot, operational_professor_name, events(id, nome)')
     .in('athlete_id', ids).order('created_at', { ascending: false }) : { data: [], error: null }
   const payments = await supabase.from('payments').select('id, status, valor_total, metodo, events(nome), payment_registrations(registration_id)').eq('created_by', user.id).order('created_at', { ascending: false })
   const error = own.error || managed.error || result.error || payments.error
@@ -88,7 +88,7 @@ export default async function RegistrationsPage() {
       render: (registration) => (
         <div className="min-w-48">
           <p className="font-semibold text-mc-text-primary">{snapshotName(registration.athlete_snapshot, 'nome_completo')}</p>
-          <p className="mt-mc-4 text-xs text-mc-text-secondary">{snapshotName(registration.category_snapshot, 'nome')}</p>
+          <p className="mt-mc-4 text-xs text-mc-text-secondary">{snapshotName(registration.category_snapshot, 'nome')}{registration.operational_professor_name ? ` · ${registration.operational_professor_name}` : ''}</p>
         </div>
       ),
     },

@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server'
 export type PublicScheduleSide = {
   name: string
   team: string | null
+  professor: string | null
   resolved: boolean
 }
 
@@ -53,6 +54,7 @@ function parseSide(value: Json | undefined): PublicScheduleSide | null {
   return {
     name,
     team: text(side.team),
+    professor: text(side.professor),
     resolved: side.resolved === true,
   }
 }

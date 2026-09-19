@@ -21,6 +21,7 @@ export type EventRegistrationItem = {
   number: number
   athleteName: string
   teamName: string
+  professorName: string
   categoryName: string
   belt: string
   registeredWeight: number | null
@@ -82,6 +83,7 @@ const columns: Array<DataTableColumn<EventRegistrationItem>> = [
     ),
   },
   { key: 'team', header: 'Equipe', render: (registration) => <span className="min-w-40">{registration.teamName}</span> },
+  { key: 'professor', header: 'Professor', render: (registration) => <span className="min-w-40">{registration.professorName}</span> },
   {
     key: 'category',
     header: 'Categoria',
@@ -103,24 +105,27 @@ export default function EventRegistrationsList({ registrations }: { registration
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
   const [team, setTeam] = useState('all')
+  const [professor, setProfessor] = useState('all')
 
   const categories = useMemo(() => uniqueSorted(registrations.map((registration) => registration.categoryName)), [registrations])
   const teams = useMemo(() => uniqueSorted(registrations.map((registration) => registration.teamName)), [registrations])
+  const professors = useMemo(() => uniqueSorted(registrations.map((registration) => registration.professorName)), [registrations])
 
   const filteredRegistrations = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('pt-BR')
     return registrations.filter((registration) => {
       const matchesCategory = category === 'all' || registration.categoryName === category
       const matchesTeam = team === 'all' || registration.teamName === team
-      const searchable = `${registration.number} ${registration.athleteName} ${registration.teamName} ${registration.categoryName}`.toLocaleLowerCase('pt-BR')
-      return matchesCategory && matchesTeam && (!normalizedQuery || searchable.includes(normalizedQuery))
+      const matchesProfessor = professor === 'all' || registration.professorName === professor
+      const searchable = `${registration.number} ${registration.athleteName} ${registration.teamName} ${registration.professorName} ${registration.categoryName}`.toLocaleLowerCase('pt-BR')
+      return matchesCategory && matchesTeam && matchesProfessor && (!normalizedQuery || searchable.includes(normalizedQuery))
     })
-  }, [category, query, registrations, team])
+  }, [category, professor, query, registrations, team])
 
   return (
     <Card className="overflow-hidden">
       <div className="border-b border-mc-border p-mc-16 sm:p-mc-20">
-        <div className="grid gap-mc-12 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-mc-12 md:grid-cols-2 xl:grid-cols-4">
           <label className="relative block">
             <span className="sr-only">Buscar inscrição efetivada</span>
             <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-mc-text-secondary" size={18} />
@@ -140,6 +145,13 @@ export default function EventRegistrationsList({ registrations }: { registration
               {teams.map((value) => <option key={value} value={value}>{value}</option>)}
             </Select>
           </label>
+          <label>
+            <span className="sr-only">Filtrar por professor</span>
+            <Select value={professor} onChange={(event) => setProfessor(event.target.value)} aria-label="Filtrar por professor">
+              <option value="all">Todos os professores</option>
+              {professors.map((value) => <option key={value} value={value}>{value}</option>)}
+            </Select>
+          </label>
         </div>
         <p aria-live="polite" className="mt-mc-12 font-mc-interface text-sm text-mc-text-secondary">
           {filteredRegistrations.length} de {registrations.length} {registrations.length === 1 ? 'inscrição efetivada' : 'inscrições efetivadas'}
@@ -155,7 +167,7 @@ export default function EventRegistrationsList({ registrations }: { registration
                 <MobileRecordHeader>
                   <div className="min-w-0">
                     <MobileRecordTitle className="truncate text-lg">{registration.athleteName}</MobileRecordTitle>
-                    <MobileRecordMeta>Inscrição #{registration.number} · {registration.teamName}</MobileRecordMeta>
+                    <MobileRecordMeta>Inscrição #{registration.number} · {registration.teamName} · {registration.professorName}</MobileRecordMeta>
                   </div>
                   <OccupancyStatus isAlone={registration.isAloneInCategory} />
                 </MobileRecordHeader>

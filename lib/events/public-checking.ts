@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 export type PublicCheckingAthlete = {
   name: string
   team: string | null
+  professor: string | null
   category: string
   alone: boolean
 }
@@ -34,6 +35,7 @@ function parseAthlete(value: Json): PublicCheckingAthlete | null {
   return {
     name,
     team: text(source.team),
+    professor: text(source.professor),
     category,
     alone: source.alone === true,
   }

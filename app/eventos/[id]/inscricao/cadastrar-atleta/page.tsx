@@ -6,11 +6,15 @@ import { Alert } from '@/components/ui/Alert'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { createClient } from '@/lib/supabase/server'
+import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 import RegistrationForm from './RegistrationForm'
 
 export default async function RegistrationPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const [{ data: { user } }, actor] = await Promise.all([
+    supabase.auth.getUser(),
+    getDashboardActor(),
+  ])
   if (!user) redirect(`/login?redirectTo=${encodeURIComponent(`/eventos/${params.id}/inscricao/cadastrar-atleta`)}`)
   const { data: event } = await supabase.from('events').select('id, nome, status, data_evento, valor_inscricao, regulamento_url').eq('id', params.id).maybeSingle()
   if (!event) notFound()
@@ -46,7 +50,13 @@ export default async function RegistrationPage({ params }: { params: { id: strin
           ) : !open ? (
             <Alert variant="warning" role="alert" title="Inscrições indisponíveis">Este evento está fora do prazo de inscrição.</Alert>
           ) : (
-            <RegistrationForm event={event} athletes={allowed} categories={rules.data?.event_categories || []} registeredIds={registrations.data?.map(r => r.athlete_id) || []} />
+            <RegistrationForm
+              event={event}
+              athletes={allowed}
+              categories={rules.data?.event_categories || []}
+              registeredIds={registrations.data?.map(r => r.athlete_id) || []}
+              actor={{ name: actor?.name || '', canLinkSelf: Boolean(actor?.isProfessor) }}
+            />
           )}
         </div>
       </PageContainer>

@@ -29,6 +29,7 @@ const visibleStatuses = ['checagem', 'chaves', 'em_andamento', 'concluido'] as c
 type SearchParams = {
   categoria?: string
   equipe?: string
+  professor?: string
 }
 
 function unique(values: Array<string | null>) {
@@ -38,12 +39,14 @@ function unique(values: Array<string | null>) {
 function matchesFilters(athlete: PublicCheckingAthlete, filters: SearchParams) {
   if (filters.categoria && athlete.category !== filters.categoria) return false
   if (filters.equipe && athlete.team !== filters.equipe) return false
+  if (filters.professor && athlete.professor !== filters.professor) return false
   return true
 }
 
 const columns: Array<DataTableColumn<PublicCheckingAthlete>> = [
   { key: 'name', header: 'Atleta', render: (athlete) => athlete.name },
   { key: 'team', header: 'Equipe', render: (athlete) => athlete.team || 'Sem equipe informada' },
+  { key: 'professor', header: 'Professor', render: (athlete) => athlete.professor || 'Sem professor informado' },
   {
     key: 'occupancy',
     header: 'Situação',
@@ -76,10 +79,12 @@ export default async function PublicCheckingPage({
   const filters: SearchParams = {
     categoria: searchParams.categoria?.trim() || undefined,
     equipe: searchParams.equipe?.trim() || undefined,
+    professor: searchParams.professor?.trim() || undefined,
   }
   const visible = checking.athletes.filter((athlete) => matchesFilters(athlete, filters))
   const categories = unique(checking.athletes.map((athlete) => athlete.category))
   const teams = unique(checking.athletes.map((athlete) => athlete.team))
+  const professors = unique(checking.athletes.map((athlete) => athlete.professor))
   const groups = categories
     .map((category) => ({
       category,
@@ -93,7 +98,7 @@ export default async function PublicCheckingPage({
       <PageContainer className="pb-mc-64 pt-32 sm:pt-36">
         <PageHeader
           title={`Checagem — ${event.nome}`}
-          description="Lista pública das inscrições efetivadas. Nome completo de competição, equipe e categoria vigente."
+          description="Lista pública das inscrições efetivadas. Nome completo de competição, equipe, professor operacional e categoria vigente."
           breadcrumb={
             <Link href={`/eventos/${event.id}`} className="inline-flex min-h-10 items-center gap-mc-8 rounded-mc-small px-mc-8 font-semibold text-mc-action hover:bg-mc-action/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
               <ArrowLeft aria-hidden="true" size={18} />
@@ -121,11 +126,11 @@ export default async function PublicCheckingPage({
         ) : (
           <div className="mt-mc-24 space-y-mc-24">
             <Alert variant="info" icon={<Info size={20} />} title="Consulta pública">
-              Somente nome completo de competição, equipe e categoria vigente. Pendentes, canceladas e estornadas não entram. Pedidos de alteração continuam no fluxo autenticado.
+              Somente nome completo de competição, equipe, professor operacional e categoria vigente. Pendentes, canceladas e estornadas não entram. Pedidos de alteração continuam no fluxo autenticado.
             </Alert>
 
             <Card className="p-mc-16 sm:p-mc-24">
-              <form method="get" className="grid gap-mc-16 md:grid-cols-3 md:items-end">
+              <form method="get" className="grid gap-mc-16 md:grid-cols-4 md:items-end">
                 <FormField id="categoria" label="Categoria">
                   <Select name="categoria" defaultValue={filters.categoria || ''} aria-label="Filtrar por categoria">
                     <option value="">Todas</option>
@@ -136,6 +141,12 @@ export default async function PublicCheckingPage({
                   <Select name="equipe" defaultValue={filters.equipe || ''} aria-label="Filtrar por equipe">
                     <option value="">Todas</option>
                     {teams.map((team) => <option key={team} value={team}>{team}</option>)}
+                  </Select>
+                </FormField>
+                <FormField id="professor" label="Professor">
+                  <Select name="professor" defaultValue={filters.professor || ''} aria-label="Filtrar por professor">
+                    <option value="">Todos</option>
+                    {professors.map((professor) => <option key={professor} value={professor}>{professor}</option>)}
                   </Select>
                 </FormField>
                 <button
@@ -155,17 +166,17 @@ export default async function PublicCheckingPage({
                     <DataTable
                       rows={group.athletes}
                       columns={columns}
-                      getRowKey={(athlete) => `${group.category}-${athlete.name}-${athlete.team || 'sem-equipe'}`}
+                      getRowKey={(athlete) => `${group.category}-${athlete.name}-${athlete.team || 'sem-equipe'}-${athlete.professor || 'sem-professor'}`}
                       caption={`Atletas efetivados em ${group.category}`}
                       className="hidden lg:block"
                     />
                     <div className="space-y-mc-12 lg:hidden">
                       {group.athletes.map((athlete) => (
-                        <MobileRecord key={`${group.category}-${athlete.name}-${athlete.team || 'sem-equipe'}`}>
+                        <MobileRecord key={`${group.category}-${athlete.name}-${athlete.team || 'sem-equipe'}-${athlete.professor || 'sem-professor'}`}>
                           <MobileRecordHeader>
                             <div className="min-w-0">
                               <MobileRecordTitle className="truncate text-lg">{athlete.name}</MobileRecordTitle>
-                              <MobileRecordMeta>{athlete.team || 'Sem equipe informada'}</MobileRecordMeta>
+                              <MobileRecordMeta>{athlete.team || 'Sem equipe informada'}{athlete.professor ? ` · ${athlete.professor}` : ''}</MobileRecordMeta>
                             </div>
                             <StatusBadge variant={athlete.alone ? 'warning' : 'neutral'} icon={athlete.alone ? <UserRound size={14} /> : undefined}>
                               {athlete.alone ? 'Atleta sozinho' : 'Categoria com adversários'}
@@ -184,7 +195,7 @@ export default async function PublicCheckingPage({
               <EmptyState
                 className="rounded-mc-medium border border-mc-border bg-mc-surface"
                 title="Nenhum atleta neste filtro"
-                description="Ajuste a categoria ou a equipe para ver a lista oficial."
+                description="Ajuste a categoria, a equipe ou o professor para ver a lista oficial."
               />
             )}
           </div>

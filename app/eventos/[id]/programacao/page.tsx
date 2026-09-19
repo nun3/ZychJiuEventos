@@ -28,6 +28,7 @@ type SearchParams = {
   area?: string
   categoria?: string
   equipe?: string
+  professor?: string
 }
 
 function unique(values: Array<string | number>) {
@@ -40,13 +41,15 @@ function roundLabel(match: PublicScheduleMatch) {
 
 function sideLine(side: PublicScheduleMatch['sideA']) {
   if (!side.resolved) return side.name
-  return side.team ? `${side.name} — ${side.team}` : side.name
+  const parts = [side.name, side.team, side.professor].filter(Boolean)
+  return parts.join(' — ')
 }
 
 function matchesFilters(match: PublicScheduleMatch, filters: SearchParams) {
   if (filters.area && String(match.areaNumber) !== filters.area) return false
   if (filters.categoria && match.category !== filters.categoria) return false
   if (filters.equipe && match.sideA.team !== filters.equipe && match.sideB.team !== filters.equipe) return false
+  if (filters.professor && match.sideA.professor !== filters.professor && match.sideB.professor !== filters.professor) return false
   return true
 }
 
@@ -111,12 +114,16 @@ export default async function PublicSchedulePage({
     area: searchParams.area?.trim() || undefined,
     categoria: searchParams.categoria?.trim() || undefined,
     equipe: searchParams.equipe?.trim() || undefined,
+    professor: searchParams.professor?.trim() || undefined,
   }
   const visible = schedule.matches.filter((match) => matchesFilters(match, filters))
   const areas = unique(schedule.matches.map((match) => match.areaNumber))
   const categories = unique(schedule.matches.map((match) => match.category))
   const teams = unique(
     schedule.matches.flatMap((match) => [match.sideA.team, match.sideB.team]).filter((team): team is string => Boolean(team)),
+  )
+  const professors = unique(
+    schedule.matches.flatMap((match) => [match.sideA.professor, match.sideB.professor]).filter((professor): professor is string => Boolean(professor)),
   )
 
   return (
@@ -149,11 +156,11 @@ export default async function PublicSchedulePage({
         ) : (
           <div className="mt-mc-24 space-y-mc-24">
             <Alert variant="info" icon={<Info size={20} />} title="Consulta oficial">
-              A fila segue o número global da luta. Filtre por área, categoria ou equipe. A duração oficial aparece como Tempo quando a organização a configurou.
+              A fila segue o número global da luta. Filtre por área, categoria, equipe ou professor operacional da inscrição. A duração oficial aparece como Tempo quando a organização a configurou.
             </Alert>
 
             <Card className="p-mc-16 sm:p-mc-24">
-              <form method="get" className="grid gap-mc-16 md:grid-cols-4 md:items-end">
+              <form method="get" className="grid gap-mc-16 md:grid-cols-5 md:items-end">
                 <FormField id="area" label="Área">
                   <Select name="area" defaultValue={filters.area || ''}>
                     <option value="">Todas</option>
@@ -179,6 +186,12 @@ export default async function PublicSchedulePage({
                     {teams.map((team) => <option key={team} value={team}>{team}</option>)}
                   </Select>
                 </FormField>
+                <FormField id="professor" label="Professor">
+                  <Select name="professor" defaultValue={filters.professor || ''} aria-label="Filtrar por professor">
+                    <option value="">Todos</option>
+                    {professors.map((professor) => <option key={professor} value={professor}>{professor}</option>)}
+                  </Select>
+                </FormField>
                 <button
                   type="submit"
                   className="inline-flex min-h-11 items-center justify-center rounded-mc-medium bg-mc-action px-mc-16 font-mc-interface text-sm font-semibold text-white transition-colors duration-mc-normal hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2"
@@ -188,7 +201,9 @@ export default async function PublicSchedulePage({
               </form>
             </Card>
 
-            {filters.equipe ? (
+            {filters.professor ? (
+              <h2 className="font-mc-display text-mc-h2 text-mc-text-primary">Lutas do professor {filters.professor}</h2>
+            ) : filters.equipe ? (
               <h2 className="font-mc-display text-mc-h2 text-mc-text-primary">Lutas da equipe {filters.equipe}</h2>
             ) : null}
 
@@ -204,7 +219,7 @@ export default async function PublicSchedulePage({
               <EmptyState
                 className="rounded-mc-medium border border-mc-border bg-mc-surface"
                 title="Nenhuma luta neste filtro"
-                description="Ajuste área, categoria ou equipe para ver a fila oficial."
+                description="Ajuste área, categoria, equipe ou professor para ver a fila oficial."
               />
             )}
           </div>

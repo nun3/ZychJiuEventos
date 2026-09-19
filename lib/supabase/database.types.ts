@@ -1430,6 +1430,8 @@ export type Database = {
           event_id: string
           id: string
           numero: number
+          operational_professor_name: string | null
+          operational_professor_user_id: string | null
           registered_by: string
           rule_set_version: number
           status: Database["public"]["Enums"]["registration_status"]
@@ -1448,6 +1450,8 @@ export type Database = {
           event_id: string
           id?: string
           numero?: never
+          operational_professor_name?: string | null
+          operational_professor_user_id?: string | null
           registered_by: string
           rule_set_version: number
           status?: Database["public"]["Enums"]["registration_status"]
@@ -1466,6 +1470,8 @@ export type Database = {
           event_id?: string
           id?: string
           numero?: never
+          operational_professor_name?: string | null
+          operational_professor_user_id?: string | null
           registered_by?: string
           rule_set_version?: number
           status?: Database["public"]["Enums"]["registration_status"]
@@ -1792,6 +1798,8 @@ export type Database = {
       create_event_registrations: {
         Args: {
           accepted_terms_version: string
+          operational_professor_link_self?: boolean[]
+          operational_professor_names?: string[]
           target_athlete_ids: string[]
           target_event_id: string
           terms_accepted: boolean
