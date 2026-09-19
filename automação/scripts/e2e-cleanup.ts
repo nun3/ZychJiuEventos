@@ -1,4 +1,5 @@
-import { buildCleanupPlan, createCleanupClients, executeCleanup, resolveOwnerId, summarizePlan } from '../tests/support/e2e-cleanup';
+import { buildCleanupPlan, createCleanupClients, executeCleanup, loadCleanupEnv, resolveOwnerId, summarizePlan } from '../tests/support/e2e-cleanup';
+import { requireE2eWrites } from '../tests/support/e2e-writes';
 
 async function main() {
   const execute = process.argv.includes('--execute');
@@ -12,6 +13,8 @@ async function main() {
     console.log('Dry-run: nada foi removido. Passe --execute para aplicar.');
     return;
   }
+  loadCleanupEnv();
+  requireE2eWrites('cleanup E2E --execute');
   await executeCleanup(admin, plan);
   const after = await buildCleanupPlan(admin, ownerUserId);
   console.log(JSON.stringify({ after: summarizePlan(after) }, null, 2));

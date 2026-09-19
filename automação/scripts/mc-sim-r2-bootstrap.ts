@@ -1,4 +1,5 @@
 import { createCleanupClients, loadCleanupEnv, resolveOwnerId } from '../tests/support/e2e-cleanup';
+import { requireE2eWrites } from '../tests/support/e2e-writes';
 import { loadMcSimIdentity } from '../tests/support/mc-sim';
 import {
   MC_SIM_R2_EVENT_NAME,
@@ -13,6 +14,7 @@ const FEE = 80;
 
 async function main() {
   loadCleanupEnv();
+  requireE2eWrites('MC-SIM r2 bootstrap');
   const { admin, actor } = await createCleanupClients();
   const ownerUserId = await resolveOwnerId(actor);
   const r1 = loadMcSimIdentity();

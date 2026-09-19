@@ -16,6 +16,7 @@ import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge, type StatusBadgeProps } from '@/components/ui/StatusBadge'
 import { createClient } from '@/lib/supabase/server'
+import { isPaymentsManualOnly } from '@/lib/payments/manual-only'
 import type { Json } from '@/lib/supabase/database.types'
 import PaymentCheckout, { type CheckoutRegistration } from './PaymentCheckout'
 import CategoryChangeRequest from './CategoryChangeRequest'
@@ -151,7 +152,7 @@ export default async function RegistrationsPage() {
           ) : null}
         </div>
 
-        {!error && <PaymentCheckout registrations={checkoutRows} />}
+        {!error && <PaymentCheckout registrations={checkoutRows} manualOnly={isPaymentsManualOnly()} />}
         {!error && !!payments.data?.length && <section className="mt-8" aria-label="Pagamentos reservados">
           <h2 className="text-2xl font-bold">Pagamentos reservados</h2>
           <ul className="mt-4 space-y-3">{payments.data.map(p => <li key={p.id}>

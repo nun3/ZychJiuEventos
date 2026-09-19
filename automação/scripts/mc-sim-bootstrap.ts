@@ -2,6 +2,7 @@ import { chromium } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { createCleanupClients, loadCleanupEnv, resolveOwnerId } from '../tests/support/e2e-cleanup';
+import { requireE2eWrites } from '../tests/support/e2e-writes';
 
 const EVENT_NAME = 'MC-SIM — Competição canônica';
 const RULE_NAME = 'MC-SIM Regras iniciais';
@@ -9,6 +10,7 @@ const CATEGORY_NAME = 'MC-SIM Adulto Leve';
 
 async function main() {
   loadCleanupEnv();
+  requireE2eWrites('MC-SIM bootstrap');
   const baseURL = process.env.BASE_URL || 'http://localhost:3000';
   const email = process.env.E2E_OWNER_EMAIL || '';
   const password = process.env.E2E_OWNER_PASSWORD || '';

@@ -29,7 +29,7 @@ function SubmitReservation({ disabled }: { disabled: boolean }) {
   </button>
 }
 
-export default function PaymentCheckout({ registrations }: { registrations: CheckoutRegistration[] }) {
+export default function PaymentCheckout({ registrations, manualOnly = false }: { registrations: CheckoutRegistration[]; manualOnly?: boolean }) {
   const [selected, setSelected] = useState<string[]>([])
   const [eventId, setEventId] = useState('')
   const [method, setMethod] = useState<'pix' | 'boleto'>('pix')
@@ -47,7 +47,9 @@ export default function PaymentCheckout({ registrations }: { registrations: Chec
   return <section className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-6" aria-labelledby="checkout-title">
     <h2 id="checkout-title" className="text-2xl font-bold text-slate-900">Reservar pagamento</h2>
     <p className="mt-1 text-slate-600">Selecione inscrições pendentes do mesmo evento.</p>
-    <p className="mt-1 text-sm text-slate-600">Esta etapa apenas reserva o valor. Não emite cobrança nem confirma pagamento. Até 100 inscrições por reserva.</p>
+    <p className="mt-1 text-sm text-slate-600">{manualOnly
+      ? 'Esta etapa apenas reserva o valor para a baixa manual do organizador. Não emite cobrança no Asaas nem confirma pagamento.'
+      : 'Esta etapa apenas reserva o valor. Não emite cobrança nem confirma pagamento. Até 100 inscrições por reserva.'}</p>
     {state.error && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-red-700">{state.error}</p>}
     {state.summary && <div role="status" className="mt-4 rounded-lg bg-emerald-50 p-4 text-emerald-900">
       <strong>Reserva persistida.</strong> {state.summary.registrationCount} inscrição(ões), {money(state.summary.total)}, método {state.summary.method.toUpperCase()}.

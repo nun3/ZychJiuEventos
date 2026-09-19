@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createPaymentGateway } from '@/lib/payments/server'
+import { isPaymentsManualOnly } from '@/lib/payments/manual-only'
 import { ensurePaymentCustomer } from '@/lib/payments/customer'
 import { SupabaseIssuanceStore } from '@/lib/payments/issuance-store'
 import { issueReservedPayment, type IssuanceResult } from '@/lib/payments/issuance'
@@ -17,6 +18,9 @@ export async function issuePayment(_previous: IssuePaymentState, formData: FormD
   if (!user) return { error: 'Sua sessão expirou. Entre novamente.', result: null }
   const { data: profile } = await supabase.from('profiles').select('nome_completo, cpf').eq('id', user.id).single()
   if (!profile?.nome_completo || !profile.cpf) return { error: 'Complete nome e CPF no seu perfil antes de emitir a cobrança.', result: null }
+  if (isPaymentsManualOnly()) {
+    return { error: 'A emissão de cobrança está desligada neste go-live. O organizador confirma o recebimento por baixa manual.', result: null }
+  }
 
   try {
     const gateway = createPaymentGateway()

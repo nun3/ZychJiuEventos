@@ -14,7 +14,7 @@ Para habilitar os cenários autenticados, copie `.env.e2e.example` para `.env.e2
 
 - `E2E_OWNER_*`: usuário com vínculo `owner` em uma organização.
 - `E2E_UNAUTHORIZED_*`: uma segunda conta, diferente do `owner`, autenticada e sem nenhum registro em `organization_members`.
-- `E2E_ALLOW_WRITES=true`: libera o cenário que cria duas equipes, cria um atleta fictício e audita sua troca de equipe. Mantenha `false` para execução somente leitura.
+- `E2E_ALLOW_WRITES=true`: libera o cenário que cria duas equipes, cria um atleta fictício e audita sua troca de equipe. Mantenha `false` para execução somente leitura. No go-live assistido a flag deve permanecer `false`.
 
 ## Execução
 

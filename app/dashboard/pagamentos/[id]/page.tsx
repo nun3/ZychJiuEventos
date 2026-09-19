@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { isPaymentsManualOnly } from '@/lib/payments/manual-only'
 import IssuePayment from '../IssuePayment'
 
 export default async function PaymentSummary({ params }: { params: { id: string } }) {
@@ -24,8 +25,10 @@ export default async function PaymentSummary({ params }: { params: { id: string 
       <div><dt>Status</dt><dd>{payment.status}</dd></div>
       <div><dt>Referência</dt><dd className="break-all">{payment.external_reference}</dd></div>
     </dl>
-    <p className="mb-6 rounded-lg bg-blue-50 p-4">A reserva não confirma pagamento. A emissão abaixo cria a cobrança somente no Asaas Sandbox.</p>
-    {payment.status === 'aguardando' && <IssuePayment paymentId={payment.id} />}
+    <p className="mb-6 rounded-lg bg-blue-50 p-4">{isPaymentsManualOnly()
+      ? 'A reserva não confirma pagamento. Neste go-live o organizador registra o recebimento por baixa manual. A emissão de cobrança no Asaas está desligada.'
+      : 'A reserva não confirma pagamento. A emissão abaixo cria a cobrança somente no Asaas Sandbox.'}</p>
+    {payment.status === 'aguardando' && !isPaymentsManualOnly() && <IssuePayment paymentId={payment.id} />}
     <Link className="text-primary-blue underline" href="/dashboard/inscricoes">Voltar às inscrições</Link>
   </section>
 }

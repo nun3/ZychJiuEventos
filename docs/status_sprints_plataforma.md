@@ -42,7 +42,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Reconciliacao documental do MVP concluida em 2026-09-19. Sprints 8 a 13 e o Full Event BDD permanecem congelados. O proximo recorte de produto e o go-live (onboarding de org, membros, atleta independente, regra de menor), nao um lote operacional novo. Nao iniciar exportacao nem preparacao para producao.
+Go-live assistido em protecao: `E2E_ALLOW_WRITES=false`, `PAYMENTS_MANUAL_ONLY` bloqueia emissao Asaas, org real sera nova (nao Ricardo), MC-SIM intacto. Runbook em `docs/go-live-assistido.md`. Sprints 8 a 13 e Full Event permanecem congelados. Nao limpar massa, nao push, nao deploy neste recorte.
 
 ## 5. Backlog ordenado por sprints
 

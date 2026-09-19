@@ -1,5 +1,6 @@
 import { chromium, type BrowserContext } from '@playwright/test';
 import { createCleanupClients, loadCleanupEnv, resolveOwnerId, SANDBOX_HOST } from '../tests/support/e2e-cleanup';
+import { requireE2eWrites } from '../tests/support/e2e-writes';
 import { loadMcSimR2Identity } from '../tests/support/mc-sim-r2';
 
 async function applyOwnerSession(context: BrowserContext, baseURL: string) {
@@ -20,6 +21,7 @@ async function applyOwnerSession(context: BrowserContext, baseURL: string) {
 
 async function main() {
   loadCleanupEnv();
+  requireE2eWrites('MC-SIM r2 UI smoke');
   const baseURL = process.env.BASE_URL || 'http://localhost:3000';
   const identity = loadMcSimR2Identity();
   if (!identity.approvedRequestId || !identity.checagemLockedAt) {

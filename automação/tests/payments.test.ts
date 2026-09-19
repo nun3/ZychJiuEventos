@@ -4,6 +4,7 @@ import { toCents, centsToDecimal, preparePaymentBatch, decidePaymentState } from
 import { AsaasSandboxGateway, asaasObservation } from '../../lib/payments/asaas';
 import { GatewayError, type ChargeInput } from '../../lib/payments/gateway';
 import { authenticateAsaasWebhook, webhookObservation } from '../../lib/payments/webhook';
+import { isPaymentsManualOnly } from '../../lib/payments/manual-only';
 
 const charge: ChargeInput = { customerId: 'cus_test', reference: 'internal-1', totalCents: 12345, method: 'pix', dueDate: '2027-01-10', description: 'Inscrições de teste' };
 const payload = { id: 'pay_test', externalReference: 'internal-1', value: 123.45, billingType: 'PIX', status: 'PENDING' };
@@ -119,4 +120,9 @@ test('consulta valida identidade e recusa paginação incompleta', async () => {
   await assert.rejects(gateway.getCharge('pay_other'), (e: unknown) => e instanceof GatewayError && e.code === 'response');
   const paginated = new AsaasSandboxGateway('test', async () => json({ data: [payload], hasMore: true }));
   await assert.rejects(paginated.findCharges('internal-1'), (e: unknown) => e instanceof GatewayError && e.reconciliationRequired);
+});
+test('modo manual de go-live é explícito e não depende do Asaas', () => {
+  assert.equal(isPaymentsManualOnly({ PAYMENTS_MANUAL_ONLY: 'true' }), true);
+  assert.equal(isPaymentsManualOnly({ PAYMENTS_MANUAL_ONLY: 'false' }), false);
+  assert.equal(isPaymentsManualOnly({}), false);
 });

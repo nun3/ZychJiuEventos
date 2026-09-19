@@ -1,4 +1,5 @@
-import { createCleanupClients, resolveOwnerId } from './e2e-cleanup';
+import { createCleanupClients, loadCleanupEnv, resolveOwnerId } from './e2e-cleanup';
+import { requireE2eWrites } from './e2e-writes';
 import { loadMcSimIdentity, writeMcSimIdentity, type McSimIdentity } from './mc-sim';
 
 const TEAM_ALFA = 'MC-SIM Equipe Alfa';
@@ -458,6 +459,8 @@ export async function ensureLock() {
 }
 
 export async function runStage(stage: string) {
+  loadCleanupEnv();
+  requireE2eWrites('MC-SIM runbook');
   if (stage === 'participants') return ensureParticipants();
   if (stage === 'registrations') return ensureRegistrations();
   if (stage === 'settle') return ensureSettlement();
