@@ -7,9 +7,8 @@ import ModernNavbar from '@/components/ModernNavbar'
 import ModernFooter from '@/components/ModernFooter'
 import { Card, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
 import { formatFightDurationLabel, parseFightDurationMinutes } from '@/lib/events/fight-duration'
+import { findPublicReleaseEvent } from '@/lib/events/public-access'
 import { createClient } from '@/lib/supabase/server'
-
-const publicStatuses = ['publicado', 'inscricao', 'pagamento', 'checagem', 'chaves', 'em_andamento', 'concluido'] as const
 
 const statusVariants = {
   rascunho: 'neutral',
@@ -26,7 +25,7 @@ const statusVariants = {
 export default async function EventPage({ params }: { params: { id: string } }) {
   noStore()
   const supabase = createClient()
-  const { data: event } = await supabase.from('events').select('id, nome, data_evento, local, timezone, informacoes, status, valor_inscricao, imagem_cartaz_url, regulamento_url, tabela_peso_url').eq('id', params.id).in('status', publicStatuses).maybeSingle()
+  const event = await findPublicReleaseEvent(params.id)
   if (!event) notFound()
   const [{ data: phases }, { data: rules }] = await Promise.all([
     supabase.from('event_phases').select('id, tipo, inicio, fim').eq('event_id', event.id).order('inicio'),

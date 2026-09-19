@@ -7,6 +7,7 @@ import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { createClient } from '@/lib/supabase/server'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
+import { findPublicReleaseEvent } from '@/lib/events/public-access'
 import RegistrationForm from './RegistrationForm'
 
 export default async function RegistrationPage({ params }: { params: { id: string } }) {
@@ -16,7 +17,7 @@ export default async function RegistrationPage({ params }: { params: { id: strin
     getDashboardActor(),
   ])
   if (!user) redirect(`/login?redirectTo=${encodeURIComponent(`/eventos/${params.id}/inscricao/cadastrar-atleta`)}`)
-  const { data: event } = await supabase.from('events').select('id, nome, status, data_evento, valor_inscricao, regulamento_url').eq('id', params.id).maybeSingle()
+  const event = await findPublicReleaseEvent(params.id, null)
   if (!event) notFound()
   const [phases, managers, athletes, rules, registrations] = await Promise.all([
     supabase.from('event_phases').select('inicio, fim').eq('event_id', event.id).eq('tipo', 'inscricao'),

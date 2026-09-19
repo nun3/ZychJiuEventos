@@ -42,7 +42,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Go-live assistido em pre-publicacao: org `MEU CAMP` isolada, prototipos admin redirecionam para superficies reais, `PAYMENTS_MANUAL_ONLY` bloqueia Asaas. Falta evento real, envs na Vercel e autorizacao de push/deploy. Runbook em `docs/go-live-assistido.md`. Sprints 8 a 13 e Full Event permanecem congelados.
+Go-live assistido em pre-publicacao: org `MEU CAMP` isolada, catalogo publico filtrado por `PUBLIC_ORGANIZATION_ID`, prototipos admin redirecionados, `PAYMENTS_MANUAL_ONLY` bloqueia Asaas. Falta evento real, envs na Vercel e autorizacao de push/deploy. Runbook em `docs/go-live-assistido.md`. Sprints 8 a 13 e Full Event permanecem congelados.
 
 ## 5. Backlog ordenado por sprints
 

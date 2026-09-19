@@ -20,10 +20,8 @@ import {
   StatusBadge,
   type DataTableColumn,
 } from '@/components/ui'
+import { findPublicReleaseEvent } from '@/lib/events/public-access'
 import { getPublicEventChecking, type PublicCheckingAthlete } from '@/lib/events/public-checking'
-import { createClient } from '@/lib/supabase/server'
-
-const publicStatuses = ['publicado', 'inscricao', 'pagamento', 'checagem', 'chaves', 'em_andamento', 'concluido'] as const
 const visibleStatuses = ['checagem', 'chaves', 'em_andamento', 'concluido'] as const
 
 type SearchParams = {
@@ -63,18 +61,9 @@ export default async function PublicCheckingPage({
   params: { id: string }
   searchParams: SearchParams
 }) {
-  const supabase = createClient()
-  const [{ data: event }, checking] = await Promise.all([
-    supabase
-      .from('events')
-      .select('id, nome, status')
-      .eq('id', params.id)
-      .in('status', publicStatuses)
-      .maybeSingle(),
-    getPublicEventChecking(params.id),
-  ])
-
+  const event = await findPublicReleaseEvent(params.id)
   if (!event) notFound()
+  const checking = await getPublicEventChecking(params.id)
 
   const filters: SearchParams = {
     categoria: searchParams.categoria?.trim() || undefined,

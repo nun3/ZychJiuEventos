@@ -3,17 +3,23 @@ import 'server-only'
 import { unstable_noStore as noStore } from 'next/cache'
 import type { Event } from '@/components/ModernEventGrid'
 import { createClient } from '@/lib/supabase/server'
-
-const publicStatuses = ['publicado', 'inscricao', 'pagamento', 'checagem', 'chaves', 'em_andamento', 'concluido'] as const
+import { getPublicOrganizationScope } from './public-organization'
+import { publicEventStatuses } from './public-access'
 
 export async function getPublicEvents(): Promise<Event[]> {
   noStore()
 
-  const { data } = await createClient()
+  const scope = getPublicOrganizationScope()
+  if (scope.mode === 'blocked') return []
+
+  let query = createClient()
     .from('events')
     .select('id, nome, data_evento, local, informacoes, imagem_cartaz_url')
-    .in('status', publicStatuses)
+    .in('status', publicEventStatuses)
     .order('data_evento', { ascending: true })
+  if (scope.mode === 'restricted') query = query.eq('organization_id', scope.organizationId)
+
+  const { data } = await query
 
   const formatter = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'long', timeZone: 'UTC' })
   const fullFormatter = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' })

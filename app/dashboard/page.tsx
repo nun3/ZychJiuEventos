@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, CalendarDays, ClipboardList, MapPin, Plus, UsersRound } from 'lucide-react'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
+import { getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 import { Alert } from '@/components/ui/Alert'
 import { Card } from '@/components/ui/Card'
@@ -14,8 +15,14 @@ const checkingStatuses = ['checagem', 'chaves', 'em_andamento', 'concluido']
 export default async function DashboardHome({ searchParams }: { searchParams: { erro?: string } }) {
   const supabase = createClient()
   const actor = await getDashboardActor()
-  const { data } = await supabase.from('events').select('id, nome, data_evento, local, status, imagem_cartaz_url').neq('status', 'rascunho').neq('status', 'cancelado').order('data_evento')
-  const events = data || []
+  const scope = getPublicOrganizationScope()
+  let events: Array<{ id: string; nome: string; data_evento: string; local: string; status: string; imagem_cartaz_url: string | null }> = []
+  if (scope.mode !== 'blocked') {
+    let published = supabase.from('events').select('id, nome, data_evento, local, status, imagem_cartaz_url').neq('status', 'rascunho').neq('status', 'cancelado').order('data_evento')
+    if (scope.mode === 'restricted') published = published.eq('organization_id', scope.organizationId)
+    const { data } = await published
+    events = data || []
+  }
   const isProfessor = Boolean(actor?.isProfessor)
   const canManageEvents = Boolean(actor?.canManageEvents)
 

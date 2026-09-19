@@ -6,9 +6,7 @@ import ModernNavbar from '@/components/ModernNavbar'
 import { Alert, Card, EmptyState, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
 import { getPublicEventBrackets, type PublicBracketGroup } from '@/lib/events/public-brackets'
 import { formatFightDurationLabel } from '@/lib/events/fight-duration'
-import { createClient } from '@/lib/supabase/server'
-
-const publicStatuses = ['publicado', 'inscricao', 'pagamento', 'checagem', 'chaves', 'em_andamento', 'concluido'] as const
+import { findPublicReleaseEvent } from '@/lib/events/public-access'
 
 const topologyNames = {
   final_2: 'Final direta',
@@ -89,18 +87,9 @@ function Group({ group }: { group: PublicBracketGroup }) {
 }
 
 export default async function PublicBracketsPage({ params }: { params: { id: string } }) {
-  const supabase = createClient()
-  const [{ data: event }, bracketResult] = await Promise.all([
-    supabase
-      .from('events')
-      .select('id, nome, status')
-      .eq('id', params.id)
-      .in('status', publicStatuses)
-      .maybeSingle(),
-    getPublicEventBrackets(params.id),
-  ])
-
+  const event = await findPublicReleaseEvent(params.id)
   if (!event) notFound()
+  const bracketResult = await getPublicEventBrackets(params.id)
 
   return (
     <main className="min-h-screen bg-mc-background">

@@ -20,9 +20,7 @@ import {
 } from '@/components/ui'
 import { getPublicEventSchedule, type PublicScheduleMatch } from '@/lib/events/public-schedule'
 import { formatFightDurationLabel } from '@/lib/events/fight-duration'
-import { createClient } from '@/lib/supabase/server'
-
-const publicStatuses = ['publicado', 'inscricao', 'pagamento', 'checagem', 'chaves', 'em_andamento', 'concluido'] as const
+import { findPublicReleaseEvent } from '@/lib/events/public-access'
 
 type SearchParams = {
   area?: string
@@ -97,18 +95,9 @@ export default async function PublicSchedulePage({
   params: { id: string }
   searchParams: SearchParams
 }) {
-  const supabase = createClient()
-  const [{ data: event }, schedule] = await Promise.all([
-    supabase
-      .from('events')
-      .select('id, nome, status')
-      .eq('id', params.id)
-      .in('status', publicStatuses)
-      .maybeSingle(),
-    getPublicEventSchedule(params.id),
-  ])
-
+  const event = await findPublicReleaseEvent(params.id)
   if (!event) notFound()
+  const schedule = await getPublicEventSchedule(params.id)
 
   const filters: SearchParams = {
     area: searchParams.area?.trim() || undefined,

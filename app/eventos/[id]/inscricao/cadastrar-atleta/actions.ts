@@ -1,10 +1,13 @@
 'use server'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { findPublicReleaseEvent } from '@/lib/events/public-access'
 
 export async function registerAthletes(eventId: string, form: FormData) {
   const ids = form.getAll('athlete_id').map(String)
   if (!ids.length || form.get('terms') !== 'on') return { ok: false, message: 'Selecione atletas e aceite os termos.' }
+  const event = await findPublicReleaseEvent(eventId, null)
+  if (!event) return { ok: false, message: 'Não foi possível concluir. Atualize a página para conferir prazo, categorias e inscrições.' }
 
   const names = ids.map((id) => String(form.get(`professor_name_${id}`) || '').trim())
   if (names.some((name) => name.length < 2)) {

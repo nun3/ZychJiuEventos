@@ -100,8 +100,11 @@ Obrigatórias no Production, sem commitar valores:
 - `NEXT_PUBLIC_SITE_URL` (URL pública do deploy)
 - `SUPABASE_SECRET_KEY`
 - `PAYMENTS_MANUAL_ONLY=true`
+- `PUBLIC_ORGANIZATION_ID` (UUID da organização `MEU CAMP` / slug `meu-camp`)
 
 Asaas Sandbox (`ASAAS_ENVIRONMENT`, `ASAAS_SANDBOX_API_KEY`, `ASAAS_WEBHOOK_TOKEN`) não deve ser usado no go-live. A emissão fica recusada enquanto `PAYMENTS_MANUAL_ONLY=true`.
+
+Com `PUBLIC_ORGANIZATION_ID` definido, home, `/eventos` e URLs públicas do evento (ficha, inscrição, checagem, chaves, programação) só expõem eventos dessa organização. Sem a variável, o catálogo multi-organização permanece. Valor inválido não reabre o catálogo inteiro. Admin `/admin/eventos` continua filtrado pela membership.
 
 ## 7. Fora deste recorte
 
