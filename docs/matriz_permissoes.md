@@ -21,6 +21,7 @@ Legenda: `C` consultar, `I` incluir, `E` editar, `A` aprovar/operar, `-` sem ace
 | Geracao e publicacao de chaves | A | A do evento | C | C | C proprio | C publicadas |
 | Pesagem e resultados | A | A do evento | C | C | C proprio | C publicados |
 | Relatorio financeiro | C/E/A | C do evento | - | - | - | - |
+| Taxa MEU CAMP do evento | C/E | C do evento | - | - | - | - |
 | Auditoria | C | C do evento | - | - | - | - |
 
 ## Regras de escopo

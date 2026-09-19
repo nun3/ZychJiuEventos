@@ -203,7 +203,7 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 - Origem: `PROJETO_GERENCIADOR_CAMPEONATOS_JIU_JITSU_1.pdf`.
 - O encerramento prevê evento realizado e relatório financeiro sintético e analítico.
-- Situação no MEU CAMP: histórico público de resultados está parcialmente disponível; o lote 1 do fechamento financeiro entrega totais de inscrições e receita bruta sem taxa da plataforma. Taxa e receita líquida permanecem pendentes de decisão comercial.
+- Situação no MEU CAMP: histórico público de resultados está parcialmente disponível; o fechamento financeiro entrega totais de inscrições, receita bruta, Taxa MEU CAMP (snapshot por inscrição efetivada) e receita líquida na tela `/admin/eventos/[id]/financeiro`. Exportação e fechamento histórico repetido permanecem fora.
 
 **EVIDÊNCIA DE BENCHMARK**
 

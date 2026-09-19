@@ -129,15 +129,29 @@ Restricao unica: um atleta nao pode possuir duas inscricoes ativas no mesmo even
 
 Identificadores, QR Code, copia e cola, boleto e expiracao de cada tentativa ficam em `payment_attempts`. O estado financeiro nao e duplicado em `registrations`; ele e derivado do pagamento e a efetivacao da inscricao ocorre transacionalmente.
 
+### event_platform_fees
+
+Taxa MEU CAMP fixa por inscricao efetivada, contratada por evento, em centavos. Nao fica em `events` porque a consulta publica de eventos publicados nao pode vazar o valor contratado.
+
+- `event_id` UUID, PK, FK para `events.id`
+- `fee_cents` inteiro >= 0
+- `updated_by`, `updated_at`
+
+Ausencia de linha significa taxa zero. Somente platform admin altera via `set_event_platform_fee`. Owner, organizer e finance consultam.
+
 ### payment_registrations
 
 Tabela intermediaria para pagamento individual ou unificado.
 
 - `payment_id` FK
 - `registration_id` FK
+- `amount`
+- `platform_fee_cents` nulo ate a efetivacao valida; depois guarda o snapshot da taxa aplicavel naquele momento
 - PK composta: `payment_id`, `registration_id`
 
 Regra: todas as inscricoes ligadas ao mesmo pagamento devem pertencer ao mesmo evento.
+
+A receita bruta soma `amount` das inscricoes `efetivada` com pagamento `pago`. A Taxa MEU CAMP soma os snapshots dessas mesmas linhas. Alterar `event_platform_fees` nao reescreve snapshots ja gravados. Pendente, cancelada e estornada nao entram no bruto nem na taxa.
 
 ### category_change_requests
 

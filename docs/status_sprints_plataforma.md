@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprint 11 concluida no recorte de duracao oficial da luta por categoria em 2026-09-18. Sprints 8 a 11 e o Full Event BDD permanecem congelados. Sprint 12 lote 1 entregue em 2026-09-18: fechamento financeiro sem taxa da plataforma (`npm run test:closing`). Taxa e receita liquida continuam pendentes de decisao comercial. Nao iniciar preparacao para producao.
+Sprint 11 concluida no recorte de duracao oficial da luta por categoria em 2026-09-18. Sprints 8 a 11 e o Full Event BDD permanecem congelados. Sprint 12 lote 2 entregue em 2026-09-19: taxa MEU CAMP fixa por inscricao efetivada, com snapshot historico (`npm run test:fee`). Nao iniciar preparacao para producao.
 
 ## 5. Backlog ordenado por sprints
 
@@ -632,27 +632,33 @@ Nucleo da Sprint 9 comprovado no Sandbox. A sprint fecha neste recorte. Nao reab
 
 ### Sprint 12 - Encerramento financeiro
 
-- Status: lote 1 concluido em 2026-09-18; taxa da plataforma e receita liquida permanecem bloqueadas.
+- Status: lote 1 concluido em 2026-09-18; lote 2 concluido em 2026-09-19 com a taxa MEU CAMP fixa por inscricao efetivada, configurada por evento.
 - Dependencias atendidas: pagamentos, baixa manual, webhook de estorno e Full Event BDD congelado.
 - Objetivo do lote 1: relatorio sintetico e analitico com dados que ja possuem source of truth.
 - Entregas do lote 1:
   - inscricoes realizadas, canceladas e efetivadas;
-  - receita bruta em centavos, sem taxa nem liquido;
+  - receita bruta em centavos;
   - visao analitica na mesma tela `/admin/eventos/[id]/financeiro`;
   - conciliaçao operacional preservada.
+- Entregas do lote 2:
+  - taxa contratada em `event_platform_fees.fee_cents` (centavos, zero permitido);
+  - snapshot `payment_registrations.platform_fee_cents` na efetivacao (baixa manual ou webhook RECEIVED);
+  - `platform_fee` = soma dos snapshots das inscricoes validas;
+  - `net_revenue` = bruto - taxa;
+  - owner/organizer/finance consultam; somente platform admin altera.
 - Fonte das metricas:
   - realizada = `registrations.status <> rascunho`;
   - cancelada = `registrations.status = cancelada`;
   - efetivada = `registrations.status = efetivada`;
-  - receita bruta = soma de `payment_registrations.amount` quando a inscricao esta `efetivada` e o pagamento esta `pago`.
+  - receita bruta = soma de `payment_registrations.amount` quando a inscricao esta `efetivada` e o pagamento esta `pago`;
+  - taxa MEU CAMP = soma de `payment_registrations.platform_fee_cents` dessas mesmas linhas;
+  - receita liquida = bruto - taxa.
 - Fora deste lote:
-  - `platform fee: decisao pendente`;
-  - receita liquida;
   - exportacao e fechamento historico repetido;
   - estorno parcial, inexistente no dominio atual.
-- Criterios de saida do lote 1: totais batem com a visao analitica sem ponto flutuante; pendente, cancelada e estornada nao entram na receita.
+- Criterios de saida do lote 2: alterar a taxa vigente nao reescreve snapshot antigo; pendente, cancelada e estornada nao geram taxa; sintético = analitico.
 
-Automacao: `npm run test:unit` cobre a derivacao; `BASE_URL=http://localhost:3102 npm run test:closing` cobre a UI e a recusa sem permissao.
+Automacao: `npm run test:unit` cobre a derivacao; `BASE_URL=http://localhost:3102 npm run test:closing` cobre o lote 1; `BASE_URL=http://localhost:3102 npm run test:fee` cobre a taxa e o snapshot.
 
 ### Sprint 10 - Pesagem e premiacao operacional
 
@@ -836,4 +842,13 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - testes: `npm run test:unit` em `automacao/` (derivacao em centavos); `BASE_URL=http://localhost:3102 npm run test:closing` 2/2; TypeScript/build; smoke visual desktop e 390px;
 - decisoes: reutilizar `registrations`, `payments` e `payment_registrations`; nao criar RPC; nao inventar percentual de taxa; estorno total remove a inscricao da receita porque o webhook ja grava `estornada` + `estornado`;
 - divida tecnica aceita: `platform fee: decisao pendente`, receita liquida, exportacao e fechamento historico;
-- proxima etapa: nao inventar taxa da plataforma nem iniciar preparacao para producao.
+- proxima etapa: Sprint 12 lote 2 — taxa configuravel por evento, com snapshot historico.
+
+### 2026-09-19 — Sprint 12 lote 2: taxa MEU CAMP por inscricao
+
+- data de conclusao: 2026-09-19;
+- entregas verificadas: taxa fixa por inscricao efetivada, configuravel por evento, snapshot no vinculo financeiro, bruto/taxa/liquido no fechamento e recusa de alteracao pelo organizador;
+- testes: `npm run test:unit` em `automacao/`; `BASE_URL=http://localhost:3102 npm run test:fee` 3/3; `npm run test:closing` 2/2; TypeScript/build;
+- decisoes: valor em centavos em `event_platform_fees`, nao em `events`; snapshot em `payment_registrations.platform_fee_cents`; somente platform admin altera; ausencia de linha = zero; estorno remove a inscricao do bruto e da taxa;
+- divida tecnica aceita: exportacao, fechamento historico repetido e estorno parcial;
+- proxima etapa: nao iniciar preparacao para producao. Nao reabrir o Full Event nem as Sprints 8 a 11.
