@@ -49,8 +49,9 @@ const paymentVariants: Record<string, StatusBadgeProps['variant']> = {
 }
 
 function money(value: string) {
-  const [whole, fraction] = value.split('.')
-  return `R$ ${Number(whole).toLocaleString('pt-BR')},${fraction}`
+  const negative = value.startsWith('-')
+  const [whole, fraction] = (negative ? value.slice(1) : value).split('.')
+  return `${negative ? '-' : ''}R$ ${Number(whole).toLocaleString('pt-BR')},${fraction}`
 }
 
 const columns: Array<DataTableColumn<ClosingLine>> = [
@@ -73,6 +74,8 @@ const columns: Array<DataTableColumn<ClosingLine>> = [
       : <StatusBadge variant="neutral">Sem pagamento</StatusBadge>,
   },
   { key: 'amount', header: 'Valor considerado', align: 'right', render: (row) => money(row.consideredAmount) },
+  { key: 'fee', header: 'Taxa aplicada', align: 'right', render: (row) => money(row.appliedFeeAmount) },
+  { key: 'net', header: 'Valor líquido', align: 'right', render: (row) => money(row.netAmount) },
   { key: 'origin', header: 'Origem da efetivação', render: (row) => settlementOriginLabel(row.settlementOrigin) },
 ]
 
@@ -83,6 +86,8 @@ export default function FinancialClosingReport({ report }: { report: EventClosin
     { label: 'Inscrições canceladas', value: String(totals.cancelledCount) },
     { label: 'Inscrições efetivadas', value: String(totals.settledCount) },
     { label: 'Receita bruta', value: formatClosingAmount(totals.grossRevenueCents) },
+    { label: 'Taxa MEU CAMP', value: formatClosingAmount(totals.platformFeeCents) },
+    { label: 'Receita líquida', value: formatClosingAmount(totals.netRevenueCents) },
   ]
 
   return (
@@ -94,7 +99,7 @@ export default function FinancialClosingReport({ report }: { report: EventClosin
         </p>
       </div>
 
-      <dl className="grid gap-mc-12 sm:grid-cols-2 xl:grid-cols-4">
+      <dl className="grid gap-mc-12 sm:grid-cols-2 xl:grid-cols-3">
         {metrics.map((metric) => (
           <div key={metric.label} className="rounded-mc-medium border border-mc-border bg-mc-surface p-mc-16">
             <dt className="font-mc-interface text-sm text-mc-text-secondary">{metric.label}</dt>
@@ -103,8 +108,8 @@ export default function FinancialClosingReport({ report }: { report: EventClosin
         ))}
       </dl>
 
-      <Alert variant="info" title="Taxa da plataforma">
-        A taxa da plataforma e a receita líquida permanecem pendentes de decisão comercial. Nenhum percentual ou valor foi aplicado neste fechamento.
+      <Alert variant="info" title="Como a taxa é considerada">
+        A Taxa MEU CAMP é fixa por inscrição efetivada e usa o valor registrado no momento da efetivação. Alterar a taxa do evento depois não muda inscrições já efetivadas.
       </Alert>
 
       {lines.length ? (
@@ -136,6 +141,14 @@ export default function FinancialClosingReport({ report }: { report: EventClosin
                   <div>
                     <dt className="text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">Valor considerado</dt>
                     <dd className="mt-mc-4 text-mc-text-primary">{money(row.consideredAmount)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">Taxa aplicada</dt>
+                    <dd className="mt-mc-4 text-mc-text-primary">{money(row.appliedFeeAmount)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">Valor líquido</dt>
+                    <dd className="mt-mc-4 text-mc-text-primary">{money(row.netAmount)}</dd>
                   </div>
                   <div>
                     <dt className="text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">Origem da efetivação</dt>

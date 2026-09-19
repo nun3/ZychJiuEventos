@@ -757,6 +757,42 @@ export type Database = {
           },
         ]
       }
+      event_platform_fees: {
+        Row: {
+          event_id: string
+          fee_cents: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          event_id: string
+          fee_cents?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          event_id?: string
+          fee_cents?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_platform_fees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_platform_fees_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_phases: {
         Row: {
           created_at: string
@@ -1225,16 +1261,19 @@ export type Database = {
         Row: {
           amount: number
           payment_id: string
+          platform_fee_cents: number | null
           registration_id: string
         }
         Insert: {
           amount: number
           payment_id: string
+          platform_fee_cents?: number | null
           registration_id: string
         }
         Update: {
           amount?: number
           payment_id?: string
+          platform_fee_cents?: number | null
           registration_id?: string
         }
         Relationships: [
@@ -2008,6 +2047,10 @@ export type Database = {
       }
       set_event_category_duration: {
         Args: { duration_minutes: number | null; target_category_id: string }
+        Returns: Json
+      }
+      set_event_platform_fee: {
+        Args: { fee_cents: number; target_event_id: string }
         Returns: Json
       }
       settle_payment_manually: {

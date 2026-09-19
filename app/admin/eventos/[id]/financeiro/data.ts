@@ -20,6 +20,7 @@ type PaymentLink = {
   registration_id: string
   amount: number
   payment_id: string
+  platform_fee_cents: number | null
   payments: LinkedPayment | LinkedPayment[] | null
 }
 
@@ -68,11 +69,11 @@ export async function loadEventClosing(
   if (registrationError) throw new Error('Não foi possível carregar as inscrições do fechamento.')
 
   const registrationIds = (registrations || []).map((row) => row.id)
-  const [{ data: links }, { data: audits }] = await Promise.all([
+  const [{ data: links }, { data: audits }, { data: fee }] = await Promise.all([
     registrationIds.length
       ? supabase
         .from('payment_registrations')
-        .select('registration_id, amount, payment_id, payments(id, status, created_at, payment_attempts(id))')
+        .select('registration_id, amount, payment_id, platform_fee_cents, payments(id, status, created_at, payment_attempts(id))')
         .in('registration_id', registrationIds)
       : Promise.resolve({ data: [] as PaymentLink[] }),
     supabase
@@ -80,6 +81,11 @@ export async function loadEventClosing(
       .select('resource_id')
       .eq('event_id', eventId)
       .eq('action', 'payment_manually_settled'),
+    supabase
+      .from('event_platform_fees')
+      .select('fee_cents')
+      .eq('event_id', eventId)
+      .maybeSingle(),
   ])
 
   const linksByRegistration = new Map<string, PaymentLink[]>()
@@ -100,8 +106,9 @@ export async function loadEventClosing(
       paymentStatus: chosen?.payment.status ?? null,
       paymentAmount: chosen ? chosen.link.amount : null,
       settlementOrigin: resolveOrigin(chosen?.payment ?? null, manualPaymentIds),
+      platformFeeCents: chosen?.link.platform_fee_cents ?? null,
     }
   })
 
-  return buildEventClosing(rows)
+  return buildEventClosing(rows, { configuredFeeCents: fee?.fee_cents ?? 0 })
 }

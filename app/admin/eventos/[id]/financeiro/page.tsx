@@ -8,6 +8,7 @@ import { createPrivilegedClient } from '@/lib/supabase/admin'
 import { loadEventClosing } from './data'
 import FinancialClosingReport from './FinancialClosingReport'
 import ManualSettlementForm from './ManualSettlementForm'
+import PlatformFeeCard from './PlatformFeeCard'
 
 type FinancialPayment = {
   id: string
@@ -66,6 +67,12 @@ export default async function FinancialPage({ params }: { params: { id: string }
         />
 
         <div className="mt-mc-32 space-y-mc-32">
+          <PlatformFeeCard
+            eventId={event.id}
+            feeCents={closing.configuredFeeCents}
+            canConfigure={Boolean(platformRole)}
+          />
+
           <FinancialClosingReport report={closing} />
 
           <section aria-labelledby="operational-reconciliation-title" className="space-y-mc-16">
