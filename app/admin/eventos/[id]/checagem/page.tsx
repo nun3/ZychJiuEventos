@@ -119,7 +119,7 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
 
   return (
     <div className="-mt-24 min-h-screen bg-mc-background">
-      <InternalNavigation />
+      <InternalNavigation canManageEvents />
       <main className="py-mc-32 sm:py-mc-48">
         <PageContainer>
           <PageHeader

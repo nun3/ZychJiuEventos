@@ -4,7 +4,8 @@ import { Suspense, useEffect, useState, type FormEvent } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { ArrowRight, Briefcase, ShieldCheck, User, Users } from 'lucide-react'
+import { ArrowRight, Briefcase, GraduationCap, ShieldCheck, User, Users } from 'lucide-react'
+import type { SignupRole } from '@/lib/auth/signup-role'
 import ModernNavbar from '@/components/ModernNavbar'
 import ModernFooter from '@/components/ModernFooter'
 import { Alert } from '@/components/ui/Alert'
@@ -48,7 +49,7 @@ function LoginPageContent() {
   const initialMode: AuthMode = loginTabs.some((tab) => tab.id === requestedMode) ? requestedMode as AuthMode : 'login'
 
   const [mode, setMode] = useState<AuthMode>(initialMode)
-  const [selectedRegisterType, setSelectedRegisterType] = useState<'atleta' | 'organizador' | 'responsavel' | null>(null)
+  const [selectedRegisterType, setSelectedRegisterType] = useState<SignupRole | null>(null)
   const [isNewAthleteModalOpen, setIsNewAthleteModalOpen] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'error' | 'success'; message: string } | null>(null)
   const [loading, setLoading] = useState(false)
@@ -108,7 +109,7 @@ function LoginPageContent() {
     setFeedback({ type: 'success', message: 'Cadastro recebido. Verifique seu e-mail para confirmar a conta.' })
   }
 
-  const openRegistration = (registerType: 'atleta' | 'organizador' | 'responsavel') => {
+  const openRegistration = (registerType: SignupRole) => {
     setSelectedRegisterType(registerType)
     setIsNewAthleteModalOpen(true)
   }
@@ -200,6 +201,11 @@ function LoginPageContent() {
                     <button type="button" onClick={() => openRegistration('atleta')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
                       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><User aria-hidden="true" size={21} /></span>
                       <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Atleta</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para participar de eventos e competições.</span></span>
+                      <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
+                    </button>
+                    <button type="button" onClick={() => openRegistration('professor')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><GraduationCap aria-hidden="true" size={21} /></span>
+                      <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Professor</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para gerenciar equipe e inscrever atletas vinculados.</span></span>
                       <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
                     </button>
                     <button type="button" onClick={() => openRegistration('organizador')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">

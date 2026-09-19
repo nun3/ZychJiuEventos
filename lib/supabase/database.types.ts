@@ -1803,6 +1803,10 @@ export type Database = {
           registration_id: string
         }[]
       }
+      create_managed_team: {
+        Args: { team_name: string }
+        Returns: string
+      }
       create_managed_athlete: {
         Args: {
           athlete_belt: string

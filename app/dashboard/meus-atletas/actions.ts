@@ -22,13 +22,13 @@ export async function createTeam(formData: FormData): Promise<AthleteActionResul
     .limit(1)
     .maybeSingle()
 
-  if (!membership) return failure('Você não possui permissão para cadastrar equipes.')
-
-  const { error } = await supabase.from('teams').insert({
-    nome,
-    organization_id: membership.organization_id,
-    created_by: authData.user.id,
-  })
+  const { error } = membership
+    ? await supabase.from('teams').insert({
+      nome,
+      organization_id: membership.organization_id,
+      created_by: authData.user.id,
+    })
+    : await supabase.rpc('create_managed_team', { team_name: nome }).then((result) => ({ error: result.error }))
 
   if (error?.code === '23505') return failure('Já existe uma equipe com esse nome na organização.')
   if (error) return failure('Não foi possível cadastrar a equipe.')

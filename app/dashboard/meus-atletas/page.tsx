@@ -10,8 +10,9 @@ export default async function MeusAtletasPage() {
   const { data: authData } = await supabase.auth.getUser()
   if (!authData.user) redirect('/login?redirectTo=/dashboard/meus-atletas')
 
-  const [{ data: teams, error: teamsError }, { data: athletes, error: athletesError }] = await Promise.all([
-    supabase.from('teams').select('id, nome').order('nome'),
+  const [{ data: membership }, { data: teams, error: teamsError }, { data: athletes, error: athletesError }] = await Promise.all([
+    supabase.from('organization_members').select('organization_id').in('role', ['owner', 'organizer']).limit(1).maybeSingle(),
+    supabase.from('teams').select('id, nome, created_by, organization_id').order('nome'),
     supabase.from('athletes').select('id, nome_completo, data_nascimento, faixa, peso_kg, teams(nome)').order('nome_completo'),
   ])
 
@@ -26,13 +27,16 @@ export default async function MeusAtletasPage() {
     )
   }
 
-  const teamItems = teams ?? []
+  const teamItems = (teams ?? []).filter((team) => (
+    team.created_by === authData.user.id
+    || (membership != null && team.organization_id === membership.organization_id)
+  )).map(({ id, nome }) => ({ id, nome }))
   const athleteItems = athletes ?? []
 
   return (
     <main className="py-mc-32 sm:py-mc-48">
       <PageContainer>
-        <PageHeader title="Atletas" description="Consulte atletas, equipes e dados usados nas inscrições." />
+        <PageHeader title="Atletas" description="Gerencie sua equipe e os atletas vinculados a você." />
         <div className="mt-mc-32">
           <AthletesManager teams={teamItems} athletes={athleteItems.map((athlete) => ({ id: athlete.id, nome: athlete.nome_completo, dataNascimento: athlete.data_nascimento, faixa: athlete.faixa, peso: athlete.peso_kg, equipe: (athlete.teams as unknown as { nome: string } | null)?.nome || 'Sem equipe' }))} />
         </div>

@@ -13,7 +13,7 @@ interface NewAthleteModalProps {
   mode?: 'create' | 'edit'
   showPasswordFields?: boolean
   initialData?: any
-  registerType?: 'atleta' | 'organizador' | 'responsavel'
+  registerType?: 'atleta' | 'organizador' | 'responsavel' | 'professor'
 }
 
 function buildInitialFormData(mode: 'create' | 'edit', initialData?: any) {
@@ -249,6 +249,8 @@ export default function NewAthleteModal({
         return 'Cadastrar Novo Organizador'
       case 'responsavel':
         return 'Cadastrar Novo Responsável'
+      case 'professor':
+        return 'Cadastrar Novo Professor'
       default:
         return 'Cadastrar Novo Atleta'
     }
@@ -260,6 +262,8 @@ export default function NewAthleteModal({
         return 'Portal do organizador'
       case 'responsavel':
         return 'Portal do responsável'
+      case 'professor':
+        return 'Portal do professor'
       default:
         return 'Portal do atleta'
     }
@@ -832,7 +836,9 @@ export default function NewAthleteModal({
                           ? 'Cadastrar Organizador'
                           : registerType === 'responsavel'
                             ? 'Cadastrar Responsável'
-                            : 'Cadastrar Atleta'}
+                            : registerType === 'professor'
+                              ? 'Cadastrar Professor'
+                              : 'Cadastrar Atleta'}
                     </button>
                   )}
                 </div>

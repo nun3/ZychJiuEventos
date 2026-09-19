@@ -101,7 +101,7 @@ export default function AthletesManager({ teams, athletes }: { teams: TeamOption
           <p className="mt-mc-4 font-mc-interface text-sm text-mc-text-secondary">{athletes.length} {athletes.length === 1 ? 'atleta cadastrado' : 'atletas cadastrados'}</p>
         </div>
         <div className="flex flex-col gap-mc-8 sm:flex-row">
-          <Button variant="outline" aria-expanded={showTeamForm} aria-controls="team-form" onClick={() => setShowTeamForm((value) => !value)}>Nova equipe</Button>
+          <Button variant="outline" aria-expanded={showTeamForm} aria-controls="team-form" onClick={() => setShowTeamForm((value) => (teams.length === 0 ? true : !value))}>Nova equipe</Button>
           <Button disabled={teams.length === 0} aria-expanded={showAthleteForm} aria-controls="athlete-form" onClick={() => setShowAthleteForm((value) => !value)} className="gap-mc-8"><Plus aria-hidden="true" size={18} />Novo atleta</Button>
         </div>
       </div>
@@ -150,7 +150,7 @@ export default function AthletesManager({ teams, athletes }: { teams: TeamOption
         <EmptyState
           icon={<UserRound size={34} />}
           title={athletes.length === 0 ? 'Nenhum atleta cadastrado' : 'Nenhum atleta encontrado'}
-          description={athletes.length === 0 ? 'Os atletas cadastrados nesta organização aparecerão aqui.' : 'Tente buscar por outro nome.'}
+          description={athletes.length === 0 ? 'Cadastre um atleta na sua equipe para vê-lo aqui.' : 'Tente buscar por outro nome.'}
           className="rounded-mc-medium border border-mc-border bg-mc-surface"
         />
       ) : (

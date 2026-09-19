@@ -21,7 +21,7 @@ export default async function ResultadosPage({ params }: { params: { id: string 
 
   return (
     <div className="-mt-24 min-h-screen bg-mc-background">
-      <InternalNavigation />
+      <InternalNavigation canManageEvents />
       <main className="py-mc-32 sm:py-mc-48">
         <PageContainer>
           {result.kind === 'error' ? (

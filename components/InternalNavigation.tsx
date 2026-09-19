@@ -2,17 +2,17 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarDays, LayoutDashboard, UserRound, UsersRound } from 'lucide-react'
+import { CalendarDays, ClipboardList, LayoutDashboard, UserRound, UsersRound } from 'lucide-react'
 
-const items = [
-  { href: '/dashboard', label: 'Visão geral', icon: LayoutDashboard, active: (pathname: string) => pathname === '/dashboard' },
-  { href: '/admin/eventos', label: 'Eventos', icon: CalendarDays, active: (pathname: string) => pathname.startsWith('/admin/eventos') },
-  { href: '/dashboard/meus-atletas', label: 'Atletas', icon: UsersRound, active: (pathname: string) => pathname.startsWith('/dashboard/meus-atletas') },
-  { href: '/dashboard/meu-perfil', label: 'Perfil', icon: UserRound, active: (pathname: string) => pathname === '/dashboard/meu-perfil' || pathname === '/dashboard/alterar-cadastro' },
-]
-
-export default function InternalNavigation() {
+export default function InternalNavigation({ canManageEvents = false }: { canManageEvents?: boolean }) {
   const pathname = usePathname()
+  const items = [
+    { href: '/dashboard', label: 'Visão geral', icon: LayoutDashboard, active: (path: string) => path === '/dashboard' },
+    canManageEvents ? { href: '/admin/eventos', label: 'Eventos', icon: CalendarDays, active: (path: string) => path.startsWith('/admin/eventos') } : null,
+    { href: '/dashboard/meus-atletas', label: 'Atletas', icon: UsersRound, active: (path: string) => path.startsWith('/dashboard/meus-atletas') },
+    { href: '/dashboard/inscricoes', label: 'Inscrições', icon: ClipboardList, active: (path: string) => path.startsWith('/dashboard/inscricoes') || path.startsWith('/dashboard/pagamentos') },
+    { href: '/dashboard/meu-perfil', label: 'Perfil', icon: UserRound, active: (path: string) => path === '/dashboard/meu-perfil' || path === '/dashboard/alterar-cadastro' },
+  ].filter((item): item is NonNullable<typeof item> => Boolean(item))
 
   return (
     <nav aria-label="Navegação da área interna" className="sticky top-20 z-40 border-b border-mc-border bg-mc-surface">
