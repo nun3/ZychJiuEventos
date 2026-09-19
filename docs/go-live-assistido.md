@@ -85,6 +85,24 @@ Quando existir backup restaurável (upgrade Pro com cópia diária, ou add-on PI
 - Histórico remoto em `schema_migrations` = não comprovado (CLI sem permissão de login role).
 - Isso **não** bloqueia este lote. Não contornar a CLI.
 
-## 6. Fora deste recorte
+## 6. Pré-publicação do HEAD (navegação)
+
+Em 2026-09-19 a operação admin deixou de usar `/gerenciar` como hub. Prototipos `regulamento`, `pesagem`, `placar`, `secretaria`, `filiacao` e `tarefas` redirecionam; não foram promovidos a feature.
+
+Jornada real: `/admin/eventos` → configurar / checagem / financeiro / chaves / programação / resultados.
+
+### Envs necessárias na Vercel (não gravadas neste lote)
+
+Obrigatórias no Production, sem commitar valores:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `NEXT_PUBLIC_SITE_URL` (URL pública do deploy)
+- `SUPABASE_SECRET_KEY`
+- `PAYMENTS_MANUAL_ONLY=true`
+
+Asaas Sandbox (`ASAAS_ENVIRONMENT`, `ASAAS_SANDBOX_API_KEY`, `ASAAS_WEBHOOK_TOKEN`) não deve ser usado no go-live. A emissão fica recusada enquanto `PAYMENTS_MANUAL_ONLY=true`.
+
+## 7. Fora deste recorte
 
 Onboarding self-service, convite de membros, atleta independente, console admin, Asaas Live, exportação, benchmark de tatame (placar, cronômetro, chamada, horário automático, pesagem individual).

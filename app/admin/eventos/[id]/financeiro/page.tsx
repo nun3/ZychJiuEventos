@@ -1,6 +1,5 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import AdminEventNav, { adminEventBackLink } from '@/components/AdminEventNav'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { createClient } from '@/lib/supabase/server'
@@ -58,13 +57,9 @@ export default async function FinancialPage({ params }: { params: { id: string }
         <PageHeader
           title={`Financeiro — ${event.nome}`}
           description="Conciliação operacional das reservas e fechamento do evento a partir das inscrições e pagamentos persistidos."
-          breadcrumb={
-            <Link href={`/admin/eventos/${event.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action">
-              <ArrowLeft aria-hidden="true" size={18} />
-              Voltar para gestão
-            </Link>
-          }
+          breadcrumb={adminEventBackLink()}
         />
+        <AdminEventNav eventId={event.id} current="financeiro" />
 
         <div className="mt-mc-32 space-y-mc-32">
           <PlatformFeeCard

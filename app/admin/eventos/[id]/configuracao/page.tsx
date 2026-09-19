@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, Layers3 } from 'lucide-react'
+import { Layers3 } from 'lucide-react'
+import AdminEventNav, { adminEventBackLink } from '@/components/AdminEventNav'
 import InternalNavigation from '@/components/InternalNavigation'
 import { Card } from '@/components/ui/Card'
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable'
@@ -63,8 +63,9 @@ export default async function EventConfigurationPage({ params }: { params: { id:
           <PageHeader
             title={`Categorias — ${event.nome}`}
             description="Os eixos de categorização continuam imutáveis em cada versão. A duração oficial da luta pode ser preenchida ou alterada depois, sem criar versão nova."
-            breadcrumb={<Link href="/admin/eventos" className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline"><ArrowLeft aria-hidden="true" size={18} />Voltar para eventos</Link>}
+            breadcrumb={adminEventBackLink()}
           />
+          <AdminEventNav eventId={event.id} current="configuracao" />
 
           <div className="mt-mc-32 grid items-start gap-mc-24 xl:grid-cols-[minmax(22rem,0.75fr)_minmax(0,1.25fr)]">
             <CategoryManager eventId={event.id} />

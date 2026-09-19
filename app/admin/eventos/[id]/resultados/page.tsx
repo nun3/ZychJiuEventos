@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowLeft, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
+import AdminEventNav, { adminEventBackLink } from '@/components/AdminEventNav'
 import InternalNavigation from '@/components/InternalNavigation'
 import { Alert, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
 import EventActions from '../../EventActions'
@@ -28,13 +28,9 @@ export default async function ResultadosPage({ params }: { params: { id: string 
             <>
               <PageHeader
                 title="Resultados"
-                breadcrumb={
-                  <Link href={`/admin/eventos/${params.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
-                    <ArrowLeft aria-hidden="true" size={18} />
-                    Voltar para gestão
-                  </Link>
-                }
+                breadcrumb={adminEventBackLink()}
               />
+              <AdminEventNav eventId={params.id} current="resultados" />
               <Alert className="mt-mc-24" role="alert" variant="error" title="Não foi possível carregar os resultados">
                 {result.message}
               </Alert>
@@ -44,14 +40,10 @@ export default async function ResultadosPage({ params }: { params: { id: string 
               <PageHeader
                 title={`Resultados — ${result.data.event.name}`}
                 description="Confirme pesagem e premiação por subchave. O resultado continua vindo das lutas já operadas."
-                breadcrumb={
-                  <Link href={`/admin/eventos/${result.data.event.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
-                    <ArrowLeft aria-hidden="true" size={18} />
-                    Voltar para gestão
-                  </Link>
-                }
+                breadcrumb={adminEventBackLink()}
                 actions={<StatusBadge variant={result.data.event.status === 'em_andamento' ? 'success' : 'info'}>Evento: {result.data.event.status.replaceAll('_', ' ')}</StatusBadge>}
               />
+              <AdminEventNav eventId={result.data.event.id} current="resultados" />
 
               {result.data.event.status === 'em_andamento' ? (
                 <section className="mt-mc-24 rounded-mc-medium border border-mc-border bg-mc-surface p-mc-16" aria-labelledby="conclude-event-title">

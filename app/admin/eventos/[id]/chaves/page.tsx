@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowLeft, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
+import AdminEventNav, { adminEventBackLink } from '@/components/AdminEventNav'
 import InternalNavigation from '@/components/InternalNavigation'
 import { Alert } from '@/components/ui/Alert'
 import { PageContainer } from '@/components/ui/PageContainer'
@@ -30,13 +30,9 @@ export default async function ChavesPage({ params }: { params: { id: string } })
             <>
               <PageHeader
                 title="Chaves"
-                breadcrumb={
-                  <Link href={`/admin/eventos/${params.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
-                    <ArrowLeft aria-hidden="true" size={18} />
-                    Voltar para gestão
-                  </Link>
-                }
+                breadcrumb={adminEventBackLink()}
               />
+              <AdminEventNav eventId={params.id} current="chaves" />
               <Alert className="mt-mc-24" role="alert" variant="error" title="Não foi possível carregar as chaves">
                 {result.message}
               </Alert>
@@ -46,18 +42,14 @@ export default async function ChavesPage({ params }: { params: { id: string } })
               <PageHeader
                 title={`Chaves — ${result.data.event.name}`}
                 description="Gere a sugestão automática, ajuste o casamento em rascunho e publique a versão oficial."
-                breadcrumb={
-                  <Link href={`/admin/eventos/${result.data.event.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
-                    <ArrowLeft aria-hidden="true" size={18} />
-                    Voltar para gestão
-                  </Link>
-                }
+                breadcrumb={adminEventBackLink()}
                 actions={
                   <StatusBadge variant={result.data.event.checkingLocked ? 'info' : 'warning'}>
                     {result.data.event.checkingLocked ? 'Checagem travada' : 'Checagem aberta'}
                   </StatusBadge>
                 }
               />
+              <AdminEventNav eventId={result.data.event.id} current="chaves" />
 
               {!result.data.event.checkingLocked || !['checagem', 'chaves'].includes(result.data.event.status) ? (
                 <Alert className="mt-mc-24" variant="warning" icon={<Info size={20} />} title="Geração indisponível">

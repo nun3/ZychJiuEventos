@@ -101,4 +101,4 @@ Ainda não entregues, e portanto não marcadas acima:
 - indicadores do PRD §8;
 - console platform admin;
 - Asaas produção, backup, monitoramento e rollback (critério de liberação, não do fluxo operacional);
-- protótipos com `localStorage` ainda navegáveis a partir do produto real (inventário no PRD).
+- protótipos com `localStorage` deixaram de ser hub operacional (redirecionam; inventário no PRD §11).

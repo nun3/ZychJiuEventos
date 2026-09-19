@@ -63,6 +63,11 @@ function EventLinks({ event }: { event: EventItem }) {
     <div>
       <div className="flex flex-wrap gap-x-mc-16 gap-y-mc-8 font-mc-interface text-sm font-semibold">
         <Link href={`/admin/eventos/${event.id}/configuracao`} className="inline-flex min-h-10 items-center text-mc-action hover:underline">Configurar</Link>
+        <Link href={`/admin/eventos/${event.id}/checagem`} className="inline-flex min-h-10 items-center text-mc-action hover:underline">Checagem</Link>
+        <Link href={`/admin/eventos/${event.id}/financeiro`} className="inline-flex min-h-10 items-center text-mc-action hover:underline">Financeiro</Link>
+        <Link href={`/admin/eventos/${event.id}/chaves`} className="inline-flex min-h-10 items-center text-mc-action hover:underline">Chaves</Link>
+        <Link href={`/admin/eventos/${event.id}/programacao`} className="inline-flex min-h-10 items-center text-mc-action hover:underline">Programação</Link>
+        <Link href={`/admin/eventos/${event.id}/resultados`} className="inline-flex min-h-10 items-center text-mc-action hover:underline">Resultados</Link>
         {event.status === 'rascunho' ? <Link href={`/admin/eventos/${event.id}/editar`} className="inline-flex min-h-10 items-center text-mc-action hover:underline">Editar</Link> : null}
         {event.status !== 'rascunho' ? <Link href={`/eventos/${event.id}`} className="inline-flex min-h-10 items-center text-mc-action hover:underline">Página pública</Link> : null}
       </div>

@@ -26,9 +26,6 @@ export default function Header() {
             <Link href="/sistema" className="text-white/90 hover:text-white font-medium">
               Sistema
             </Link>
-            <Link href="/filiacao" className="text-white/90 hover:text-white font-medium">
-              Filiação
-            </Link>
             <Link href="/quem-somos" className="text-white/90 hover:text-white font-medium">
               Quem Somos
             </Link>
@@ -77,9 +74,6 @@ export default function Header() {
               </Link>
               <Link href="/sistema" className="text-white/90 hover:text-white font-medium py-2">
                 Sistema
-              </Link>
-              <Link href="/filiacao" className="text-white/90 hover:text-white font-medium py-2">
-                Filiação
               </Link>
               <Link href="/quem-somos" className="text-white/90 hover:text-white font-medium py-2">
                 Quem Somos

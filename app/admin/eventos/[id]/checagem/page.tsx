@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowLeft, ClipboardList, Info } from 'lucide-react'
+import { ClipboardList, Info } from 'lucide-react'
+import AdminEventNav, { adminEventBackLink } from '@/components/AdminEventNav'
 import InternalNavigation from '@/components/InternalNavigation'
 import { Alert } from '@/components/ui/Alert'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -126,14 +127,10 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
           <PageHeader
             title={`Checagem — ${event.nome}`}
             description="Lista oficial das inscrições efetivadas deste evento. Pendentes, expiradas, canceladas e estornadas não entram na checagem."
-            breadcrumb={
-              <Link href={`/admin/eventos/${event.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
-                <ArrowLeft aria-hidden="true" size={18} />
-                Voltar para gestão
-              </Link>
-            }
+            breadcrumb={adminEventBackLink()}
             actions={<StatusBadge variant={locked ? 'warning' : 'info'}>{locked ? 'Checagem travada' : `Evento: ${event.status.replaceAll('_', ' ')}`}</StatusBadge>}
           />
+          <AdminEventNav eventId={event.id} current="checagem" />
 
           <Alert className="mt-mc-24" variant="info" icon={<Info size={20} />} title={locked ? 'Lista travada' : 'Lista oficial'}>
             {locked

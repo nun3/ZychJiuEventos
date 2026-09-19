@@ -219,19 +219,15 @@ O MVP somente pode ser liberado quando:
 - backup, logs, monitoramento e procedimento de rollback estiverem documentados;
 - dados mockados nao forem misturados a dados reais no fluxo publicado.
 
-Inventario vigente de `localStorage` (2026-09-19), sem correcao neste marco:
+Higiene de navegacao (2026-09-19): os prototipos abaixo nao sao mais hub operacional. As rotas redirecionam para superficies reais e o codigo historico permanece no git.
 
-Rotas/prototipos que ainda leem `lib/eventStorage` (localStorage):
+- `/admin/eventos/[id]/gerenciar` e `/regulamento` → configuracao
+- `/pesagem` → resultados
+- `/placar` e `/tarefas` → programacao
+- `/secretaria` → checagem
+- `/filiacao` admin → listagem de eventos
 
-- `/admin/eventos/[id]/gerenciar`
-- `/admin/eventos/[id]/regulamento`
-- `/admin/eventos/[id]/pesagem` (prototipo; a pesagem operacional real esta em resultados)
-- `/admin/eventos/[id]/placar`
-- `/admin/eventos/[id]/secretaria`
-- `/admin/eventos/[id]/filiacao`
-- `/admin/eventos/[id]/tarefas`
-
-Navegaveis a partir do produto real: checagem, chaves, programacao, resultados e financeiro linkam de volta para `/gerenciar`. A listagem `/admin/eventos` nao aponta para esse hub; o caminho operacional publicado usa Configurar, checagem, chaves, programacao, resultados e financeiro com persistencia Supabase.
+A listagem `/admin/eventos` e `AdminEventNav` cobrem: configurar, checagem, financeiro, chaves, programacao e resultados. Pesagem operacional continua em resultados. Placar, filiacao e secretaria nao foram transformados em feature.
 
 ## 12. Governanca de escopo
 

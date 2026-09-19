@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowLeft, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
+import AdminEventNav, { adminEventBackLink } from '@/components/AdminEventNav'
 import InternalNavigation from '@/components/InternalNavigation'
 import { Alert, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
 import ScheduleWorkspace from './ScheduleWorkspace'
@@ -27,13 +27,9 @@ export default async function ProgramacaoPage({ params }: { params: { id: string
             <>
               <PageHeader
                 title="Programação"
-                breadcrumb={
-                  <Link href={`/admin/eventos/${params.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
-                    <ArrowLeft aria-hidden="true" size={18} />
-                    Voltar para gestão
-                  </Link>
-                }
+                breadcrumb={adminEventBackLink()}
               />
+              <AdminEventNav eventId={params.id} current="programacao" />
               <Alert className="mt-mc-24" role="alert" variant="error" title="Não foi possível carregar a programação">
                 {result.message}
               </Alert>
@@ -43,18 +39,14 @@ export default async function ProgramacaoPage({ params }: { params: { id: string
               <PageHeader
                 title={`Programação — ${result.data.event.name}`}
                 description="Distribua subchaves por área e organize a numeração global das lutas."
-                breadcrumb={
-                  <Link href={`/admin/eventos/${result.data.event.id}/gerenciar`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
-                    <ArrowLeft aria-hidden="true" size={18} />
-                    Voltar para gestão
-                  </Link>
-                }
+                breadcrumb={adminEventBackLink()}
                 actions={
                   <StatusBadge variant={result.data.schedule.status === 'publicada' ? 'success' : 'warning'}>
                     {result.data.schedule.status === 'publicada' ? 'Publicada' : 'Rascunho'}
                   </StatusBadge>
                 }
               />
+              <AdminEventNav eventId={result.data.event.id} current="programacao" />
 
               {!['chaves', 'em_andamento', 'concluido'].includes(result.data.event.status) ? (
                 <Alert className="mt-mc-24" variant="warning" icon={<Info size={20} />} title="Programação ainda indisponível">

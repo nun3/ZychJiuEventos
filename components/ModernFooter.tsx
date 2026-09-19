@@ -23,7 +23,7 @@ export default function ModernFooter() {
   const pathname = usePathname()
   const phoneNumber = '5541991526177'
   const message = 'Olá! Gostaria de mais informações sobre os eventos.'
-  const isOperationalEventScreen = /^\/admin\/eventos\/[^/]+\/(checagem|pesagem)$/.test(pathname)
+  const isOperationalEventScreen = /^\/admin\/eventos\/[^/]+\/(configuracao|checagem|financeiro|chaves|programacao|resultados)$/.test(pathname)
 
   const handleWhatsApp = () => {
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank')
