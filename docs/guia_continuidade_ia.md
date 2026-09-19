@@ -4,7 +4,7 @@
 
 Este arquivo é o ponto de entrada para uma IA ou pessoa continuar o projeto sem depender do histórico da conversa. Leia-o antes de implementar.
 
-**Objetivo atual:** o Full Event BDD e as Sprints 8 a 13 lotes 1 e 2 estão congelados. O Professor cadastral já nasce no produto e o professor operacional fica na inscrição (`npm run test:operational-professor`). Não transformar Professor em `organization_role`. Não iniciar exportação nem preparação para produção. Pesagem individual, placar, horário automático e chamada ao vivo permanecem fora.
+**Objetivo atual:** o Full Event BDD e as Sprints 8 a 13 estão congelados. O Professor cadastral e o professor operacional da inscrição já nascem no produto (`npm run test:operational-professor`) e não são `organization_role`. Não iniciar exportação nem preparação para produção. Pesagem individual, placar, horário automático e chamada ao vivo permanecem fora.
 
 MC-SIM r1 e r2 são evidências permanentes. Não alterá-los para cenário novo.
 
@@ -381,4 +381,4 @@ Atualizar o status operacional. Este guia descreve o checkpoint de partida; atua
 
 ### Texto para o usuário entregar a outra IA
 
-> Continue o projeto Meu Camp em /home/nune/Meus Projetos/jiu. Leia primeiro docs/guia_continuidade_ia.md e os documentos indicados nele. Preserve as alterações existentes e confira o estado real do código e do Sandbox. O Full Event BDD e as Sprints 8 a 13 lotes 1 e 2 estão congelados. O professor operacional já fica na inscrição e não é organization_role. Não inventar múltiplos professores, troca por luta, exportação ou preparação para produção. Continue a implementação autorizada com automação pareada, sem resetar dados, expor segredos, usar produção ou inventar decisões comerciais. Registre evidências novas antes de concluir qualquer sprint e avance conforme as dependências do plano. Faça perguntas apenas para decisões ou acessos realmente indispensáveis, enquanto executa o trabalho independente disponível.
+> Continue o projeto Meu Camp em /home/nune/Meus Projetos/jiu. Leia primeiro docs/guia_continuidade_ia.md e os documentos indicados nele. Preserve as alterações existentes e confira o estado real do código e do Sandbox. O Full Event BDD e as Sprints 8 a 13 estão congelados. O Professor cadastral e o professor operacional da inscrição já nascem no produto e não são organization_role. Não inventar múltiplos professores, troca por luta, exportação ou preparação para produção. Continue a implementação autorizada com automação pareada, sem resetar dados, expor segredos, usar produção ou inventar decisões comerciais. Registre evidências novas antes de concluir qualquer sprint e avance conforme as dependências do plano. Faça perguntas apenas para decisões ou acessos realmente indispensáveis, enquanto executa o trabalho independente disponível.

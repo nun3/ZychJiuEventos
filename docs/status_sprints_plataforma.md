@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprints 8 a 13 lotes 1 e 2 e o Full Event BDD permanecem congelados. Sprint 13 lote 3 entregue em 2026-09-19: professor operacional por inscricao (`npm run test:operational-professor`). Nao transformar Professor em organization_role. Nao iniciar exportacao nem preparacao para producao.
+Sprints 8 a 13 e o Full Event BDD permanecem congelados. O Professor cadastral e o professor operacional da inscricao ja nascem no produto (`npm run test:operational-professor`) e nao sao organization_role. Nao iniciar exportacao nem preparacao para producao.
 
 ## 5. Backlog ordenado por sprints
 
@@ -662,7 +662,7 @@ Automacao: `npm run test:unit` cobre a derivacao; `BASE_URL=http://localhost:310
 
 ### Sprint 13 - Checagem publica e gaps do PRD
 
-- Status: lotes 1, 2 e 3 concluidos em 2026-09-19. Lotes 1 e 2 permanecem congelados.
+- Status: lotes 1, 2 e 3 concluidos e congelados em 2026-09-19.
 - Dependencias atendidas: Sprint 7 autenticada, identidade publica decidida no PRD, Sprints 8 a 12 congeladas.
 - Entregas do lote 1:
   - RPC `get_public_event_checking` para anon/authenticated;
@@ -690,7 +690,7 @@ Automacao: `BASE_URL=http://localhost:3102 npm run test:public-checking`.
 
 Automacao do lote 2: `BASE_URL=http://localhost:3102 npm run test:professor`.
 
-- Status do lote 3: concluido em 2026-09-19 com professor operacional por inscricao.
+- Status do lote 3: concluido e congelado em 2026-09-19 com professor operacional por inscricao.
 - Entregas do lote 3:
   - `operational_professor_name` e referencia opcional `operational_professor_user_id`;
   - preenchimento no fluxo de inscricao;
@@ -922,4 +922,4 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - testes: `BASE_URL=http://localhost:3102 npm run test:operational-professor`; smoke SQL transacional com rollback; TypeScript/build;
 - decisoes: 1 professor por inscricao; nome snapshot independente; sem fallback de `athlete_managers`; sem IDs/e-mail/telefone na superficie publica;
 - divida tecnica aceita: multiplos professores, troca por luta, corner ao vivo, exportacao e preparacao para producao;
-- proxima etapa: nao reabrir Sprints 8 a 13 lotes 1 e 2 nem o Full Event. Nao iniciar exportacao nem preparacao para producao.
+- proxima etapa: Sprint 13 lote 3 congelado. Nao reabrir o Full Event nem as Sprints 8 a 13. Nao iniciar exportacao nem preparacao para producao.
