@@ -41,7 +41,7 @@ Ter uma tela navegavel ou dados mockados nao significa funcionalidade concluida.
 
 ### Proximo marco
 
-Sprints 8 a 13 lote 1 e o Full Event BDD permanecem congelados. Sprint 13 lote 2 entregue em 2026-09-19: Professor como ator cadastral (`npm run test:professor`). Nao transformar Professor em organization_role. Nao iniciar exportacao nem preparacao para producao.
+Sprints 8 a 13 e o Full Event BDD permanecem congelados. O Professor cadastral ja nasce no produto (`npm run test:professor`) e nao e organization_role. Nao iniciar exportacao nem preparacao para producao.
 
 ## 5. Backlog ordenado por sprints
 
@@ -662,7 +662,7 @@ Automacao: `npm run test:unit` cobre a derivacao; `BASE_URL=http://localhost:310
 
 ### Sprint 13 - Checagem publica e gaps do PRD
 
-- Status: lote 1 (checagem publica) e lote 2 (Professor cadastral) concluidos em 2026-09-19.
+- Status: lote 1 (checagem publica) e lote 2 (Professor cadastral) concluidos e congelados em 2026-09-19.
 - Dependencias atendidas: Sprint 7 autenticada, identidade publica decidida no PRD, Sprints 8 a 12 congeladas.
 - Entregas do lote 1:
   - RPC `get_public_event_checking` para anon/authenticated;
@@ -676,7 +676,7 @@ Automacao: `npm run test:unit` cobre a derivacao; `BASE_URL=http://localhost:310
 
 Automacao: `BASE_URL=http://localhost:3102 npm run test:public-checking`.
 
-- Status do lote 2: concluido em 2026-09-19 com o Professor como ator real do produto.
+- Status do lote 2: concluido e congelado em 2026-09-19 com o Professor como ator real do produto.
 - Entregas do lote 2:
   - `tipo_cadastro = professor` no cadastro/login;
   - RPC `create_managed_team` sem `organization_role`;
@@ -899,4 +899,4 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - testes: `BASE_URL=http://localhost:3102 npm run test:professor` 2/2; smoke SQL transacional com rollback; TypeScript/build;
 - decisoes: Professor nao e `organization_role`; intencao em `tipo_cadastro`; vinculo em `athlete_managers`; tenant tecnico so para hospedar equipe;
 - divida tecnica aceita: professor operacional, filtro por professor, organizacoes pela UI, exportacao e preparacao para producao;
-- proxima etapa: nao iniciar exportacao nem preparacao para producao. Nao reabrir o Full Event nem as Sprints 8 a 13 lote 1.
+- proxima etapa: Sprint 13 lote 2 congelado. Nao reabrir o Full Event nem as Sprints 8 a 13. Nao iniciar exportacao nem preparacao para producao.
