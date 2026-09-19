@@ -5,6 +5,7 @@ import { checagemFixture, type ChecagemFixture } from './checagem-fixture';
 import { operationalEventFixture, type OperationalEventFixture } from './operational-event-fixture';
 import { createFullEventJourney, type FullEventJourney } from './full-event-journey';
 import { financialClosingFixture, type FinancialClosingFixture } from './financial-closing-fixture';
+import { platformFeeFixture, type PlatformFeeFixture } from './platform-fee-fixture';
 import type { APIResponse } from '@playwright/test';
 
 type ScenarioData = {
@@ -23,6 +24,7 @@ export const test = base.extend<{
   liveEventData: OperationalEventFixture;
   fullEvent: FullEventJourney;
   closingData: FinancialClosingFixture;
+  platformFeeData: PlatformFeeFixture;
   webhookState: { response?: APIResponse };
 }>({
   webhookState: async ({}, use) => use({}),
@@ -59,6 +61,17 @@ export const test = base.extend<{
   closingData: async ({}, use) => {
     base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para fixtures de fechamento no Sandbox.');
     const data = financialClosingFixture();
+    try {
+      await data.setup();
+      await use(data);
+    } finally {
+      await data.cleanup();
+    }
+  },
+  platformFeeData: async ({}, use, testInfo) => {
+    base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para fixtures de taxa no Sandbox.');
+    testInfo.setTimeout(120_000);
+    const data = platformFeeFixture();
     try {
       await data.setup();
       await use(data);

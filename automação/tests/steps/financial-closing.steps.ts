@@ -76,8 +76,8 @@ Then('a inscrição estornada não entra na receita', async ({ page, closingData
   await expect(row.getByText('R$ 0,00').first()).toBeVisible();
 });
 
-Then('a taxa da plataforma permanece pendente', async ({ page }) => {
-  await expect(closing(page).getByText(/permanecem pendentes de decisão comercial/)).toBeVisible();
+Then('o fechamento explica que a taxa vem do valor registrado na efetivação', async ({ page }) => {
+  await expect(closing(page).getByText(/valor registrado no momento da efetivação/)).toBeVisible();
   await expect(closing(page).getByText(/receita líquida/i)).toBeVisible();
   await expect(closing(page).getByText(/%/)).toHaveCount(0);
 });

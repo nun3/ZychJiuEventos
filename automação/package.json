@@ -51,7 +51,8 @@
     "test:checklist": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/sprint10-group-checklist-smoke.ts",
     "test:duration": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/sprint11-fight-duration-smoke.ts",
     "test:transitions": "bddgen && playwright test --grep @transitions",
-    "test:closing": "bddgen && playwright test --grep @closing"
+    "test:closing": "bddgen && playwright test --grep @closing --grep-invert @platform-fee",
+    "test:fee": "bddgen && playwright test --grep @platform-fee"
   },
   "dependencies": {
     "playwright": "1.51.1"

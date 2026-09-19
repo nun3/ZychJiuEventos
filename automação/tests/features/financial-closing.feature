@@ -3,7 +3,7 @@
 Funcionalidade: Fechamento financeiro do evento
   Como organizador
   Quero conferir os totais e as inscrições do encerramento
-  Para fechar o evento com números auditáveis, sem taxa da plataforma
+  Para fechar o evento com números auditáveis, inclusive quando a taxa contratada é zero
 
   Contexto:
     Dado que a escrita E2E foi habilitada
@@ -23,7 +23,7 @@ Funcionalidade: Fechamento financeiro do evento
     E a inscrição efetivada por baixa manual entra na receita
     E a inscrição cancelada é contabilizada como cancelada
     E a inscrição estornada não entra na receita
-    E a taxa da plataforma permanece pendente
+    E o fechamento explica que a taxa vem do valor registrado na efetivação
 
   @P0 @security
   Cenário: usuário sem permissão não acessa o fechamento
