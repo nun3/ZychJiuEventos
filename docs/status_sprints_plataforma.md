@@ -937,5 +937,14 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - entregas verificadas: cadastro publico com maioridade no servidor, menor sem login, atleta independente completa cadastro esportivo em equipe ja existente da organizacao ativa (`create_self_athlete`) e reutiliza a inscricao propria;
 - testes: unit `adult-birth-date`; smoke SQL `self_athlete_smoke.sql`; TypeScript/build;
 - decisoes: nao criar equipe nem "Sem equipe"; nao nascer `athletes` no signUp; nao alterar Sprint 7, PIX/boleto, onboarding nem convites;
-- divida tecnica aceita: onboarding de organizacao, membros, correcao auditada de dados alem da categoria, Asaas producao, observabilidade;
+- divida tecnica aceita: onboarding de organizacao, membros, Asaas producao, observabilidade;
 - proxima etapa: aplicar a migration no Sandbox (e depois Production). PIX/boleto permanece bloqueado. Nao criar evento real neste lote.
+
+### 2026-09-19 — Correcao auditada da inscricao
+
+- data: 2026-09-19;
+- entregas verificadas: contrato `registration_correction_requests` (nome, faixa, peso, equipe), RPCs de pedido/decisao, caminho controlado em `protect_registration_snapshot`, UI em `/dashboard/inscricoes` e `/admin/eventos/[id]/checagem`;
+- testes: unit `registration-correction`; smoke SQL `registration_correction_smoke.sql`; TypeScript/build;
+- decisoes: nao reutilizar Sprint 7; nao recategorizar; fail closed apos lock; sincronizar cadastro mestre quando as regras atuais permitem;
+- divida tecnica aceita: onboarding de organizacao, membros, Asaas producao, observabilidade, data de nascimento/genero/professor operacional/categoria neste contrato;
+- proxima etapa: aplicar a migration no Sandbox. Sem Vercel, Production ou push.

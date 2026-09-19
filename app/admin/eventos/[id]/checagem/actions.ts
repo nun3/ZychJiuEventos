@@ -57,3 +57,41 @@ export async function lockEventChecagem(formData: FormData): Promise<{ ok: boole
   revalidatePath(`/admin/eventos/${eventId}/checagem`)
   return { ok: true, message: 'Checagem travada. A lista oficial não aceita novas alterações.' }
 }
+
+export async function reviewRegistrationCorrection(formData: FormData): Promise<{ ok: boolean; message: string }> {
+  const requestId = String(formData.get('request_id') || '')
+  const eventId = String(formData.get('event_id') || '')
+  const decision = String(formData.get('decision') || '')
+  if (!uuid.test(requestId) || !uuid.test(eventId) || !['approve', 'reject'].includes(decision)) {
+    return { ok: false, message: 'Decisão inválida.' }
+  }
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, message: 'Sua sessão expirou.' }
+  const { data, error } = await supabase.rpc('review_registration_correction', {
+    target_request_id: requestId,
+    approve_request: decision === 'approve',
+  })
+  if (error || !data || typeof data !== 'object' || Array.isArray(data) || data.kind !== 'reviewed') {
+    const messages: Record<string, string> = {
+      'Checagem travada': 'A checagem está travada. A lista oficial não aceita alterações.',
+      'Solicitacao nao esta pendente': 'Esta solicitação já foi decidida.',
+      'Sem permissao para decidir correcao': 'Você não pode decidir correções deste evento.',
+      'Evento fora da fase de checagem': 'A decisão só é permitida na fase de checagem.',
+      'Inscricao nao efetivada': 'Somente inscrições efetivadas entram na checagem.',
+    }
+    return { ok: false, message: messages[error?.message || ''] || 'Não foi possível registrar a decisão.' }
+  }
+  revalidatePath(`/admin/eventos/${eventId}/checagem`)
+  revalidatePath('/dashboard/inscricoes')
+  const incompatible = data.categoryCompatible === false
+  if (decision === 'reject') {
+    return { ok: true, message: 'Solicitação rejeitada. A inscrição não foi alterada.' }
+  }
+  return {
+    ok: true,
+    message: incompatible
+      ? 'Correção aprovada na inscrição. A categoria vigente ficou incompatível; use a solicitação de categoria já existente. Não houve recategorização automática.'
+      : 'Correção aprovada e aplicada nesta inscrição.',
+  }
+}

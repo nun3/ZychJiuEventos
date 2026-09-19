@@ -62,6 +62,21 @@ PENDENTE -> APROVADA
 - Aprovação gera histórico e atualiza a inscrição antes do travamento.
 - Após o travamento da checagem, novas solicitações ficam bloqueadas.
 
+## Estado da solicitação de correção da inscrição
+
+```text
+PENDENTE -> APROVADA
+    |
+ RECUSADA
+```
+
+- Contrato separado: `registration_correction_requests`.
+- Campos deste lote: nome, faixa, peso e equipe.
+- Quem solicita: o próprio atleta adulto ou Professor/Responsável que gerencia o atleta.
+- Quem decide: owner/organizer do evento.
+- Aprovação corrige a inscrição específica e preserva valor anterior/novo. Não recategoriza.
+- Pedido e decisão somente na fase de checagem, antes do lock. Depois, fail closed.
+
 ## Estado da checagem e chaves
 
 - `checagem_aberta`: lista consultável e solicitações permitidas.

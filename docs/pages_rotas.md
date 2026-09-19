@@ -107,7 +107,17 @@
 - **Meus Atletas - Inscrições do Atleta**  
   - **Rota**: `/dashboard/meus-atletas/[id]/inscricoes`  
   - **Arquivo**: `app/dashboard/meus-atletas/[id]/inscricoes/page.tsx`  
-  - **Função**: Mostra as inscrições do atleta em campeonatos. Separa "Campeonato ativo" (com botões de pagamento, checagem, alterar/cancelar inscrição) e "Campeonato já concluído" (com emissão de declaração de participação).
+  - **Função**: Mostra as inscrições do atleta em campeonatos. Histórico real permitido para a conta.
+
+- **Inscrições e pagamentos**
+  - **Rota**: `/dashboard/inscricoes`
+  - **Arquivo**: `app/dashboard/inscricoes/page.tsx`
+  - **Função**: Consulta inscrições dos atletas gerenciados, reserva de pagamento manual, solicitação de mudança de categoria (Sprint 7) e solicitação de correção de nome, faixa, peso e equipe da inscrição durante a checagem.
+
+- **Checagem autenticada (Admin)**
+  - **Rota**: `/admin/eventos/[id]/checagem`
+  - **Arquivo**: `app/admin/eventos/[id]/checagem/page.tsx`
+  - **Função**: Lista oficial das efetivadas, decisões de categoria, pendências de correção (aprovar/rejeitar com antes/depois) e travamento. Após o lock, correções ficam somente como histórico.
 
 ### Admin / Organização
 

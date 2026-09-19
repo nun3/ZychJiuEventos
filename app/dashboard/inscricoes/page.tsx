@@ -22,6 +22,7 @@ import { isPaymentsManualOnly } from '@/lib/payments/manual-only'
 import type { Json } from '@/lib/supabase/database.types'
 import PaymentCheckout, { type CheckoutRegistration } from './PaymentCheckout'
 import CategoryChangeRequest from './CategoryChangeRequest'
+import RegistrationCorrectionRequest from './RegistrationCorrectionRequest'
 
 function snapshotName(value: Json, key: string) {
   return value && typeof value === 'object' && !Array.isArray(value) && typeof value[key] === 'string' ? String(value[key]) : 'Não informado'
@@ -64,15 +65,18 @@ export default async function RegistrationsPage() {
   const ids = Array.from(new Set([...(own.data || []).map(a => a.id), ...(managed.data || []).map(a => a.athlete_id)]))
   const scope = getPublicOrganizationScope()
   const result = ids.length ? await supabase.from('registrations')
-    .select('id, numero, athlete_id, event_id, status, valor, athlete_snapshot, category_snapshot, operational_professor_name, events(id, nome, organization_id)')
+    .select('id, numero, athlete_id, event_id, status, valor, athlete_snapshot, category_snapshot, operational_professor_name, events(id, nome, organization_id, status, checagem_travada_em)')
     .in('athlete_id', ids).order('created_at', { ascending: false }) : { data: [], error: null }
   const payments = await supabase.from('payments').select('id, status, valor_total, metodo, events(nome, organization_id), payment_registrations(registration_id)').eq('created_by', user.id).order('created_at', { ascending: false })
+  const teams = scope.mode === 'restricted'
+    ? await supabase.from('teams').select('id, nome').eq('organization_id', scope.organizationId).order('nome')
+    : { data: [] as Array<{ id: string; nome: string }> }
   const inReleaseOrganization = (organizationId?: string | null) => (
     organizationId ? allowsPublicOrganization(organizationId) : scope.mode === 'unrestricted'
   )
   const scopedRegistrations = (result.data || []).filter((registration) => inReleaseOrganization(registration.events?.organization_id))
   const scopedPayments = (payments.data || []).filter((payment) => inReleaseOrganization(payment.events?.organization_id))
-  const error = own.error || managed.error || result.error || payments.error || scope.mode === 'blocked'
+  const error = own.error || managed.error || result.error || payments.error || ('error' in teams && teams.error) || scope.mode === 'blocked'
   const reserved = new Set(scopedPayments.filter(p => ['aguardando', 'pago'].includes(p.status)).flatMap(p => p.payment_registrations.map(r => r.registration_id)))
   const checkoutRows: CheckoutRegistration[] = scopedRegistrations.filter(r => !reserved.has(r.id)).map(r => ({
     id: r.id,
@@ -113,7 +117,18 @@ export default async function RegistrationsPage() {
       render: (registration) => (
         <div className="min-w-56 space-y-mc-8">
           <Link href={`/dashboard/meus-atletas/${registration.athlete_id}/inscricoes`} className="inline-flex min-h-10 items-center font-semibold text-mc-action hover:underline">Histórico do atleta</Link>
-          {registration.status === 'efetivada' ? <CategoryChangeRequest registrationId={registration.id} /> : null}
+          {registration.status === 'efetivada' ? (
+            <>
+              <CategoryChangeRequest registrationId={registration.id} />
+              <RegistrationCorrectionRequest
+                registrationId={registration.id}
+                snapshot={registration.athlete_snapshot}
+                eventStatus={registration.events?.status}
+                checkingLocked={Boolean(registration.events?.checagem_travada_em)}
+                teams={teams.data || []}
+              />
+            </>
+          ) : null}
         </div>
       ),
     },
@@ -156,7 +171,18 @@ export default async function RegistrationsPage() {
                     <MobileRecordStatus><RegistrationStatus status={registration.status} /></MobileRecordStatus>
                     <MobileRecordActions>
                       <Link href={`/dashboard/meus-atletas/${registration.athlete_id}/inscricoes`} className="inline-flex min-h-11 items-center rounded-mc-medium border border-mc-border px-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary hover:bg-mc-surface-secondary">Histórico do atleta</Link>
-                      {registration.status === 'efetivada' ? <CategoryChangeRequest registrationId={registration.id} /> : null}
+                      {registration.status === 'efetivada' ? (
+            <>
+              <CategoryChangeRequest registrationId={registration.id} />
+              <RegistrationCorrectionRequest
+                registrationId={registration.id}
+                snapshot={registration.athlete_snapshot}
+                eventStatus={registration.events?.status}
+                checkingLocked={Boolean(registration.events?.checagem_travada_em)}
+                teams={teams.data || []}
+              />
+            </>
+          ) : null}
                     </MobileRecordActions>
                   </MobileRecord>
                 ))}

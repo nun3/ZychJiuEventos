@@ -1518,6 +1518,73 @@ export type Database = {
           },
         ]
       }
+      registration_correction_requests: {
+        Row: {
+          category_compatible: boolean | null
+          created_at: string
+          id: string
+          previous_value: Json
+          reason: string | null
+          registration_id: string
+          requested_by: string
+          requested_field: Database["public"]["Enums"]["registration_correction_field"]
+          requested_value: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["change_request_status"]
+        }
+        Insert: {
+          category_compatible?: boolean | null
+          created_at?: string
+          id?: string
+          previous_value: Json
+          reason?: string | null
+          registration_id: string
+          requested_by: string
+          requested_field: Database["public"]["Enums"]["registration_correction_field"]
+          requested_value: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["change_request_status"]
+        }
+        Update: {
+          category_compatible?: boolean | null
+          created_at?: string
+          id?: string
+          previous_value?: Json
+          reason?: string | null
+          registration_id?: string
+          requested_by?: string
+          requested_field?: Database["public"]["Enums"]["registration_correction_field"]
+          requested_value?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["change_request_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registration_correction_requests_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registration_correction_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registration_correction_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teams: {
         Row: {
           created_at: string
@@ -2034,6 +2101,15 @@ export type Database = {
         }
         Returns: Json
       }
+      request_registration_correction: {
+        Args: {
+          reason_text?: string
+          requested_field: Database["public"]["Enums"]["registration_correction_field"]
+          requested_text: string
+          target_registration_id: string
+        }
+        Returns: Json
+      }
       reserve_payment_batch: {
         Args: {
           target_event_id: string
@@ -2052,6 +2128,10 @@ export type Database = {
         Returns: Json
       }
       review_category_change: {
+        Args: { approve_request: boolean; target_request_id: string }
+        Returns: Json
+      }
+      review_registration_correction: {
         Args: { approve_request: boolean; target_request_id: string }
         Returns: Json
       }
@@ -2157,6 +2237,7 @@ export type Database = {
         | "expirada"
         | "cancelada"
         | "estornada"
+      registration_correction_field: "nome" | "faixa" | "peso" | "equipe"
       webhook_processing_status:
         | "recebido"
         | "processado"
@@ -2333,6 +2414,7 @@ export const Constants = {
         "cancelada",
         "estornada",
       ],
+      registration_correction_field: ["nome", "faixa", "peso", "equipe"],
       webhook_processing_status: [
         "recebido",
         "processado",

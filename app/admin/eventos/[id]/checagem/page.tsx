@@ -14,7 +14,14 @@ import type { Json } from '@/lib/supabase/database.types'
 import EventActions from '../../EventActions'
 import EventRegistrationsList, { type EventRegistrationItem } from './EventRegistrationsList'
 import ReviewCategoryChange from './ReviewCategoryChange'
+import ReviewRegistrationCorrection from './ReviewRegistrationCorrection'
 import LockChecagem from './LockChecagem'
+import {
+  CORRECTION_FIELD_LABELS,
+  CORRECTION_STATUS_LABELS,
+  displayCorrectionValue,
+  isCorrectionField,
+} from '@/lib/registrations/correction'
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -82,6 +89,12 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
     .eq('registrations.event_id', event.id)
     .order('created_at', { ascending: true })
 
+  const { data: correctionRequests } = await supabase
+    .from('registration_correction_requests')
+    .select('id, requested_field, previous_value, requested_value, reason, status, created_at, category_compatible, requested_by, profiles!registration_correction_requests_requested_by_fkey(nome_completo), registrations!inner(id, numero, event_id, athlete_snapshot)')
+    .eq('registrations.event_id', event.id)
+    .order('created_at', { ascending: true })
+
   const mapped: EventRegistrationItem[] = (data || []).map((registration) => {
     const athlete = snapshotRecord(registration.athlete_snapshot)
     const category = snapshotRecord(registration.category_snapshot)
@@ -135,8 +148,8 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
 
           <Alert className="mt-mc-24" variant="info" icon={<Info size={20} />} title={locked ? 'Lista travada' : 'Lista oficial'}>
             {locked
-              ? 'A checagem está travada. Solicitações e decisões de categoria ficam bloqueadas.'
-              : 'A categoria exibida é a alocação vigente. O snapshot original permanece congelado. Professores e responsáveis solicitam mudança quando o atleta está sozinho; a organização aprova ou recusa.'}
+              ? 'A checagem está travada. Solicitações e decisões de categoria e de correção ficam bloqueadas.'
+              : 'A categoria exibida é a alocação vigente. O snapshot original permanece congelado, salvo correção aprovada pela organização. Professores e responsáveis solicitam mudança de categoria quando o atleta está sozinho, e correção de nome, faixa, peso ou equipe; a organização aprova ou recusa.'}
           </Alert>
 
           {!locked && event.status === 'checagem' ? <LockChecagem eventId={event.id} /> : null}
@@ -181,6 +194,75 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
                     </li>
                   )
                 })}
+              </ul>
+            </section>
+          ) : null}
+
+          {(correctionRequests || []).some((request) => request.status === 'pendente') && !locked ? (
+            <section aria-labelledby="pending-registration-corrections-title" className="mt-mc-24">
+              <h2 id="pending-registration-corrections-title" className="font-mc-display text-mc-h3 text-mc-text-primary">Correções pendentes</h2>
+              <ul className="mt-mc-16 space-y-mc-12">
+                {(correctionRequests || []).filter((request) => request.status === 'pendente').map((request) => {
+                  const linked = request.registrations
+                  const registration = Array.isArray(linked) ? linked[0] : linked
+                  const athlete = snapshotRecord(registration?.athlete_snapshot ?? {})
+                  const requester = Array.isArray(request.profiles) ? request.profiles[0] : request.profiles
+                  const field = isCorrectionField(request.requested_field) ? request.requested_field : null
+                  return (
+                    <li key={request.id} className="rounded-mc-medium border border-mc-border bg-mc-surface p-mc-16">
+                      <p className="font-semibold text-mc-text-primary">{textValue(athlete.nome_completo)} · inscrição #{registration?.numero}</p>
+                      <p className="mt-mc-8 text-sm text-mc-text-secondary">
+                        Solicitante: {textValue(requester?.nome_completo, 'Não informado')}
+                      </p>
+                      <p className="mt-mc-8 text-sm text-mc-text-primary">
+                        {field ? CORRECTION_FIELD_LABELS[field] : request.requested_field}: {field ? displayCorrectionValue(field, request.previous_value) : '—'} → {field ? displayCorrectionValue(field, request.requested_value) : '—'}
+                      </p>
+                      {request.reason ? <p className="mt-mc-8 text-sm text-mc-text-primary">{request.reason}</p> : null}
+                      <ReviewRegistrationCorrection requestId={request.id} eventId={event.id} locked={locked} />
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          ) : null}
+
+          {(correctionRequests || []).some((request) => locked || request.status !== 'pendente') ? (
+            <section aria-labelledby="registration-correction-history-title" className="mt-mc-24">
+              <h2 id="registration-correction-history-title" className="font-mc-display text-mc-h3 text-mc-text-primary">
+                {locked ? 'Histórico de correções' : 'Correções decididas'}
+              </h2>
+              <ul className="mt-mc-16 space-y-mc-12">
+                {(correctionRequests || [])
+                  .filter((request) => locked || request.status !== 'pendente')
+                  .map((request) => {
+                    const linked = request.registrations
+                    const registration = Array.isArray(linked) ? linked[0] : linked
+                    const athlete = snapshotRecord(registration?.athlete_snapshot ?? {})
+                    const requester = Array.isArray(request.profiles) ? request.profiles[0] : request.profiles
+                    const field = isCorrectionField(request.requested_field) ? request.requested_field : null
+                    return (
+                      <li key={request.id} className="rounded-mc-medium border border-mc-border bg-mc-surface p-mc-16">
+                        <div className="flex flex-wrap items-center gap-mc-8">
+                          <p className="font-semibold text-mc-text-primary">{textValue(athlete.nome_completo)} · inscrição #{registration?.numero}</p>
+                          <StatusBadge variant={request.status === 'aprovada' ? 'success' : request.status === 'recusada' ? 'error' : 'warning'}>
+                            {CORRECTION_STATUS_LABELS[request.status] || request.status}
+                          </StatusBadge>
+                        </div>
+                        <p className="mt-mc-8 text-sm text-mc-text-secondary">
+                          Solicitante: {textValue(requester?.nome_completo, 'Não informado')}
+                        </p>
+                        <p className="mt-mc-8 text-sm text-mc-text-primary">
+                          {field ? CORRECTION_FIELD_LABELS[field] : request.requested_field}: {field ? displayCorrectionValue(field, request.previous_value) : '—'} → {field ? displayCorrectionValue(field, request.requested_value) : '—'}
+                        </p>
+                        {request.reason ? <p className="mt-mc-8 text-sm text-mc-text-primary">{request.reason}</p> : null}
+                        {request.status === 'aprovada' && request.category_compatible === false ? (
+                          <p className="mt-mc-8 text-sm text-mc-text-primary">
+                            Categoria vigente incompatível. Use a solicitação de categoria já existente; esta correção não recategorizou.
+                          </p>
+                        ) : null}
+                      </li>
+                    )
+                  })}
               </ul>
             </section>
           ) : null}

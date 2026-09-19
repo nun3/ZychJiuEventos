@@ -175,6 +175,24 @@ A receita bruta soma `amount` das inscricoes `efetivada` com pagamento `pago`. A
 
 Uma inscricao efetivada pode ter no maximo uma solicitacao `pendente`. Insert/update direto pelo cliente e bloqueado; criacao e decisao passam por RPC.
 
+### registration_correction_requests
+
+Contrato separado da Sprint 7. Nao reutiliza `category_change_requests`.
+
+- `id` UUID, PK
+- `registration_id` FK
+- `requested_by` FK
+- `requested_field`: `nome`, `faixa`, `peso`, `equipe`
+- `previous_value` jsonb
+- `requested_value` jsonb
+- `reason` opcional
+- `status`: `pendente`, `aprovada`, `recusada` (`change_request_status`)
+- `reviewed_by`, `reviewed_at`
+- `category_compatible` preenchido na aprovacao
+- `created_at`
+
+Uma inscricao pode ter no maximo uma pendente por campo. Pedido e decisao so na fase de checagem, antes do lock. Aprovacao corrige o `athlete_snapshot` da inscricao pelo GUC controlado de `protect_registration_snapshot` e sincroniza o cadastro mestre quando as regras atuais permitem. Nao recategoriza. Insert/update direto pelo cliente e bloqueado.
+
 ### brackets, matches e weigh_ins
 
 Representam a operacao esportiva depois do fechamento da checagem.

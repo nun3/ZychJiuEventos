@@ -59,13 +59,13 @@ Não havia outro documento de benchmark ou evento anexado no mesmo conjunto.
 
 - Origem: `PROJETO_GERENCIADOR_CAMPEONATOS_JIU_JITSU_1.pdf`.
 - A lista de checagem contém somente pagamentos efetivados, identifica atleta sozinho, admite solicitação de mudança/correção e é travada antes das chaves.
-- Situação no MEU CAMP: núcleo autenticado, realocação de categoria do sozinho, travamento e lista pública estão concluídos. `/eventos/[id]/checagem` exibe nome completo de competição, equipe, professor operacional da inscrição e categoria vigente das efetivadas. Solicitação de correção de outros dados (faixa etc.) permanece fora da realocação.
+- Situação no MEU CAMP: núcleo autenticado, realocação de categoria do sozinho, travamento, lista pública e correção auditada de nome/faixa/peso/equipe da inscrição estão concluídos. `/eventos/[id]/checagem` exibe nome completo de competição, equipe, professor operacional da inscrição e categoria vigente das efetivadas. A correção de dados não reutiliza `category_change_requests` e não recategoriza automaticamente.
 
 **EVIDÊNCIA DE BENCHMARK**
 
 - Origem: `BENCHMARKING_ILUTAS_1.pdf`.
 - Lista pública e alteração de inscrição reduzem trabalho manual do organizador.
-- Situação no MEU CAMP: solicitações auditadas de categoria existem. Alteração direta de inscrição não foi adotada. Solicitação auditada de correção de faixa ou outros dados cadastrais permanece pendente e não é requisito automático deste benchmark.
+- Situação no MEU CAMP: solicitações auditadas de categoria existem. Alteração direta estilo iLUTAS não foi adotada. Equivalência operacional: atleta/gestor solicita correção auditada (`registration_correction_requests`); organizador aprova ou rejeita na checagem, antes do lock. A inscrição específica é corrigida com histórico de antes/depois.
 
 ### Categorias
 

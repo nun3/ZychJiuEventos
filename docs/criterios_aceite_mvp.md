@@ -58,11 +58,12 @@ Gap fechado em 2026-09-19: atleta independente cria só a conta; depois conclui 
 - [x] Atleta sozinho pode solicitar mudança elegível.
 - [x] Organizador aprova ou recusa com histórico.
 - [x] Lista travada não aceita alterações comuns.
+- [x] Solicitação auditada de correção de nome, faixa, peso e equipe da inscrição, na fase de checagem e antes do lock.
 
 Distinção vigente:
 
 - Correção de categoria / realocação do sozinho: entregue (`checagem.feature`, Sprint 7). Snapshot e `category_id` original permanecem imutáveis; a alocação vigente é `coalesce(current_category_id, category_id)`.
-- Solicitação auditada de correção de outros dados (faixa, peso, nome etc.): pendente. Não faz parte da realocação do sozinho.
+- Correção auditada de nome, faixa, peso e equipe: entregue em `registration_correction_requests`. Não reutiliza a tabela da Sprint 7. Aprovação altera o snapshot da inscrição pelo caminho controlado; não recategoriza automaticamente. Data de nascimento, gênero, professor operacional e categoria ficam fora deste contrato.
 
 Filtros da checagem autenticada e da lista pública: categoria, equipe e professor operacional da inscrição. A lista pública usa o nome completo de competição do snapshot. O Professor cadastral permanece distinto do professor operacional.
 
@@ -95,7 +96,6 @@ Ainda não entregues, e portanto não marcadas acima:
 
 - onboarding self-service de organização;
 - gestão/convite de membros na UI;
-- solicitação auditada de correção de dados além da categoria;
 - indicadores do PRD §8;
 - console platform admin;
 - Asaas produção, backup, monitoramento e rollback (critério de liberação, não do fluxo operacional);

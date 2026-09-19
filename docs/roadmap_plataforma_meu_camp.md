@@ -116,7 +116,7 @@ Referencias tecnicas: [criacao de cobranca](https://docs.asaas.com/reference/cre
 - Solicitacao, aprovacao e recusa de mudanca com historico.
 - Travamento da checagem antes da geracao de chaves.
 
-Estado vigente (2026-09-19): o nucleo autenticado da checagem permanece entregue. A lista publica em `/eventos/[id]/checagem` exibe nome completo de competicao, equipe, professor operacional da inscricao e categoria vigente das inscricoes efetivadas. Correcao de categoria/realocacao do sozinho esta entregue. Solicitacao auditada de correcao de outros dados, como faixa, permanece pendente e nao faz parte da realocacao do sozinho.
+Estado vigente (2026-09-19): o nucleo autenticado da checagem permanece entregue. A lista publica em `/eventos/[id]/checagem` exibe nome completo de competicao, equipe, professor operacional da inscricao e categoria vigente das inscricoes efetivadas. Correcao de categoria/realocacao do sozinho esta entregue. Correcao auditada de nome, faixa, peso e equipe da inscricao esta entregue em `registration_correction_requests`, sem recategorizacao automatica e sem reutilizar a maquina da Sprint 7.
 
 ### 5.7 Operacao esportiva e encerramento
 
@@ -200,8 +200,7 @@ Pendencias comerciais e de liberacao:
 Pendencias de produto ainda no PRD, sem impedir o fluxo §3 operado pelo owner seedado:
 
 - onboarding self-service de organizacao;
-- gestao/convite de membros na UI;
-- solicitacao auditada de correcao de dados alem da categoria.
+- gestao/convite de membros na UI.
 
 Essas pendencias nao bloqueiam o teste local nem o fluxo operacional ja comprovado. Pagamentos reais e preparacao para producao dependem das decisoes comerciais e de liberacao. Nao iniciar preparacao para producao neste marco.
 
