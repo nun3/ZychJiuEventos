@@ -50,7 +50,8 @@
     "test:schedule:public": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/sprint9-public-schedule-smoke.ts",
     "test:checklist": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/sprint10-group-checklist-smoke.ts",
     "test:duration": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register scripts/sprint11-fight-duration-smoke.ts",
-    "test:transitions": "bddgen && playwright test --grep @transitions"
+    "test:transitions": "bddgen && playwright test --grep @transitions",
+    "test:closing": "bddgen && playwright test --grep @closing"
   },
   "dependencies": {
     "playwright": "1.51.1"

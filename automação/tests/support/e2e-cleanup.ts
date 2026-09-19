@@ -9,7 +9,7 @@ export const SANDBOX_HOST = 'kfvypacjzlzwwblsbpwj.supabase.co';
 const EVENT_PREFIXES = ['Evento E2E ', 'Checkout E2E', 'Checagem E2E', 'MC-SIM Full Event'] as const;
 const ATHLETE_PREFIXES = ['Atleta E2E ', 'MC-SIM Full Event Atleta'] as const;
 const TEAM_PREFIXES = ['E2E Equipe ', 'MC-SIM Full Event Equipe'] as const;
-const ORG_EXACT = ['Checkout E2E', 'Checagem E2E', 'Operação E2E'] as const;
+const ORG_EXACT = ['Checkout E2E', 'Checagem E2E', 'Operação E2E', 'Fechamento E2E'] as const;
 
 export type CleanupPlan = {
   protectedOrgIds: string[];

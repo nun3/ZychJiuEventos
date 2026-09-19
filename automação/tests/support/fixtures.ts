@@ -4,6 +4,7 @@ import { paymentFixture, type PaymentFixture } from './payment-fixture';
 import { checagemFixture, type ChecagemFixture } from './checagem-fixture';
 import { operationalEventFixture, type OperationalEventFixture } from './operational-event-fixture';
 import { createFullEventJourney, type FullEventJourney } from './full-event-journey';
+import { financialClosingFixture, type FinancialClosingFixture } from './financial-closing-fixture';
 import type { APIResponse } from '@playwright/test';
 
 type ScenarioData = {
@@ -21,6 +22,7 @@ export const test = base.extend<{
   checagemData: ChecagemFixture;
   liveEventData: OperationalEventFixture;
   fullEvent: FullEventJourney;
+  closingData: FinancialClosingFixture;
   webhookState: { response?: APIResponse };
 }>({
   webhookState: async ({}, use) => use({}),
@@ -47,6 +49,16 @@ export const test = base.extend<{
   paymentData: async ({}, use) => {
     base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para fixtures de pagamentos no Sandbox.');
     const data = paymentFixture();
+    try {
+      await data.setup();
+      await use(data);
+    } finally {
+      await data.cleanup();
+    }
+  },
+  closingData: async ({}, use) => {
+    base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para fixtures de fechamento no Sandbox.');
+    const data = financialClosingFixture();
     try {
       await data.setup();
       await use(data);
