@@ -5,6 +5,7 @@ import { checagemFixture, type ChecagemFixture } from './checagem-fixture';
 import { operationalEventFixture, type OperationalEventFixture } from './operational-event-fixture';
 import { createFullEventJourney, type FullEventJourney } from './full-event-journey';
 import { createHomologationJourney, type HomologationJourney } from './homologation-journey';
+import { createOrganizationMembersJourney } from './organization-members-journey';
 import { financialClosingFixture, type FinancialClosingFixture } from './financial-closing-fixture';
 import { platformFeeFixture, type PlatformFeeFixture } from './platform-fee-fixture';
 import { publicCheckingFixture, type PublicCheckingFixture } from './public-checking-fixture';
@@ -28,6 +29,7 @@ export const test = base.extend<{
   liveEventData: OperationalEventFixture;
   fullEvent: FullEventJourney;
   homologation: HomologationJourney;
+  organizationMembers: Awaited<ReturnType<typeof createOrganizationMembersJourney>>;
   closingData: FinancialClosingFixture;
   platformFeeData: PlatformFeeFixture;
   publicCheckingData: PublicCheckingFixture;
@@ -159,6 +161,23 @@ export const test = base.extend<{
         }).catch(() => undefined);
       }
       await journey.cleanup();
+    }
+  },
+  organizationMembers: async ({ page, context }, use, testInfo) => {
+    base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para o smoke de organizações no Sandbox.');
+    testInfo.setTimeout(240_000);
+    const journey = await createOrganizationMembersJourney({
+      page,
+      context,
+      baseURL: process.env.BASE_URL || 'http://localhost:3000',
+      testInfo,
+    });
+    try {
+      await use(journey);
+    } finally {
+      if (journey.report.Cleanup !== 'OK') {
+        await journey.cleanup().catch(() => undefined);
+      }
     }
   },
   loginPage: async ({ page }, use) => use(new LoginPage(page)),

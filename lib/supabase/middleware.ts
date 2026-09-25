@@ -29,6 +29,7 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const isAdminLogin = pathname === '/admin/autenticacao'
   const isProtected = pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/platform') ||
     (pathname.startsWith('/admin') && !isAdminLogin)
 
   if (isProtected && !user) {
@@ -36,6 +37,16 @@ export async function updateSession(request: NextRequest) {
     loginUrl.pathname = pathname.startsWith('/admin') ? '/admin/autenticacao' : '/login'
     loginUrl.searchParams.set('redirectTo', `${pathname}${request.nextUrl.search}`)
     return NextResponse.redirect(loginUrl)
+  }
+
+  if (user && pathname.startsWith('/platform')) {
+    const { data: isAdmin } = await supabase.rpc('is_platform_admin')
+    if (!isAdmin) {
+      const dashboardUrl = request.nextUrl.clone()
+      dashboardUrl.pathname = '/dashboard'
+      dashboardUrl.searchParams.set('erro', 'sem_permissao')
+      return NextResponse.redirect(dashboardUrl)
+    }
   }
 
   if (user && pathname.startsWith('/admin') && !isAdminLogin) {

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { CalendarDays, ClipboardList, Lock, Mail, Shield, UserRound, UsersRound } from 'lucide-react'
+import { Building2, CalendarDays, ClipboardList, Lock, Mail, Shield, UserRound, UsersRound } from 'lucide-react'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 import { getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { organizationRoleLabel } from '@/lib/organizations/membership'
 import ProfileForm from './ProfileForm'
 
 const roleLabels = {
@@ -138,7 +139,11 @@ export default async function MeuPerfilPage() {
                   <div className="grid gap-mc-4 sm:grid-cols-[10rem_1fr]">
                     <dt className="text-mc-text-secondary">Organização</dt>
                     <dd className="font-semibold text-mc-text-primary">
-                      {organizationName ? `${organizationName} · ${organization?.role === 'owner' ? 'proprietário' : organization?.role === 'organizer' ? 'organizador' : organization?.role}` : 'Nenhuma organização administrativa'}
+                      {organizationName
+                        ? `${organizationName} · ${organizationRoleLabel(organization?.role || '')}`
+                        : actor?.ownedOrganization
+                          ? `${actor.ownedOrganization.organizationName} · ${organizationRoleLabel(actor.ownedOrganization.role)}`
+                          : 'Nenhuma organização administrativa'}
                     </dd>
                   </div>
                   <div className="grid gap-mc-4 sm:grid-cols-[10rem_1fr]">
@@ -214,6 +219,12 @@ export default async function MeuPerfilPage() {
                   <Link href="/admin/eventos" className="flex min-h-14 items-center gap-mc-12 px-mc-16 py-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary transition-colors hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus sm:px-mc-24">
                     <UserRound aria-hidden="true" size={18} className="text-mc-action" />
                     Administrar eventos
+                  </Link>
+                ) : null}
+                {actor?.canManageOrganization ? (
+                  <Link href="/dashboard/organizacao" className="flex min-h-14 items-center gap-mc-12 px-mc-16 py-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary transition-colors hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus sm:px-mc-24">
+                    <Building2 aria-hidden="true" size={18} className="text-mc-action" />
+                    Administrar membros
                   </Link>
                 ) : null}
               </Card>

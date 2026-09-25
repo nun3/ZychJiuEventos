@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowRight, CalendarDays, ClipboardList, MapPin, Plus, UsersRound } from 'lucide-react'
+import { ArrowRight, Building2, CalendarDays, ClipboardList, MapPin, Plus, UsersRound } from 'lucide-react'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 import { getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
@@ -43,6 +43,18 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
       title: 'Gerenciar eventos',
       description: 'Acesse configurações, status e ações das suas competições.',
       icon: CalendarDays,
+    } : null,
+    actor?.canManageOrganization ? {
+      href: '/dashboard/organizacao',
+      title: 'Organização e membros',
+      description: 'Veja os membros da sua organização e adicione contas já cadastradas.',
+      icon: Building2,
+    } : null,
+    actor?.isPlatformAdmin ? {
+      href: '/platform/organizacoes',
+      title: 'Organizações da plataforma',
+      description: 'Crie organizações e associe o proprietário inicial.',
+      icon: Building2,
     } : null,
     {
       href: '/dashboard/meus-atletas',

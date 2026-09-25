@@ -948,3 +948,13 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - decisoes: nao reutilizar Sprint 7; nao recategorizar; fail closed apos lock; sincronizar cadastro mestre quando as regras atuais permitem;
 - divida tecnica aceita: onboarding de organizacao, membros, Asaas producao, observabilidade, data de nascimento/genero/professor operacional/categoria neste contrato;
 - proxima etapa: PIX/boleto permanece bloqueado. Sem Vercel, Production ou push.
+
+### 2026-09-25 — Organizacoes e membros
+
+- data: 2026-09-25;
+- entregas verificadas: platform admin cria organizacao e associa owner ja cadastrado; owner adiciona `organizer`/`finance` e remove nao-owner; isolamento cross-tenant; UI em `/platform/organizacoes` e `/dashboard/organizacao`;
+- papeis reais: `owner`, `organizer`, `staff`, `finance`; `staff` documentado e nao atribuivel pelo owner;
+- testes: unit `organization-membership`; smoke SQL `organization_membership_smoke.sql`; Playwright `@organization-members` com `E2E_ALLOW_WRITES=true npm run bdd:organizations`;
+- decisoes: sem convite, sem self-service, sem switcher, sem transferencia de ownership; `PUBLIC_ORGANIZATION_ID` preservado; escrita de membership so via RPC;
+- divida tecnica aceita: Asaas producao, observabilidade, onboarding publico;
+- proxima etapa: PIX/boleto permanece bloqueado. Sem Vercel, Production ou push.

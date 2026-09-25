@@ -34,3 +34,17 @@ export function resolveAuthenticatedOrganizationContext(
   if (!first) return { status: 'unavailable' }
   return { status: 'resolved', context: first }
 }
+
+export function resolveOwnedOrganizationContext(
+  ownerMemberships: AuthenticatedOrganizationContext[],
+  env: NodeJS.ProcessEnv = process.env,
+): OrganizationContextResolution {
+  const scope = getPublicOrganizationScope(env)
+  if (scope.mode === 'blocked') return { status: 'unavailable' }
+  if (scope.mode === 'restricted') {
+    const release = ownerMemberships.find((membership) => membership.organizationId === scope.organizationId)
+    if (release) return { status: 'resolved', context: release }
+  }
+  if (ownerMemberships.length === 1) return { status: 'resolved', context: ownerMemberships[0] }
+  return { status: 'unavailable' }
+}

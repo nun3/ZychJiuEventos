@@ -26,7 +26,7 @@ npm run test:unit
 npm run test:bdd -- --grep @sprint5
 ```
 
-`test:smoke` valida rapidamente os fluxos públicos e as barreiras de autenticação. `test:bdd` executa toda a regressão disponível, ignora `@homologation` e ignora, com motivo explícito, cenários cujas credenciais não foram configuradas. `test:write` executa somente a massa mutável e exige a autorização pela variável de ambiente. A homologação ponta a ponta do Sandbox MEU CAMP (`@homologation`) só corre com `E2E_ALLOW_WRITES=true npm run bdd:homologation`; o default `E2E_ALLOW_WRITES=false` permanece.
+`test:smoke` valida rapidamente os fluxos públicos e as barreiras de autenticação. `test:bdd` executa toda a regressão disponível, ignora `@homologation` e `@organization-members` e ignora, com motivo explícito, cenários cujas credenciais não foram configuradas. `test:write` executa somente a massa mutável e exige a autorização pela variável de ambiente. A homologação ponta a ponta do Sandbox MEU CAMP (`@homologation`) só corre com `E2E_ALLOW_WRITES=true npm run bdd:homologation`; o smoke de organizações/membros usa `E2E_ALLOW_WRITES=true npm run bdd:organizations`. O default `E2E_ALLOW_WRITES=false` permanece.
 
 O relatório HTML é gravado em `playwright-report/` e os artefatos de falha em `test-results/`.
 

@@ -1,14 +1,14 @@
 import '../globals.css'
 import type { Metadata } from 'next'
-import ModernNavbar from '@/components/ModernNavbar'
 import InternalNavigation from '@/components/InternalNavigation'
+import ModernNavbar from '@/components/ModernNavbar'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 
 export const metadata: Metadata = {
-  title: 'Painel - Meu Camp',
+  title: 'Plataforma - Meu Camp',
 }
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function PlatformLayout({ children }: { children: React.ReactNode }) {
   const actor = await getDashboardActor()
   return (
     <div className="min-h-screen bg-mc-background pt-20">

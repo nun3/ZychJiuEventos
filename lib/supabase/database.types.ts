@@ -1794,6 +1794,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      add_organization_member: {
+        Args: {
+          member_email: string
+          member_role: Database["public"]["Enums"]["organization_role"]
+          target_organization_id: string
+        }
+        Returns: undefined
+      }
       category_bracket_lock: {
         Args: { target_category_id: string; target_event_id: string }
         Returns: undefined
@@ -1880,6 +1888,14 @@ export type Database = {
       }
       create_managed_team: {
         Args: { team_name: string }
+        Returns: string
+      }
+      create_organization_with_owner: {
+        Args: {
+          organization_name: string
+          organization_slug?: string
+          owner_email: string
+        }
         Returns: string
       }
       create_self_athlete: {
@@ -2038,6 +2054,16 @@ export type Database = {
           nome: string
         }[]
       }
+      list_organization_members: {
+        Args: { target_organization_id: string }
+        Returns: {
+          created_at: string
+          email: string
+          nome_completo: string
+          role: Database["public"]["Enums"]["organization_role"]
+          user_id: string
+        }[]
+      }
       lock_event_checagem: { Args: { target_event_id: string }; Returns: Json }
       manages_athlete: { Args: { target_athlete_id: string }; Returns: boolean }
       process_payment_webhook: {
@@ -2083,6 +2109,10 @@ export type Database = {
       }
       release_payment_issuance_claim: {
         Args: { claim_token: string; target_payment_id: string }
+        Returns: undefined
+      }
+      remove_organization_member: {
+        Args: { member_user_id: string; target_organization_id: string }
         Returns: undefined
       }
       reorder_event_schedule: {
