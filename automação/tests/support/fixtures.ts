@@ -4,6 +4,7 @@ import { paymentFixture, type PaymentFixture } from './payment-fixture';
 import { checagemFixture, type ChecagemFixture } from './checagem-fixture';
 import { operationalEventFixture, type OperationalEventFixture } from './operational-event-fixture';
 import { createFullEventJourney, type FullEventJourney } from './full-event-journey';
+import { createHomologationJourney, type HomologationJourney } from './homologation-journey';
 import { financialClosingFixture, type FinancialClosingFixture } from './financial-closing-fixture';
 import { platformFeeFixture, type PlatformFeeFixture } from './platform-fee-fixture';
 import { publicCheckingFixture, type PublicCheckingFixture } from './public-checking-fixture';
@@ -26,6 +27,7 @@ export const test = base.extend<{
   checagemData: ChecagemFixture;
   liveEventData: OperationalEventFixture;
   fullEvent: FullEventJourney;
+  homologation: HomologationJourney;
   closingData: FinancialClosingFixture;
   platformFeeData: PlatformFeeFixture;
   publicCheckingData: PublicCheckingFixture;
@@ -129,6 +131,33 @@ export const test = base.extend<{
     try {
       await use(journey);
     } finally {
+      await journey.cleanup();
+    }
+  },
+  homologation: async ({ page, context, browser }, use, testInfo) => {
+    base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para a homologação ponta a ponta no Sandbox.');
+    testInfo.setTimeout(1_200_000);
+    const journey = await createHomologationJourney({
+      page,
+      context,
+      browser,
+      baseURL: process.env.BASE_URL || 'http://localhost:3000',
+      testInfo,
+    });
+    try {
+      await use(journey);
+    } finally {
+      try {
+        await journey.attachIdentity();
+      } catch {
+        /* evidência best-effort */
+      }
+      if (journey.failedStep) {
+        await testInfo.attach('falha-pagina', {
+          body: await page.screenshot({ fullPage: true }),
+          contentType: 'image/png',
+        }).catch(() => undefined);
+      }
       await journey.cleanup();
     }
   },

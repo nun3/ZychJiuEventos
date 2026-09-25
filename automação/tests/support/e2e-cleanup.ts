@@ -88,19 +88,32 @@ export async function resolveOwnerId(actor: SupabaseClient<Database>) {
   return data.user.id;
 }
 
-export async function applyOwnerSession(context: BrowserContext, baseURL: string) {
+export async function applyAuthSession(
+  context: BrowserContext,
+  baseURL: string,
+  email: string,
+  password: string,
+) {
   const { actor } = await createCleanupClients();
-  await resolveOwnerId(actor);
-  const { data: { session } } = await actor.auth.getSession();
-  if (!session) throw new Error('Sessão owner ausente.');
+  await context.clearCookies();
+  const { data, error } = await actor.auth.signInWithPassword({ email, password });
+  if (error || !data.user || !data.session) throw new Error(`Login E2E: ${error?.message || 'falhou'}`);
   await context.addCookies([{
     name: `sb-${SANDBOX_HOST.split('.')[0]}-auth-token`,
-    value: JSON.stringify(session),
+    value: JSON.stringify(data.session),
     url: baseURL,
     httpOnly: false,
     secure: false,
     sameSite: 'Lax',
   }]);
+  return data.user.id;
+}
+
+export async function applyOwnerSession(context: BrowserContext, baseURL: string) {
+  const email = process.env.E2E_OWNER_EMAIL || '';
+  const password = process.env.E2E_OWNER_PASSWORD || '';
+  if (!email || !password) throw new Error('E2E_OWNER_EMAIL/PASSWORD ausentes.');
+  return applyAuthSession(context, baseURL, email, password);
 }
 
 export async function deleteEventOperationalGraph(admin: SupabaseClient<Database>, eventIds: string[]) {
