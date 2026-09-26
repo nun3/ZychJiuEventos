@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { FormField } from '@/components/ui/FormField'
@@ -15,6 +15,12 @@ import {
   snapshotRecord,
   type RegistrationCorrectionField,
 } from '@/lib/registrations/correction'
+import {
+  beginCorrectionSubmit,
+  correctionSubmitLabel,
+  failCorrectionSubmit,
+  finishCorrectionSubmit,
+} from '@/lib/registrations/correction-submit-state'
 import type { Json } from '@/lib/supabase/database.types'
 import {
   listRegistrationCorrections,
@@ -48,7 +54,7 @@ export default function RegistrationCorrectionRequest({
   const fieldId = `${registrationId}-${surface}`
   const [field, setField] = useState<RegistrationCorrectionField>('nome')
   const [requests, setRequests] = useState<CorrectionRequestItem[] | null>(null)
-  const [pending, startTransition] = useTransition()
+  const [pending, setPending] = useState(false)
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)
   const canRequest = eventStatus === 'checagem' && !checkingLocked
 
@@ -77,12 +83,23 @@ export default function RegistrationCorrectionRequest({
       {canRequest ? (
         <form
           className="space-y-mc-12"
-          action={(formData) => startTransition(async () => {
-            setMessage(null)
-            const result = await requestRegistrationCorrection(formData)
-            setMessage({ ok: result.ok, text: result.message })
-            if (result.ok) void listRegistrationCorrections(registrationId).then(setRequests)
-          })}
+          onSubmit={(event: FormEvent<HTMLFormElement>) => {
+            event.preventDefault()
+            const started = beginCorrectionSubmit(pending)
+            if (!started) return
+            const form = event.currentTarget
+            setPending(started.pending)
+            setMessage(started.message)
+            void requestRegistrationCorrection(new FormData(form))
+              .then(async (result) => {
+                setMessage(finishCorrectionSubmit(result).message)
+                if (result.ok) setRequests(await listRegistrationCorrections(registrationId))
+              })
+              .catch(() => {
+                setMessage(failCorrectionSubmit().message)
+              })
+              .finally(() => setPending(false))
+          }}
         >
           <input type="hidden" name="registration_id" value={registrationId} />
           <FormField id={`correction-field-${fieldId}`} label="Campo" required>
@@ -134,7 +151,7 @@ export default function RegistrationCorrectionRequest({
             />
           </FormField>
           {message ? <Alert variant={message.ok ? 'success' : 'error'} role={message.ok ? 'status' : 'alert'}>{message.text}</Alert> : null}
-          <Button type="submit" size="small" disabled={pending}>{pending ? 'Enviando…' : 'Enviar solicitação'}</Button>
+          <Button type="submit" size="small" disabled={pending}>{correctionSubmitLabel(pending)}</Button>
         </form>
       ) : (
         <p className="text-sm text-mc-text-secondary">
