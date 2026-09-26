@@ -18,6 +18,7 @@ import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 import CategoryDurationEditor from './CategoryDurationEditor'
 import CategoryManager from './CategoryManager'
+import { EventGuidancePanel } from '@/components/onboarding/EventGuidancePanel'
 
 type CategoryItem = {
   id: string
@@ -67,6 +68,7 @@ export default async function EventConfigurationPage({ params }: { params: { id:
             breadcrumb={adminEventBackLink()}
           />
           <AdminEventNav eventId={event.id} current="configuracao" />
+          <EventGuidancePanel eventId={event.id} />
 
           <div className="mt-mc-32 grid items-start gap-mc-24 xl:grid-cols-[minmax(22rem,0.75fr)_minmax(0,1.25fr)]">
             <CategoryManager eventId={event.id} />
@@ -76,7 +78,7 @@ export default async function EventConfigurationPage({ params }: { params: { id:
                 <p className="mt-mc-4 font-mc-interface text-sm text-mc-text-secondary">A versão ativa é aplicada às novas inscrições.</p>
               </div>
               {!ruleSets?.length ? (
-                <EmptyState icon={<Layers3 size={34} />} title="Nenhuma versão cadastrada" description="Crie a primeira versão de categorias para preparar as inscrições." className="mt-mc-16 rounded-mc-medium border border-mc-border bg-mc-surface" />
+                <EmptyState icon={<Layers3 size={34} />} title="Nenhuma categoria cadastrada" description="Sem versão ativa o evento não tem destino de inscrição. Crie a primeira versão de categorias para abrir o campeonato." className="mt-mc-16 rounded-mc-medium border border-mc-border bg-mc-surface" />
               ) : (
                 <div className="mt-mc-16 space-y-mc-16">
                   {ruleSets.map((rule) => (

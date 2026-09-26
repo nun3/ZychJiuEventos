@@ -9,6 +9,8 @@ import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { FirstStepsChecklistCard } from '@/components/onboarding/FirstStepsChecklist'
+import { loadDashboardChecklist } from '@/lib/onboarding/dashboard-facts'
 
 const formatter = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' })
 const checkingStatuses = ['checagem', 'chaves', 'em_andamento', 'concluido']
@@ -30,6 +32,8 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
   if (actor?.needsSportsProfile) {
     redirect('/dashboard/completar-cadastro-esportivo')
   }
+
+  const checklist = await loadDashboardChecklist(actor, events.length > 0)
 
   const operationalLinks = [
     hasSelfAthlete ? {
@@ -108,6 +112,12 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
           </Alert>
         ) : null}
 
+        {actor && checklist ? (
+          <div className="mt-mc-24">
+            <FirstStepsChecklistCard userId={actor.userId} checklist={checklist} />
+          </div>
+        ) : null}
+
         <div className="mt-mc-32 grid gap-mc-24 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
           <section aria-labelledby="operations-title">
             <h2 id="operations-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Áreas de operação</h2>
@@ -175,7 +185,7 @@ export default async function DashboardHome({ searchParams }: { searchParams: { 
               <EmptyState
                 icon={<CalendarDays size={32} />}
                 title="Nenhuma competição publicada"
-                description="O calendário público mostra os eventos oficiais do MEU CAMP. Quando um campeonato for publicado, ele aparece aqui para inscrição e checagem."
+                description="Ainda não há campeonato no calendário da organização. Isso significa que não há inscrição nem checagem pública para acompanhar. O próximo passo é o organizador publicar um evento."
                 action={<Link href="/eventos" className="inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">{hasSelfAthlete ? 'Fazer minha inscrição' : 'Abrir calendário público'}</Link>}
                 className="mt-mc-16 rounded-mc-medium border border-mc-border bg-mc-surface"
               />

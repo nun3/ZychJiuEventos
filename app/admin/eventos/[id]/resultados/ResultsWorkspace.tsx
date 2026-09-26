@@ -221,8 +221,8 @@ export default function ResultsWorkspace({ data }: { data: ResultsPageData }) {
       <EmptyState
         className="mt-mc-24 rounded-mc-medium border border-mc-border bg-mc-surface"
         icon={<Users size={34} />}
-        title="Nenhuma chave publicada"
-        description="Publique uma chave antes de iniciar a operação de resultados."
+        title="Nenhum resultado disponível"
+        description="Ainda não há chave publicada. Sem chave oficial não há luta, pesagem nem colocação. Publique a chave e a programação antes de operar."
       />
     )
   }

@@ -192,8 +192,8 @@ export default function ScheduleWorkspace({ data }: { data: SchedulePageData }) 
         </div>
 
         {data.schedule.groups.length === 0 ? (
-          <Alert className="mt-mc-16" variant="info" title="Nenhuma subchave oficial">
-            Publique chaves com confrontos para iniciar a programação. Categorias sem confronto não entram na fila.
+          <Alert className="mt-mc-16" variant="info" title="Nenhuma programação para montar">
+            Ainda não há subchave oficial. Sem chave publicada não há área, número de luta nem fila. Publique as chaves com confronto e volte para programar.
           </Alert>
         ) : (
           <div className="mt-mc-16 divide-y divide-mc-border rounded-mc-medium border border-mc-border bg-mc-surface">

@@ -142,7 +142,7 @@ export default async function OrganizerEventsPage() {
             <EmptyState
               icon={<CalendarDays size={34} />}
               title="Nenhum evento cadastrado"
-              description="Crie o primeiro rascunho da organização para iniciar a operação."
+              description="A organização ainda não tem campeonato. Sem evento não há categorias, inscrições nem checagem. O próximo passo é criar o primeiro rascunho."
               action={<Link href="/admin/eventos/novo" className="font-mc-interface font-semibold text-mc-action hover:underline">Criar evento</Link>}
               className="mt-mc-32 rounded-mc-medium border border-mc-border bg-mc-surface"
             />

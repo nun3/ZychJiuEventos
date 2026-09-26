@@ -5,6 +5,7 @@ import InternalNavigation from '@/components/InternalNavigation'
 import { Alert, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
 import ScheduleWorkspace from './ScheduleWorkspace'
 import { loadSchedulePageData } from './data'
+import { EventGuidancePanel } from '@/components/onboarding/EventGuidancePanel'
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -47,6 +48,7 @@ export default async function ProgramacaoPage({ params }: { params: { id: string
                 }
               />
               <AdminEventNav eventId={result.data.event.id} current="programacao" />
+              <EventGuidancePanel eventId={result.data.event.id} coachmark="programacao" />
 
               {!['chaves', 'em_andamento', 'concluido'].includes(result.data.event.status) ? (
                 <Alert className="mt-mc-24" variant="warning" icon={<Info size={20} />} title="Programação ainda indisponível">

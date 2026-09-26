@@ -9,6 +9,7 @@ import { loadEventClosing } from './data'
 import FinancialClosingReport from './FinancialClosingReport'
 import ManualSettlementForm from './ManualSettlementForm'
 import PlatformFeeCard from './PlatformFeeCard'
+import { EventGuidancePanel } from '@/components/onboarding/EventGuidancePanel'
 
 type FinancialPayment = {
   id: string
@@ -61,6 +62,7 @@ export default async function FinancialPage({ params }: { params: { id: string }
           breadcrumb={adminEventBackLink()}
         />
         <AdminEventNav eventId={event.id} current="financeiro" />
+        <EventGuidancePanel eventId={event.id} coachmark="financeiro" />
 
         <div className="mt-mc-32 space-y-mc-32">
           <PlatformFeeCard

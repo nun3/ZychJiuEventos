@@ -145,7 +145,7 @@ export default async function RegistrationsPage() {
             <EmptyState
               icon={<ClipboardList size={34} />}
               title="Nenhuma inscrição encontrada"
-              description="Quando você inscrever um atleta em um evento publicado, a inscrição aparece aqui com o status de pagamento."
+              description="Você ainda não tem inscrição para acompanhar. Sem inscrição não há pagamento, checagem nem solicitação. Escolha um evento publicado e inscreva o atleta."
               action={<Link href="/eventos" className="inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">Ver eventos publicados</Link>}
               className="rounded-mc-medium border border-mc-border bg-mc-surface"
             />

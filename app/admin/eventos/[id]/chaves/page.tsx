@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import BracketWorkspace from './BracketWorkspace'
 import { loadBracketPageData } from './data'
+import { EventGuidancePanel } from '@/components/onboarding/EventGuidancePanel'
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -50,6 +51,7 @@ export default async function ChavesPage({ params }: { params: { id: string } })
                 }
               />
               <AdminEventNav eventId={result.data.event.id} current="chaves" />
+              <EventGuidancePanel eventId={result.data.event.id} coachmark="chaves" />
 
               {!result.data.event.checkingLocked || !['checagem', 'chaves'].includes(result.data.event.status) ? (
                 <Alert className="mt-mc-24" variant="warning" icon={<Info size={20} />} title="Geração indisponível">

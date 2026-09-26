@@ -214,8 +214,8 @@ export default function BracketWorkspace({ data }: { data: BracketPageData }) {
       <EmptyState
         className="mt-mc-24 rounded-mc-medium border border-mc-border bg-mc-surface"
         icon={<Users size={34} />}
-        title="Nenhuma categoria com atletas"
-        description="As chaves são geradas a partir das inscrições efetivadas na alocação vigente."
+        title="Nenhuma chave para gerar"
+        description="Não há categoria com inscrição efetivada. As chaves só nascem da lista oficial após a checagem. Volte à checagem quando houver efetivados."
       />
     )
   }

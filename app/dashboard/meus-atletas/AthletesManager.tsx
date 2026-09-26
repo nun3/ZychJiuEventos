@@ -162,10 +162,10 @@ export default function AthletesManager({
           title={athletes.length === 0 ? 'Nenhum atleta cadastrado' : 'Nenhum atleta encontrado'}
           description={athletes.length === 0
             ? (!canManageRoster
-              ? 'Atleta independente não cria equipe. Conclua o cadastro esportivo escolhendo uma academia já existente da organização.'
+              ? 'Nenhum cadastro esportivo aparece aqui. Atleta independente não cria equipe: escolha uma academia existente, complete o perfil e depois inscreva-se.'
               : teams.length === 0
-                ? 'Crie a equipe primeiro. Depois cadastre os atletas que você gerencia como professor ou responsável.'
-                : 'Cadastre um atleta na sua equipe para editá-lo e inscrevê-lo nos eventos publicados.')
+                ? 'Nenhuma equipe cadastrada. Sem equipe você não adiciona atletas nem faz inscrição gerenciada. Crie a equipe primeiro.'
+                : 'A equipe existe, mas ainda não tem atleta. Cadastre quem você gerencia para inscrever nos eventos publicados.')
             : 'Tente buscar por outro nome.'}
           action={athletes.length === 0
             ? (!canManageRoster

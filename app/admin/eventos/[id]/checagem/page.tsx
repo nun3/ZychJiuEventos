@@ -16,6 +16,7 @@ import EventRegistrationsList, { type EventRegistrationItem } from './EventRegis
 import ReviewCategoryChange from './ReviewCategoryChange'
 import ReviewRegistrationCorrection from './ReviewRegistrationCorrection'
 import LockChecagem from './LockChecagem'
+import { EventGuidancePanel } from '@/components/onboarding/EventGuidancePanel'
 import {
   CORRECTION_FIELD_LABELS,
   CORRECTION_STATUS_LABELS,
@@ -145,6 +146,7 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
             actions={<StatusBadge variant={locked ? 'warning' : 'info'}>{locked ? 'Checagem travada' : `Evento: ${event.status.replaceAll('_', ' ')}`}</StatusBadge>}
           />
           <AdminEventNav eventId={event.id} current="checagem" />
+          <EventGuidancePanel eventId={event.id} coachmark="checagem" />
 
           <Alert className="mt-mc-24" variant="info" icon={<Info size={20} />} title={locked ? 'Lista travada' : 'Lista oficial'}>
             {locked
@@ -279,7 +281,8 @@ export default async function EventRegistrationsPage({ params }: { params: { id:
               <EmptyState
                 icon={<ClipboardList size={34} />}
                 title="Nenhuma inscrição efetivada"
-                description="A checagem só lista atletas com pagamento confirmado ou baixa manual."
+                description="A lista oficial está vazia. Sem efetivados não há checagem, chaves nem programação. Confirme pagamentos ou avance as inscrições pendentes."
+                action={<Link href={`/admin/eventos/${event.id}/financeiro`} className="font-mc-interface font-semibold text-mc-action hover:underline">Abrir financeiro</Link>}
                 className="rounded-mc-medium border border-mc-border bg-mc-surface"
               />
             )}

@@ -6,6 +6,7 @@ import { Alert, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
 import EventActions from '../../EventActions'
 import ResultsWorkspace from './ResultsWorkspace'
 import { loadResultsPageData } from './data'
+import { EventGuidancePanel } from '@/components/onboarding/EventGuidancePanel'
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -44,6 +45,7 @@ export default async function ResultadosPage({ params }: { params: { id: string 
                 actions={<StatusBadge variant={result.data.event.status === 'em_andamento' ? 'success' : 'info'}>Evento: {result.data.event.status.replaceAll('_', ' ')}</StatusBadge>}
               />
               <AdminEventNav eventId={result.data.event.id} current="resultados" />
+              <EventGuidancePanel eventId={result.data.event.id} coachmark="resultados" />
 
               {result.data.event.status === 'em_andamento' ? (
                 <section className="mt-mc-24 rounded-mc-medium border border-mc-border bg-mc-surface p-mc-16" aria-labelledby="conclude-event-title">
