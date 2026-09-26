@@ -352,7 +352,7 @@ export class HomologationJourney {
       value: JSON.stringify(session),
       url: this.deps.baseURL,
       httpOnly: false,
-      secure: false,
+      secure: this.deps.baseURL.startsWith('https://'),
       sameSite: 'Lax',
     }]);
   }
@@ -966,6 +966,7 @@ export class HomologationJourney {
       await activatePhaseWindow(this.admin, this.eventId, 'chaves', 'checagem');
       await this.asOwner();
       await this.page.goto(`/admin/eventos/${this.eventId}/checagem`);
+      await this.page.getByRole('button', { name: /Entendi|Agora não|Ver guia novamente/ }).first().waitFor();
       await this.page.getByRole('button', { name: 'Abrir chaves' }).click();
       await expect.poll(async () => {
         const opened = await this.admin.from('events').select('status').eq('id', this.eventId).single();
@@ -1117,7 +1118,7 @@ export class HomologationJourney {
 
       await this.page.goto(`/admin/eventos/${this.eventId}/resultados`);
       await this.page.getByRole('button', { name: 'Concluir evento' }).click();
-      await this.page.getByText('Evento concluído').waitFor();
+      await this.page.getByRole('heading', { name: 'Evento concluído' }).waitFor();
       const finished = await this.admin.from('events').select('status').eq('id', this.eventId).single();
       if (finished.data?.status !== 'concluido') throw new Error(`Estado final foi ${finished.data?.status}.`);
       const publicPage = await this.publicSurface();

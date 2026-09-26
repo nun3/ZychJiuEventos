@@ -103,7 +103,7 @@ export async function applyAuthSession(
     value: JSON.stringify(data.session),
     url: baseURL,
     httpOnly: false,
-    secure: false,
+    secure: baseURL.startsWith('https://'),
     sameSite: 'Lax',
   }]);
   return data.user.id;
