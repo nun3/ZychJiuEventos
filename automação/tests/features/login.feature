@@ -15,7 +15,7 @@ Feature: Fluxo de autenticação do portal Meu Camp
   Scenario: rejeitar credenciais inválidas
     Given o usuário está na tela de login
     When informa o e-mail "qa-invalido@example.com" e a senha "senha-incorreta"
-    And seleciona o botão "Acessar"
+    And seleciona o botão "Entrar na conta"
     Then a mensagem "E-mail ou senha inválidos." deve ser exibida
     And o usuário deve permanecer na rota de login
 

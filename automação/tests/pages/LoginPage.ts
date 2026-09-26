@@ -16,7 +16,7 @@ export class LoginPage {
 
   async expectVisible() {
     await expect(this.page).toHaveURL(/\/login(?:\?|$)/);
-    await expect(this.page.getByRole('textbox', { name: 'nome@exemplo.com' })).toBeVisible();
-    await expect(this.page.getByRole('textbox', { name: 'Digite sua senha' })).toBeVisible();
+    await expect(this.page.getByLabel('E-mail cadastrado')).toBeVisible();
+    await expect(this.page.getByLabel('Senha')).toBeVisible();
   }
 }

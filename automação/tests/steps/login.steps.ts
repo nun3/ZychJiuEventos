@@ -10,8 +10,10 @@ Given('o usuário acessa a página inicial', async ({ page }) => {
 });
 
 When('seleciona o link {string}', async ({ page }, label: string) => {
-  const link = page.getByRole('link', { name: new RegExp(label, 'i') });
-  await link.click();
+  const scope = label === 'Entrar'
+    ? page.getByRole('navigation', { name: 'Navegação principal' }).locator('xpath=ancestor::header[1]')
+    : page;
+  await scope.getByRole('link', { name: label, exact: true }).click();
 });
 
 Then('a rota de login deve ser exibida', async ({ page }) => {
@@ -19,8 +21,8 @@ Then('a rota de login deve ser exibida', async ({ page }) => {
 });
 
 Then('o formulário deve apresentar os campos de e-mail e senha', async ({ page }) => {
-  await expect(page.getByRole('textbox', { name: 'nome@exemplo.com' })).toBeVisible();
-  await expect(page.getByRole('textbox', { name: 'Digite sua senha' })).toBeVisible();
+  await expect(page.getByLabel('E-mail cadastrado')).toBeVisible();
+  await expect(page.getByLabel('Senha')).toBeVisible();
 });
 
 Given('o usuário está na tela de login', async ({ page }) => {
@@ -28,8 +30,8 @@ Given('o usuário está na tela de login', async ({ page }) => {
 });
 
 When('informa o e-mail {string} e a senha {string}', async ({ page }, email: string, password: string) => {
-  await page.getByRole('textbox', { name: 'nome@exemplo.com' }).fill(email);
-  await page.getByRole('textbox', { name: 'Digite sua senha' }).fill(password);
+  await page.getByLabel('E-mail cadastrado').fill(email);
+  await page.getByLabel('Senha').fill(password);
 });
 
 When('seleciona o botão {string}', async ({ page }, label: string) => {
