@@ -126,6 +126,7 @@ export default async function RegistrationsPage() {
                 eventStatus={registration.events?.status}
                 checkingLocked={Boolean(registration.events?.checagem_travada_em)}
                 teams={teams.data || []}
+                surface="desktop"
               />
             </>
           ) : null}
@@ -180,6 +181,7 @@ export default async function RegistrationsPage() {
                 eventStatus={registration.events?.status}
                 checkingLocked={Boolean(registration.events?.checagem_travada_em)}
                 teams={teams.data || []}
+                surface="mobile"
               />
             </>
           ) : null}

@@ -680,6 +680,42 @@ export class HomologationJourney {
     }
   }
 
+  private correctionForm() {
+    return this.page
+      .getByRole('row')
+      .filter({ hasText: this.a1Name })
+      .locator('form')
+      .filter({ has: this.page.getByLabel('Campo') });
+  }
+
+  private async submitCorrection(
+    field: 'peso' | 'faixa' | 'nome',
+    value: string,
+    reason?: string,
+  ) {
+    const form = this.correctionForm();
+    await form.getByLabel('Campo').selectOption(field);
+    if (field === 'peso') {
+      const input = form.getByLabel('Peso solicitado (kg)');
+      await input.fill(value);
+      await expect(input).toHaveValue(value);
+    } else if (field === 'faixa') {
+      await form.getByLabel('Faixa solicitada').selectOption(value);
+    } else {
+      const input = form.getByLabel('Nome solicitado');
+      await input.fill(value);
+      await expect(input).toHaveValue(value);
+    }
+    if (reason) await form.getByLabel('Motivo (opcional)').fill(reason);
+    await form.getByRole('button', { name: 'Enviar solicitação' }).click();
+    const feedback = form.getByRole('status').or(form.getByRole('alert'));
+    await expect(feedback).toBeVisible({ timeout: 20000 });
+    const text = (await feedback.textContent())?.trim() || '';
+    if (!text.includes('Solicitação enviada')) {
+      throw new Error(`Correção de ${field} recusada na UI: ${text}`);
+    }
+  }
+
   private async waitCorrectionRequest(registrationId: string, field: string, status: string) {
     await expect.poll(async () => {
       const row = await this.admin
@@ -688,7 +724,10 @@ export class HomologationJourney {
         .eq('registration_id', registrationId)
         .eq('requested_field', field)
         .eq('status', status)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
+      if (row.error) throw new Error(`Leitura de correção ${field}: ${row.error.message}`);
       return row.data?.id || '';
     }, { timeout: 25000 }).not.toBe('');
     const row = await this.admin
@@ -697,6 +736,8 @@ export class HomologationJourney {
       .eq('registration_id', registrationId)
       .eq('requested_field', field)
       .eq('status', status)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .single();
     if (!row.data) throw new Error(`Pedido de ${field} não persistiu como ${status}.`);
     return row.data;
@@ -837,11 +878,7 @@ export class HomologationJourney {
       await this.asUser(this.independent.email, PASSWORD);
       await this.page.goto('/dashboard/inscricoes');
       await expect(this.page.getByText('Solicitar correção').first()).toBeVisible();
-      const form = this.page.getByRole('row').filter({ hasText: this.a1Name }).locator('form').filter({ has: this.page.getByLabel('Campo') });
-      await form.getByLabel('Campo').selectOption('peso');
-      await form.getByLabel('Peso solicitado (kg)').fill('70.5');
-      await form.getByLabel('Motivo (opcional)').fill(`${this.runId} correcao de peso homologacao`);
-      await form.getByRole('button', { name: 'Enviar solicitação' }).click();
+      await this.submitCorrection('peso', '70.5', `${this.runId} correcao de peso homologacao`);
       const pendingPeso = await this.waitCorrectionRequest(registrationId, 'peso', 'pendente');
       this.approvedCorrectionId = pendingPeso.id;
       if (Number(object(pendingPeso.previous_value as Json).peso_kg) !== WEIGHT) throw new Error('previous_value de peso incorreto.');
@@ -866,10 +903,7 @@ export class HomologationJourney {
 
       await this.asUser(this.independent.email, PASSWORD);
       await this.page.goto('/dashboard/inscricoes');
-      const rejectForm = this.page.getByRole('row').filter({ hasText: this.a1Name }).locator('form').filter({ has: this.page.getByLabel('Campo') });
-      await rejectForm.getByLabel('Campo').selectOption('faixa');
-      await rejectForm.getByLabel('Faixa solicitada').selectOption('Azul');
-      await rejectForm.getByRole('button', { name: 'Enviar solicitação' }).click();
+      await this.submitCorrection('faixa', 'Azul');
       const pendingFaixa = await this.waitCorrectionRequest(registrationId, 'faixa', 'pendente');
       this.rejectedCorrectionId = pendingFaixa.id;
       await this.asOwner();
@@ -882,10 +916,7 @@ export class HomologationJourney {
 
       await this.asUser(this.independent.email, PASSWORD);
       await this.page.goto('/dashboard/inscricoes');
-      const pendingForm = this.page.getByRole('row').filter({ hasText: this.a1Name }).locator('form').filter({ has: this.page.getByLabel('Campo') });
-      await pendingForm.getByLabel('Campo').selectOption('nome');
-      await pendingForm.getByLabel('Nome solicitado').fill(`${this.a1Name} Corrigido`);
-      await pendingForm.getByRole('button', { name: 'Enviar solicitação' }).click();
+      await this.submitCorrection('nome', `${this.a1Name} Corrigido`);
       const pendingNome = await this.waitCorrectionRequest(registrationId, 'nome', 'pendente');
       this.pendingCorrectionId = pendingNome.id;
       await this.asOwner();

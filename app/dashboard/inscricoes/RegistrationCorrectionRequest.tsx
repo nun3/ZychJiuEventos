@@ -35,14 +35,17 @@ export default function RegistrationCorrectionRequest({
   eventStatus,
   checkingLocked,
   teams,
+  surface = 'desktop',
 }: {
   registrationId: string
   snapshot: Json
   eventStatus?: string | null
   checkingLocked: boolean
   teams: TeamOption[]
+  surface?: 'desktop' | 'mobile'
 }) {
   const athlete = snapshotRecord(snapshot)
+  const fieldId = `${registrationId}-${surface}`
   const [field, setField] = useState<RegistrationCorrectionField>('nome')
   const [requests, setRequests] = useState<CorrectionRequestItem[] | null>(null)
   const [pending, startTransition] = useTransition()
@@ -64,10 +67,6 @@ export default function RegistrationCorrectionRequest({
     return typeof athlete.team_id === 'string' ? athlete.team_id : ''
   }, [athlete, field])
 
-  function refresh() {
-    void listRegistrationCorrections(registrationId).then(setRequests)
-  }
-
   return (
     <div className="mt-mc-12 space-y-mc-12 rounded-mc-medium border border-mc-border bg-mc-surface-secondary p-mc-12">
       <p className="font-mc-interface text-sm font-semibold text-mc-text-primary">Solicitar correção</p>
@@ -82,11 +81,11 @@ export default function RegistrationCorrectionRequest({
             setMessage(null)
             const result = await requestRegistrationCorrection(formData)
             setMessage({ ok: result.ok, text: result.message })
-            if (result.ok) refresh()
+            if (result.ok) void listRegistrationCorrections(registrationId).then(setRequests)
           })}
         >
           <input type="hidden" name="registration_id" value={registrationId} />
-          <FormField id={`correction-field-${registrationId}`} label="Campo" required>
+          <FormField id={`correction-field-${fieldId}`} label="Campo" required>
             <Select
               name="requested_field"
               required
@@ -102,33 +101,33 @@ export default function RegistrationCorrectionRequest({
             </Select>
           </FormField>
           {field === 'nome' ? (
-            <FormField id={`correction-name-${registrationId}`} label="Nome solicitado" required>
+            <FormField id={`correction-name-${fieldId}`} label="Nome solicitado" required>
               <Input name="requested_text" required minLength={3} defaultValue={currentValue} key={`nome-${currentValue}`} />
             </FormField>
           ) : null}
           {field === 'faixa' ? (
-            <FormField id={`correction-belt-${registrationId}`} label="Faixa solicitada" required>
+            <FormField id={`correction-belt-${fieldId}`} label="Faixa solicitada" required>
               <Select name="requested_text" required defaultValue={currentValue || RECOGNIZED_BELTS[0]} key={`faixa-${currentValue}`}>
                 {RECOGNIZED_BELTS.map((belt) => <option key={belt} value={belt}>{belt}</option>)}
               </Select>
             </FormField>
           ) : null}
           {field === 'peso' ? (
-            <FormField id={`correction-weight-${registrationId}`} label="Peso solicitado (kg)" required>
+            <FormField id={`correction-weight-${fieldId}`} label="Peso solicitado (kg)" required>
               <Input name="requested_text" type="number" inputMode="decimal" min="0.1" step="0.01" required defaultValue={currentValue} key={`peso-${currentValue}`} />
             </FormField>
           ) : null}
           {field === 'equipe' ? (
-            <FormField id={`correction-team-${registrationId}`} label="Equipe solicitada" required>
+            <FormField id={`correction-team-${fieldId}`} label="Equipe solicitada" required>
               <Select name="requested_text" required defaultValue={currentValue} key={`equipe-${currentValue}`}>
                 <option value="" disabled>Selecione</option>
                 {teams.map((team) => <option key={team.id} value={team.id}>{team.nome}</option>)}
               </Select>
             </FormField>
           ) : null}
-          <FormField id={`correction-reason-${registrationId}`} label="Motivo (opcional)">
+          <FormField id={`correction-reason-${fieldId}`} label="Motivo (opcional)">
             <textarea
-              id={`correction-reason-${registrationId}`}
+              id={`correction-reason-${fieldId}`}
               name="reason"
               rows={2}
               className="min-h-11 w-full rounded-mc-small border border-mc-border bg-mc-surface px-3 py-2 font-mc-interface text-base text-mc-text-primary focus:border-mc-focus focus:outline-none focus:ring-2 focus:ring-mc-focus/20"
