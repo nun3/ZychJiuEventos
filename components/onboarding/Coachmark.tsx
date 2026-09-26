@@ -3,21 +3,14 @@
 import { useEffect, useState } from 'react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
+import { COACHMARKS, type CoachmarkId } from '@/lib/onboarding/coachmarks'
 import {
   isCoachmarkDismissed,
   onboardingStorageKey,
   parseOnboardingPreferences,
 } from '@/lib/onboarding/storage'
 
-export const COACHMARKS = {
-  checagem: 'Depois de travar a checagem, alterações deixam de ser permitidas.',
-  chaves: 'As chaves são geradas a partir das inscrições efetivadas após a checagem.',
-  programacao: 'Os números das lutas seguem a sequência global do evento.',
-  resultados: 'Confirme a pesagem e registre os resultados das lutas oficiais.',
-  financeiro: 'O fechamento considera inscrições efetivadas e pagamentos confirmados.',
-} as const
-
-export type CoachmarkId = keyof typeof COACHMARKS
+export type { CoachmarkId }
 
 export function Coachmark({ id, userId }: { id: CoachmarkId; userId: string }) {
   const [hidden, setHidden] = useState(true)

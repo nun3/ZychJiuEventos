@@ -208,7 +208,7 @@ export function buildNextAction(facts: EventGuidanceFacts): NextAction {
     return {
       title: 'Gerar chaves',
       facts: [efetivadas],
-      message: 'As chaves são geradas a partir das inscrições efetivadas após a checagem.',
+      message: 'Gere a sugestão da categoria e ajuste o casamento antes de publicar.',
       href: `${base}/chaves`,
       cta: 'Gerar chaves',
     }
@@ -218,7 +218,7 @@ export function buildNextAction(facts: EventGuidanceFacts): NextAction {
     return {
       title: 'Programar lutas',
       facts: ['Chave publicada'],
-      message: 'Os números das lutas seguem a sequência global do evento.',
+      message: 'Atribua a área e publique para congelar a ordem das lutas.',
       href: `${base}/programacao`,
       cta: 'Abrir programação',
     }

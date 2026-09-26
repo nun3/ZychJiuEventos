@@ -12,6 +12,8 @@ import {
   currentGuidanceStep,
   type EventGuidanceFacts,
 } from '../../lib/onboarding/event-guidance';
+import { buildOnboardingRunId } from '../../lib/onboarding/run-id';
+import { COACHMARKS } from '../../lib/onboarding/coachmarks';
 import {
   emptyOnboardingPreferences,
   isCoachmarkDismissed,
@@ -103,6 +105,22 @@ test('professor e atleta recebem fluxos reduzidos existentes', () => {
   });
   assert.equal(athlete.title, 'Prepare-se para competir');
   assert.equal(athlete.items.find((item) => item.id === 'inscricao')?.done, false);
+});
+
+test('coachmark de chaves não repete a próxima ação', () => {
+  const action = buildNextAction(facts({
+    status: 'chaves',
+    checkingLocked: true,
+    hasPublishedBracket: false,
+    schedulePublished: false,
+  }));
+  assert.notEqual(action.message, COACHMARKS.chaves);
+  assert.match(action.message, /sugestão|casamento|publicar/i);
+  assert.match(COACHMARKS.chaves, /rascunho/i);
+});
+
+test('RUN_ID visual usa prefixo descartável e relógio de São Paulo', () => {
+  assert.equal(buildOnboardingRunId(new Date('2026-09-25T22:50:00-03:00')), 'MC-ONBOARDING-20260925-225000');
 });
 
 test('preferência local permite ignorar coachmark sem bloquear navegação', () => {
