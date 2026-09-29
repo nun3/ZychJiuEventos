@@ -1,39 +1,69 @@
 'use client'
 
 import { useState } from 'react'
-import dynamic from 'next/dynamic'
-import ModernHero from '@/components/ModernHero'
+import { CalendarDays } from 'lucide-react'
 import EventFilters from '@/components/EventFilters'
-import ModernEventGrid, { Event } from '@/components/ModernEventGrid'
+import EditorialEventCard from '@/components/EditorialEventCard'
+import { filterEvents, type Event } from '@/components/ModernEventGrid'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { PageContainer } from '@/components/ui/PageContainer'
-
-const EventModal = dynamic(() => import('@/components/EventModal'))
 
 export default function HomeClient({ events }: { events: Event[] }) {
   const [filters, setFilters] = useState({ eventType: 'Todos', sport: 'Todas', state: 'Todos', search: '', period: 'todos', startDate: '', endDate: '' })
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
+  const filteredEvents = filterEvents(events, filters)
+  const [featuredEvent, ...upcomingEvents] = filteredEvents
 
   return (
     <>
-      <ModernHero />
-
-      <section id="eventos" className="scroll-mt-20 bg-mc-surface py-mc-48 sm:py-mc-64" aria-labelledby="events-title">
+      <section id="eventos" className="scroll-mt-20 bg-mc-background pb-mc-64 pt-28 sm:pt-32" aria-labelledby="events-title">
         <PageContainer>
           <div className="max-w-3xl">
             <p className="font-mc-interface text-sm font-semibold uppercase tracking-[0.16em] text-mc-action">
-              Calendário de competições
+              Calendário MEU CAMP
             </p>
-            <h2 id="events-title" className="mt-mc-8 font-mc-display text-3xl font-semibold leading-tight text-mc-text-primary sm:text-mc-h1">
-              Eventos disponíveis
-            </h2>
+            <h1 id="events-title" className="mt-mc-8 font-mc-display text-3xl font-semibold leading-tight text-mc-text-primary sm:text-mc-h1">
+              Encontre seu próximo campeonato.
+            </h1>
             <p className="mt-mc-12 font-mc-interface text-mc-body text-mc-text-secondary">
-              Consulte as competições publicadas e encontre a próxima oportunidade de participar.
+              Pesquise competições publicadas por nome, estado ou data.
             </p>
           </div>
 
           <div className="mt-mc-32">
             {events.length ? <EventFilters onFilterChange={setFilters} /> : null}
-            <ModernEventGrid events={events} filters={events.length ? filters : undefined} onEventClick={setSelectedEvent} />
+
+            {featuredEvent ? (
+              <div className="mt-mc-48">
+                <section aria-labelledby="featured-events-title">
+                  <h2 id="featured-events-title" className="font-mc-display text-mc-h2 font-bold uppercase tracking-[-0.02em] text-mc-text-primary">
+                    Eventos em destaque
+                  </h2>
+                  <div className="mt-mc-24">
+                    <EditorialEventCard event={featuredEvent} featured />
+                  </div>
+                </section>
+
+                {upcomingEvents.length ? (
+                  <section className="mt-mc-64" aria-labelledby="upcoming-events-title">
+                    <h2 id="upcoming-events-title" className="font-mc-display text-mc-h2 font-bold uppercase tracking-[-0.02em] text-mc-text-primary">
+                      Próximos campeonatos
+                    </h2>
+                    <div className="mt-mc-24 grid gap-mc-32 sm:grid-cols-2 lg:grid-cols-3">
+                      {upcomingEvents.map((event) => <EditorialEventCard key={event.id} event={event} />)}
+                    </div>
+                  </section>
+                ) : null}
+              </div>
+            ) : (
+              <EmptyState
+                icon={<CalendarDays size={32} />}
+                title={events.length ? 'Nenhum evento encontrado' : 'Nenhuma competição publicada'}
+                description={events.length
+                  ? 'Nenhum evento corresponde aos filtros. Limpe a busca ou o período para ver o calendário completo.'
+                  : 'Os próximos campeonatos aparecerão aqui assim que forem publicados.'}
+                className="mt-mc-32 rounded-mc-small border border-mc-border bg-mc-surface"
+              />
+            )}
           </div>
         </PageContainer>
       </section>
@@ -68,8 +98,6 @@ export default function HomeClient({ events }: { events: Event[] }) {
           </div>
         </PageContainer>
       </section>
-
-      {selectedEvent ? <EventModal event={selectedEvent} isOpen onClose={() => setSelectedEvent(null)} /> : null}
     </>
   )
 }

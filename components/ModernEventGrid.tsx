@@ -19,6 +19,8 @@ export interface Event {
   sport?: string
   state?: string
   dateObj?: string
+  status?: string
+  resultsPublished?: boolean
 }
 
 interface FilterState { eventType: string; sport: string; state: string; search: string; period: string; startDate: string; endDate: string }

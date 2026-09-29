@@ -109,6 +109,9 @@ Fase 7 - Inscricoes, participantes e categorias, concluida.
 - A selecao visual de cadastro foi ajustada no mesmo layout do Login; modal, Supabase, sessao, callbacks e redirects permaneceram inalterados.
 - Recuperacao de senha dedicada nao foi migrada, pois nao compartilha atualmente o mesmo componente de layout.
 - Evidencias visuais: `docs/design-system/evidencias/fase-5b/home-1440.png`, `home-390.png`, `login-1440.png` e `login-390.png`.
+- Refinamento editorial da Home: busca e filtros antecedem os eventos; o primeiro resultado recebe destaque e os demais compõem a grade de proximos campeonatos.
+- Os cards de evento usam imagem 16:9, assinatura azul, metadados reais, link integral para `/eventos/[id]` e movimento discreto, sem badges, metricas ou informacoes institucionais inventadas.
+- Evidencias do refinamento editorial: `docs/design-system/evidencias/home-editorial/home-1440.png` e `home-390.png`.
 
 ### Fase 6 - Area interna do organizador
 

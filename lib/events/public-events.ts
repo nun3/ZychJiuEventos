@@ -14,7 +14,7 @@ export async function getPublicEvents(): Promise<Event[]> {
 
   let query = createClient()
     .from('events')
-    .select('id, nome, data_evento, local, informacoes, imagem_cartaz_url')
+    .select('id, nome, data_evento, local, informacoes, imagem_cartaz_url, status, results_publicados')
     .in('status', publicEventStatuses)
     .order('data_evento', { ascending: true })
   if (scope.mode === 'restricted') query = query.eq('organization_id', scope.organizationId)
@@ -43,6 +43,8 @@ export async function getPublicEvents(): Promise<Event[]> {
       daysLeft: Math.max(0, Math.ceil((date.getTime() - today.getTime()) / 86400000)),
       image: event.imagem_cartaz_url || undefined,
       description: event.informacoes || undefined,
+      status: event.status,
+      resultsPublished: event.results_publicados,
     }
   })
 }
