@@ -5,7 +5,7 @@
   "scripts": {
     "test:unit": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' node --require ts-node/register --test tests/*.test.ts",
     "test:bdd": "bddgen && playwright test --grep-invert @homologation --grep-invert @organization-members --grep-invert @onboarding-visual",
-    "bdd:homologation": "bddgen && playwright test --grep @homologation",
+    "bdd:homologation": "bddgen && env -u VERCEL_ENV -u NEXT_PUBLIC_VERCEL_ENV BASE_URL=https://jiu-three.vercel.app playwright test --grep @homologation",
     "bdd:organizations": "bddgen && playwright test --grep @organization-members",
     "bdd:onboarding": "bddgen && playwright test --grep @onboarding-visual",
     "test:payments": "bddgen && playwright test --grep @payments",
