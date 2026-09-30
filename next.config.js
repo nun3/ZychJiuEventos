@@ -14,6 +14,11 @@ const nextConfig = {
         hostname: 'kfvypacjzlzwwblsbpwj.supabase.co',
         pathname: '/storage/v1/object/public/event-assets/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'kfvypacjzlzwwblsbpwj.supabase.co',
+        pathname: '/storage/v1/object/public/identity-assets/**',
+      },
     ],
   },
 }

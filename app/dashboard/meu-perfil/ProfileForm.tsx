@@ -36,17 +36,17 @@ export default function ProfileForm({
     <form onSubmit={handleSubmit} className="space-y-mc-16">
       {feedback ? <Alert variant={feedback.ok ? 'success' : 'error'} role="status">{feedback.message}</Alert> : null}
       <div className="grid gap-mc-16 sm:grid-cols-2">
-        <FormField id="profile-name" label="Nome completo" required className="sm:col-span-2">
+        <FormField id="profile-name" label="Nome" required className="sm:col-span-2">
           <Input name="nome_completo" required minLength={3} defaultValue={nomeCompleto} autoComplete="name" />
         </FormField>
-        <FormField id="profile-phone" label="Telefone" description="Usado para contato operacional da conta.">
+        <FormField id="profile-phone" label="Telefone">
           <Input name="telefone" type="tel" defaultValue={telefone} autoComplete="tel" placeholder="(00) 00000-0000" />
         </FormField>
-        <FormField id="profile-birth" label="Data de nascimento" required description="Obrigatória. Contas públicas são somente para maiores de 18 anos.">
+        <FormField id="profile-birth" label="Nascimento" required description="Contas públicas: maiores de 18 anos.">
           <Input name="data_nascimento" type="date" required defaultValue={dataNascimento} autoComplete="bday" max={new Date().toISOString().slice(0, 10)} />
         </FormField>
       </div>
-      <Button type="submit" disabled={isPending}>{isPending ? 'Salvando...' : 'Salvar alterações'}</Button>
+      <Button type="submit" disabled={isPending}>{isPending ? 'Salvando...' : 'Salvar dados'}</Button>
     </form>
   )
 }

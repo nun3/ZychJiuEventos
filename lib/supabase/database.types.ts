@@ -1046,6 +1046,15 @@ export type Database = {
           },
         ]
       }
+      home_event_highlights: {
+        Row: { created_at: string; created_by: string; ends_at: string | null; event_id: string; hidden: boolean; pinned: boolean; position: number; starts_at: string | null; updated_at: string }
+        Insert: { created_at?: string; created_by: string; ends_at?: string | null; event_id: string; hidden?: boolean; pinned?: boolean; position?: number; starts_at?: string | null; updated_at?: string }
+        Update: { created_at?: string; created_by?: string; ends_at?: string | null; event_id?: string; hidden?: boolean; pinned?: boolean; position?: number; starts_at?: string | null; updated_at?: string }
+        Relationships: [
+          { foreignKeyName: "home_event_highlights_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "home_event_highlights_event_id_fkey"; columns: ["event_id"]; isOneToOne: true; referencedRelation: "events"; referencedColumns: ["id"] },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -1391,6 +1400,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
+          banner_url: string | null
           cpf: string | null
           created_at: string
           data_nascimento: string | null
@@ -1400,6 +1411,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          avatar_url?: string | null
+          banner_url?: string | null
           cpf?: string | null
           created_at?: string
           data_nascimento?: string | null
@@ -1409,6 +1422,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          avatar_url?: string | null
+          banner_url?: string | null
           cpf?: string | null
           created_at?: string
           data_nascimento?: string | null
@@ -1590,24 +1605,30 @@ export type Database = {
           created_at: string
           created_by: string
           id: string
+          logo_url: string | null
           nome: string
           organization_id: string
+          photo_url: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           created_by: string
           id?: string
+          logo_url?: string | null
           nome: string
           organization_id: string
+          photo_url?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           created_by?: string
           id?: string
+          logo_url?: string | null
           nome?: string
           organization_id?: string
+          photo_url?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2010,6 +2031,10 @@ export type Database = {
       get_event_schedule_operation: {
         Args: { target_event_id: string }
         Returns: Json
+      }
+      get_home_event_highlight_rules: {
+        Args: never
+        Returns: { active: boolean; event_id: string; pinned: boolean; position: number }[]
       }
       get_public_event_brackets: {
         Args: { target_event_id: string }

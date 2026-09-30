@@ -13,10 +13,27 @@ Extensao de `auth.users` do Supabase.
 - `nome_completo`
 - `cpf`, unico quando informado
 - `telefone`
+- `data_nascimento`
+- `avatar_url`, URL pública opcional em `identity-assets` (`avatars/{userId}/…`)
+- `banner_url`, URL pública opcional em `identity-assets` (`banners/{userId}/…`)
 - `created_at`, `updated_at`
+
+As quatro imagens de identidade (avatar, banner, logo e foto de equipe) são **conteúdo público da plataforma**. Exibição usa URL pública com bust de cache `?v=<updated_at>`. Não reutilizar `identity-assets` para documento, CPF, comprovante ou qualquer mídia privada.
 
 Menores nao possuem usuario proprio. Seus dados ficam em `athletes` e o acesso ocorre por um ou mais responsaveis autorizados.
 Uma conta pode exercer mais de um papel. Papeis globais ficam em `platform_user_roles`; papeis de organizacao ficam em `organization_members`, evitando um unico `tipo_perfil` mutuamente exclusivo.
+
+### Storage: identity-assets
+
+Contrato fechado:
+
+> `identity-assets` contém exclusivamente imagens de identidade destinadas à exibição pública. Leitura é pública por CDN; criação, alteração e remoção são protegidas por autorização/RLS. Conteúdo privado não deve ser armazenado nesse bucket.
+
+Cuidados técnicos:
+
+- Troca/remoção deve apagar o objeto antigo no Storage (incluindo órfãos por mudança de extensão), não apenas zerar a coluna.
+- Paths estáveis (`avatar.webp`, etc.) usam `?v=<updated_at>` na leitura para evitar CDN entregar versão anterior.
+- Signed URLs ficam fora do escopo atual.
 
 ### organizations e organization_members
 
@@ -30,9 +47,12 @@ Uma conta pode exercer mais de um papel. Papeis globais ficam em `platform_user_
 - `nome`
 - `created_by` FK para `profiles.id`
 - `organization_id` FK obrigatoria para `organizations.id`
+- `logo_url`, URL pública opcional em `identity-assets` (`teams/{teamId}/logo…`)
+- `photo_url`, URL pública opcional em `identity-assets` (`teams/{teamId}/photo…`)
 - `created_at`, `updated_at`
 
 A RPC `create_managed_team` cria um tenant tecnico para a equipe do gestor autenticado e nao grava `organization_members`. O professor nao recebe `owner`, `organizer`, `staff` nem `finance`.
+O dono (`created_by`) pode atualizar `logo_url` e `photo_url`; alterações estruturais (nome, organização) continuam restritas a papéis administrativos da organização, com guard no trigger.
 
 ### athletes
 
