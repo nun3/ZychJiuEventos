@@ -4,18 +4,19 @@ import { useState } from 'react'
 import { CalendarDays } from 'lucide-react'
 import EventFilters from '@/components/EventFilters'
 import EditorialEventCard from '@/components/EditorialEventCard'
+import HomeHighlightsCarousel from '@/components/HomeHighlightsCarousel'
 import { filterEvents, type Event } from '@/components/ModernEventGrid'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageContainer } from '@/components/ui/PageContainer'
 
-export default function HomeClient({ events }: { events: Event[] }) {
+export default function HomeClient({ events, highlights }: { events: Event[]; highlights: Event[] }) {
   const [filters, setFilters] = useState({ eventType: 'Todos', sport: 'Todas', state: 'Todos', search: '', period: 'todos', startDate: '', endDate: '' })
   const filteredEvents = filterEvents(events, filters)
-  const [featuredEvent, ...upcomingEvents] = filteredEvents
 
   return (
     <>
-      <section id="eventos" className="scroll-mt-20 bg-mc-background pb-mc-64 pt-28 sm:pt-32" aria-labelledby="events-title">
+      <HomeHighlightsCarousel events={highlights} />
+      <section id="eventos" className="scroll-mt-20 bg-mc-background py-mc-48 sm:py-mc-64" aria-labelledby="events-title">
         <PageContainer>
           <div className="max-w-3xl">
             <p className="font-mc-interface text-sm font-semibold uppercase tracking-[0.16em] text-mc-action">
@@ -29,42 +30,36 @@ export default function HomeClient({ events }: { events: Event[] }) {
             </p>
           </div>
 
-          <div className="mt-mc-32">
-            {events.length ? <EventFilters onFilterChange={setFilters} /> : null}
+          {events.length ? (
+            <div className="mt-mc-32 border-b border-mc-border pb-mc-32">
+              <EventFilters variant="toolbar" onFilterChange={setFilters} />
+            </div>
+          ) : null}
 
-            {featuredEvent ? (
-              <div className="mt-mc-48">
-                <section aria-labelledby="featured-events-title">
-                  <h2 id="featured-events-title" className="font-mc-display text-mc-h2 font-bold uppercase tracking-[-0.02em] text-mc-text-primary">
-                    Eventos em destaque
-                  </h2>
-                  <div className="mt-mc-24">
-                    <EditorialEventCard event={featuredEvent} featured />
-                  </div>
-                </section>
-
-                {upcomingEvents.length ? (
-                  <section className="mt-mc-64" aria-labelledby="upcoming-events-title">
-                    <h2 id="upcoming-events-title" className="font-mc-display text-mc-h2 font-bold uppercase tracking-[-0.02em] text-mc-text-primary">
-                      Próximos campeonatos
-                    </h2>
-                    <div className="mt-mc-24 grid gap-mc-32 sm:grid-cols-2 lg:grid-cols-3">
-                      {upcomingEvents.map((event) => <EditorialEventCard key={event.id} event={event} />)}
-                    </div>
-                  </section>
-                ) : null}
+          {filteredEvents.length ? (
+            <section className="mt-mc-32" aria-labelledby="upcoming-events-title">
+              <div className="flex flex-wrap items-end justify-between gap-mc-12">
+                <h2 id="upcoming-events-title" className="font-mc-display text-mc-h2 font-bold uppercase tracking-[-0.02em] text-mc-text-primary">
+                  Próximos campeonatos
+                </h2>
+                <p className="font-mc-interface text-sm text-mc-text-secondary">
+                  {filteredEvents.length} {filteredEvents.length === 1 ? 'evento' : 'eventos'}
+                </p>
               </div>
-            ) : (
-              <EmptyState
-                icon={<CalendarDays size={32} />}
-                title={events.length ? 'Nenhum evento encontrado' : 'Nenhuma competição publicada'}
-                description={events.length
-                  ? 'Nenhum evento corresponde aos filtros. Limpe a busca ou o período para ver o calendário completo.'
-                  : 'Os próximos campeonatos aparecerão aqui assim que forem publicados.'}
-                className="mt-mc-32 rounded-mc-small border border-mc-border bg-mc-surface"
-              />
-            )}
-          </div>
+              <div className="mt-mc-24 grid gap-mc-32 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredEvents.map((event) => <EditorialEventCard key={event.id} event={event} />)}
+              </div>
+            </section>
+          ) : (
+            <EmptyState
+              icon={<CalendarDays size={32} />}
+              title={events.length ? 'Nenhum evento encontrado' : 'Nenhuma competição publicada'}
+              description={events.length
+                ? 'Nenhum evento corresponde aos filtros. Limpe a busca ou o período para ver o calendário completo.'
+                : 'Os próximos campeonatos aparecerão aqui assim que forem publicados.'}
+              className="mt-mc-32 rounded-mc-small border border-mc-border bg-mc-surface"
+            />
+          )}
         </PageContainer>
       </section>
 

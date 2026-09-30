@@ -4,13 +4,18 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Mail, MessageCircle } from 'lucide-react'
 
-const navigationLinks = [
-  { href: '/', label: 'Início' },
+const productLinks = [
   { href: '/eventos', label: 'Eventos' },
+  { href: '/noticias', label: 'Notícias' },
   { href: '/academias', label: 'Academias e equipes' },
   { href: '/sistema', label: 'O sistema' },
-  { href: '/quem-somos', label: 'Quem somos' },
   { href: '/login', label: 'Entrar' },
+  { href: '/admin/eventos/novo', label: 'Criar evento' },
+]
+
+const aboutLinks = [
+  { href: '/quem-somos', label: 'Quem somos' },
+  { href: '/sistema', label: 'Sobre o MEU CAMP' },
 ]
 
 export default function ModernFooter() {
@@ -27,8 +32,8 @@ export default function ModernFooter() {
     <>
       <footer className="mt-mc-48 bg-mc-structure text-white">
         <div className="mx-auto max-w-7xl px-4 py-mc-32 sm:px-6 sm:py-mc-48 lg:px-8">
-          <div className="grid gap-x-mc-32 gap-y-mc-32 sm:grid-cols-2 lg:grid-cols-3">
-            <section aria-labelledby="footer-about-title">
+          <div className="grid gap-x-mc-32 gap-y-mc-32 sm:grid-cols-2 lg:grid-cols-4">
+            <section aria-labelledby="footer-about-title" className="lg:col-span-1">
               <h2 id="footer-about-title" className="font-mc-display text-mc-h3 text-white">MEU CAMP</h2>
               <p className="mt-mc-12 font-mc-interface text-sm leading-6 text-slate-300">
                 Plataforma para organizar e operar competições. A primeira modalidade é Jiu-Jitsu.
@@ -36,10 +41,10 @@ export default function ModernFooter() {
               </p>
             </section>
 
-            <nav aria-labelledby="footer-navigation-title">
-              <h2 id="footer-navigation-title" className="font-mc-display text-mc-h3 text-white">Navegação</h2>
+            <nav aria-labelledby="footer-product-title">
+              <h2 id="footer-product-title" className="font-mc-display text-mc-h3 text-white">Produto</h2>
               <ul className="mt-mc-12 space-y-mc-8">
-                {navigationLinks.map((link) => (
+                {productLinks.map((link) => (
                   <li key={link.href}>
                     <Link href={link.href} className="font-mc-interface text-sm leading-6 text-slate-300 transition-colors duration-mc-normal hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">
                       {link.label}
@@ -49,12 +54,32 @@ export default function ModernFooter() {
               </ul>
             </nav>
 
+            <nav aria-labelledby="footer-institutional-title">
+              <h2 id="footer-institutional-title" className="font-mc-display text-mc-h3 text-white">Institucional</h2>
+              <ul className="mt-mc-12 space-y-mc-8">
+                {aboutLinks.map((link) => (
+                  <li key={`${link.href}-${link.label}`}>
+                    <Link href={link.href} className="font-mc-interface text-sm leading-6 text-slate-300 transition-colors duration-mc-normal hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <a href="mailto:contato@meucamp.com.br" className="font-mc-interface text-sm leading-6 text-slate-300 transition-colors duration-mc-normal hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">
+                    Contato
+                  </a>
+                </li>
+              </ul>
+            </nav>
+
             <section aria-labelledby="footer-contact-title">
               <h2 id="footer-contact-title" className="font-mc-display text-mc-h3 text-white">Contato</h2>
               <ul className="mt-mc-12 space-y-mc-12 font-mc-interface text-sm leading-6 text-slate-300">
                 <li className="flex items-start gap-mc-8">
                   <Mail aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-blue-200" />
-                  <span>contato@meucamp.com.br</span>
+                  <a href="mailto:contato@meucamp.com.br" className="hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
+                    contato@meucamp.com.br
+                  </a>
                 </li>
               </ul>
               <p className="mt-mc-16 font-mc-interface text-sm leading-6 text-slate-300">

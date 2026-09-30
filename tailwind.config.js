@@ -11,6 +11,7 @@ module.exports = {
         mc: {
           action: 'rgb(var(--mc-action) / <alpha-value>)',
           structure: 'rgb(var(--mc-structure) / <alpha-value>)',
+          'nav-dark': 'rgb(var(--mc-nav-dark) / <alpha-value>)',
           background: 'rgb(var(--mc-background) / <alpha-value>)',
           surface: { DEFAULT: 'rgb(var(--mc-surface) / <alpha-value>)', secondary: 'rgb(var(--mc-surface-secondary) / <alpha-value>)' },
           border: 'rgb(var(--mc-border) / <alpha-value>)',

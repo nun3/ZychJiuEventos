@@ -32,6 +32,49 @@ const capabilities = [
   'Fechamento financeiro',
 ]
 
+const profiles = [
+  {
+    id: 'atletas',
+    title: 'Para atletas',
+    points: [
+      'Encontrar campeonatos no calendário público.',
+      'Fazer a própria inscrição quando elegível.',
+      'Acompanhar participação e situação da inscrição.',
+      'Consultar checagem, programação e resultados publicados.',
+    ],
+  },
+  {
+    id: 'professores',
+    title: 'Para professores',
+    points: [
+      'Gerenciar a equipe e os atletas vinculados.',
+      'Inscrever atletas em eventos publicados.',
+      'Acompanhar a checagem pública do evento.',
+      'Consultar programação e resultados da equipe.',
+    ],
+  },
+  {
+    id: 'responsaveis',
+    title: 'Para responsáveis',
+    points: [
+      'Cadastrar e gerenciar atletas sob responsabilidade.',
+      'Acompanhar e conduzir inscrições quando permitido.',
+      'Acompanhar pagamentos reservados e baixa manual.',
+      'Consultar a participação do atleta no evento.',
+    ],
+  },
+  {
+    id: 'organizadores',
+    title: 'Para organizadores',
+    points: [
+      'Criar e publicar eventos quando autorizado.',
+      'Configurar categorias e duração oficial das lutas.',
+      'Conduzir checagem, chaves, programação e resultados.',
+      'Registrar financeiro com taxa da plataforma.',
+    ],
+  },
+]
+
 export default function SistemaPage() {
   return (
     <InstitutionalPage
@@ -49,7 +92,21 @@ export default function SistemaPage() {
         </>
       )}
     >
-      <section aria-labelledby="journey-title">
+      <section aria-labelledby="profiles-title">
+        <h2 id="profiles-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Para cada perfil</h2>
+        <div className="mt-mc-24 grid gap-mc-16 md:grid-cols-2">
+          {profiles.map((profile) => (
+            <Card key={profile.id} id={profile.id} className="scroll-mt-28 p-mc-16 sm:p-mc-24">
+              <h3 className="font-mc-display text-lg font-semibold text-mc-text-primary">{profile.title}</h3>
+              <ul className="mt-mc-12 space-y-mc-8 font-mc-interface text-sm leading-6 text-mc-text-secondary">
+                {profile.points.map((point) => <li key={point}>{point}</li>)}
+              </ul>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-mc-48" aria-labelledby="journey-title">
         <h2 id="journey-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Jornada do evento</h2>
         <ol className="mt-mc-24 grid gap-mc-16 md:grid-cols-2">
           {journey.map((item) => (

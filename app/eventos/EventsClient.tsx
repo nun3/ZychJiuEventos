@@ -15,13 +15,15 @@ const initialFilters = {
   endDate: '',
 }
 
-export default function EventsClient({ events }: { events: Event[] }) {
+export default function EventsClient({ events, initialSearch = '' }: { events: Event[]; initialSearch?: string }) {
   const router = useRouter()
-  const [filters, setFilters] = useState(initialFilters)
+  const [filters, setFilters] = useState({ ...initialFilters, search: initialSearch })
 
   return (
     <>
-      {events.length ? <EventFilters onFilterChange={setFilters} /> : null}
+      {events.length ? (
+        <EventFilters variant="toolbar" initialSearch={initialSearch} onFilterChange={setFilters} />
+      ) : null}
       <ModernEventGrid
         events={events}
         filters={events.length ? filters : undefined}

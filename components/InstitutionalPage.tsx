@@ -17,7 +17,7 @@ export default function InstitutionalPage({
   children: ReactNode
 }) {
   return (
-    <main className="min-h-screen bg-mc-background">
+    <main id="conteudo-principal" className="min-h-screen bg-mc-background">
       <ModernNavbar />
       <section className="bg-mc-structure pt-20 text-white">
         <PageContainer className="py-mc-48 sm:py-mc-64">

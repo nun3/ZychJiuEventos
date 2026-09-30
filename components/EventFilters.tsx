@@ -1,14 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { CalendarRange, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 
 const states = [
-  { value: 'Todos', label: 'Todos' },
+  { value: 'Todos', label: 'Todos os estados' },
   { value: 'AC', label: 'AC — Acre' },
   { value: 'AL', label: 'AL — Alagoas' },
   { value: 'AP', label: 'AP — Amapá' },
@@ -48,6 +47,9 @@ interface EventFiltersProps {
     startDate: string
     endDate: string
   }) => void
+  /** Home: barra compacta sem card. Padrão: mesma barra com margem inferior. */
+  variant?: 'toolbar' | 'stacked'
+  initialSearch?: string
 }
 
 const initialFilters = {
@@ -60,8 +62,11 @@ const initialFilters = {
   endDate: '',
 }
 
-export default function EventFilters({ onFilterChange }: EventFiltersProps) {
-  const [filters, setFilters] = useState(initialFilters)
+const fieldClass = 'min-h-11 rounded-mc-small border-0 bg-mc-surface-secondary ring-1 ring-inset ring-mc-border/80 focus:ring-2 focus:ring-mc-focus/25'
+
+export default function EventFilters({ onFilterChange, variant = 'stacked', initialSearch = '' }: EventFiltersProps) {
+  const [filters, setFilters] = useState({ ...initialFilters, search: initialSearch })
+  const [datesOpen, setDatesOpen] = useState(false)
 
   const handleFilterChange = (key: keyof typeof filters, value: string) => {
     const nextFilters = { ...filters, [key]: value }
@@ -71,69 +76,104 @@ export default function EventFilters({ onFilterChange }: EventFiltersProps) {
 
   const clearFilters = () => {
     setFilters(initialFilters)
+    setDatesOpen(false)
     onFilterChange?.(initialFilters)
   }
 
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => value !== initialFilters[key as keyof typeof initialFilters])
+  const hasCustomDates = filters.period !== 'todos' || Boolean(filters.startDate || filters.endDate)
 
   return (
-    <section className="rounded-mc-large border border-mc-border bg-mc-surface p-mc-16 shadow-mc-subtle sm:p-mc-24" aria-labelledby="filters-title">
-      <div className="flex flex-wrap items-center justify-between gap-mc-12">
-        <div className="flex items-center gap-mc-8">
-          <SlidersHorizontal aria-hidden="true" size={20} className="text-mc-action" />
-          <h3 id="filters-title" className="font-mc-interface font-semibold text-mc-text-primary">Encontre seu evento</h3>
-        </div>
-        {hasActiveFilters ? (
-          <Button variant="ghost" size="small" onClick={clearFilters} className="gap-mc-8 text-mc-action">
-            <X aria-hidden="true" size={17} />
-            Limpar filtros
-          </Button>
-        ) : null}
-      </div>
-
-      <div className="mt-mc-16 grid gap-mc-16 md:grid-cols-[minmax(0,1.4fr)_minmax(12rem,0.8fr)]">
-        <div className="space-y-1.5">
-          <label htmlFor="event-search" className="block font-mc-interface text-sm font-semibold text-mc-text-primary">Nome do evento</label>
-          <div className="relative">
-            <Search aria-hidden="true" size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-mc-text-secondary" />
+    <section
+      className={variant === 'toolbar' ? '' : 'mb-mc-32'}
+      aria-label="Filtros de eventos"
+    >
+      <div className="flex flex-col gap-mc-12">
+        <div className="flex flex-col gap-mc-12 lg:flex-row lg:items-center">
+          <div className="relative min-w-0 flex-1">
+            <Search aria-hidden="true" size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-mc-text-secondary" />
             <Input
               id="event-search"
+              aria-label="Nome do evento"
               value={filters.search}
               onChange={(event) => handleFilterChange('search', event.target.value)}
-              placeholder="Digite para pesquisar"
-              className="pl-10"
+              placeholder="Buscar campeonato..."
+              className={`${fieldClass} pl-11 text-base shadow-none`}
             />
           </div>
-        </div>
-        <FormField id="event-state" label="Estado">
-          <Select id="event-state" value={filters.state} onChange={(event) => handleFilterChange('state', event.target.value)}>
-            {states.map((state) => <option key={state.value} value={state.value}>{state.label}</option>)}
-          </Select>
-        </FormField>
-      </div>
 
-      <details className="mt-mc-16 border-t border-mc-border pt-mc-16">
-        <summary className="min-h-11 cursor-pointer font-mc-interface text-sm font-semibold text-mc-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
-          Filtrar por data
-        </summary>
-        <div className="mt-mc-12 grid gap-mc-16 sm:grid-cols-3">
-          <FormField id="event-period" label="Período">
-            <Select id="event-period" value={filters.period} onChange={(event) => handleFilterChange('period', event.target.value)}>
-              <option value="todos">Todos</option>
+          <div className="grid grid-cols-2 gap-mc-12 sm:grid-cols-3 lg:flex lg:shrink-0 lg:gap-mc-12">
+            <Select
+              id="event-state"
+              aria-label="Estado"
+              value={filters.state}
+              onChange={(event) => handleFilterChange('state', event.target.value)}
+              className={`${fieldClass} lg:min-w-[11rem] shadow-none`}
+            >
+              {states.map((state) => <option key={state.value} value={state.value}>{state.label}</option>)}
+            </Select>
+
+            <Select
+              id="event-period"
+              aria-label="Período"
+              value={filters.period}
+              onChange={(event) => handleFilterChange('period', event.target.value)}
+              className={`${fieldClass} lg:min-w-[10.5rem] shadow-none`}
+            >
+              <option value="todos">Qualquer data</option>
               <option value="este-mes">Este mês</option>
               <option value="proximo-mes">Próximo mês</option>
               <option value="este-ano">Este ano</option>
               <option value="proximo-ano">Próximo ano</option>
             </Select>
-          </FormField>
-          <FormField id="event-start-date" label="Data inicial">
-            <Input id="event-start-date" type="date" value={filters.startDate} onChange={(event) => handleFilterChange('startDate', event.target.value)} />
-          </FormField>
-          <FormField id="event-end-date" label="Data final">
-            <Input id="event-end-date" type="date" value={filters.endDate} onChange={(event) => handleFilterChange('endDate', event.target.value)} />
-          </FormField>
+
+            <button
+              type="button"
+              onClick={() => setDatesOpen((open) => !open)}
+              aria-expanded={datesOpen}
+              aria-controls="event-date-filters"
+              className={`inline-flex min-h-11 items-center justify-center gap-mc-8 rounded-mc-small px-mc-12 font-mc-interface text-sm font-semibold transition-colors duration-mc-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus ${hasCustomDates || datesOpen ? 'bg-mc-action/10 text-mc-action ring-1 ring-inset ring-mc-action/30' : 'bg-mc-surface-secondary text-mc-text-secondary ring-1 ring-inset ring-mc-border/80 hover:text-mc-text-primary'}`}
+            >
+              <CalendarRange aria-hidden="true" size={17} />
+              <span className="hidden sm:inline">Intervalo</span>
+            </button>
+          </div>
         </div>
-      </details>
+
+        {datesOpen ? (
+          <div id="event-date-filters" className="grid gap-mc-12 border-t border-mc-border/80 pt-mc-12 sm:grid-cols-2 lg:max-w-md">
+            <div>
+              <label htmlFor="event-start-date" className="mb-mc-4 block font-mc-interface text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">De</label>
+              <Input
+                id="event-start-date"
+                type="date"
+                value={filters.startDate}
+                onChange={(event) => handleFilterChange('startDate', event.target.value)}
+                className={`${fieldClass} shadow-none`}
+              />
+            </div>
+            <div>
+              <label htmlFor="event-end-date" className="mb-mc-4 block font-mc-interface text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">Até</label>
+              <Input
+                id="event-end-date"
+                type="date"
+                value={filters.endDate}
+                onChange={(event) => handleFilterChange('endDate', event.target.value)}
+                className={`${fieldClass} shadow-none`}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        {hasActiveFilters ? (
+          <div className="flex justify-end">
+            <Button variant="ghost" size="small" onClick={clearFilters} className="gap-mc-8 text-mc-text-secondary hover:text-mc-action">
+              <X aria-hidden="true" size={16} />
+              Limpar filtros
+            </Button>
+          </div>
+        ) : null}
+      </div>
     </section>
   )
 }

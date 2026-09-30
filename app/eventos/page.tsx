@@ -10,11 +10,17 @@ export const metadata: Metadata = {
   description: 'Consulte os eventos publicados no Meu Camp.',
 }
 
-export default async function EventsPage() {
+export default async function EventsPage({
+  searchParams,
+}: {
+  searchParams?: { q?: string | string[] }
+}) {
   const events = await getPublicEvents()
+  const rawQuery = searchParams?.q
+  const initialSearch = (Array.isArray(rawQuery) ? rawQuery[0] : rawQuery)?.trim() || ''
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-mc-surface-secondary">
+    <main id="conteudo-principal" className="relative min-h-screen overflow-x-hidden bg-mc-surface-secondary">
       <ModernNavbar />
       <section id="eventos" className="pt-28 sm:pt-32" aria-labelledby="events-page-title">
         <PageContainer>
@@ -31,7 +37,7 @@ export default async function EventsPage() {
           </div>
 
           <div className="mt-mc-32">
-            <EventsClient events={events} />
+            <EventsClient events={events} initialSearch={initialSearch} />
           </div>
         </PageContainer>
       </section>

@@ -112,6 +112,8 @@ Fase 7 - Inscricoes, participantes e categorias, concluida.
 - Refinamento editorial da Home: busca e filtros antecedem os eventos; o primeiro resultado recebe destaque e os demais compõem a grade de proximos campeonatos.
 - Os cards de evento usam imagem 16:9, assinatura azul, metadados reais, link integral para `/eventos/[id]` e movimento discreto, sem badges, metricas ou informacoes institucionais inventadas.
 - Evidencias do refinamento editorial: `docs/design-system/evidencias/home-editorial/home-1440.png` e `home-390.png`.
+- A Home ganhou um carrossel editorial alimentado por eventos reais com banner, selecao automatica por estado e curadoria exclusiva do Platform Admin em `/platform/destaques`; sem evento elegivel, exibe apenas um fallback compacto.
+- Evidencias do estado real sem banners elegiveis: `docs/design-system/evidencias/home-carousel/fallback-1440.png` e `fallback-390.png`.
 
 ### Fase 6 - Area interna do organizador
 

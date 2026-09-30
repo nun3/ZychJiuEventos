@@ -1,0 +1,6 @@
+.cursor
+automação/playwright-report
+automação/test-results
+automação/node_modules
+node_modules
+.next

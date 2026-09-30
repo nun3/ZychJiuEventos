@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Building2, CalendarDays, ClipboardList, LayoutDashboard, UserRound, UsersRound } from 'lucide-react'
+import { Building2, CalendarDays, ClipboardList, LayoutDashboard, Star, UserRound, UsersRound } from 'lucide-react'
 
 export default function InternalNavigation({
   canManageEvents = false,
@@ -18,7 +18,8 @@ export default function InternalNavigation({
     { href: '/dashboard', label: 'Visão geral', icon: LayoutDashboard, active: (path: string) => path === '/dashboard' },
     canManageEvents ? { href: '/admin/eventos', label: 'Eventos', icon: CalendarDays, active: (path: string) => path.startsWith('/admin/eventos') } : null,
     canManageOrganization ? { href: '/dashboard/organizacao', label: 'Organização', icon: Building2, active: (path: string) => path.startsWith('/dashboard/organizacao') } : null,
-    isPlatformAdmin ? { href: '/platform/organizacoes', label: 'Plataforma', icon: Building2, active: (path: string) => path.startsWith('/platform') } : null,
+    isPlatformAdmin ? { href: '/platform/organizacoes', label: 'Organizações', icon: Building2, active: (path: string) => path.startsWith('/platform/organizacoes') } : null,
+    isPlatformAdmin ? { href: '/platform/destaques', label: 'Destaques', icon: Star, active: (path: string) => path.startsWith('/platform/destaques') } : null,
     { href: '/dashboard/meus-atletas', label: 'Atletas', icon: UsersRound, active: (path: string) => path.startsWith('/dashboard/meus-atletas') },
     { href: '/dashboard/inscricoes', label: 'Inscrições', icon: ClipboardList, active: (path: string) => path.startsWith('/dashboard/inscricoes') || path.startsWith('/dashboard/pagamentos') },
     { href: '/dashboard/meu-perfil', label: 'Perfil', icon: UserRound, active: (path: string) => path === '/dashboard/meu-perfil' || path === '/dashboard/alterar-cadastro' },
