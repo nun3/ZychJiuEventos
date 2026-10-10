@@ -5,6 +5,7 @@ import { unstable_noStore as noStore } from 'next/cache'
 import { ArrowLeft, CalendarDays, ClipboardList, Clock3, Download, FileText, GitBranch, MapPin, Trophy, UsersRound } from 'lucide-react'
 import ModernNavbar from '@/components/ModernNavbar'
 import ModernFooter from '@/components/ModernFooter'
+import EventCategoryFinder from '@/components/events/public-event/EventCategoryFinder'
 import { Card, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
 import { formatFightDurationLabel, parseFightDurationMinutes } from '@/lib/events/fight-duration'
 import { findPublicReleaseEvent } from '@/lib/events/public-access'
@@ -29,10 +30,21 @@ export default async function EventPage({ params }: { params: { id: string } }) 
   if (!event) notFound()
   const [{ data: phases }, { data: rules }] = await Promise.all([
     supabase.from('event_phases').select('id, tipo, inicio, fim').eq('event_id', event.id).order('inicio'),
-    supabase.from('category_rule_sets').select('id, nome, versao, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg, fight_duration_minutes)').eq('event_id', event.id).eq('ativo', true).order('versao', { ascending: false }).limit(1),
+    supabase
+      .from('category_rule_sets')
+      .select(
+        'id, nome, versao, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg, fight_duration_minutes, ativa, ordem, faixa_min_ordem, faixa_max_ordem)',
+      )
+      .eq('event_id', event.id)
+      .eq('ativo', true)
+      .order('versao', { ascending: false })
+      .limit(1),
   ])
   const date = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${event.data_evento}T12:00:00Z`))
   const dateTime = (value: string) => new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: event.timezone }).format(new Date(value))
+  const activeRules = rules?.[0]
+  const categories = activeRules?.event_categories ?? []
+  const showRegistrationCta = event.status === 'inscricao'
 
   return (
     <main className="min-h-screen bg-mc-background">
@@ -123,14 +135,22 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                 )}
               </Card>
 
-              {rules?.[0] ? (
-                <Card className="p-mc-24 sm:p-mc-32">
-                  <div className="flex items-center gap-mc-8">
-                    <UsersRound aria-hidden="true" className="text-mc-action" size={22} />
-                    <h2 className="font-mc-display text-mc-h2 text-mc-text-primary">Categorias — versão {rules[0].versao}</h2>
+              {activeRules && categories.length > 0 ? (
+                <Card id="categorias" className="scroll-mt-36 p-mc-24 sm:p-mc-32">
+                  <div className="flex flex-wrap items-end justify-between gap-mc-12">
+                    <div className="flex items-center gap-mc-8">
+                      <UsersRound aria-hidden="true" className="text-mc-action" size={22} />
+                      <h2 className="font-mc-display text-mc-h2 text-mc-text-primary">Categorias — versão {activeRules.versao}</h2>
+                    </div>
+                    <EventCategoryFinder
+                      eventId={event.id}
+                      eventDate={event.data_evento}
+                      categories={categories}
+                      showRegistrationCta={showRegistrationCta}
+                    />
                   </div>
                   <ul className="mt-mc-16 grid gap-mc-12 md:grid-cols-2">
-                    {rules[0].event_categories.map((category) => {
+                    {categories.map((category) => {
                       const duration = formatFightDurationLabel(parseFightDurationMinutes(category.fight_duration_minutes), 'long')
                       return (
                       <li key={category.id} className="rounded-mc-small border border-mc-border bg-mc-surface-secondary p-mc-16">
