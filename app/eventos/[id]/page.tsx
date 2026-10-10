@@ -10,6 +10,7 @@ import { Card, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
 import { formatFightDurationLabel, parseFightDurationMinutes } from '@/lib/events/fight-duration'
 import { findPublicReleaseEvent } from '@/lib/events/public-access'
 import { createClient } from '@/lib/supabase/server'
+import type { SportCategoryCatalog } from '@/lib/events/category-resolver'
 
 const statusVariants = {
   rascunho: 'neutral',
@@ -33,7 +34,7 @@ export default async function EventPage({ params }: { params: { id: string } }) 
     supabase
       .from('category_rule_sets')
       .select(
-        'id, nome, versao, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg, fight_duration_minutes, ativa, ordem, faixa_min_ordem, faixa_max_ordem)',
+        'id, nome, versao, category_catalog_id, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg, fight_duration_minutes, ativa, ordem, faixa_min_ordem, faixa_max_ordem, catalog_category_id), category_catalog:sport_category_catalogs(id, versao, modality, sport_category_definitions(id, catalog_id, codigo, nome, divisao_etaria, idade_min, idade_max, genero, faixa_min_ordem, faixa_max_ordem, peso_min_kg, peso_max_kg, ordem))',
       )
       .eq('event_id', event.id)
       .eq('ativo', true)
@@ -44,6 +45,19 @@ export default async function EventPage({ params }: { params: { id: string } }) 
   const dateTime = (value: string) => new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: event.timezone }).format(new Date(value))
   const activeRules = rules?.[0]
   const categories = activeRules?.event_categories ?? []
+  const rawCatalog = activeRules?.category_catalog
+  const categoryCatalog: SportCategoryCatalog | null = rawCatalog && (rawCatalog.modality === 'gi' || rawCatalog.modality === 'no_gi')
+    ? {
+        id: rawCatalog.id,
+        version: rawCatalog.versao,
+        modality: rawCatalog.modality === 'gi' ? 'gi' : 'no_gi',
+        categories: rawCatalog.sport_category_definitions.flatMap((definition) =>
+          definition.genero === 'M' || definition.genero === 'F' || definition.genero === 'U'
+            ? [{ ...definition, genero: definition.genero }]
+            : [],
+        ),
+      }
+    : null
   const showRegistrationCta = event.status === 'inscricao'
 
   return (
@@ -146,6 +160,7 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                       eventId={event.id}
                       eventDate={event.data_evento}
                       categories={categories}
+                      catalog={categoryCatalog}
                       showRegistrationCta={showRegistrationCta}
                     />
                   </div>

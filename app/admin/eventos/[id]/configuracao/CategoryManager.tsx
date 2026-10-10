@@ -8,19 +8,47 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { createCategoryRuleSet } from '../../actions'
 
-export default function CategoryManager({ eventId }: { eventId: string }) {
+type CatalogDefinition = {
+  id: string
+  nome: string
+  divisao_etaria: string
+  genero: string
+  peso_min_kg: number
+  peso_max_kg: number | null
+}
+
+export default function CategoryManager({
+  eventId,
+  catalog,
+}: {
+  eventId: string
+  catalog: { id: string; nome: string; versao: number; definitions: CatalogDefinition[] } | null
+}) {
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState('')
   return (
     <form action={(data) => startTransition(async () => { const result = await createCategoryRuleSet(data); setMessage(result.message) })} className="grid gap-mc-16 rounded-mc-medium border border-mc-border bg-mc-surface p-mc-16 sm:p-mc-24 md:grid-cols-2">
       <input type="hidden" name="event_id" value={eventId} />
+      {catalog ? <input type="hidden" name="category_catalog_id" value={catalog.id} /> : null}
       <div className="md:col-span-2">
         <h2 className="font-mc-display text-mc-h2 text-mc-text-primary">Nova versão de categorias</h2>
-        <p className="mt-mc-4 font-mc-interface text-sm text-mc-text-secondary">A criação preserva as versões anteriores do conjunto. A duração oficial da luta é operacional e pode ficar em branco.</p>
+        <p className="mt-mc-4 font-mc-interface text-sm text-mc-text-secondary">A criação preserva as versões anteriores. {catalog ? `Catálogo oficial: ${catalog.nome} v${catalog.versao}.` : 'Modo legado: nenhum catálogo oficial disponível.'}</p>
       </div>
       {message ? <Alert role="status" className="md:col-span-2">{message}</Alert> : null}
       <FormField id="rule-name" label="Nome do conjunto" required><Input name="rule_name" required placeholder="Categorias CBJJ" /></FormField>
       <FormField id="category-name" label="Nome da categoria" required><Input name="category_name" required placeholder="Adulto Branca Leve" /></FormField>
+      {catalog ? (
+        <FormField id="catalog-category" label="Categoria teórica vinculada" description="Opcional. Deixe sem vínculo para uma categoria customizada.">
+          <Select name="catalog_category_id" defaultValue="">
+            <option value="">Categoria customizada</option>
+            {catalog.definitions.map((definition) => (
+              <option key={definition.id} value={definition.id}>
+                {definition.divisao_etaria} · {definition.genero} · {definition.nome} · {definition.peso_max_kg == null ? 'sem limite' : `até ${definition.peso_max_kg} kg`}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+      ) : null}
       <FormField id="category-gender" label="Gênero" required><Select name="genero"><option value="M">Masculino</option><option value="F">Feminino</option></Select></FormField>
       <div className="grid grid-cols-2 gap-mc-12">
         <FormField id="minimum-age" label="Idade mínima" required><Input name="idade_min" type="number" min="0" defaultValue="18" required /></FormField>

@@ -56,7 +56,18 @@ export default async function EventConfigurationPage({ params }: { params: { id:
   const supabase = createClient()
   const { data: event } = await supabase.from('events').select('id, nome, organization_id').eq('id', params.id).maybeSingle()
   if (!event || !allowsPublicOrganization(event.organization_id)) notFound()
-  const { data: ruleSets } = await supabase.from('category_rule_sets').select('id, nome, versao, ativo, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg, fight_duration_minutes)').eq('event_id', event.id).order('versao', { ascending: false })
+  const [{ data: ruleSets }, { data: catalog }] = await Promise.all([
+    supabase.from('category_rule_sets').select('id, nome, versao, ativo, event_categories(id, nome, genero, idade_min, idade_max, peso_min_kg, peso_max_kg, fight_duration_minutes)').eq('event_id', event.id).order('versao', { ascending: false }),
+    supabase
+      .from('sport_category_catalogs')
+      .select('id, nome, versao, sport_category_definitions(id, nome, divisao_etaria, genero, peso_min_kg, peso_max_kg)')
+      .eq('sport', 'jiu-jitsu')
+      .eq('modality', 'gi')
+      .not('publicado_em', 'is', null)
+      .order('versao', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
   return (
     <div className="min-h-screen bg-mc-background">
       <InternalNavigation canManageEvents />
@@ -71,7 +82,15 @@ export default async function EventConfigurationPage({ params }: { params: { id:
           <EventGuidancePanel eventId={event.id} />
 
           <div className="mt-mc-32 grid items-start gap-mc-24 xl:grid-cols-[minmax(22rem,0.75fr)_minmax(0,1.25fr)]">
-            <CategoryManager eventId={event.id} />
+            <CategoryManager
+              eventId={event.id}
+              catalog={catalog ? {
+                id: catalog.id,
+                nome: catalog.nome,
+                versao: catalog.versao,
+                definitions: catalog.sport_category_definitions,
+              } : null}
+            />
             <section aria-labelledby="category-versions-title">
               <div className="border-b border-mc-border pb-mc-16">
                 <h2 id="category-versions-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Versões cadastradas</h2>

@@ -561,9 +561,102 @@ export type Database = {
           },
         ]
       }
+      sport_category_catalogs: {
+        Row: {
+          created_at: string
+          fonte: string
+          id: string
+          modality: string
+          nome: string
+          publicado_em: string | null
+          sport: string
+          versao: number
+        }
+        Insert: {
+          created_at?: string
+          fonte: string
+          id?: string
+          modality: string
+          nome: string
+          publicado_em?: string | null
+          sport: string
+          versao: number
+        }
+        Update: {
+          created_at?: string
+          fonte?: string
+          id?: string
+          modality?: string
+          nome?: string
+          publicado_em?: string | null
+          sport?: string
+          versao?: number
+        }
+        Relationships: []
+      }
+      sport_category_definitions: {
+        Row: {
+          catalog_id: string
+          codigo: string
+          created_at: string
+          divisao_etaria: string
+          faixa_max_ordem: number
+          faixa_min_ordem: number
+          genero: string
+          id: string
+          idade_max: number | null
+          idade_min: number
+          nome: string
+          ordem: number
+          peso_max_kg: number | null
+          peso_min_kg: number
+        }
+        Insert: {
+          catalog_id: string
+          codigo: string
+          created_at?: string
+          divisao_etaria: string
+          faixa_max_ordem: number
+          faixa_min_ordem: number
+          genero: string
+          id?: string
+          idade_max?: number | null
+          idade_min: number
+          nome: string
+          ordem: number
+          peso_max_kg?: number | null
+          peso_min_kg?: number
+        }
+        Update: {
+          catalog_id?: string
+          codigo?: string
+          created_at?: string
+          divisao_etaria?: string
+          faixa_max_ordem?: number
+          faixa_min_ordem?: number
+          genero?: string
+          id?: string
+          idade_max?: number | null
+          idade_min?: number
+          nome?: string
+          ordem?: number
+          peso_max_kg?: number | null
+          peso_min_kg?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sport_category_definitions_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "sport_category_catalogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_rule_sets: {
         Row: {
           ativo: boolean
+          category_catalog_id: string | null
           created_at: string
           event_id: string
           id: string
@@ -572,6 +665,7 @@ export type Database = {
         }
         Insert: {
           ativo?: boolean
+          category_catalog_id?: string | null
           created_at?: string
           event_id: string
           id?: string
@@ -580,6 +674,7 @@ export type Database = {
         }
         Update: {
           ativo?: boolean
+          category_catalog_id?: string | null
           created_at?: string
           event_id?: string
           id?: string
@@ -587,6 +682,13 @@ export type Database = {
           versao?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "category_rule_sets_category_catalog_id_fkey"
+            columns: ["category_catalog_id"]
+            isOneToOne: false
+            referencedRelation: "sport_category_catalogs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "category_rule_sets_event_id_fkey"
             columns: ["event_id"]
@@ -701,6 +803,7 @@ export type Database = {
       event_categories: {
         Row: {
           ativa: boolean
+          catalog_category_id: string | null
           created_at: string
           faixa_max_ordem: number
           faixa_min_ordem: number
@@ -717,6 +820,7 @@ export type Database = {
         }
         Insert: {
           ativa?: boolean
+          catalog_category_id?: string | null
           created_at?: string
           faixa_max_ordem: number
           faixa_min_ordem: number
@@ -733,6 +837,7 @@ export type Database = {
         }
         Update: {
           ativa?: boolean
+          catalog_category_id?: string | null
           created_at?: string
           faixa_max_ordem?: number
           faixa_min_ordem?: number
@@ -748,6 +853,13 @@ export type Database = {
           rule_set_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "event_categories_catalog_category_id_fkey"
+            columns: ["catalog_category_id"]
+            isOneToOne: false
+            referencedRelation: "sport_category_definitions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "event_categories_rule_set_id_fkey"
             columns: ["rule_set_id"]
