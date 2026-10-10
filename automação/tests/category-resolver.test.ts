@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { Category } from '../../lib/categorization'
 import {
+  maskBrBirthDateInput,
+  parseBrBirthDateToIso,
   parsePublicWeightKg,
   resolvePublicCategory,
 } from '../../lib/events/category-resolver'
@@ -34,6 +36,15 @@ test('parsePublicWeightKg aceita vírgula e ponto', () => {
   assert.equal(parsePublicWeightKg('81.5'), 81.5)
   assert.equal(parsePublicWeightKg(' 0 '), null)
   assert.equal(parsePublicWeightKg('abc'), null)
+})
+
+test('máscara e parse de nascimento em DD/MM/AAAA (sem bug 0019)', () => {
+  assert.equal(maskBrBirthDateInput('20101990'), '20/10/1990')
+  assert.equal(maskBrBirthDateInput('20/10/1990'), '20/10/1990')
+  assert.equal(parseBrBirthDateToIso('20/10/1990'), '1990-10-20')
+  assert.equal(parseBrBirthDateToIso('1990-10-20'), '1990-10-20')
+  assert.equal(parseBrBirthDateToIso('20/10/0019'), null)
+  assert.equal(parseBrBirthDateToIso('31/02/1990'), null)
 })
 
 test('resolve categoria pelo rule set do evento (81 kg → Médio)', () => {

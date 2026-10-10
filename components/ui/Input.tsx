@@ -1,12 +1,16 @@
-import type { InputHTMLAttributes } from 'react'
+import { forwardRef, type InputHTMLAttributes } from 'react'
 import { cn } from './utils'
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>
 
-export function Input({ className, disabled, 'aria-invalid': ariaInvalid, ...props }: InputProps) {
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  { className, disabled, 'aria-invalid': ariaInvalid, ...props },
+  ref,
+) {
   return (
     <input
       {...props}
+      ref={ref}
       disabled={disabled}
       aria-invalid={ariaInvalid}
       className={cn(
@@ -16,4 +20,4 @@ export function Input({ className, disabled, 'aria-invalid': ariaInvalid, ...pro
       )}
     />
   )
-}
+})

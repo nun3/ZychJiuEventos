@@ -51,9 +51,36 @@ export function parsePublicWeightKg(raw: string): number | null {
   return Math.round(value * 100) / 100
 }
 
+function isValidIsoCalendarDate(iso: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return false
+  const [year, month, day] = iso.split('-').map(Number)
+  if (year < 1900 || year > 2100) return false
+  const date = new Date(Date.UTC(year, month - 1, day))
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+}
+
+/** Máscara digitável pt-BR: DD/MM/AAAA (evita o bug do input type=date com ano 00xx). */
+export function maskBrBirthDateInput(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 8)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
+}
+
+/** Aceita DD/MM/AAAA ou ISO YYYY-MM-DD. */
+export function parseBrBirthDateToIso(raw: string): string | null {
+  const trimmed = raw.trim()
+  if (!trimmed) return null
+  if (isValidIsoCalendarDate(trimmed)) return trimmed
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(trimmed)
+  if (!match) return null
+  const iso = `${match[3]}-${match[2]}-${match[1]}`
+  return isValidIsoCalendarDate(iso) ? iso : null
+}
+
 export function resolvePublicCategory(input: PublicCategoryInput): PublicCategoryResolution {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.birthDate)) {
-    return { ok: false, reason: 'Informe a data de nascimento.' }
+  if (!isValidIsoCalendarDate(input.birthDate)) {
+    return { ok: false, reason: 'Informe uma data de nascimento válida (DD/MM/AAAA).' }
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.eventDate)) {
     return { ok: false, reason: 'Data do evento indisponível para o cálculo.' }
