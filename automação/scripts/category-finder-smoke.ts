@@ -52,6 +52,8 @@ async function main() {
   const runId = runIdNow()
   const eventName = `${runId} — Category Finder`
   const baseURL = process.env.BASE_URL || 'http://localhost:3000'
+  const sourceLabel = new URL(baseURL).hostname === 'jiu-three.vercel.app' ? 'production' : 'localhost'
+  const buildRef = process.env.SMOKE_BUILD_REF || 'worktree'
   const evidenceDir = path.resolve(
     __dirname,
     '../../docs/design-system/evidencias/category-finder',
@@ -73,7 +75,7 @@ async function main() {
   const publicPage = await publicContext.newPage()
 
   let eventId = ''
-  const report: Record<string, unknown> = { runId, eventName, baseURL }
+  const report: Record<string, unknown> = { runId, eventName, baseURL, sourceLabel, buildRef }
 
   try {
     const link = await admin.auth.admin.generateLink({ type: 'magiclink', email: ownerEmail })
@@ -233,7 +235,7 @@ async function main() {
     }
 
     writeFileSync(
-      path.join(evidenceDir, 'local-desktop-1440-match.png'),
+      path.join(evidenceDir, `${sourceLabel}-desktop-1440-match.png`),
       await publicPage.screenshot({ fullPage: false }),
     )
 
@@ -244,7 +246,7 @@ async function main() {
     await expect(dialog.getByText('Disponível neste campeonato')).toBeVisible()
     report.weightChange = 'OK — 81kg → Médio disponível'
     writeFileSync(
-      path.join(evidenceDir, 'local-desktop-1440-weight-change.png'),
+      path.join(evidenceDir, `${sourceLabel}-desktop-1440-weight-change.png`),
       await publicPage.screenshot({ fullPage: false }),
     )
 
@@ -255,7 +257,7 @@ async function main() {
     await expect(dialog.getByRole('link', { name: 'Ver categorias disponíveis' })).toBeVisible()
     report.unavailable = 'OK — 92kg → Pesado teórico indisponível'
     writeFileSync(
-      path.join(evidenceDir, 'local-desktop-1440-no-match.png'),
+      path.join(evidenceDir, `${sourceLabel}-desktop-1440-no-match.png`),
       await publicPage.screenshot({ fullPage: false }),
     )
 
@@ -279,7 +281,7 @@ async function main() {
     const overflow = await publicPage.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)
     if (overflow) throw new Error('Overflow horizontal em 390px')
     writeFileSync(
-      path.join(evidenceDir, 'local-mobile-390.png'),
+      path.join(evidenceDir, `${sourceLabel}-mobile-390.png`),
       await publicPage.screenshot({ fullPage: false }),
     )
     report.mobile = 'OK'
@@ -290,7 +292,7 @@ async function main() {
     const overflow320 = await publicPage.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)
     if (overflow320) throw new Error('Overflow horizontal em 320px')
     writeFileSync(
-      path.join(evidenceDir, 'local-mobile-320.png'),
+      path.join(evidenceDir, `${sourceLabel}-mobile-320.png`),
       await publicPage.screenshot({ fullPage: false }),
     )
 
@@ -333,7 +335,7 @@ async function main() {
     await expect(legacyDialog.getByText(/GI · catálogo/)).toHaveCount(0)
     report.legacyEvent = 'OK — fallback sem classificação oficial inventada'
     writeFileSync(
-      path.join(evidenceDir, 'local-desktop-1440-legacy.png'),
+      path.join(evidenceDir, `${sourceLabel}-desktop-1440-legacy.png`),
       await publicPage.screenshot({ fullPage: false }),
     )
 
