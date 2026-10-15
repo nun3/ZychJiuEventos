@@ -4,7 +4,12 @@ import { useEffect, useState } from 'react'
 import { Check, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
-export default function CopyPixKeyButton({ value }: { value: string }) {
+export default function CopyPixKeyButton({
+  value,
+  label = 'Copiar chave PIX',
+  copiedLabel = 'Chave copiada',
+  hint = 'Cole a chave no app do seu banco.',
+}: { value: string; label?: string; copiedLabel?: string; hint?: string }) {
   const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle')
 
   useEffect(() => {
@@ -26,10 +31,10 @@ export default function CopyPixKeyButton({ value }: { value: string }) {
     <div className="flex flex-col gap-mc-8 sm:flex-row sm:items-center">
       <Button type="button" variant="primary" size="large" onClick={copy} className="w-full gap-mc-8 sm:w-auto">
         {status === 'copied' ? <Check aria-hidden="true" className="h-4 w-4" /> : <Copy aria-hidden="true" className="h-4 w-4" />}
-        {status === 'copied' ? 'Chave copiada' : 'Copiar chave PIX'}
+        {status === 'copied' ? copiedLabel : label}
       </Button>
       <p aria-live="polite" className="font-mc-interface text-sm text-mc-text-secondary">
-        {status === 'copied' ? 'Cole a chave no app do seu banco.' : null}
+        {status === 'copied' ? hint : null}
         {status === 'failed' ? 'Não foi possível copiar. Selecione a chave e copie manualmente.' : null}
       </p>
     </div>

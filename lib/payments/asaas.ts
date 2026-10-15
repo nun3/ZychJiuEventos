@@ -1,5 +1,5 @@
 import { toCents, centsToDecimal, MAX_AMOUNT_CENTS, type PaymentObservation } from './domain'
-import { GatewayError, type PaymentGateway, type ChargeInput, type GatewayCharge, type PixInstructions, type CustomerInput, type GatewayCustomer } from './gateway'
+import { GatewayError, type PaymentGateway, type ChargeInput, type ChargeSplit, type GatewayCharge, type GatewayChargeSplit, type PixInstructions, type CustomerInput, type GatewayCustomer } from './gateway'
 
 const SANDBOX_URL = 'https://api-sandbox.asaas.com/v3'
 type JsonObject = Record<string, unknown>
@@ -36,11 +36,45 @@ function normalizeCharge(value: unknown): GatewayCharge {
       boletoUrl = url.href
     } catch { throw new GatewayError('response') }
   }
+  let netValueCents: number | null = null
+  if (data.netValue != null) {
+    try { netValueCents = toCents(String(data.netValue)) } catch { throw new GatewayError('response') }
+  }
+  let split: GatewayChargeSplit[] | undefined
+  if (data.split != null) {
+    if (!Array.isArray(data.split)) throw new GatewayError('response')
+    split = data.split.map(value => {
+      const item = object(value)
+      const percentualValue = Number(item.percentualValue)
+      if (!Number.isFinite(percentualValue)) throw new GatewayError('response')
+      return {
+        walletId: requiredString(item.walletId), percentualValue,
+        id: typeof item.id === 'string' && item.id.trim() ? item.id : null,
+        status: typeof item.status === 'string' && item.status.trim() ? item.status : null,
+      }
+    })
+  }
   return {
     id: requiredString(data.id), reference: requiredString(data.externalReference), totalCents,
     method: data.billingType === 'PIX' ? 'pix' : 'boleto',
     observation: asaasObservation(requiredString(data.status)), boletoUrl,
+    netValueCents, ...(split ? { split } : {}),
   }
+}
+
+export function sameSplit(actual: ChargeSplit[], expected: ChargeSplit[]) {
+  if (actual.length !== expected.length) return false
+  const key = (item: ChargeSplit) => `${item.walletId}:${Number(item.percentualValue).toFixed(2)}`
+  const wanted = new Set(expected.map(key))
+  return actual.every(item => wanted.has(key(item)))
+}
+
+function validSplit(split: ChargeSplit[] | undefined) {
+  if (split === undefined) return true
+  return Array.isArray(split) && split.length > 0 && split.length <= 10 && split.every(item =>
+    typeof item.walletId === 'string' && /^[A-Za-z0-9-]{8,64}$/.test(item.walletId)
+    && Number.isFinite(item.percentualValue) && item.percentualValue > 0 && item.percentualValue <= 100)
+    && split.reduce((sum, item) => sum + item.percentualValue, 0) <= 100
 }
 
 /** Transport injection is for contract tests. Host is deliberately fixed to Sandbox. */
@@ -89,15 +123,17 @@ export class AsaasSandboxGateway implements PaymentGateway {
     if (!Number.isSafeInteger(input.totalCents) || input.totalCents <= 0 || input.totalCents > MAX_AMOUNT_CENTS || !input.customerId.trim() || !input.reference.trim()
       || !['pix', 'boleto'].includes(input.method) || !/^\d{4}-\d{2}-\d{2}$/.test(input.dueDate)
       || !Number.isFinite(Date.parse(input.dueDate)) || new Date(input.dueDate).toISOString().slice(0, 10) !== input.dueDate
-      || input.description.length > 500) throw new GatewayError('request')
+      || input.description.length > 500 || !validSplit(input.split)) throw new GatewayError('request')
     const response = await this.request('/payments', {
       customer: input.customerId, externalReference: input.reference,
       value: Number(centsToDecimal(input.totalCents)), billingType: input.method === 'pix' ? 'PIX' : 'BOLETO',
       dueDate: input.dueDate, description: input.description,
+      ...(input.split ? { split: input.split.map(item => ({ walletId: item.walletId, percentualValue: item.percentualValue })) } : {}),
     })
     try {
       const charge = normalizeCharge(response)
       if (charge.reference !== input.reference || charge.totalCents !== input.totalCents || charge.method !== input.method) throw new GatewayError('response')
+      if (input.split && charge.split && !sameSplit(charge.split, input.split)) throw new GatewayError('response')
       return charge
     } catch { throw new GatewayError('response', true) }
   }

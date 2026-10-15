@@ -15,6 +15,10 @@ import { Alert } from '@/components/ui/Alert'
 import { StatusBadge, type StatusBadgeProps } from '@/components/ui/StatusBadge'
 import { PAYMENT_RECEIPT_STATUS_LABELS, requiresDirectPixInstructions, type PaymentReceiptStatus } from '@/lib/finance/payment-receipt'
 import { isPaymentsManualOnly } from '@/lib/payments/manual-only'
+import { isPlatformSettlementEnabled } from '@/lib/payments/settlement-config'
+import EventSettlementCard, { type SettlementRow } from './EventSettlementCard'
+
+const SETTLEMENT_COLUMNS = 'id, sequence_number, status, eligible_registration_count, fee_per_registration_cents, platform_fee_gross_cents, gross_confirmed_cents, provider_payment_id, provider_net_value_cents, split_recipient_wallet_id, split_percent, split_id, distribution_status, due_at, issued_at, paid_at, distribution_done_at, created_at'
 
 type EventReceipt = {
   id: string
@@ -79,14 +83,22 @@ export default async function FinancialPage({ params }: { params: { id: string }
   if (!membership && !platformRole) redirect('/dashboard?erro=sem_permissao')
   const canSettle = Boolean(platformRole || membership?.role === 'owner' || membership?.role === 'organizer')
   const manualOnly = isPaymentsManualOnly()
-  const [{ data, error }, closing, { data: receiptRows, error: receiptsError }, { data: pixReady }] = await Promise.all([
+  const [{ data, error }, closing, { data: receiptRows, error: receiptsError }, { data: pixReady }, { data: settlementRows }] = await Promise.all([
     supabase.from('payments').select(`id, external_reference, valor_total, metodo, status, created_at, payment_attempts(gateway_payment_id, status), payment_registrations(amount, registrations(id, status, athlete_snapshot, category_snapshot))`).eq('event_id', event.id).order('created_at', { ascending: false }),
     loadEventClosing(supabase, event.id),
     supabase.from('payment_receipts').select('id, payment_id, status, mime_type, created_at, reviewed_at, rejection_reason').eq('event_id', event.id).order('created_at', { ascending: false }),
     supabase.rpc('event_direct_pix_configured', { target_event_id: event.id }),
+    supabase.from('event_financial_settlements').select(`${SETTLEMENT_COLUMNS}, event_financial_settlement_items(registration_id)`).eq('event_id', event.id).order('sequence_number', { ascending: false }),
   ])
   const payments = (data || []) as unknown as FinancialPayment[]
   const receipts = (receiptRows || []) as EventReceipt[]
+  const settlements = (settlementRows || []) as unknown as Array<SettlementRow & { event_financial_settlement_items: Array<{ registration_id: string }> }>
+  const settledRegistrations = new Set(settlements.flatMap(settlement => settlement.event_financial_settlement_items.map(item => item.registration_id)))
+  const pendingSettlementRegistrations = new Set(payments
+    .filter(payment => payment.status === 'pago')
+    .flatMap(payment => payment.payment_registrations)
+    .filter(link => link.registrations?.status === 'efetivada' && !settledRegistrations.has(link.registrations.id))
+    .map(link => link.registrations!.id))
   const receiptsByPayment = new Map<string, EventReceipt[]>()
   for (const receipt of receipts) receiptsByPayment.set(receipt.payment_id, [...(receiptsByPayment.get(receipt.payment_id) || []), receipt])
   const pendingReceipts = receipts
@@ -119,6 +131,16 @@ export default async function FinancialPage({ params }: { params: { id: string }
           />
 
           <FinancialClosingReport report={closing} />
+
+          <EventSettlementCard
+            eventId={event.id}
+            settlements={settlements}
+            pendingCount={pendingSettlementRegistrations.size}
+            receiptsInReview={receipts.filter(receipt => receipt.status === 'em_analise').length}
+            canIssue={canSettle}
+            platformAdmin={Boolean(platformRole)}
+            enabled={isPlatformSettlementEnabled()}
+          />
 
           {missingPix ? (
             <Alert variant="warning" role="status" title="PIX de recebimento não configurado">

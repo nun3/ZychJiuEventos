@@ -1508,6 +1508,178 @@ export type Database = {
           },
         ]
       }
+      event_financial_settlement_items: {
+        Row: {
+          created_at: string
+          fee_cents: number
+          gross_cents: number
+          payment_id: string
+          registration_id: string
+          settlement_id: string
+        }
+        Insert: {
+          created_at?: string
+          fee_cents: number
+          gross_cents: number
+          payment_id: string
+          registration_id: string
+          settlement_id: string
+        }
+        Update: {
+          created_at?: string
+          fee_cents?: number
+          gross_cents?: number
+          payment_id?: string
+          registration_id?: string
+          settlement_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_financial_settlement_items_settlement_id_fkey"
+            columns: ["settlement_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_settlements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_financial_settlements: {
+        Row: {
+          commercial_policy_snapshot: Json
+          created_at: string
+          created_by: string
+          distribution_done_at: string | null
+          distribution_provider_event_id: string | null
+          distribution_status: Database["public"]["Enums"]["settlement_distribution_status"]
+          due_at: string | null
+          eligible_registration_count: number
+          event_id: string
+          fee_per_registration_cents: number
+          fee_type: string
+          gross_confirmed_cents: number
+          id: string
+          issue_claimed_at: string | null
+          issue_token: string | null
+          issued_at: string | null
+          organization_id: string
+          paid_at: string | null
+          platform_fee_gross_cents: number
+          provider: string
+          provider_customer_id: string | null
+          provider_external_reference: string
+          provider_net_value_cents: number | null
+          provider_payment_id: string | null
+          sequence_number: number
+          split_id: string | null
+          split_percent: number | null
+          split_recipient_wallet_id: string | null
+          status: Database["public"]["Enums"]["settlement_status"]
+          updated_at: string
+        }
+        Insert: {
+          commercial_policy_snapshot: Json
+          created_at?: string
+          created_by: string
+          distribution_done_at?: string | null
+          distribution_provider_event_id?: string | null
+          distribution_status?: Database["public"]["Enums"]["settlement_distribution_status"]
+          due_at?: string | null
+          eligible_registration_count: number
+          event_id: string
+          fee_per_registration_cents: number
+          fee_type: string
+          gross_confirmed_cents: number
+          id?: string
+          issue_claimed_at?: string | null
+          issue_token?: string | null
+          issued_at?: string | null
+          organization_id: string
+          paid_at?: string | null
+          platform_fee_gross_cents: number
+          provider?: string
+          provider_customer_id?: string | null
+          provider_external_reference: string
+          provider_net_value_cents?: number | null
+          provider_payment_id?: string | null
+          sequence_number: number
+          split_id?: string | null
+          split_percent?: number | null
+          split_recipient_wallet_id?: string | null
+          status?: Database["public"]["Enums"]["settlement_status"]
+          updated_at?: string
+        }
+        Update: {
+          commercial_policy_snapshot?: Json
+          created_at?: string
+          created_by?: string
+          distribution_done_at?: string | null
+          distribution_provider_event_id?: string | null
+          distribution_status?: Database["public"]["Enums"]["settlement_distribution_status"]
+          due_at?: string | null
+          eligible_registration_count?: number
+          event_id?: string
+          fee_per_registration_cents?: number
+          fee_type?: string
+          gross_confirmed_cents?: number
+          id?: string
+          issue_claimed_at?: string | null
+          issue_token?: string | null
+          issued_at?: string | null
+          organization_id?: string
+          paid_at?: string | null
+          platform_fee_gross_cents?: number
+          provider?: string
+          provider_customer_id?: string | null
+          provider_external_reference?: string
+          provider_net_value_cents?: number | null
+          provider_payment_id?: string | null
+          sequence_number?: number
+          split_id?: string | null
+          split_percent?: number | null
+          split_recipient_wallet_id?: string | null
+          status?: Database["public"]["Enums"]["settlement_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_financial_settlements_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_billing_customers: {
+        Row: {
+          claimed_at: string
+          gateway_customer_id: string | null
+          organization_id: string
+          provider: string
+          state: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          claimed_at?: string
+          gateway_customer_id?: string | null
+          organization_id: string
+          provider?: string
+          state: string
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          claimed_at?: string
+          gateway_customer_id?: string | null
+          organization_id?: string
+          provider?: string
+          state?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payment_receipts: {
         Row: {
           created_at: string
@@ -2171,6 +2343,51 @@ export type Database = {
         Args: { actor_id: string; target_payment_id: string }
         Returns: Json
       }
+      claim_organization_billing_customer: {
+        Args: { actor_id: string; target_organization_id: string }
+        Returns: Json
+      }
+      claim_settlement_issuance: {
+        Args: { actor_id: string; target_settlement_id: string }
+        Returns: Json
+      }
+      complete_organization_billing_customer: {
+        Args: { claim_token: string; gateway_id: string; target_organization_id: string }
+        Returns: undefined
+      }
+      complete_settlement_issuance: {
+        Args: {
+          amount_value: number
+          claim_token: string
+          gateway_id: string
+          percent_value: number
+          reference_value: string
+          split_value: string
+          target_settlement_id: string
+          wallet_id: string
+        }
+        Returns: undefined
+      }
+      create_event_financial_settlement: {
+        Args: { target_event_id: string }
+        Returns: Json
+      }
+      flag_organization_billing_customer_reconciliation: {
+        Args: { claim_token: string; target_organization_id: string }
+        Returns: undefined
+      }
+      flag_settlement_issuance_reconciliation: {
+        Args: { claim_token: string; target_settlement_id: string }
+        Returns: undefined
+      }
+      process_settlement_webhook: {
+        Args: { target_event_id: string }
+        Returns: Json
+      }
+      release_settlement_issuance_claim: {
+        Args: { claim_token: string; target_settlement_id: string }
+        Returns: undefined
+      }
       confirm_bracket_group_awards: {
         Args: { target_group_id: string }
         Returns: Json
@@ -2644,6 +2861,14 @@ export type Database = {
         | "estornado"
       pix_key_type: "cpf" | "cnpj" | "email" | "telefone" | "aleatoria"
       platform_role: "admin"
+      settlement_distribution_status: "pendente" | "concluido" | "falhou"
+      settlement_status:
+        | "pendente_emissao"
+        | "emitindo"
+        | "aguardando_pagamento"
+        | "reconciliacao"
+        | "pago"
+        | "cancelado"
       registration_status:
         | "rascunho"
         | "pendente_pagamento"
@@ -2832,6 +3057,15 @@ export const Constants = {
       ],
       pix_key_type: ["cpf", "cnpj", "email", "telefone", "aleatoria"],
       platform_role: ["admin"],
+      settlement_distribution_status: ["pendente", "concluido", "falhou"],
+      settlement_status: [
+        "pendente_emissao",
+        "emitindo",
+        "aguardando_pagamento",
+        "reconciliacao",
+        "pago",
+        "cancelado",
+      ],
       registration_status: [
         "rascunho",
         "pendente_pagamento",
