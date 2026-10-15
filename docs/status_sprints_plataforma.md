@@ -958,3 +958,22 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - decisoes: sem convite, sem self-service, sem switcher, sem transferencia de ownership; `PUBLIC_ORGANIZATION_ID` preservado; escrita de membership so via RPC;
 - divida tecnica aceita: Asaas producao, observabilidade, onboarding publico;
 - proxima etapa: PIX/boleto permanece bloqueado. Sem Vercel, Production ou push.
+
+### 2026-10-09 — Financeiro BaaS Lote 1: modelo comercial e fee engine
+
+- data: 2026-10-09;
+- entregas verificadas: `lib/finance/commercial-fee.ts` com taxa em basis points (10% padrao, promocao 8% por 5 meses a partir da primeira inscricao paga), divisao 50/50 da receita MEU CAMP, residual no ultimo parceiro e identidade `bruto = PSP + liquido organizador + parceiros`;
+- testes: unit `commercial-fee` (10 casos);
+- decisoes: dominio puro, separado do Asaas; custo do PSP fica com a organizacao; regra comercial em `docs/financeiro-modelo-comercial.md`;
+- fronteira: motor nao ligado ao fluxo operacional; `event_platform_fees` (taxa fixa) continua vigente;
+- proxima etapa: Lote 2.
+
+### 2026-10-10 — Financeiro BaaS Lote 2: identidade financeira por organizacao
+
+- data: 2026-10-10;
+- entregas verificadas: tabela `organization_payment_accounts` com `UNIQUE (organization_id, provider)`, RLS somente leitura (owner/organizer/finance e platform admin), RPCs `create_organization_payment_account_pending` e `admin_update_organization_payment_account` com auditoria em `event_audit_logs`; readiness nunca libera `READY`;
+- migration `202610100001_organization_payment_accounts.sql` aplicada no Sandbox `kfvypacjzlzwwblsbpwj` pelo SQL Editor; tabela, policy e RPCs conferidas no banco;
+- testes: unit `organization-payment-account`; smoke SQL `organization_payment_accounts_smoke.sql` no Sandbox (rollback) cobrindo isolamento Org A/Org B, staff e usuario sem papel, forja de `wallet_id`/`ready`, unicidade e bloqueio de `ready` para platform admin;
+- decisoes: sem dados bancarios, sem chamada Asaas; escrita somente via RPC; `ready` bloqueado ate onboarding BaaS; documentado em `docs/financeiro-organization-payment-accounts.md`;
+- divida tecnica aceita: historico do CLI Supabase nao registra esta migration (aplicada pelo SQL Editor);
+- proxima etapa: Lote 3 — onboarding BaaS Sandbox. `PAYMENTS_MANUAL_ONLY=true` permanece. Sem Production ou push.
