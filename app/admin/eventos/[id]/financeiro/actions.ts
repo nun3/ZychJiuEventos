@@ -36,6 +36,8 @@ export async function settlePaymentManually(formData: FormData): Promise<Result>
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, message: 'Sua sessão expirou.' }
+  const { count: receiptsInReview } = await supabase.from('payment_receipts').select('id', { count: 'exact', head: true }).eq('payment_id', paymentId).eq('status', 'em_analise')
+  if (receiptsInReview) return { ok: false, message: 'Há comprovante PIX em análise para este pagamento. Aprove ou rejeite o comprovante.' }
   const { data, error } = await supabase.rpc('settle_payment_manually', { target_payment_id: paymentId, reason_text: reason })
   if (error || !data || typeof data !== 'object' || Array.isArray(data) || data.kind !== 'settled') return { ok: false, message: 'Baixa recusada: confira permissão, estado do pagamento e inscrições.' }
   revalidatePath(`/admin/eventos/${eventId}/financeiro`)

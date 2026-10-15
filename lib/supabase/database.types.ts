@@ -1260,6 +1260,44 @@ export type Database = {
           },
         ]
       }
+      organization_pix_settings: {
+        Row: {
+          created_at: string
+          organization_id: string
+          pix_key: string
+          pix_key_type: Database["public"]["Enums"]["pix_key_type"]
+          recipient_name: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          organization_id: string
+          pix_key: string
+          pix_key_type: Database["public"]["Enums"]["pix_key_type"]
+          recipient_name: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          organization_id?: string
+          pix_key?: string
+          pix_key_type?: Database["public"]["Enums"]["pix_key_type"]
+          recipient_name?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_pix_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           ativo: boolean
@@ -1430,6 +1468,100 @@ export type Database = {
             foreignKeyName: "payment_issuance_jobs_payment_id_fkey"
             columns: ["payment_id"]
             isOneToOne: true
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_pix_instructions: {
+        Row: {
+          created_at: string
+          organization_id: string
+          payment_id: string
+          pix_key: string
+          pix_key_type: Database["public"]["Enums"]["pix_key_type"]
+          recipient_name: string
+        }
+        Insert: {
+          created_at?: string
+          organization_id: string
+          payment_id: string
+          pix_key: string
+          pix_key_type: Database["public"]["Enums"]["pix_key_type"]
+          recipient_name: string
+        }
+        Update: {
+          created_at?: string
+          organization_id?: string
+          payment_id?: string
+          pix_key?: string
+          pix_key_type?: Database["public"]["Enums"]["pix_key_type"]
+          recipient_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_pix_instructions_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: true
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_receipts: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          mime_type: string
+          organization_id: string
+          payment_id: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          size_bytes: number
+          status: Database["public"]["Enums"]["payment_receipt_status"]
+          storage_path: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id: string
+          mime_type: string
+          organization_id: string
+          payment_id: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          size_bytes: number
+          status?: Database["public"]["Enums"]["payment_receipt_status"]
+          storage_path: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          mime_type?: string
+          organization_id?: string
+          payment_id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          size_bytes?: number
+          status?: Database["public"]["Enums"]["payment_receipt_status"]
+          storage_path?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_receipts_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
             referencedRelation: "payments"
             referencedColumns: ["id"]
           },
@@ -2098,6 +2230,35 @@ export type Database = {
         }
         Returns: Json
       }
+      approve_payment_receipt: {
+        Args: { target_receipt_id: string }
+        Returns: Json
+      }
+      event_direct_pix_configured: {
+        Args: { target_event_id: string }
+        Returns: boolean
+      }
+      reject_payment_receipt: {
+        Args: { reason_text: string; target_receipt_id: string }
+        Returns: Json
+      }
+      set_organization_pix_settings: {
+        Args: {
+          key_type: Database["public"]["Enums"]["pix_key_type"]
+          key_value: string
+          recipient: string
+          target_organization_id: string
+        }
+        Returns: Json
+      }
+      submit_payment_receipt: {
+        Args: {
+          file_extension: string
+          target_payment_id: string
+          target_receipt_id: string
+        }
+        Returns: Json
+      }
       create_organization_with_owner: {
         Args: {
           organization_name: string
@@ -2474,12 +2635,14 @@ export type Database = {
         | "restricted"
       organization_role: "owner" | "organizer" | "staff" | "finance"
       payment_method: "pix" | "boleto"
+      payment_receipt_status: "em_analise" | "aprovado" | "rejeitado"
       payment_status:
         | "aguardando"
         | "pago"
         | "expirado"
         | "cancelado"
         | "estornado"
+      pix_key_type: "cpf" | "cnpj" | "email" | "telefone" | "aleatoria"
       platform_role: "admin"
       registration_status:
         | "rascunho"
@@ -2659,6 +2822,7 @@ export const Constants = {
       ],
       organization_role: ["owner", "organizer", "staff", "finance"],
       payment_method: ["pix", "boleto"],
+      payment_receipt_status: ["em_analise", "aprovado", "rejeitado"],
       payment_status: [
         "aguardando",
         "pago",
@@ -2666,6 +2830,7 @@ export const Constants = {
         "cancelado",
         "estornado",
       ],
+      pix_key_type: ["cpf", "cnpj", "email", "telefone", "aleatoria"],
       platform_role: ["admin"],
       registration_status: [
         "rascunho",

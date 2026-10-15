@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { allowsPublicOrganization } from '@/lib/events/public-organization'
+import { isPaymentsManualOnly } from '@/lib/payments/manual-only'
+import { requiresDirectPixInstructions } from '@/lib/finance/payment-receipt'
 import type { Database } from '@/lib/supabase/database.types'
 import { revalidatePath } from 'next/cache'
 
@@ -43,7 +45,7 @@ async function reserve(formData: FormData): Promise<ReservePaymentState> {
     return { error: 'Selecione inscrições e uma forma de pagamento.', summary: null }
   }
 
-  const { data: event } = await supabase.from('events').select('organization_id').eq('id', eventId).maybeSingle()
+  const { data: event } = await supabase.from('events').select('organization_id, valor_inscricao').eq('id', eventId).maybeSingle()
   if (!event || !allowsPublicOrganization(event.organization_id)) {
     return { error: 'Este evento não pertence à organização ativa.', summary: null }
   }
@@ -54,6 +56,16 @@ async function reserve(formData: FormData): Promise<ReservePaymentState> {
   const now = Date.now()
   if (phaseError || !phase || now < Date.parse(phase.inicio) || now > Date.parse(phase.fim)) {
     return { error: 'Este evento está fora do prazo de pagamento.', summary: null }
+  }
+  // Modelo ativo é PIX direto ao organizador: sem chave configurada não existe instrução de pagamento.
+  if (requiresDirectPixInstructions({ manualOnly: isPaymentsManualOnly(), eventFee: event.valor_inscricao })) {
+    if (method !== 'pix') {
+      return { error: 'Neste momento o pagamento é feito somente por PIX direto à organização.', summary: null }
+    }
+    const { data: pixReady, error: pixError } = await supabase.rpc('event_direct_pix_configured', { target_event_id: eventId })
+    if (pixError || pixReady !== true) {
+      return { error: 'A organização ainda não configurou o PIX de recebimento. Tente novamente mais tarde ou fale com a organização do evento.', summary: null }
+    }
   }
   const { data, error } = await supabase.rpc('reserve_payment_batch', {
     target_event_id: eventId,

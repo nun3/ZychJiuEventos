@@ -20,6 +20,7 @@ import { createClient } from '@/lib/supabase/server'
 import { allowsPublicOrganization, getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { isPaymentsManualOnly } from '@/lib/payments/manual-only'
 import type { Json } from '@/lib/supabase/database.types'
+import { PAYMENT_RECEIPT_STATUS_LABELS, type PaymentReceiptStatus } from '@/lib/finance/payment-receipt'
 import PaymentCheckout, { type CheckoutRegistration } from './PaymentCheckout'
 import CategoryChangeRequest from './CategoryChangeRequest'
 import RegistrationCorrectionRequest from './RegistrationCorrectionRequest'
@@ -77,6 +78,12 @@ export default async function RegistrationsPage() {
   const scopedRegistrations = (result.data || []).filter((registration) => inReleaseOrganization(registration.events?.organization_id))
   const scopedPayments = (payments.data || []).filter((payment) => inReleaseOrganization(payment.events?.organization_id))
   const error = own.error || managed.error || result.error || payments.error || ('error' in teams && teams.error) || scope.mode === 'blocked'
+  const waitingIds = scopedPayments.filter(payment => payment.status === 'aguardando').map(payment => payment.id)
+  const { data: receiptRows } = waitingIds.length
+    ? await supabase.from('payment_receipts').select('payment_id, status, created_at').in('payment_id', waitingIds).order('created_at', { ascending: false })
+    : { data: [] as Array<{ payment_id: string; status: PaymentReceiptStatus; created_at: string }> }
+  const latestReceipt = new Map<string, PaymentReceiptStatus>()
+  for (const receipt of receiptRows || []) if (!latestReceipt.has(receipt.payment_id)) latestReceipt.set(receipt.payment_id, receipt.status)
   const reserved = new Set(scopedPayments.filter(p => ['aguardando', 'pago'].includes(p.status)).flatMap(p => p.payment_registrations.map(r => r.registration_id)))
   const checkoutRows: CheckoutRegistration[] = scopedRegistrations.filter(r => !reserved.has(r.id)).map(r => ({
     id: r.id,
@@ -206,9 +213,15 @@ export default async function RegistrationsPage() {
                       <strong className="block font-mc-interface text-mc-text-primary">{payment.events?.nome || 'Evento'}</strong>
                       <span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">{payment.metodo.toUpperCase()} · {payment.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                     </span>
-                    <StatusBadge variant={payment.status === 'pago' ? 'success' : payment.status === 'aguardando' ? 'warning' : 'error'}>
-                      {payment.status === 'aguardando' ? 'Aguardando baixa' : payment.status === 'pago' ? 'Pago' : payment.status.replaceAll('_', ' ')}
-                    </StatusBadge>
+                    {payment.status === 'aguardando' && latestReceipt.has(payment.id) ? (
+                      <StatusBadge variant={latestReceipt.get(payment.id) === 'rejeitado' ? 'error' : 'info'}>
+                        {PAYMENT_RECEIPT_STATUS_LABELS[latestReceipt.get(payment.id) as PaymentReceiptStatus]}
+                      </StatusBadge>
+                    ) : (
+                      <StatusBadge variant={payment.status === 'pago' ? 'success' : payment.status === 'aguardando' ? 'warning' : 'error'}>
+                        {payment.status === 'aguardando' ? (isPaymentsManualOnly() ? 'Aguardando pagamento' : 'Aguardando baixa') : payment.status === 'pago' ? 'Pago' : payment.status.replaceAll('_', ' ')}
+                      </StatusBadge>
+                    )}
                   </Link>
                 </li>
               ))}

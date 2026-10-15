@@ -57,7 +57,7 @@ export default function PaymentCheckout({ registrations, manualOnly = false }: {
       <p className="mt-mc-8 font-mc-interface text-sm leading-6 text-mc-text-secondary">Selecione inscrições pendentes do mesmo evento.</p>
       <p className="mt-mc-8 font-mc-interface text-sm leading-6 text-mc-text-secondary">
         {manualOnly
-          ? 'Esta etapa apenas reserva o valor para a baixa manual do organizador. Não emite cobrança no Asaas nem confirma pagamento.'
+          ? 'O pagamento é feito por PIX direto à organização do evento. Depois de reservar, você verá a chave PIX e enviará o comprovante para validação. Não emite cobrança no Asaas nem confirma pagamento.'
           : 'Esta etapa apenas reserva o valor. Não emite cobrança nem confirma pagamento. Até 100 inscrições por reserva.'}
       </p>
       {state.error ? <Alert variant="error" role="alert" className="mt-mc-16">{state.error}</Alert> : null}
@@ -66,7 +66,7 @@ export default function PaymentCheckout({ registrations, manualOnly = false }: {
           <strong>Reserva persistida.</strong> {state.summary.registrationCount} inscrição(ões), {money(state.summary.total)}, método {state.summary.method.toUpperCase()}.
           <span className="mt-mc-4 block text-sm">Referência: {state.summary.externalReference}</span>
           <Link className="mt-mc-8 inline-flex min-h-11 items-center font-semibold text-mc-action hover:underline" href={`/dashboard/pagamentos/${state.summary.paymentId}`}>
-            Ver resumo do pagamento
+            {manualOnly ? 'Ver chave PIX e enviar comprovante' : 'Ver resumo do pagamento'}
           </Link>
         </Alert>
       ) : null}
@@ -103,16 +103,22 @@ export default function PaymentCheckout({ registrations, manualOnly = false }: {
           ) : null}
           <fieldset className="space-y-mc-8">
             <legend className="font-mc-interface text-sm font-semibold text-mc-text-primary">Forma de pagamento</legend>
-            <p className="font-mc-interface text-sm text-mc-text-secondary">Indica como o valor será informado ao organizador. Não gera cobrança automática.</p>
+            <p className="font-mc-interface text-sm text-mc-text-secondary">
+              {manualOnly
+                ? 'PIX direto para a organização. O MEU CAMP não recebe o valor e não gera cobrança automática.'
+                : 'Indica como o valor será informado ao organizador. Não gera cobrança automática.'}
+            </p>
             <div className="flex flex-wrap gap-mc-16">
               <label className="inline-flex min-h-11 items-center gap-mc-8 font-mc-interface text-sm text-mc-text-primary">
-                <input type="radio" name="method" value="pix" checked={method === 'pix'} onChange={() => setMethod('pix')} className="text-mc-action focus:ring-mc-focus" />
+                <input type="radio" name="method" value="pix" checked={manualOnly || method === 'pix'} onChange={() => setMethod('pix')} className="text-mc-action focus:ring-mc-focus" />
                 PIX
               </label>
-              <label className="inline-flex min-h-11 items-center gap-mc-8 font-mc-interface text-sm text-mc-text-primary">
-                <input type="radio" name="method" value="boleto" checked={method === 'boleto'} onChange={() => setMethod('boleto')} className="text-mc-action focus:ring-mc-focus" />
-                Boleto
-              </label>
+              {manualOnly ? null : (
+                <label className="inline-flex min-h-11 items-center gap-mc-8 font-mc-interface text-sm text-mc-text-primary">
+                  <input type="radio" name="method" value="boleto" checked={method === 'boleto'} onChange={() => setMethod('boleto')} className="text-mc-action focus:ring-mc-focus" />
+                  Boleto
+                </label>
+              )}
             </div>
           </fieldset>
           <p className="font-mc-interface font-semibold text-mc-text-primary">Total: {money(total)}</p>

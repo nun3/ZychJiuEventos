@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Comprovante PIX vai até 4 MB (validado no servidor). A Vercel corta corpos acima de 4,5 MB antes daqui.
+    serverActions: { bodySizeLimit: '5mb' },
+  },
   images: {
     remotePatterns: [
       {
