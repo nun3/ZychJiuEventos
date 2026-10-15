@@ -1,0 +1,69 @@
+{
+  "runId": "settlement-smoke-20261015-195227",
+  "mode": "webhook-real",
+  "registrations": 2,
+  "ownerIsPlatformAdmin": false,
+  "settlement": {
+    "id": "6cee…89d1",
+    "total": "R$ 16,00",
+    "policy": "FIXED_PER_PAID_REGISTRATION",
+    "feePerRegistrationCents": 800
+  },
+  "charge": {
+    "id": "pay_…xo7k",
+    "value": 16,
+    "status": "PENDING",
+    "billingType": "PIX",
+    "netValue": 15.01,
+    "split": [
+      {
+        "walletId": "df9a…b96b",
+        "percentualValue": 50,
+        "status": "PENDING",
+        "id": "c8e5…0698"
+      }
+    ]
+  },
+  "idempotentReissue": "OK — mesma cobrança reexibida",
+  "sandboxConfirm": "HTTP 200",
+  "final": {
+    "status": "pago",
+    "paidAt": "2026-10-15T22:53:22.42023+00:00",
+    "netValueCents": 1501,
+    "distributionStatus": "concluido",
+    "splitId": "c8e5…0698",
+    "splitPercent": 50,
+    "splitProviderEvent": "evt_…3374",
+    "distributionDoneAt": "2026-10-15T22:53:21.573118+00:00"
+  },
+  "webhookEvents": [
+    {
+      "id": "evt_…3374",
+      "type": "PAYMENT_SPLIT_DONE",
+      "status": "processado",
+      "error": null
+    },
+    {
+      "id": "evt_…3375",
+      "type": "PAYMENT_RECEIVED",
+      "status": "processado",
+      "error": null
+    }
+  ],
+  "duplicateWebhook": "OK — reentrega do evento real respondeu 200 duplicate",
+  "asaasAfter": {
+    "status": "RECEIVED",
+    "netValue": 15.01,
+    "split": [
+      {
+        "walletId": "df9a…b96b",
+        "percentualValue": 50,
+        "status": "DONE",
+        "totalValue": 7.5
+      }
+    ]
+  },
+  "adminAudit": "Conta E2E não é admin da plataforma; auditoria não exibida (esperado para organizador)",
+  "smoke": "OK",
+  "cleanup": "OK (massa removida; cliente Asaas da organização preservado)"
+}

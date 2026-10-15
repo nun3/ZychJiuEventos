@@ -988,3 +988,15 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - decisoes: documentadas em `docs/financeiro-pix-direto-comprovante.md`;
 - divida tecnica aceita: historico do CLI Supabase nao registra esta migration; `homologation-journey.ts` precisa do hook de PIX E2E ou de PIX real na MEU CAMP;
 - proxima etapa: aplicar a migration antes de qualquer deploy. `PAYMENTS_MANUAL_ONLY=true` permanece. Sem Production ou push.
+
+### 2026-10-15 — Financeiro Lote 4: fechamento de R$ 8 por inscricao com PIX e split 50/50
+
+- data: 2026-10-15;
+- entregas verificadas: `event_financial_settlements`, `event_financial_settlement_items` (inscricao unica), `organization_billing_customers`; RPC `create_event_financial_settlement` (R$ 8,00 por inscricao `efetivada` paga, snapshot da politica v1); emissao PIX no Asaas Sandbox com `split` 50% do liquido para a conta recebedora reaproveitando `issueReservedPayment`; webhook despachado por evento com `PAYMENT_RECEIVED` e `PAYMENT_SPLIT_DONE`; card de fechamento no financeiro e auditoria para admin da plataforma;
+- migration `202610150002_event_financial_settlements.sql` aplicada no Sandbox `kfvypacjzlzwwblsbpwj` pelo SQL Editor com SHA-256 conferido; smoke SQL `event_financial_settlements_smoke.sql` (rollback) sem falhas;
+- testes: unit `settlement` (17; 72 com as suites financeiras); smoke `settlement-asaas-smoke.ts` simulado e real;
+- deploy: `jiu-three.vercel.app` com handler novo comprovado por sonda; variaveis Asaas/settlement criadas em Production (token de webhook exclusivo); `PAYMENT_SPLIT_DONE` habilitado no webhook da Conta A depois do deploy;
+- homologacao real: `settlement-smoke-20261015-195227` — fechamento `pago`, liquido R$ 15,01, split `DONE` R$ 7,50 para a Conta B, distribuicao `concluido`, idempotencia de reexibicao e de webhook, limpeza OK;
+- decisoes: documentadas em `docs/financeiro-lote-4-fechamento.md`;
+- divida tecnica aceita: projeto Vercel sem integracao Git (deploy manual); conta E2E nao e admin da plataforma, entao o bloco de auditoria nao foi exercitado no smoke; tres eventos `falhou` da primeira tentativa permanecem em `webhook_events` como registro;
+- proxima etapa: `PAYMENTS_MANUAL_ONLY=true` permanece. Sem Asaas Production.

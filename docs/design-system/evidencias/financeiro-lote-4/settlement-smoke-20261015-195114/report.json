@@ -1,0 +1,43 @@
+{
+  "runId": "settlement-smoke-20261015-195114",
+  "mode": "webhook-real",
+  "registrations": 2,
+  "ownerIsPlatformAdmin": false,
+  "settlement": {
+    "id": "48a5…8f17",
+    "total": "R$ 16,00",
+    "policy": "FIXED_PER_PAID_REGISTRATION",
+    "feePerRegistrationCents": 800
+  },
+  "charge": {
+    "id": "pay_…pm2d",
+    "value": 16,
+    "status": "PENDING",
+    "billingType": "PIX",
+    "netValue": 15.01,
+    "split": [
+      {
+        "walletId": "df9a…b96b",
+        "percentualValue": 50,
+        "status": "PENDING",
+        "id": "7283…0041"
+      }
+    ]
+  },
+  "idempotentReissue": "OK — mesma cobrança reexibida",
+  "sandboxConfirm": "HTTP 200",
+  "final": {
+    "status": "pago",
+    "paidAt": "2026-10-15T22:52:13.920881+00:00",
+    "netValueCents": 1501,
+    "distributionStatus": "concluido",
+    "splitId": "7283…0041",
+    "splitPercent": 50,
+    "splitProviderEvent": "evt_…3164",
+    "distributionDoneAt": "2026-10-15T22:52:12.541467+00:00"
+  },
+  "webhookEvents": [],
+  "smoke": "FALHA",
+  "error": "Evento real PAYMENT_RECEIVED não encontrado.",
+  "cleanup": "OK (massa removida; cliente Asaas da organização preservado)"
+}
