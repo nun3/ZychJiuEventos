@@ -977,3 +977,14 @@ Detalhes diarios devem ficar no gerenciador de tarefas ou nos commits, nao neste
 - decisoes: sem dados bancarios, sem chamada Asaas; escrita somente via RPC; `ready` bloqueado ate onboarding BaaS; documentado em `docs/financeiro-organization-payment-accounts.md`;
 - divida tecnica aceita: historico do CLI Supabase nao registra esta migration (aplicada pelo SQL Editor);
 - proxima etapa: Lote 3 — onboarding BaaS Sandbox. `PAYMENTS_MANUAL_ONLY=true` permanece. Sem Production ou push.
+
+### 2026-10-15 — Financeiro Lote 3: PIX direto ao organizador com comprovante
+
+- data: 2026-10-15;
+- entregas verificadas: `organization_pix_settings` (somente owner configura), snapshot `payment_pix_instructions` na reserva, `payment_receipts` com historico, bucket privado `payment-receipts` (4 MB, JPG/PNG/PDF), RPCs `submit/approve/reject_payment_receipt`; aprovacao reutiliza `settle_payment_manually`; gate de evento pago sem PIX; checkout somente PIX no modo manual; telas de pagamento, organizacao e financeiro;
+- migration `202610150001_direct_pix_payment_receipts.sql` aplicada no Sandbox `kfvypacjzlzwwblsbpwj` pelo SQL Editor com conteudo conferido por SHA-256; RLS, policies, bucket, `SECURITY DEFINER`/`search_path` e grants conferidos no banco; `anon` sem `EXECUTE` em `reserve_payment_batch` (exposicao anterior removida);
+- testes: unit `pix-direct-receipt` (13); smoke SQL `payment_receipts_smoke.sql` (rollback) sem falhas; smoke E2E/visual `pix-receipt-smoke.ts` com reserva, 4 uploads maliciosos recusados, acesso anonimo/terceiro negado, rejeicao, reenvio, aprovacao, auditoria e nenhum Asaas; capturas em 1440 e 390 px;
+- seguranca: revisao dedicada; filtro de PDF reforcado (inflate + `#hex` + criptografia) e baixa manual bloqueada com comprovante em analise;
+- decisoes: documentadas em `docs/financeiro-pix-direto-comprovante.md`;
+- divida tecnica aceita: historico do CLI Supabase nao registra esta migration; `homologation-journey.ts` precisa do hook de PIX E2E ou de PIX real na MEU CAMP;
+- proxima etapa: aplicar a migration antes de qualquer deploy. `PAYMENTS_MANUAL_ONLY=true` permanece. Sem Production ou push.
