@@ -1,4 +1,5 @@
 import { createHash, timingSafeEqual } from 'node:crypto'
+import { isSettlementReference } from '../finance/settlement'
 import type { PaymentObservation } from './domain'
 
 export type AsaasWebhookEvent = {
@@ -78,5 +79,85 @@ export function parseAsaasWebhook(value: unknown): AsaasWebhookEvent {
       billingType: details.billingType,
       status: details.status.trim(),
     },
+  }
+}
+
+export type SettlementWebhookEvent = {
+  id: string
+  event: string
+  payment: {
+    id: string
+    externalReference: string
+    value: number
+    netValue: number | null
+    billingType: string
+    status: string
+  }
+  additionalInfo: { splitId: string } | null
+}
+
+export type WebhookEnvelope = { id: string; event: string }
+
+export type WebhookDispatch =
+  | { route: 'athlete'; event: AsaasWebhookEvent }
+  | { route: 'settlement'; event: SettlementWebhookEvent }
+  | { route: 'ignored'; event: WebhookEnvelope; reason: string }
+
+function shortString(value: unknown, maximum: number): string | null {
+  return typeof value === 'string' && value.trim() && value.length <= maximum ? value.trim() : null
+}
+
+function money(value: unknown): number | null {
+  if (typeof value !== 'string' && typeof value !== 'number') return null
+  const text = String(value).trim()
+  const amount = Number(text)
+  return /^\d{1,10}(?:\.\d{1,2})?$/.test(text) && Number.isFinite(amount) ? amount : null
+}
+
+function parseSettlementWebhook(envelope: WebhookEnvelope, details: Record<string, unknown>, data: Record<string, unknown>): SettlementWebhookEvent | null {
+  const id = shortString(details.id, 128)
+  const externalReference = shortString(details.externalReference, 128)
+  const billingType = shortString(details.billingType, 40)
+  const status = shortString(details.status, 40)
+  const value = money(details.value)
+  if (!id || !externalReference || !billingType || !status || value === null || value <= 0) return null
+  const netValue = details.netValue == null ? null : money(details.netValue)
+  const info = data.additionalInfo
+  const splitId = info && typeof info === 'object' && !Array.isArray(info)
+    ? shortString((info as Record<string, unknown>).splitId, 128) : null
+  return {
+    ...envelope,
+    payment: { id, externalReference, value, netValue, billingType, status },
+    additionalInfo: splitId ? { splitId } : null,
+  }
+}
+
+/** Dispatch by event first. Only a missing envelope is a client error; anything else is
+ * stored and acknowledged so the Asaas queue is never interrupted by events we do not process. */
+export function dispatchAsaasWebhook(value: unknown): WebhookDispatch {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Payload inválido.')
+  const data = value as Record<string, unknown>
+  const id = shortString(data.id, 128)
+  const event = shortString(data.event, 80)
+  if (!id || !event) throw new Error('Envelope inválido.')
+  const envelope = { id, event }
+  const payment = data.payment
+  if (!event.startsWith('PAYMENT_') || !payment || typeof payment !== 'object' || Array.isArray(payment)) {
+    return { route: 'ignored', event: envelope, reason: 'Evento sem cobrança processável' }
+  }
+  const details = payment as Record<string, unknown>
+  if (isSettlementReference(details.externalReference)) {
+    const parsed = parseSettlementWebhook(envelope, details, data)
+    return parsed
+      ? { route: 'settlement', event: parsed }
+      : { route: 'ignored', event: envelope, reason: 'Payload de fechamento fora do contrato' }
+  }
+  if (event.startsWith('PAYMENT_SPLIT_')) {
+    return { route: 'ignored', event: envelope, reason: 'Split sem fechamento associado' }
+  }
+  try {
+    return { route: 'athlete', event: parseAsaasWebhook(value) }
+  } catch {
+    return { route: 'ignored', event: envelope, reason: 'Payload de cobrança fora do contrato' }
   }
 }
