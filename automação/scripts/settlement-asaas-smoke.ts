@@ -251,7 +251,8 @@ async function main() {
     if (row.distribution_status !== 'concluido') throw new Error('PAYMENT_SPLIT_DONE não concluiu a distribuição.')
 
     const events = await admin.from('webhook_events').select('external_event_id, event_type, status, last_error')
-      .eq('payload->payment->>id', chargeId).order('created_at')
+      .eq('payload->payment->>id', chargeId).order('received_at')
+    if (events.error) throw new Error(`Falha ao ler webhook_events: ${events.error.message}`)
     report.webhookEvents = (events.data || []).map((event) => ({ id: mask(event.external_event_id), type: event.event_type, status: event.status, error: event.last_error }))
 
     if (!simulate) {
