@@ -1203,6 +1203,63 @@ export type Database = {
           },
         ]
       }
+      organization_payment_accounts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          kyc_status: string | null
+          organization_id: string
+          payout_status: string | null
+          provider: string
+          provider_account_id: string | null
+          status: Database["public"]["Enums"]["organization_payment_account_status"]
+          updated_at: string
+          wallet_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kyc_status?: string | null
+          organization_id: string
+          payout_status?: string | null
+          provider: string
+          provider_account_id?: string | null
+          status?: Database["public"]["Enums"]["organization_payment_account_status"]
+          updated_at?: string
+          wallet_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kyc_status?: string | null
+          organization_id?: string
+          payout_status?: string | null
+          provider?: string
+          provider_account_id?: string | null
+          status?: Database["public"]["Enums"]["organization_payment_account_status"]
+          updated_at?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_payment_accounts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_payment_accounts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           ativo: boolean
@@ -1826,6 +1883,17 @@ export type Database = {
         Args: { target_area_id: string; target_group_id: string }
         Returns: Json
       }
+      admin_update_organization_payment_account: {
+        Args: {
+          next_kyc_status?: string | null
+          next_payout_status?: string | null
+          next_provider_account_id?: string | null
+          next_status?: Database["public"]["Enums"]["organization_payment_account_status"] | null
+          next_wallet_id?: string | null
+          target_account_id: string
+        }
+        Returns: Json
+      }
       belt_order: { Args: { athlete_belt: string }; Returns: number }
       bracket_entry_to_json: {
         Args: { include_internal_id?: boolean; target_entry_id: string }
@@ -2022,6 +2090,13 @@ export type Database = {
       create_managed_team: {
         Args: { team_name: string }
         Returns: string
+      }
+      create_organization_payment_account_pending: {
+        Args: {
+          provider_value?: string
+          target_organization_id: string
+        }
+        Returns: Json
       }
       create_organization_with_owner: {
         Args: {
@@ -2388,6 +2463,15 @@ export type Database = {
       manager_relationship: "professor" | "responsavel"
       match_round: "semifinal" | "final"
       match_status: "pendente" | "concluido" | "wo"
+      organization_payment_account_status:
+        | "not_started"
+        | "account_created"
+        | "identity_pending"
+        | "under_review"
+        | "approved"
+        | "payout_pending"
+        | "ready"
+        | "restricted"
       organization_role: "owner" | "organizer" | "staff" | "finance"
       payment_method: "pix" | "boleto"
       payment_status:
@@ -2563,6 +2647,16 @@ export const Constants = {
       manager_relationship: ["professor", "responsavel"],
       match_round: ["semifinal", "final"],
       match_status: ["pendente", "concluido", "wo"],
+      organization_payment_account_status: [
+        "not_started",
+        "account_created",
+        "identity_pending",
+        "under_review",
+        "approved",
+        "payout_pending",
+        "ready",
+        "restricted",
+      ],
       organization_role: ["owner", "organizer", "staff", "finance"],
       payment_method: ["pix", "boleto"],
       payment_status: [
