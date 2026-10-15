@@ -8,6 +8,7 @@ import {
   SANDBOX_HOST,
 } from './e2e-cleanup';
 import { assertHomologationEnvironment, RELEASE_ORG_NAME } from './homologation-guard';
+import { ensureDirectPixForE2E } from './direct-pix-fixture';
 
 type AdminClient = Awaited<ReturnType<typeof createCleanupClients>>['admin'];
 
@@ -89,6 +90,7 @@ export async function createOnboardingVisualJourney(deps: {
   let eventId = '';
   let ownerId = '';
   let cleaned = false;
+  let restorePix: (() => Promise<void>) | null = null;
 
   async function attach(name: string) {
     await deps.testInfo.attach(name, {
@@ -261,6 +263,7 @@ export async function createOnboardingVisualJourney(deps: {
       await eventRow(deps.page, eventName).getByRole('button', { name: 'Abrir pagamento' }).click();
       await waitEventStatus(admin, eventId, 'pagamento');
       await activatePhaseWindow(admin, eventId, 'pagamento', 'inscricao');
+      restorePix = await ensureDirectPixForE2E(admin, env.organizationId);
 
       await deps.page.goto('/dashboard/inscricoes');
       await deps.page.getByRole('heading', { name: 'Reservar pagamento' }).waitFor();
@@ -419,13 +422,17 @@ export async function createOnboardingVisualJourney(deps: {
     async cleanup() {
       if (cleaned) return;
       cleaned = true;
-      await purgeOnboardingRun(admin, {
-        runId,
-        organizationId: env.organizationId,
-        eventId,
-        athleteIds,
-        teamIds,
-      });
+      try {
+        await purgeOnboardingRun(admin, {
+          runId,
+          organizationId: env.organizationId,
+          eventId,
+          athleteIds,
+          teamIds,
+        });
+      } finally {
+        if (restorePix) await restorePix();
+      }
     },
   };
 }

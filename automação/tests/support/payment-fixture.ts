@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import type { Database } from '../../../lib/supabase/database.types';
+import { E2E_PIX_KEY, E2E_PIX_RECIPIENT } from './direct-pix-fixture';
 
 // Node-only fixture provisioning. Never inject the private client/key into the page.
 export function paymentFixture() {
@@ -41,6 +42,8 @@ export function paymentFixture() {
       if (error || !data.user) throw new Error('Credenciais OWNER E2E ausentes ou inválidas.');
       owner = data.user.id;
       await checked(admin.from('organizations').insert({ id: org, nome: 'Checkout E2E', slug: org, created_by: owner }));
+      // PIX direto fictício: com PAYMENTS_MANUAL_ONLY a reserva paga exige chave da organização. Remove em cascata com a org.
+      await checked(admin.from('organization_pix_settings').insert({ organization_id: org, pix_key_type: 'aleatoria', pix_key: E2E_PIX_KEY, recipient_name: E2E_PIX_RECIPIENT }));
       await checked(admin.from('teams').insert({ id: team, organization_id: org, nome: 'Checkout E2E', created_by: owner }));
       // No organization membership is granted: payment authorization must use athlete management.
       await checked(admin.from('athletes').insert(athletes.map((id, i) => ({ id, organization_id: org, team_id: team, nome_completo: athleteNames[i], data_nascimento: '1995-01-01', genero: 'M', faixa: 'Branca', peso_kg: 70 }))));

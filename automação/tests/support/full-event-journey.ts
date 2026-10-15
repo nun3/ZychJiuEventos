@@ -9,6 +9,7 @@ import {
   loadCleanupEnv,
   resolveOwnerId,
 } from './e2e-cleanup';
+import { ensureDirectPixForE2E } from './direct-pix-fixture';
 import {
   MC_SIM_FULL_EVENT_PREFIX,
   type McSimFullEventIdentity,
@@ -283,6 +284,7 @@ export class FullEventJourney {
   private ownerId = '';
   private publicContext: BrowserContext | null = null;
   private publicPage: Page | null = null;
+  private restorePix: (() => Promise<void>) | null = null;
   private identity: McSimFullEventIdentity;
   private readonly bracketIds = {} as Record<CategoryKey, string>;
 
@@ -538,6 +540,7 @@ export class FullEventJourney {
   }
 
   async reservePaymentWithoutAsaas() {
+    this.restorePix = await ensureDirectPixForE2E(this.admin, this.identity.organizationId);
     await this.page.goto('/dashboard/inscricoes');
     const checkout = this.page.getByRole('region', { name: 'Reservar pagamento', exact: true });
     await checkout.getByLabel('Evento', { exact: true }).selectOption(this.identity.eventId);
@@ -921,6 +924,10 @@ export class FullEventJourney {
         await cleanupMass(this.admin, { eventId, athleteIds: [], teamIds: [], registrationIds: [], categoryIds: [] });
       }
       await cleanupMass(this.admin, { athleteIds: leftover.athleteIds, teamIds: leftover.teamIds, registrationIds: [], categoryIds: [] });
+    }
+    if (this.restorePix) {
+      await this.restorePix();
+      this.restorePix = null;
     }
     const remaining = await residualCount(this.admin, this.identity);
     this.cleanupStatus = { status: remaining === 0 ? 'completed' : 'failed', residualCount: remaining };
