@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
-import { AlertTriangle, CheckCircle2, LockKeyhole, Scale, Search } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, LockKeyhole, Scale, Search, XCircle } from 'lucide-react'
 import { Button, Dialog, FormField, Input, Select, StatusBadge } from '@/components/ui'
 import { RECOGNIZED_BELTS } from '@/lib/registrations/correction'
 import {
@@ -34,6 +34,7 @@ export default function EventCategoryFinder({
 }) {
   const formId = useId()
   const birthInputRef = useRef<HTMLInputElement>(null)
+  const resultRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const [birthDateDisplay, setBirthDateDisplay] = useState('')
   const [gender, setGender] = useState<'M' | 'F'>('M')
@@ -81,6 +82,10 @@ export default function EventCategoryFinder({
       eventCategories: categories,
       catalog,
     }))
+    if (window.matchMedia('(max-width: 1023px)').matches) {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      requestAnimationFrame(() => resultRef.current?.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' }))
+    }
   }
 
   const result = resolution?.status === 'resolved' ? resolution : null
@@ -98,7 +103,7 @@ export default function EventCategoryFinder({
         onClose={() => setOpen(false)}
         title="Descubra sua categoria"
         description="Informe seus dados e veja em segundos sua classificação e a disponibilidade neste campeonato."
-        className="max-w-[54rem] p-4 sm:p-6"
+        className="p-4 sm:max-w-[54rem] sm:p-6"
         initialFocusRef={birthInputRef}
       >
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
@@ -178,7 +183,7 @@ export default function EventCategoryFinder({
             </p>
           </form>
 
-          <div aria-live="polite" className="min-h-[18rem] rounded-mc-medium border border-mc-border bg-mc-surface-secondary/60 p-4 sm:p-5">
+          <div ref={resultRef} aria-live="polite" className="scroll-mt-4 min-h-[18rem] rounded-mc-medium border border-mc-border bg-mc-surface-secondary/60 p-4 sm:p-5">
             {!resolution ? (
               <div className="flex min-h-[16rem] flex-col items-center justify-center text-center">
                 <span className="flex h-12 w-12 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><Scale size={23} aria-hidden="true" /></span>
@@ -188,10 +193,56 @@ export default function EventCategoryFinder({
             ) : null}
 
             {resolution?.status === 'unresolved' ? (
-              <div role="status" className="flex min-h-[16rem] flex-col justify-center">
-                <AlertTriangle size={24} className="text-mc-warning" aria-hidden="true" />
-                <p className="mt-3 font-mc-display text-xl font-semibold text-mc-text-primary">Não foi possível identificar sua categoria</p>
-                <p className="mt-2 font-mc-interface text-sm leading-6 text-mc-text-secondary">{resolution.reason}</p>
+              <div role="status">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-mc-full bg-mc-warning/10 text-mc-warning">
+                    <AlertTriangle size={18} aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-mc-display text-lg font-semibold leading-7 text-mc-text-primary">
+                      {resolution.diagnosis ? 'Nenhuma categoria para o seu perfil' : 'Não foi possível identificar sua categoria'}
+                    </p>
+                    <p className="mt-1 font-mc-interface text-sm leading-6 text-mc-text-secondary">{resolution.reason}</p>
+                  </div>
+                </div>
+
+                {resolution.diagnosis ? (
+                  <>
+                    <div aria-hidden="true" className="mt-5 flex items-center justify-between pl-7 font-mc-interface text-xs font-semibold uppercase tracking-[0.14em] text-mc-text-secondary">
+                      <span>Você</span>
+                      <span>Campeonato</span>
+                    </div>
+                    <ul className="mt-2 divide-y divide-mc-border border-y border-mc-border">
+                      {resolution.diagnosis.checks.map((check) => (
+                        <li key={check.criterion} className="flex items-start gap-2.5 py-3">
+                          {check.ok ? (
+                            <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-mc-success" aria-hidden="true" />
+                          ) : (
+                            <XCircle size={18} className="mt-0.5 shrink-0 text-mc-error" aria-hidden="true" />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="font-mc-interface text-xs text-mc-text-secondary">
+                              {check.label}
+                              <span className="sr-only">{check.ok ? ': compatível' : ': fora do aceito'}</span>
+                            </p>
+                            <div className="mt-0.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                              <p className="whitespace-nowrap font-mc-display text-base font-bold text-mc-text-primary">{check.informed}</p>
+                              {check.accepted ? (
+                                <p className={`whitespace-nowrap font-mc-interface text-sm font-semibold ${check.ok ? 'text-mc-text-secondary' : 'text-mc-error'}`}>
+                                  <span className="sr-only">Campeonato aceita: </span>{check.accepted}
+                                </p>
+                              ) : null}
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-3 font-mc-interface text-xs leading-5 text-mc-text-secondary">
+                      A idade é calculada na data do campeonato. Confira os dados ou fale com a organização.
+                    </p>
+                    <a href="#categorias-disponiveis" onClick={() => setOpen(false)} className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-mc-medium border border-mc-border bg-mc-surface px-4 text-sm font-semibold text-mc-text-primary hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">Ver categorias do campeonato</a>
+                  </>
+                ) : null}
               </div>
             ) : null}
 

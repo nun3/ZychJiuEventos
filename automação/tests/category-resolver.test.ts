@@ -94,6 +94,43 @@ test('sem catálogo e sem categorias retorna estado não resolvido', () => {
   if (result.status === 'unresolved') assert.match(result.reason, /tabela estruturada/)
 })
 
+function legacyCategory(id: string, nome: string, min: number, max: number, idadeMax = 29): EventCategoryWithCatalog {
+  return { id, nome, ativa: true, ordem: 1, genero: 'M', idade_min: 18, idade_max: idadeMax, faixa_min_ordem: 1, faixa_max_ordem: 9, peso_min_kg: min, peso_max_kg: max, catalog_category_id: null }
+}
+const legacyLeve = legacyCategory('legacy-leve', 'Adulto Masculino Leve', 0, 76)
+const legacyMedio = legacyCategory('legacy-medio', 'Adulto Masculino Médio', 76.01, 88)
+
+test('sem categoria compatível, o diagnóstico mostra idade e peso fora do aceito', () => {
+  const result = resolvePublicCategory({ birthDate: '1990-10-20', gender: 'M', belt: 'Branca', weightKg: 90, eventDate: '2026-11-09', eventCategories: [legacyLeve, legacyMedio], catalog: null })
+  assert.equal(result.status, 'unresolved')
+  if (result.status !== 'unresolved') return
+  assert.equal(result.reason, 'Este campeonato não tem categoria para sua idade e seu peso.')
+  assert.equal(result.diagnosis?.combinationOnly, false)
+  assert.deepEqual(result.diagnosis?.checks.map(({ criterion, informed, accepted, ok }) => ({ criterion, informed, accepted, ok })), [
+    { criterion: 'gender', informed: 'Masculino', accepted: 'Masculino', ok: true },
+    { criterion: 'age', informed: '36 anos', accepted: '18 a 29 anos', ok: false },
+    { criterion: 'belt', informed: 'Branca', accepted: 'Todas as faixas', ok: true },
+    { criterion: 'weight', informed: '90 kg', accepted: 'Até 88 kg', ok: false },
+  ])
+})
+
+test('diagnóstico indica quando só a combinação dos dados não existe', () => {
+  const masterLeve = legacyCategory('legacy-master-leve', 'Master Leve', 0, 76, 40)
+  const result = resolvePublicCategory({ birthDate: '1990-10-20', gender: 'M', belt: 'Branca', weightKg: 80, eventDate: '2026-11-09', eventCategories: [masterLeve, legacyMedio], catalog: null })
+  assert.equal(result.status, 'unresolved')
+  if (result.status !== 'unresolved') return
+  assert.equal(result.diagnosis?.combinationOnly, true)
+  assert.ok(result.diagnosis?.checks.every((check) => check.ok))
+})
+
+test('diagnóstico aponta sexo sem categoria no campeonato', () => {
+  const result = resolvePublicCategory({ birthDate: '2000-05-10', gender: 'F', belt: 'Branca', weightKg: 60, eventDate: '2026-11-09', eventCategories: [legacyLeve], catalog: null })
+  assert.equal(result.status, 'unresolved')
+  if (result.status !== 'unresolved') return
+  assert.match(result.reason, /seu sexo/)
+  assert.equal(result.diagnosis?.checks[0].ok, false)
+})
+
 test('faixa inválida e idade sem divisão não inventam classificação', () => {
   const invalidBelt = resolvePublicCategory({ birthDate: '2000-05-10', gender: 'M', belt: 'Coral', weightKg: 75, eventDate: '2026-10-10', eventCategories: [], catalog })
   assert.deepEqual(invalidBelt, { status: 'unresolved', reason: 'Faixa não reconhecida.' })
