@@ -1,7 +1,8 @@
 import { toCents, centsToDecimal, MAX_AMOUNT_CENTS, type PaymentObservation } from './domain'
 import { GatewayError, type PaymentGateway, type ChargeInput, type ChargeSplit, type GatewayCharge, type GatewayChargeSplit, type PixInstructions, type CustomerInput, type GatewayCustomer } from './gateway'
 
-const SANDBOX_URL = 'https://api-sandbox.asaas.com/v3'
+const BASE_URL = { sandbox: 'https://api-sandbox.asaas.com/v3', production: 'https://api.asaas.com/v3' } as const
+export type AsaasEnvironment = keyof typeof BASE_URL
 type JsonObject = Record<string, unknown>
 function object(value: unknown): JsonObject {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new GatewayError('response')
@@ -77,10 +78,10 @@ function validSplit(split: ChargeSplit[] | undefined) {
     && split.reduce((sum, item) => sum + item.percentualValue, 0) <= 100
 }
 
-/** Transport injection is for contract tests. Host is deliberately fixed to Sandbox. */
+/** Transport injection is for contract tests. Host is fixed per environment and defaults to Sandbox. */
 export class AsaasSandboxGateway implements PaymentGateway {
-  constructor(private readonly apiKey: string, private readonly transport: typeof fetch = fetch) {
-    if (!apiKey.trim()) throw new GatewayError('configuration')
+  constructor(private readonly apiKey: string, private readonly transport: typeof fetch = fetch, private readonly environment: AsaasEnvironment = 'sandbox') {
+    if (!apiKey.trim() || (environment !== 'sandbox' && environment !== 'production')) throw new GatewayError('configuration')
   }
   async findCustomers(reference: string): Promise<GatewayCustomer[]> {
     if (!reference.trim()) throw new GatewayError('request')
@@ -107,9 +108,9 @@ export class AsaasSandboxGateway implements PaymentGateway {
   private async request(path: string, body?: JsonObject): Promise<unknown> {
     let response: Response
     try {
-      response = await this.transport(SANDBOX_URL + path, {
+      response = await this.transport(BASE_URL[this.environment] + path, {
         method: body ? 'POST' : 'GET', redirect: 'error', cache: 'no-store',
-        headers: { access_token: this.apiKey, 'Content-Type': 'application/json', 'User-Agent': 'MeuCamp-Sandbox/1.0' },
+        headers: { access_token: this.apiKey, 'Content-Type': 'application/json', 'User-Agent': 'MeuCamp/1.0' },
         ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(15000),
       })
     } catch {

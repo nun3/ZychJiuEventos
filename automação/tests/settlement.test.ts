@@ -54,15 +54,32 @@ test('split recusa conta emissora, wallet inválida e percentual fora da políti
   assert.throws(() => buildSettlementSplit({ recipientWalletId: RECIPIENT, percent: undefined }))
 })
 
-test('configuração do fechamento independe de PAYMENTS_MANUAL_ONLY e exige Sandbox', () => {
+test('configuração do fechamento independe de PAYMENTS_MANUAL_ONLY e usa a chave do ambiente escolhido', () => {
   const env = {
     PAYMENTS_MANUAL_ONLY: 'true', PLATFORM_SETTLEMENT_ASAAS_ENABLED: 'true', ASAAS_ENVIRONMENT: 'sandbox',
     ASAAS_SANDBOX_API_KEY: 'test-key', ASAAS_SPLIT_RECIPIENT_WALLET_ID: RECIPIENT, ASAAS_SPLIT_RECIPIENT_PERCENT: '50',
   } as NodeJS.ProcessEnv
-  assert.deepEqual(readSettlementConfig(env).split, [{ walletId: RECIPIENT, percentualValue: 50 }])
+  assert.deepEqual(readSettlementConfig(env), { environment: 'sandbox', apiKey: 'test-key', split: [{ walletId: RECIPIENT, percentualValue: 50 }] })
   assert.throws(() => readSettlementConfig({ ...env, PLATFORM_SETTLEMENT_ASAAS_ENABLED: 'false' }), GatewayError)
   assert.throws(() => readSettlementConfig({ ...env, ASAAS_ENVIRONMENT: 'production' }), GatewayError)
+  assert.throws(() => readSettlementConfig({ ...env, ASAAS_ENVIRONMENT: 'live', ASAAS_PRODUCTION_API_KEY: 'prod-key' }), GatewayError)
   assert.throws(() => readSettlementConfig({ ...env, ASAAS_SPLIT_RECIPIENT_PERCENT: '40' }), GatewayError)
+  const production = readSettlementConfig({ ...env, ASAAS_ENVIRONMENT: 'production', ASAAS_SANDBOX_API_KEY: '', ASAAS_PRODUCTION_API_KEY: 'prod-key' })
+  assert.equal(production.environment, 'production')
+  assert.equal(production.apiKey, 'prod-key')
+  assert.throws(() => readSettlementConfig({ ...env, ASAAS_ENVIRONMENT: 'sandbox', ASAAS_SANDBOX_API_KEY: '', ASAAS_PRODUCTION_API_KEY: 'prod-key' }), GatewayError)
+})
+
+test('adapter Asaas usa o host do ambiente e padrão Sandbox', async () => {
+  const urls: string[] = []
+  const transport = (async (url: string | URL | Request) => {
+    urls.push(String(url))
+    return new Response(JSON.stringify({ id: 'pay_1', externalReference: 'ref', value: 8, billingType: 'PIX', status: 'PENDING' }))
+  }) as typeof fetch
+  await new AsaasSandboxGateway('key', transport).getCharge('pay_1')
+  await new AsaasSandboxGateway('key', transport, 'production').getCharge('pay_1')
+  assert.deepEqual(urls, ['https://api-sandbox.asaas.com/v3/payments/pay_1', 'https://api.asaas.com/v3/payments/pay_1'])
+  assert.throws(() => new AsaasSandboxGateway('key', transport, 'live' as never), GatewayError)
 })
 
 test('referência e máscara do fechamento', () => {

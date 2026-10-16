@@ -87,7 +87,7 @@ export async function paySettlementPix(_previous: PaySettlementState, formData: 
     return { error: null, pix: result.pix, pending: result.instructionsPending }
   } catch (error) {
     if (error instanceof GatewayError && error.code === 'configuration') {
-      return { error: 'Pagamento do fechamento indisponível: configuração do Asaas Sandbox incompleta.', pix: null, pending: false }
+      return { error: 'Pagamento do fechamento indisponível: configuração do Asaas incompleta.', pix: null, pending: false }
     }
     if (error instanceof GatewayError && error.code === 'request' && !error.reconciliationRequired) {
       return { error: 'O Asaas recusou a cobrança do fechamento. Nenhuma cobrança foi criada.', pix: null, pending: false }

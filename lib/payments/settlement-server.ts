@@ -10,7 +10,7 @@ import { assertSettlementSplit } from './settlement-issuance'
 
 export function createSettlementGateway() {
   const config = readSettlementConfig()
-  return { gateway: new AsaasSandboxGateway(config.apiKey), split: config.split }
+  return { gateway: new AsaasSandboxGateway(config.apiKey, fetch, config.environment), split: config.split }
 }
 
 export class SupabaseOrganizationCustomerStore implements CustomerProvisioningStore {
