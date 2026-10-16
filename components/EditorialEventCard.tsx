@@ -39,7 +39,7 @@ export default function EditorialEventCard({ event, featured = false }: Editoria
   const contextualStatus = event.resultsPublished
     ? 'Resultados disponíveis'
     : event.status === 'em_andamento'
-      ? 'Evento em andamento'
+      ? 'Campeonato em andamento'
       : event.daysLeft > 0
         ? `Faltam ${event.daysLeft} ${event.daysLeft === 1 ? 'dia' : 'dias'}`
         : null
@@ -55,7 +55,7 @@ export default function EditorialEventCard({ event, featured = false }: Editoria
           {event.image ? (
             <Image
               src={event.image}
-              alt={`Banner do evento ${event.title}`}
+              alt={`Banner do campeonato ${event.title}`}
               fill
               className="object-cover transition-transform duration-mc-slow group-hover:scale-[1.025]"
               sizes={featured

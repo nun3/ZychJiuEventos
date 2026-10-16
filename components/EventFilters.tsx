@@ -86,7 +86,7 @@ export default function EventFilters({ onFilterChange, variant = 'stacked', init
   return (
     <section
       className={variant === 'toolbar' ? '' : 'mb-mc-32'}
-      aria-label="Filtros de eventos"
+      aria-label="Filtros de campeonatos"
     >
       <div className="flex flex-col gap-mc-12">
         <div className="flex flex-col gap-mc-12 lg:flex-row lg:items-center">
@@ -94,7 +94,7 @@ export default function EventFilters({ onFilterChange, variant = 'stacked', init
             <Search aria-hidden="true" size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-mc-text-secondary" />
             <Input
               id="event-search"
-              aria-label="Nome do evento"
+              aria-label="Nome do campeonato"
               value={filters.search}
               onChange={(event) => handleFilterChange('search', event.target.value)}
               placeholder="Buscar campeonato..."

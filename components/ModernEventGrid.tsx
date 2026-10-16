@@ -61,10 +61,10 @@ export default function ModernEventGrid({ events, filters, onEventClick }: { eve
       ) : (
         <EmptyState
           icon={<CalendarDays size={32} />}
-          title={events.length ? 'Nenhum evento encontrado' : 'Nenhuma competição publicada'}
+          title={events.length ? 'Nenhum campeonato encontrado' : 'Nenhum campeonato publicado'}
           description={events.length
-            ? 'Nenhum evento corresponde aos filtros. Limpe a busca ou o período para ver o calendário completo.'
-            : 'O calendário público do MEU CAMP mostra os eventos oficiais quando eles forem publicados. Enquanto isso, conheça o sistema ou crie sua conta.'}
+            ? 'Nenhum campeonato corresponde aos filtros. Limpe a busca ou o período para ver o calendário completo.'
+            : 'O calendário público do MEU CAMP mostra os campeonatos quando eles forem publicados. Enquanto isso, conheça o sistema ou crie sua conta.'}
           action={events.length ? undefined : (
             <div className="flex flex-col items-center gap-mc-12 sm:flex-row">
               <Link href="/sistema" className="inline-flex min-h-11 items-center justify-center rounded-mc-medium bg-mc-action px-mc-16 font-mc-interface text-sm font-semibold text-white hover:bg-mc-action/90">Conhecer o sistema</Link>

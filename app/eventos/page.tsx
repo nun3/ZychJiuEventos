@@ -6,8 +6,8 @@ import { getPublicEvents } from '@/lib/events/public-events'
 import EventsClient from './EventsClient'
 
 export const metadata: Metadata = {
-  title: 'Eventos | Meu Camp',
-  description: 'Consulte os eventos publicados no Meu Camp.',
+  title: 'Campeonatos | Meu Camp',
+  description: 'Encontre seu próximo campeonato no MEU CAMP.',
 }
 
 export default async function EventsPage({
@@ -26,13 +26,13 @@ export default async function EventsPage({
         <PageContainer>
           <div className="max-w-3xl">
             <p className="font-mc-interface text-sm font-semibold uppercase tracking-[0.16em] text-mc-action">
-              Calendário de competições
+              Calendário MEU CAMP
             </p>
             <h1 id="events-page-title" className="mt-mc-8 font-mc-display text-3xl font-semibold leading-tight text-mc-text-primary sm:text-mc-h1">
-              Eventos
+              Campeonatos
             </h1>
             <p className="mt-mc-12 font-mc-interface text-mc-body text-mc-text-secondary">
-              Encontre competições publicadas do MEU CAMP e consulte a ficha, a checagem e a programação de cada evento.
+              Encontre seu próximo campeonato. Consulte as informações, a checagem e a programação.
             </p>
           </div>
 

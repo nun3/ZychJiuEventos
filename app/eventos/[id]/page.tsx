@@ -131,7 +131,7 @@ export default async function EventPage({ params }: { params: { id: string } }) 
               className="inline-flex min-h-9 items-center gap-2 font-mc-interface text-sm font-semibold text-white/75 transition-colors duration-mc-fast hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               <ArrowLeft size={16} aria-hidden="true" />
-              Voltar para eventos
+              Voltar para campeonatos
             </Link>
             <EventShareButton title={event.nome} />
           </div>

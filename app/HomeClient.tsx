@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { CalendarDays } from 'lucide-react'
 import EventFilters from '@/components/EventFilters'
 import EditorialEventCard from '@/components/EditorialEventCard'
@@ -26,7 +27,7 @@ export default function HomeClient({ events, highlights }: { events: Event[]; hi
               Encontre seu próximo campeonato.
             </h1>
             <p className="mt-mc-12 font-mc-interface text-mc-body text-mc-text-secondary">
-              Pesquise competições publicadas por nome, estado ou data.
+              Pesquise campeonatos publicados por nome, estado ou data.
             </p>
           </div>
 
@@ -43,23 +44,26 @@ export default function HomeClient({ events, highlights }: { events: Event[]; hi
                   Próximos campeonatos
                 </h2>
                 <p className="font-mc-interface text-sm text-mc-text-secondary">
-                  {filteredEvents.length} {filteredEvents.length === 1 ? 'evento' : 'eventos'}
+                  {filteredEvents.length} {filteredEvents.length === 1 ? 'campeonato' : 'campeonatos'}
                 </p>
               </div>
               <div className="mt-mc-24 grid gap-mc-32 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredEvents.map((event) => <EditorialEventCard key={event.id} event={event} />)}
+                {filteredEvents.slice(0, 6).map((event) => <EditorialEventCard key={event.id} event={event} />)}
               </div>
             </section>
           ) : (
             <EmptyState
               icon={<CalendarDays size={32} />}
-              title={events.length ? 'Nenhum evento encontrado' : 'Nenhuma competição publicada'}
+              title={events.length ? 'Nenhum campeonato encontrado' : 'Nenhum campeonato publicado'}
               description={events.length
-                ? 'Nenhum evento corresponde aos filtros. Limpe a busca ou o período para ver o calendário completo.'
+                ? 'Nenhum campeonato corresponde aos filtros. Limpe a busca ou o período para ver o calendário completo.'
                 : 'Os próximos campeonatos aparecerão aqui assim que forem publicados.'}
               className="mt-mc-32 rounded-mc-small border border-mc-border bg-mc-surface"
             />
           )}
+          <Link href="/eventos" className="mt-6 inline-flex min-h-11 items-center rounded-mc-small font-mc-interface text-sm font-semibold text-mc-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
+            Ver todos os campeonatos
+          </Link>
         </PageContainer>
       </section>
 
