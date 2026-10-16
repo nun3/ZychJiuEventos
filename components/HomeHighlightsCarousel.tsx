@@ -7,13 +7,13 @@ import { ArrowLeft, ArrowRight, CalendarDays, MapPin } from 'lucide-react'
 import type { Event } from './ModernEventGrid'
 
 const statusLabels: Record<string, string> = {
-  publicado: 'Evento publicado',
+  publicado: 'Campeonato publicado',
   inscricao: 'Inscrições abertas',
   pagamento: 'Pagamento',
   checagem: 'Checagem',
   chaves: 'Chaves publicadas',
   em_andamento: 'Em andamento',
-  concluido: 'Evento concluído',
+  concluido: 'Campeonato concluído',
 }
 
 function eventDate(value?: string) {
@@ -70,7 +70,7 @@ export default function HomeHighlightsCarousel({ events }: { events: Event[] }) 
         <Image
           key={activeEvent.id}
           src={activeEvent.image!}
-          alt={`Banner do evento ${activeEvent.title}`}
+          alt={`Banner do campeonato ${activeEvent.title}`}
           fill
           priority={activeIndex === 0}
           sizes="100vw"
@@ -95,7 +95,7 @@ export default function HomeHighlightsCarousel({ events }: { events: Event[] }) 
               href={`/eventos/${activeEvent.id}`}
               className="mt-mc-24 inline-flex min-h-11 items-center gap-mc-8 rounded-mc-small bg-mc-action px-mc-16 font-mc-interface text-sm font-bold uppercase tracking-[0.08em] text-white transition-colors duration-mc-normal hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure"
             >
-              Ver evento <ArrowRight aria-hidden="true" size={17} />
+              Ver campeonato <ArrowRight aria-hidden="true" size={17} />
             </Link>
           </div>
         </div>

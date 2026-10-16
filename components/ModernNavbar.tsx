@@ -227,6 +227,7 @@ export default function ModernNavbar() {
       return (
         <Link
           href={href}
+          aria-current={active ? 'page' : undefined}
           {...commonProps}
           onClick={() => openDesktopMenu(key)}
         >
@@ -261,7 +262,7 @@ export default function ModernNavbar() {
         {/* Desktop */}
         <div className={`hidden min-h-16 grid-cols-[1fr_auto_1fr] items-center lg:grid ${scrolled ? 'min-h-16' : 'min-h-[4.25rem]'}`}>
           <nav aria-label="Navegação principal" className="flex items-center justify-self-start gap-mc-24 xl:gap-mc-32">
-            {renderDesktopTrigger('eventos', '/eventos', 'Eventos', isActive(pathname, '/eventos'))}
+            {renderDesktopTrigger('eventos', '/eventos', 'Campeonatos', isActive(pathname, '/eventos'))}
             {renderDesktopTrigger('noticias', '/noticias', 'Notícias', isActive(pathname, '/noticias'))}
           </nav>
 
@@ -382,7 +383,7 @@ export default function ModernNavbar() {
         >
           <div className="mx-auto max-w-7xl space-y-mc-4 px-4 py-mc-16 sm:px-6">
             {([
-              { key: 'eventos' as const, href: '/eventos', label: 'Eventos', children: eventosLinks },
+              { key: 'eventos' as const, href: '/eventos', label: 'Campeonatos', children: eventosLinks },
               { key: 'noticias' as const, href: '/noticias', label: 'Notícias', children: noticiasLinks },
             ]).map((item) => {
               const expanded = mobileExpanded === item.key
@@ -391,6 +392,7 @@ export default function ModernNavbar() {
                   <div className="flex items-stretch">
                     <Link
                       href={item.href}
+                      aria-current={isActive(pathname, item.href) ? 'page' : undefined}
                       className="flex min-h-12 flex-1 items-center font-mc-interface text-sm font-bold uppercase tracking-[0.14em] text-mc-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"
                       onClick={closeAll}
                     >

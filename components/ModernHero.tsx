@@ -36,7 +36,7 @@ export default function ModernHero() {
               href="#eventos"
               className="inline-flex min-h-12 items-center justify-center gap-mc-8 rounded-mc-medium bg-mc-action px-mc-24 font-mc-interface text-base font-semibold text-white transition-colors duration-mc-normal hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure"
             >
-              Ver eventos disponíveis
+              Ver campeonatos disponíveis
               <ArrowRight aria-hidden="true" size={19} />
             </Link>
             <Link

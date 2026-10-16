@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { Mail, MessageCircle } from 'lucide-react'
 
 const productLinks = [
-  { href: '/eventos', label: 'Eventos' },
+  { href: '/eventos', label: 'Campeonatos' },
   { href: '/noticias', label: 'Notícias' },
   { href: '/academias', label: 'Academias e equipes' },
   { href: '/sistema', label: 'O sistema' },
