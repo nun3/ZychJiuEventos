@@ -80,8 +80,13 @@ async function main() {
     await fillPhase(page, 'Pagamento', '2027-11-01T08:00', '2027-11-10T23:00');
     await fillPhase(page, 'Checagem', '2027-11-11T08:00', '2027-11-20T23:00');
     await fillPhase(page, 'Chaves', '2027-11-21T08:00', '2027-12-01T23:00');
-    await page.getByRole('button', { name: 'Publicar', exact: true }).click();
-    await page.waitForURL(/\/admin\/eventos$/);
+    await page.getByRole('button', { name: 'Criar evento e continuar' }).click();
+    await page.waitForURL(/\/admin\/eventos\/[^/]+\/configuracao$/);
+    await page.goto('/admin/eventos');
+    const createdCard = page.getByRole('article').filter({ hasText: EVENT_NAME });
+    await createdCard.getByRole('button', { name: `Mais ações de ${EVENT_NAME}` }).click();
+    await page.getByRole('menuitem', { name: 'Publicar' }).click();
+    await createdCard.getByText('Publicado', { exact: true }).waitFor();
 
     const created = await admin.from('events').select('id, nome, status, organization_id').eq('nome', EVENT_NAME).single();
     if (created.error || !created.data) throw new Error(created.error?.message || 'Evento MC-SIM não encontrado após publicar.');
@@ -206,6 +211,8 @@ async function createViaOwnerSession(
 }
 
 async function fillPhase(page: import('@playwright/test').Page, label: string, start: string, end: string) {
+  const toggle = page.getByRole('button', { name: 'Configurar datas das fases' });
+  if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click();
   const group = page.getByText(label, { exact: true }).locator('..');
   await group.getByLabel('Início').fill(start);
   await group.getByLabel('Término').fill(end);

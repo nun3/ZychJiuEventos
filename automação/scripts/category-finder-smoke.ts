@@ -39,6 +39,8 @@ function dateOffset(offset: number) {
 }
 
 async function fillPhase(page: import('@playwright/test').Page, label: string, startOffset: number, endOffset: number) {
+  const toggle = page.getByRole('button', { name: 'Configurar datas das fases' })
+  if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click()
   const group = page.getByText(label, { exact: true }).locator('..')
   await group.getByLabel('Início').fill(`${dateOffset(startOffset)}T00:00`)
   await group.getByLabel('Término').fill(`${dateOffset(endOffset)}T23:00`)
@@ -102,19 +104,24 @@ async function main() {
     ])
 
     await page.goto('/admin/eventos/novo')
-    await page.getByRole('heading', { name: 'Criar evento' }).waitFor()
+    await page.getByRole('heading', { name: 'Criar novo evento' }).waitFor()
     await page.getByLabel('Nome do evento').fill(eventName)
     await page.getByLabel('Data do evento').fill(dateOffset(30))
     await page.keyboard.press('Escape')
     await page.getByLabel('Local', { exact: true }).fill('Ginásio Category Finder — Curitiba/PR')
     await page.getByLabel('Valor da inscrição (R$)').fill(String(FEE))
-    await page.getByLabel('Informações').fill('Smoke público do Descobrir minha categoria.')
+    await page.getByLabel('Resumo do evento').fill('Smoke público do Descobrir minha categoria.')
     await fillPhase(page, 'Inscrição', -1, 10)
     await fillPhase(page, 'Pagamento', 11, 15)
     await fillPhase(page, 'Checagem', 16, 20)
     await fillPhase(page, 'Chaves', 21, 25)
-    await page.getByRole('button', { name: 'Publicar', exact: true }).click()
-    await page.waitForURL(/\/admin\/eventos$/, { timeout: 20000 })
+    await page.getByRole('button', { name: 'Criar evento e continuar' }).click()
+    await page.waitForURL(/\/admin\/eventos\/[^/]+\/configuracao$/, { timeout: 20000 })
+    await page.goto('/admin/eventos')
+    const createdCard = page.getByRole('article').filter({ hasText: eventName })
+    await createdCard.getByRole('button', { name: `Mais ações de ${eventName}` }).click()
+    await page.getByRole('menuitem', { name: 'Publicar' }).click()
+    await createdCard.getByText('Publicado', { exact: true }).waitFor()
 
     const created = await admin
       .from('events')
