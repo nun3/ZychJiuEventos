@@ -19,7 +19,7 @@ Then('a ação Novo evento deve estar disponível', async ({ page }) => {
 
 When('inicia o cadastro de um evento', async ({ page }) => {
   await page.goto('/admin/eventos/novo');
-  await expect(page.getByRole('heading', { name: 'Criar evento' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Criar novo evento' })).toBeVisible();
 });
 
 async function fillBase(page: import('@playwright/test').Page, eventName: string) {
@@ -29,9 +29,21 @@ async function fillBase(page: import('@playwright/test').Page, eventName: string
 }
 
 async function fillPhase(page: import('@playwright/test').Page, label: string, start: string, end: string) {
+  const toggle = page.getByRole('button', { name: 'Configurar datas das fases' });
+  if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click();
   const group = page.getByText(label, { exact: true }).locator('..');
   await group.getByLabel('Início').fill(start);
   await group.getByLabel('Término').fill(end);
+}
+
+async function publishCreatedEvent(page: import('@playwright/test').Page, eventName: string) {
+  await page.getByRole('button', { name: 'Criar evento e continuar' }).click();
+  await expect(page).toHaveURL(/\/admin\/eventos\/[^/]+\/configuracao$/);
+  await page.goto('/admin/eventos');
+  const card = page.getByRole('article').filter({ hasText: eventName });
+  await card.getByRole('button', { name: `Mais ações de ${eventName}` }).click();
+  await page.getByRole('menuitem', { name: 'Publicar' }).click();
+  await expect(card.getByText('Publicado', { exact: true })).toBeVisible();
 }
 
 When('preenche os dados e as fases válidas do evento', async ({ page, scenarioData }) => {
@@ -42,9 +54,8 @@ When('preenche os dados e as fases válidas do evento', async ({ page, scenarioD
   await fillPhase(page, 'Chaves', '2027-11-21T08:00', '2027-12-01T23:00');
 });
 
-When('publica o evento', async ({ page }) => {
-  await page.getByRole('button', { name: 'Publicar', exact: true }).click();
-  await expect(page).toHaveURL(/\/admin\/eventos$/);
+When('publica o evento', async ({ page, scenarioData }) => {
+  await publishCreatedEvent(page, scenarioData.event);
 });
 
 Then('o evento publicado deve aparecer na lista administrativa', async ({ page, scenarioData }) => {
@@ -62,7 +73,7 @@ When('preenche fases sobrepostas', async ({ page, scenarioData }) => {
 });
 
 When('tenta salvar o rascunho', async ({ page }) => {
-  await page.getByRole('button', { name: 'Salvar rascunho' }).click();
+  await page.getByRole('button', { name: 'Criar evento e continuar' }).click();
 });
 
 Then('a mensagem de fases fora de ordem deve ser exibida', async ({ page }) => {
@@ -70,8 +81,8 @@ Then('a mensagem de fases fora de ordem deve ser exibida', async ({ page }) => {
 });
 
 When('salva o evento como rascunho', async ({ page }) => {
-  await page.getByRole('button', { name: 'Salvar rascunho' }).click();
-  await expect(page).toHaveURL(/\/admin\/eventos$/);
+  await page.getByRole('button', { name: 'Criar evento e continuar' }).click();
+  await expect(page).toHaveURL(/\/admin\/eventos\/[^/]+\/configuracao$/);
 });
 
 When('encerra a sessão e acessa a página pública', async ({ page }) => {
@@ -105,8 +116,7 @@ When('cria um evento publicado para configuração', async ({ page, scenarioData
   await fillPhase(page, 'Pagamento', '2027-11-01T08:00', '2027-11-10T23:00');
   await fillPhase(page, 'Checagem', '2027-11-11T08:00', '2027-11-20T23:00');
   await fillPhase(page, 'Chaves', '2027-11-21T08:00', '2027-12-01T23:00');
-  await page.getByRole('button', { name: 'Publicar', exact: true }).click();
-  await expect(page).toHaveURL(/\/admin\/eventos$/);
+  await publishCreatedEvent(page, scenarioData.event);
 });
 
 When('acessa as categorias do evento criado', async ({ page, scenarioData }) => {
