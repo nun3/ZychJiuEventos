@@ -31,10 +31,12 @@ export function FormField({ id, label, children, description, error, required, c
 
   return (
     <div className={cn('space-y-1.5', className)}>
-      <label htmlFor={id} className="block font-mc-interface text-sm font-semibold text-mc-text-primary">
-        {label}
-        {required && <span aria-hidden="true" className="ml-1 text-mc-error">*</span>}
-      </label>
+      <div className="flex items-baseline gap-1">
+        <label htmlFor={id} className="font-mc-interface text-sm font-semibold text-mc-text-primary">
+          {label}
+        </label>
+        {required ? <span aria-hidden="true" className="text-mc-error">*</span> : null}
+      </div>
       {field}
       {description && <p id={descriptionId} className="font-mc-interface text-sm text-mc-text-secondary">{description}</p>}
       {error && <p id={errorId} className="font-mc-interface text-sm text-mc-error">{error}</p>}
