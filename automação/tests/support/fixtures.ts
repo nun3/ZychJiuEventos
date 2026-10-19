@@ -12,6 +12,7 @@ import { platformFeeFixture, type PlatformFeeFixture } from './platform-fee-fixt
 import { publicCheckingFixture, type PublicCheckingFixture } from './public-checking-fixture';
 import { professorFixture, type ProfessorFixture } from './professor-fixture';
 import { operationalProfessorFixture, type OperationalProfessorFixture } from './operational-professor-fixture';
+import { createCleanupClients, resolveOwnerId } from './e2e-cleanup';
 import type { APIResponse } from '@playwright/test';
 
 type ScenarioData = {
@@ -20,6 +21,10 @@ type ScenarioData = {
   teamTwo: string;
   athlete: string;
   event: string;
+};
+
+type HomeCacheProofFixture = {
+  markAsHighlight(eventId: string): Promise<void>;
 };
 
 export const test = base.extend<{
@@ -37,6 +42,7 @@ export const test = base.extend<{
   publicCheckingData: PublicCheckingFixture;
   professorData: ProfessorFixture;
   operationalProfessorData: OperationalProfessorFixture;
+  homeCacheProof: HomeCacheProofFixture;
   webhookState: { response?: APIResponse };
 }>({
   webhookState: async ({}, use) => use({}),
@@ -195,6 +201,47 @@ export const test = base.extend<{
       await use(journey);
     } finally {
       await journey.cleanup();
+    }
+  },
+  homeCacheProof: async ({}, use) => {
+    base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para a prova de cache público no Sandbox.');
+    const { admin, actor } = await createCleanupClients();
+    const ownerId = await resolveOwnerId(actor);
+    let eventId = '';
+
+    try {
+      await use({
+        async markAsHighlight(id) {
+          eventId = id;
+          const { data: bannerSource, error: bannerError } = await admin
+            .from('events')
+            .select('imagem_cartaz_url')
+            .not('imagem_cartaz_url', 'is', null)
+            .limit(1)
+            .maybeSingle();
+          if (bannerError || !bannerSource?.imagem_cartaz_url) {
+            throw new Error(`Banner de prova: ${bannerError?.message || 'nenhum banner público disponível'}`);
+          }
+          const { error: eventError } = await admin
+            .from('events')
+            .update({ imagem_cartaz_url: bannerSource.imagem_cartaz_url })
+            .eq('id', id);
+          if (eventError) throw new Error(`Banner no evento de prova: ${eventError.message}`);
+          const { error } = await admin.from('home_event_highlights').upsert({
+            event_id: id,
+            position: 1,
+            pinned: true,
+            hidden: false,
+            created_by: ownerId,
+          });
+          if (error) throw new Error(`Destaque de prova: ${error.message}`);
+        },
+      });
+    } finally {
+      if (!eventId) return;
+      await admin.from('event_audit_logs').delete().eq('event_id', eventId);
+      await admin.from('event_phases').delete().eq('event_id', eventId);
+      await admin.from('events').delete().eq('id', eventId);
     }
   },
   loginPage: async ({ page }, use) => use(new LoginPage(page)),

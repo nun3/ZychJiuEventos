@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { getAdministrativeOrganizationContext } from '@/lib/auth/organization-context-server'
 import { parseFightDurationInput } from '@/lib/events/fight-duration'
 import { allowsPublicOrganization } from '@/lib/events/public-organization'
@@ -99,6 +99,7 @@ export async function createEvent(formData: FormData): Promise<EventActionResult
   }
 
   revalidatePath('/')
+  revalidateTag('public-home-events')
   revalidatePath('/admin/eventos')
   return { ok: true, eventId: event.id, message: intent === 'publicar' ? 'Evento publicado com sucesso.' : 'Rascunho salvo com sucesso.' }
 }
@@ -140,6 +141,7 @@ export async function transitionEvent(eventId: string, status: EventTransitionSt
   if (error?.code === '23514') return failure('Transição de estado inválida.')
   if (error) return failure('Não foi possível alterar o estado do evento.')
   revalidatePath('/')
+  revalidateTag('public-home-events')
   revalidatePath('/admin/eventos')
   revalidatePath(`/eventos/${eventId}`)
   revalidatePath(`/admin/eventos/${eventId}/checagem`)

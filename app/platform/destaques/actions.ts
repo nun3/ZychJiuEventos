@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { requirePlatformAdmin } from '@/lib/auth/platform-admin-server'
 import { publicEventStatuses } from '@/lib/events/public-access'
 
@@ -36,6 +36,7 @@ export async function saveHighlight(formData: FormData) {
   })
   if (error) throw new Error('Não foi possível salvar o destaque.')
   revalidatePath('/')
+  revalidateTag('public-home-events')
   revalidatePath('/platform/destaques')
 }
 
@@ -46,5 +47,6 @@ export async function removeHighlight(formData: FormData) {
   const { error } = await access.supabase.from('home_event_highlights').delete().eq('event_id', eventId)
   if (error) throw new Error('Não foi possível remover o destaque.')
   revalidatePath('/')
+  revalidateTag('public-home-events')
   revalidatePath('/platform/destaques')
 }
