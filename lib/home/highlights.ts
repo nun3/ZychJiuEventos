@@ -1,9 +1,11 @@
 import 'server-only'
 
+import { unstable_cache } from 'next/cache'
 import type { Event } from '@/components/ModernEventGrid'
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
 
 type HighlightRule = { event_id: string; position: number; pinned: boolean; active: boolean }
+export type HomeHighlightRulesResult = { rules: HighlightRule[]; available: boolean }
 
 const statusPriority: Record<string, number> = {
   em_andamento: 0,
@@ -15,14 +17,27 @@ const statusPriority: Record<string, number> = {
   concluido: 6,
 }
 
-export async function getHomeHighlights(events: Event[], limit = 5): Promise<Event[]> {
+const getCachedHomeHighlightRules = unstable_cache(async (): Promise<HomeHighlightRulesResult> => {
+  const { data, error } = await createPublicClient().rpc('get_home_event_highlight_rules')
+  return { rules: (data || []) as HighlightRule[], available: !error }
+}, ['public-home-highlight-rules'], { revalidate: 60, tags: ['public-home-events'] })
+
+export async function getHomeHighlightRules(): Promise<HomeHighlightRulesResult> {
+  return getCachedHomeHighlightRules()
+}
+
+export async function getHomeHighlights(
+  events: Event[],
+  limit = 5,
+  rulesResult?: HomeHighlightRulesResult,
+): Promise<Event[]> {
   const eligible = events.filter((event) => Boolean(event.image))
   if (!eligible.length) return []
 
-  const { data, error } = await createClient().rpc('get_home_event_highlight_rules')
-  if (error) return automaticHighlights(eligible, limit)
+  const loadedRules = rulesResult || await getHomeHighlightRules()
+  if (!loadedRules.available) return automaticHighlights(eligible, limit)
 
-  const rules = (data || []) as HighlightRule[]
+  const rules = loadedRules.rules
   const eventById = new Map(eligible.map((event) => [event.id, event]))
   const suppressed = new Set(rules.filter((rule) => !rule.active).map((rule) => rule.event_id))
   const curated = rules

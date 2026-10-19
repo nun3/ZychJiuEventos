@@ -39,6 +39,10 @@ async function fillPhase(page: import('@playwright/test').Page, label: string, s
 async function publishCreatedEvent(page: import('@playwright/test').Page, eventName: string) {
   await page.getByRole('button', { name: 'Criar evento e continuar' }).click();
   await expect(page).toHaveURL(/\/admin\/eventos\/[^/]+\/configuracao$/);
+  await publishExistingEvent(page, eventName);
+}
+
+async function publishExistingEvent(page: import('@playwright/test').Page, eventName: string) {
   await page.goto('/admin/eventos');
   const card = page.getByRole('article').filter({ hasText: eventName });
   await card.getByRole('button', { name: `Mais ações de ${eventName}` }).click();
