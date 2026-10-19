@@ -8,10 +8,12 @@ export default function InternalNavigation({
   canManageEvents = false,
   canManageOrganization = false,
   isPlatformAdmin = false,
+  fluid = false,
 }: {
   canManageEvents?: boolean
   canManageOrganization?: boolean
   isPlatformAdmin?: boolean
+  fluid?: boolean
 }) {
   const pathname = usePathname()
   const items = [
@@ -27,7 +29,7 @@ export default function InternalNavigation({
 
   return (
     <nav aria-label="Navegação da área interna" className="sticky top-20 z-40 border-b border-mc-border bg-mc-surface">
-      <div className="mx-auto flex max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8">
+      <div className={fluid ? 'flex w-full overflow-x-auto px-4 sm:px-8 lg:px-[4vw]' : 'mx-auto flex max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8'}>
         {items.map((item) => {
           const isActive = item.active(pathname)
           return (
