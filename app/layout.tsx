@@ -1,10 +1,29 @@
 import type { Metadata } from 'next'
-import { Inter, Space_Grotesk } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 
-// Keep legacy weights available while pages migrate independently.
-const inter = Inter({ subsets: ['latin'], weight: ['300', '400', '500', '600', '700'], display: 'swap', variable: '--font-inter' })
-const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'], display: 'swap', variable: '--font-space-grotesk' })
+// Arquivos versionados para o build não baixar as fontes do Google.
+const inter = localFont({
+  src: [
+    { path: '../fonts/inter/inter-latin-300-normal.woff2', weight: '300', style: 'normal' },
+    { path: '../fonts/inter/inter-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: '../fonts/inter/inter-latin-500-normal.woff2', weight: '500', style: 'normal' },
+    { path: '../fonts/inter/inter-latin-600-normal.woff2', weight: '600', style: 'normal' },
+    { path: '../fonts/inter/inter-latin-700-normal.woff2', weight: '700', style: 'normal' },
+  ],
+  display: 'swap',
+  variable: '--font-inter',
+})
+const spaceGrotesk = localFont({
+  src: [
+    { path: '../fonts/space-grotesk/space-grotesk-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: '../fonts/space-grotesk/space-grotesk-latin-500-normal.woff2', weight: '500', style: 'normal' },
+    { path: '../fonts/space-grotesk/space-grotesk-latin-600-normal.woff2', weight: '600', style: 'normal' },
+    { path: '../fonts/space-grotesk/space-grotesk-latin-700-normal.woff2', weight: '700', style: 'normal' },
+  ],
+  display: 'swap',
+  variable: '--font-space-grotesk',
+})
 
 export const metadata: Metadata = {
   title: 'Meu Camp - Plataforma de Eventos Online',

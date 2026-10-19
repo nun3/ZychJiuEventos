@@ -2,6 +2,7 @@
 
 import { evaluateAdultBirthDate, adultBirthDateMessages } from '@/lib/auth/adult-birth-date'
 import { parseSignupRole } from '@/lib/auth/signup-role'
+import { logger } from '@/lib/observability/logger'
 import { createClient } from '@/lib/supabase/server'
 
 export type SignupActionResult = { ok: boolean; message: string }
@@ -43,6 +44,7 @@ export async function registerPublicAccount(formData: FormData): Promise<SignupA
   })
 
   if (error) {
+    logger.warn('auth.signup.failed', { operation: 'signup', result: 'rejected' })
     const mapped: Record<string, string> = {
       'Data de nascimento obrigatoria': adultBirthDateMessages.missing,
       'Data de nascimento invalida': adultBirthDateMessages.invalid,

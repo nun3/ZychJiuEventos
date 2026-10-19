@@ -27,6 +27,12 @@ npm start
 
 O site estará disponível em [http://localhost:3000](http://localhost:3000)
 
+## Comandos
+
+A raiz é a interface oficial. `npm run verify` executa lint, typecheck, testes unitários, a checagem de hardening e o build. As suítes Playwright que escrevem dados ou dependem do Asaas ficam fora desse gate e continuam opt-in em `automação/`.
+
+O mapa de URLs está em [docs/ROTAS.md](docs/ROTAS.md). A política de release está em [docs/RELEASE_POLICY.md](docs/RELEASE_POLICY.md).
+
 ## 📁 Estrutura do Projeto
 
 ```

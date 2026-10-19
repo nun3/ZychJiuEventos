@@ -1,6 +1,6 @@
 # Histórico de Migração de Arquitetura
 
-Este documento registra o progresso da reestruturação da arquitetura de rotas e páginas do sistema, conforme o plano definido em `docs/page2.md`.
+Este documento registra o progresso histórico da reestruturação de rotas. O catálogo vigente está em `docs/ROTAS.md`.
 
 ---
 
@@ -136,5 +136,5 @@ Remover rotas legadas e atualizar documentação final.
 
 - Todas as fases mantêm compatibilidade retroativa durante o período de transição
 - Rotas antigas são mantidas temporariamente para não quebrar links existentes
-- Documentação atualizada em `docs/pages_rotas.md` e `docs/page2.md`
+- Documentação atualizada em `docs/pages_rotas.md` e `docs/page2.md`. O catálogo vigente passou a ser `docs/ROTAS.md`.
 

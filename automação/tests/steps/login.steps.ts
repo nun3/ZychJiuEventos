@@ -10,10 +10,10 @@ Given('o usuário acessa a página inicial', async ({ page }) => {
 });
 
 When('seleciona o link {string}', async ({ page }, label: string) => {
-  const scope = label === 'Entrar'
+  const scope = label === 'Entrar' || label === 'Login'
     ? page.getByRole('navigation', { name: 'Navegação principal' }).locator('xpath=ancestor::header[1]')
     : page;
-  await scope.getByRole('link', { name: label, exact: true }).click();
+  await scope.getByRole('link', { name: label, exact: true }).locator('visible=true').click();
 });
 
 Then('a rota de login deve ser exibida', async ({ page }) => {
