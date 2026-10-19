@@ -144,9 +144,9 @@ export async function transitionEvent(eventId: string, status: EventTransitionSt
   revalidateTag('public-home-events')
   revalidatePath('/admin/eventos')
   revalidatePath(`/eventos/${eventId}`)
-  revalidatePath(`/admin/eventos/${eventId}/checagem`)
-  revalidatePath(`/admin/eventos/${eventId}/chaves`)
-  revalidatePath(`/admin/eventos/${eventId}/resultados`)
+  for (const segment of ['configuracao', 'checagem', 'financeiro', 'chaves', 'programacao', 'resultados', 'editar']) {
+    revalidatePath(`/admin/eventos/${eventId}/${segment}`)
+  }
   const messages: Record<EventTransitionStatus, string> = {
     publicado: 'Evento publicado.',
     inscricao: 'Inscrições abertas.',

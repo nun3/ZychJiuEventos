@@ -1,47 +1,11 @@
-import type { Metadata } from 'next'
-import ModernFooter from '@/components/ModernFooter'
-import ModernNavbar from '@/components/ModernNavbar'
-import { PageContainer } from '@/components/ui/PageContainer'
-import { getPublicEvents } from '@/lib/events/public-events'
-import EventsClient from './EventsClient'
+import { redirect } from 'next/navigation'
 
-export const metadata: Metadata = {
-  title: 'Campeonatos | Meu Camp',
-  description: 'Encontre seu próximo campeonato no MEU CAMP.',
-}
-
-export default async function EventsPage({
+export default function EventsPage({
   searchParams,
 }: {
   searchParams?: { q?: string | string[] }
 }) {
-  const events = await getPublicEvents()
   const rawQuery = searchParams?.q
   const initialSearch = (Array.isArray(rawQuery) ? rawQuery[0] : rawQuery)?.trim() || ''
-
-  return (
-    <main id="conteudo-principal" className="relative min-h-screen overflow-x-hidden bg-mc-surface-secondary">
-      <ModernNavbar />
-      <section id="eventos" className="pt-28 sm:pt-32" aria-labelledby="events-page-title">
-        <PageContainer>
-          <div className="max-w-3xl">
-            <p className="font-mc-interface text-sm font-semibold uppercase tracking-[0.16em] text-mc-action">
-              Calendário MEU CAMP
-            </p>
-            <h1 id="events-page-title" className="mt-mc-8 font-mc-display text-3xl font-semibold leading-tight text-mc-text-primary sm:text-mc-h1">
-              Campeonatos
-            </h1>
-            <p className="mt-mc-12 font-mc-interface text-mc-body text-mc-text-secondary">
-              Encontre seu próximo campeonato. Consulte as informações, a checagem e a programação.
-            </p>
-          </div>
-
-          <div className="mt-mc-32">
-            <EventsClient events={events} initialSearch={initialSearch} />
-          </div>
-        </PageContainer>
-      </section>
-      <ModernFooter />
-    </main>
-  )
+  redirect(initialSearch ? `/?q=${encodeURIComponent(initialSearch)}#eventos` : '/#eventos')
 }

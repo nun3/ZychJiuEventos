@@ -52,7 +52,7 @@ export default function PaymentCheckout({ registrations, manualOnly = false }: {
   }
 
   return (
-    <Card className="mt-mc-32 p-mc-16 sm:p-mc-24" aria-labelledby="checkout-title">
+    <Card className="p-mc-16 shadow-mc-subtle sm:p-mc-24" aria-labelledby="checkout-title">
       <h2 id="checkout-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Reservar pagamento</h2>
       <p className="mt-mc-8 font-mc-interface text-sm leading-6 text-mc-text-secondary">Selecione inscrições pendentes do mesmo evento.</p>
       <p className="mt-mc-8 font-mc-interface text-sm leading-6 text-mc-text-secondary">

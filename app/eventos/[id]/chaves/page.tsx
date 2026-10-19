@@ -3,10 +3,12 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Flag, GitBranch, Info, Trophy } from 'lucide-react'
 import ModernFooter from '@/components/ModernFooter'
 import ModernNavbar from '@/components/ModernNavbar'
-import { Alert, Card, EmptyState, PageContainer, PageHeader, StatusBadge } from '@/components/ui'
+import EventPublicNavigation from '@/components/events/public-event/EventPublicNavigation'
+import { Alert, Card, EmptyState, PageHeader, StatusBadge } from '@/components/ui'
 import { getPublicEventBrackets, type PublicBracketGroup } from '@/lib/events/public-brackets'
 import { formatFightDurationLabel } from '@/lib/events/fight-duration'
 import { findPublicReleaseEvent } from '@/lib/events/public-access'
+import { getPublicEventNavItems } from '@/lib/events/public-event-presentation'
 
 const topologyNames = {
   final_2: 'Final direta',
@@ -90,11 +92,15 @@ export default async function PublicBracketsPage({ params }: { params: { id: str
   const event = await findPublicReleaseEvent(params.id)
   if (!event) notFound()
   const bracketResult = await getPublicEventBrackets(params.id)
+  const navItems = getPublicEventNavItems({ eventId: event.id, status: event.status, current: 'chaves' })
 
   return (
-    <main className="min-h-screen bg-mc-background">
+    <main id="conteudo-principal" className="min-h-screen bg-mc-background">
       <ModernNavbar />
-      <PageContainer className="pb-mc-64 pt-32 sm:pt-36">
+      <div className="pt-20">
+        <EventPublicNavigation items={navItems} />
+      </div>
+      <div className="w-full px-4 pb-mc-64 pt-8 sm:px-8 sm:pt-10 lg:px-12 xl:px-20">
         <PageHeader
           title={`Chaves — ${event.nome}`}
           description="Composição oficial publicada pela organização do evento."
@@ -161,7 +167,7 @@ export default async function PublicBracketsPage({ params }: { params: { id: str
             })}
           </div>
         )}
-      </PageContainer>
+      </div>
       <ModernFooter />
     </main>
   )

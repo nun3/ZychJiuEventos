@@ -31,6 +31,8 @@ async function checked(label: string, result: PromiseLike<{ error: { message: st
 }
 
 async function fillPhase(page: Page, label: string, startOffset: number, endOffset: number) {
+  const toggle = page.getByRole('button', { name: 'Configurar datas das fases' });
+  if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click();
   const group = page.getByText(label, { exact: true }).locator('..');
   await group.getByLabel('Início').fill(`${dateOffset(startOffset)}T00:00`);
   await group.getByLabel('Término').fill(`${dateOffset(endOffset)}T23:00`);
@@ -65,7 +67,7 @@ async function activatePhaseWindow(
 }
 
 function eventRow(page: Page, name: string) {
-  return page.getByRole('row').filter({ hasText: name });
+  return page.locator('tr:visible, article:visible').filter({ hasText: name }).first();
 }
 
 export type OnboardingVisualJourney = Awaited<ReturnType<typeof createOnboardingVisualJourney>>;
@@ -132,14 +134,12 @@ export async function createOnboardingVisualJourney(deps: {
   }
 
   async function expectGuidance(title: string, cta?: string) {
-    await expect(deps.page.getByRole('navigation', { name: 'Progresso do evento' })).toBeVisible();
+    await expect(deps.page.getByRole('region', { name: 'Fase do evento' })).toBeVisible();
     await expect(deps.page.locator('#next-action-title')).toHaveText(title);
-    if (cta) await expect(deps.page.getByRole('link', { name: cta })).toBeVisible();
-  }
-
-  async function checklistState(label: string, state: 'feito' | 'fazer') {
-    const item = deps.page.getByRole('link').filter({ hasText: label }).first();
-    await expect(item.getByText(state, { exact: true })).toBeVisible();
+    if (cta) {
+      const control = deps.page.getByRole('link', { name: cta }).or(deps.page.getByRole('button', { name: cta }));
+      await expect(control.first()).toBeVisible();
+    }
   }
 
   return {
@@ -163,12 +163,13 @@ export async function createOnboardingVisualJourney(deps: {
       await deps.page.getByRole('heading', { name: /Olá,|Painel do organizador/ }).waitFor();
       await deps.page.evaluate((key) => window.localStorage.removeItem(key), onboardingStorageKey(ownerId));
       await deps.page.reload();
-      await expect(deps.page.getByRole('heading', { name: 'Configure seu primeiro campeonato' })).toBeVisible();
+      await expect(deps.page.getByRole('heading', { name: 'Seus campeonatos' })).toHaveCount(0);
+      await expect(deps.page.getByRole('heading', { name: 'Áreas de operação' })).toBeVisible();
       await attach('00-dashboard-antes');
     },
     async conduct() {
       await deps.page.goto('/admin/eventos/novo');
-      await deps.page.getByRole('heading', { name: 'Criar evento' }).waitFor();
+      await deps.page.getByRole('heading', { name: 'Criar novo evento' }).waitFor();
       await deps.page.getByLabel('Nome do evento').fill(eventName);
       await deps.page.getByLabel('Data do evento').fill(dateOffset(30));
       await deps.page.keyboard.press('Escape');
@@ -178,8 +179,8 @@ export async function createOnboardingVisualJourney(deps: {
       await fillPhase(deps.page, 'Pagamento', 6, 10);
       await fillPhase(deps.page, 'Checagem', 11, 15);
       await fillPhase(deps.page, 'Chaves', 16, 20);
-      await deps.page.getByRole('button', { name: 'Salvar rascunho' }).click();
-      await deps.page.waitForURL(/\/admin\/eventos$/, { timeout: 20000 });
+      await deps.page.getByRole('button', { name: 'Criar evento e continuar' }).click();
+      await deps.page.waitForURL(/\/admin\/eventos\/[^/]+\/configuracao$/, { timeout: 20000 });
       const created = await admin.from('events').select('id, status, organization_id').eq('nome', eventName).single();
       if (!created.data || created.data.organization_id !== env.organizationId || created.data.status !== 'rascunho') {
         throw new Error('Evento de onboarding não persistiu como rascunho na MEU CAMP.');
@@ -187,7 +188,7 @@ export async function createOnboardingVisualJourney(deps: {
       eventId = created.data.id;
 
       await deps.page.goto(`/admin/eventos/${eventId}/configuracao`);
-      await expect(deps.page.getByRole('navigation', { name: 'Progresso do evento' }).getByText(/atual/)).toBeVisible();
+      await expect(deps.page.getByRole('region', { name: 'Fase do evento' }).getByText(/atual/)).toBeVisible();
       await expectGuidance('Evento em rascunho', 'Revisar evento');
       await attach('01-evento-rascunho');
 
@@ -197,7 +198,7 @@ export async function createOnboardingVisualJourney(deps: {
       await deps.page.getByLabel('Idade máxima').fill('99');
       await deps.page.getByLabel('Peso mínimo').fill('60');
       await deps.page.getByLabel('Peso máximo').fill('80');
-      await deps.page.getByLabel('Duração da luta (minutos)').fill(String(DURATION));
+      await deps.page.getByLabel('Duração da luta (min)').fill(String(DURATION));
       await deps.page.getByRole('button', { name: 'Criar versão' }).click();
       await deps.page.getByText('Versão 1 criada com sucesso.', { exact: true }).waitFor();
       await deps.page.goto(`/admin/eventos/${eventId}/configuracao`);
@@ -205,9 +206,11 @@ export async function createOnboardingVisualJourney(deps: {
       await attach('02-categoria-configurada');
 
       await deps.page.goto('/admin/eventos');
-      await eventRow(deps.page, eventName).getByRole('button', { name: 'Publicar' }).click();
+      await eventRow(deps.page, eventName).getByRole('button', { name: `Mais ações de ${eventName}` }).click();
+      await deps.page.getByRole('menuitem', { name: 'Publicar' }).click();
       await waitEventStatus(admin, eventId, 'publicado');
-      await eventRow(deps.page, eventName).getByRole('button', { name: 'Abrir inscrições' }).click();
+      await eventRow(deps.page, eventName).getByRole('link', { name: 'Gerenciar evento' }).click();
+      await deps.page.getByRole('button', { name: 'Abrir inscrições' }).click();
       await waitEventStatus(admin, eventId, 'inscricao');
 
       await deps.page.goto('/dashboard/meus-atletas');
@@ -252,15 +255,16 @@ export async function createOnboardingVisualJourney(deps: {
       }
 
       await deps.page.goto(`/admin/eventos/${eventId}/configuracao`);
-      await expectGuidance('Inscrições abertas', 'Ver eventos');
+      await expectGuidance('Inscrições abertas', 'Abrir pagamento');
       await attach('03-inscricoes');
 
-      await deps.page.goto('/dashboard');
-      await checklistState('Receber inscrições', 'feito');
+      await deps.page.goto('/admin/eventos');
+      await expect(deps.page.getByRole('article', { name: eventName }).getByRole('listitem', { name: 'Inscrições, atual' })).toBeVisible();
       await attach('00-dashboard-durante');
 
       await deps.page.goto('/admin/eventos');
-      await eventRow(deps.page, eventName).getByRole('button', { name: 'Abrir pagamento' }).click();
+      await eventRow(deps.page, eventName).getByRole('link', { name: 'Gerenciar evento' }).click();
+      await deps.page.getByRole('button', { name: 'Abrir pagamento' }).click();
       await waitEventStatus(admin, eventId, 'pagamento');
       await activatePhaseWindow(admin, eventId, 'pagamento', 'inscricao');
       restorePix = await ensureDirectPixForE2E(admin, env.organizationId);
@@ -292,7 +296,8 @@ export async function createOnboardingVisualJourney(deps: {
 
       await activatePhaseWindow(admin, eventId, 'checagem', 'pagamento');
       await deps.page.goto('/admin/eventos');
-      await eventRow(deps.page, eventName).getByRole('button', { name: 'Abrir checagem' }).click();
+      await eventRow(deps.page, eventName).getByRole('link', { name: 'Gerenciar evento' }).click();
+      await deps.page.getByRole('button', { name: 'Abrir checagem' }).click();
       await waitEventStatus(admin, eventId, 'checagem');
 
       const registration = await admin.from('registrations').select('id').eq('event_id', eventId).eq('athlete_id', athleteIds[0]).single();
@@ -307,12 +312,11 @@ export async function createOnboardingVisualJourney(deps: {
       if (requested.error) throw new Error(`Pedido de correção: ${requested.error.message}`);
 
       await deps.page.goto(`/admin/eventos/${eventId}/checagem`);
-      await expectGuidance('Checagem aberta', 'Revisar solicitações');
+      await expectGuidance('Checagem aberta');
       await expect(deps.page.getByText('Revise as solicitações pendentes antes de travar a checagem.')).toBeVisible();
+      await deps.page.getByText('Ajuda desta etapa').click();
       await expect(deps.page.getByText('Depois de travar a checagem, alterações deixam de ser permitidas.')).toBeVisible();
       await attach('04-checagem-pendente');
-      await deps.page.getByRole('button', { name: 'Entendi' }).click();
-      await expect(deps.page.getByRole('button', { name: 'Ver guia novamente' })).toBeVisible();
 
       await deps.page.getByRole('button', { name: 'Aprovar' }).click();
       await expect.poll(async () => {
@@ -325,7 +329,7 @@ export async function createOnboardingVisualJourney(deps: {
         return row.data?.status || '';
       }, { timeout: 20000 }).toBe('aprovada');
       await deps.page.goto(`/admin/eventos/${eventId}/checagem`);
-      await expectGuidance('Checagem aberta', 'Ir para checagem');
+      await expectGuidance('Checagem aberta');
       await attach('05-checagem-pronta');
 
       await deps.page.getByLabel(/Confirmo que a lista oficial/).check();
@@ -343,10 +347,9 @@ export async function createOnboardingVisualJourney(deps: {
       await deps.page.getByRole('button', { name: 'Abrir chaves' }).click();
       await waitEventStatus(admin, eventId, 'chaves');
       await deps.page.goto(`/admin/eventos/${eventId}/chaves`);
-      await expect(deps.page.getByRole('status').filter({ hasText: 'A geração cria uma sugestão em rascunho.' })).toBeVisible();
-      await deps.page.getByRole('button', { name: 'Agora não' }).click();
-      await expect(deps.page.getByRole('button', { name: 'Ver guia novamente' })).toBeVisible();
-      await expectGuidance('Gerar chaves', 'Gerar chaves');
+      await deps.page.getByText('Ajuda desta etapa').click();
+      await expect(deps.page.getByText('A geração cria uma sugestão em rascunho.')).toBeVisible();
+      await expectGuidance('Gerar chaves');
       await deps.page.getByRole('button', { name: new RegExp(categoryName) }).click();
       await deps.page.getByRole('button', { name: 'Gerar chave' }).click();
       await deps.page.getByText('Chave gerada em rascunho.').waitFor();
@@ -359,7 +362,8 @@ export async function createOnboardingVisualJourney(deps: {
       await attach('08-chave-publicada');
 
       await deps.page.goto(`/admin/eventos/${eventId}/programacao`);
-      await expect(deps.page.getByRole('status').filter({ hasText: 'Áreas e números só congelam' })).toBeVisible();
+      await deps.page.getByText('Ajuda desta etapa').click();
+      await expect(deps.page.getByText('Áreas e números só congelam')).toBeVisible();
       await deps.page.getByLabel('Número').first().fill('1');
       await deps.page.getByLabel('Nome ou cor').first().fill('Tatame');
       await deps.page.getByRole('button', { name: 'Adicionar área' }).click();
@@ -373,7 +377,8 @@ export async function createOnboardingVisualJourney(deps: {
       await attach('09-programacao');
 
       await deps.page.goto(`/admin/eventos/${eventId}/resultados`);
-      await expect(deps.page.getByRole('status').filter({ hasText: 'A pesagem é por subchave.' })).toBeVisible();
+      await deps.page.getByText('Ajuda desta etapa').click();
+      await expect(deps.page.getByText('A pesagem é por subchave.')).toBeVisible();
       await deps.page.getByRole('button', { name: new RegExp(categoryName) }).click();
       await deps.page.getByRole('button', { name: 'Marcar pesagem como realizada' }).click();
       await deps.page.getByText('Pesagem marcada como realizada.').waitFor();
@@ -381,7 +386,7 @@ export async function createOnboardingVisualJourney(deps: {
       await deps.page.getByText('Operação iniciada. O evento está em andamento.').waitFor();
       await waitEventStatus(admin, eventId, 'em_andamento');
       await deps.page.goto(`/admin/eventos/${eventId}/resultados`);
-      await expectGuidance('Evento em andamento', 'Registrar resultados');
+      await expectGuidance('Evento em andamento');
       await attach('10-evento-em-andamento');
 
       const winnerSelect = deps.page.getByLabel('Vencedor').first();
@@ -392,7 +397,8 @@ export async function createOnboardingVisualJourney(deps: {
       await attach('11-resultados');
 
       await deps.page.goto(`/admin/eventos/${eventId}/financeiro`);
-      await expect(deps.page.getByRole('status').filter({ hasText: 'A baixa é manual e auditada.' })).toBeVisible();
+      await deps.page.getByText('Ajuda desta etapa').click();
+      await expect(deps.page.getByText('A baixa é manual e auditada.')).toBeVisible();
       await expect(deps.page.getByText(/PIX automático|boleto gerado|Asaas/i)).toHaveCount(0);
       await attach('12-financeiro');
 
@@ -404,15 +410,16 @@ export async function createOnboardingVisualJourney(deps: {
       await expectGuidance('Evento concluído', 'Ver financeiro');
       await attach('13-evento-concluido');
 
-      await deps.page.goto('/dashboard');
-      await checklistState('Resultados', 'feito');
+      await deps.page.goto('/admin/eventos');
+      await expect(deps.page.getByRole('article', { name: eventName }).getByRole('listitem', { name: 'Resultados, concluído' })).toBeVisible();
       await attach('00-dashboard-depois');
 
       await deps.page.setViewportSize({ width: 390, height: 844 });
       await deps.page.goto('/dashboard');
-      await expect(deps.page.getByRole('heading', { name: 'Configure seu primeiro campeonato' })).toBeVisible();
+      await expect(deps.page.getByRole('heading', { name: 'Seus campeonatos' })).toHaveCount(0);
+      await expect(deps.page.getByRole('heading', { name: 'Áreas de operação' })).toBeVisible();
       await deps.page.goto(`/admin/eventos/${eventId}/configuracao`);
-      await expect(deps.page.getByRole('navigation', { name: 'Progresso do evento' })).toBeVisible();
+      await expect(deps.page.getByRole('region', { name: 'Fase do evento' })).toBeVisible();
       await attach('14-mobile-timeline');
       await deps.page.goto(`/admin/eventos/${eventId}/checagem`);
       await expect(deps.page.locator('#next-action-title')).toBeVisible();

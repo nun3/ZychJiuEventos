@@ -2,9 +2,9 @@ import { redirect } from 'next/navigation'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 import { getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
+import { DashboardPageHero } from '@/components/dashboard/DashboardPageHero'
 import { Alert } from '@/components/ui/Alert'
 import { PageContainer } from '@/components/ui/PageContainer'
-import { PageHeader } from '@/components/ui/PageHeader'
 import AthletesManager from './AthletesManager'
 
 export default async function MeusAtletasPage() {
@@ -35,9 +35,9 @@ export default async function MeusAtletasPage() {
 
   if (scope.mode === 'blocked' || teamsError || athletesError) {
     return (
-      <main className="py-mc-32 sm:py-mc-48">
-        <PageContainer>
-          <PageHeader title="Meus atletas" description="Consulte os atletas e equipes que você gerencia." />
+      <main className="py-5 sm:py-7">
+        <PageContainer fluid className="space-y-5">
+          <DashboardPageHero title="Meus atletas" description="Consulte os atletas e equipes que você gerencia." />
           <Alert variant="error" role="alert" className="mt-mc-24">
             {scope.mode === 'blocked'
               ? 'O contexto da organização da release está indisponível.'
@@ -59,10 +59,10 @@ export default async function MeusAtletasPage() {
   ))
 
   return (
-    <main className="py-mc-32 sm:py-mc-48">
-      <PageContainer>
-        <PageHeader title="Meus atletas" description="Veja quem você gerencia, a equipe de cada atleta e as ações de edição e inscrição." />
-        <div className="mt-mc-32">
+    <main className="py-5 sm:py-7">
+      <PageContainer fluid className="space-y-5">
+        <DashboardPageHero title="Meus atletas" description="Veja quem você gerencia, a equipe de cada atleta e as ações de edição e inscrição." />
+        <div>
           <AthletesManager
             canManageRoster={actor?.tipoCadastro !== 'atleta'}
             teams={teamItems}

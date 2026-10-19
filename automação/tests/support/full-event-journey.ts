@@ -99,15 +99,24 @@ async function activatePhaseWindow(
 }
 
 async function fillPhase(page: Page, label: string, startOffset: number, endOffset: number) {
+  const toggle = page.getByRole('button', { name: 'Configurar datas das fases' });
+  if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click();
   const group = page.getByText(label, { exact: true }).locator('..');
   await group.getByLabel('Início').fill(`${dateOffset(startOffset)}T00:00`);
   await group.getByLabel('Término').fill(`${dateOffset(endOffset)}T23:00`);
 }
 
 async function waitForPublishedEvent(page: Page) {
-  await page.getByRole('button', { name: 'Publicar', exact: true }).click();
+  const eventName = await page.getByLabel('Nome do evento').inputValue();
+  await page.getByRole('button', { name: 'Criar evento e continuar' }).click();
   try {
-    await page.waitForURL(/\/admin\/eventos$/, { timeout: 20000 });
+    await page.waitForURL(/\/admin\/eventos\/[^/]+\/configuracao$/, { timeout: 20000 });
+    await page.goto('/admin/eventos');
+    const card = page.getByRole('article').filter({ hasText: eventName });
+    await card.getByRole('button', { name: `Mais ações de ${eventName}` }).click();
+    await page.getByRole('menuitem', { name: 'Publicar' }).click();
+    await expect(card.getByText('Publicado', { exact: true })).toBeVisible();
+    return;
   } catch {
     const alert = (await page.getByRole('alert').textContent().catch(() => '')) || '';
     const invalid = await page.evaluate(() => {
@@ -370,7 +379,7 @@ export class FullEventJourney {
 
   async createAndPublishEvent() {
     await this.page.goto('/admin/eventos/novo');
-    await this.page.getByRole('heading', { name: 'Criar evento' }).waitFor();
+    await this.page.getByRole('heading', { name: 'Criar novo evento' }).waitFor();
     await this.page.getByLabel('Nome do evento').fill(this.identity.eventName);
     await this.page.getByLabel('Data do evento').fill(dateOffset(30));
     await this.page.getByLabel('Local', { exact: true }).fill('Ginásio Full Event');
@@ -391,9 +400,9 @@ export class FullEventJourney {
   }
 
   async configureCategoriesAndDuration() {
-    await eventCard(this.page, this.identity.eventName).getByRole('link', { name: 'Configurar' }).click();
+    await eventCard(this.page, this.identity.eventName).getByRole('link', { name: 'Gerenciar evento' }).click();
     await expect(this.page).toHaveURL(new RegExp(`/admin/eventos/${this.identity.eventId}/configuracao$`));
-    await this.page.getByRole('heading', { name: `Categorias — ${this.identity.eventName}` }).waitFor();
+    await this.page.getByRole('heading', { level: 1, name: this.identity.eventName }).waitFor();
     await this.page.getByLabel('Nome do conjunto').fill(`${MC_SIM_FULL_EVENT_PREFIX} Regras ${this.identity.runId}`);
     await this.page.getByLabel('Nome da categoria').fill(this.identity.categoryNames.final2);
     await this.page.getByLabel('Idade máxima').fill('99');
@@ -428,7 +437,7 @@ export class FullEventJourney {
       })),
     ));
     await this.page.reload();
-    await this.page.getByRole('heading', { name: `Categorias — ${this.identity.eventName}` }).waitFor();
+    await this.page.getByRole('heading', { level: 1, name: this.identity.eventName }).waitFor();
     for (const key of ['copo3', 'semi4'] as CategoryKey[]) {
       const input = this.page.locator(`#fight-duration-${this.identity.categoryIds[key]}`).first();
       await input.fill(String(DURATION_MINUTES));
@@ -508,8 +517,9 @@ export class FullEventJourney {
 
   async openInscriptions() {
     await this.page.goto('/admin/eventos');
-    await eventCard(this.page, this.identity.eventName).getByRole('button', { name: 'Abrir inscrições' }).click();
-    await expect(eventCard(this.page, this.identity.eventName).getByRole('button', { name: 'Abrir pagamento' })).toBeVisible();
+    await eventCard(this.page, this.identity.eventName).getByRole('link', { name: 'Gerenciar evento' }).click();
+    await this.page.getByRole('button', { name: 'Abrir inscrições' }).click();
+    await expect(this.page.getByRole('button', { name: 'Abrir pagamento' })).toBeVisible();
     this.mark('transicao-inscricao');
   }
 
@@ -533,8 +543,9 @@ export class FullEventJourney {
 
   async openPayment() {
     await this.page.goto('/admin/eventos');
-    await eventCard(this.page, this.identity.eventName).getByRole('button', { name: 'Abrir pagamento' }).click();
-    await expect(eventCard(this.page, this.identity.eventName).getByRole('button', { name: 'Abrir checagem' })).toBeVisible();
+    await eventCard(this.page, this.identity.eventName).getByRole('link', { name: 'Gerenciar evento' }).click();
+    await this.page.getByRole('button', { name: 'Abrir pagamento' }).click();
+    await expect(this.page.getByRole('button', { name: 'Abrir checagem' })).toBeVisible();
     await activatePhaseWindow(this.admin, this.identity.eventId, 'pagamento', 'inscricao');
     this.mark('transicao-pagamento');
   }
@@ -573,9 +584,10 @@ export class FullEventJourney {
   async openChecking() {
     await activatePhaseWindow(this.admin, this.identity.eventId, 'checagem', 'pagamento');
     await this.page.goto('/admin/eventos');
-    await eventCard(this.page, this.identity.eventName).getByRole('button', { name: 'Abrir checagem' }).click();
+    await eventCard(this.page, this.identity.eventName).getByRole('link', { name: 'Gerenciar evento' }).click();
+    await this.page.getByRole('button', { name: 'Abrir checagem' }).click();
     await this.page.goto(`/admin/eventos/${this.identity.eventId}/checagem`);
-    await this.page.getByRole('heading', { name: `Checagem — ${this.identity.eventName}` }).waitFor();
+    await this.page.getByRole('heading', { level: 1, name: this.identity.eventName }).waitFor();
   }
 
   async assertCheckingList() {
@@ -597,7 +609,7 @@ export class FullEventJourney {
   async openBracketsPhase() {
     await activatePhaseWindow(this.admin, this.identity.eventId, 'chaves', 'checagem');
     await this.page.goto(`/admin/eventos/${this.identity.eventId}/checagem`);
-    await this.page.getByRole('heading', { name: `Checagem — ${this.identity.eventName}` }).waitFor();
+    await this.page.getByRole('heading', { level: 1, name: this.identity.eventName }).waitFor();
     await this.page.getByRole('button', { name: 'Abrir chaves' }).click();
     await expect.poll(async () => {
       const opened = await this.admin.from('events').select('status').eq('id', this.identity.eventId).single();
@@ -608,7 +620,7 @@ export class FullEventJourney {
     await expect(this.page.getByText('Fase de chaves aberta')).toBeVisible();
     await this.page.getByRole('link', { name: 'Ir para as chaves' }).click();
     await expect(this.page).toHaveURL(new RegExp(`/admin/eventos/${this.identity.eventId}/chaves$`));
-    await this.page.getByRole('heading', { name: `Chaves — ${this.identity.eventName}` }).waitFor();
+    await this.page.getByRole('heading', { level: 1, name: this.identity.eventName }).waitFor();
     this.mark('transicao-chaves-pela-ui');
   }
 
@@ -674,7 +686,7 @@ export class FullEventJourney {
 
   async configureAreas() {
     await this.page.goto(`/admin/eventos/${this.identity.eventId}/programacao`);
-    await this.page.getByRole('heading', { name: `Programação — ${this.identity.eventName}` }).waitFor();
+    await this.page.getByRole('heading', { level: 1, name: this.identity.eventName }).waitFor();
     await this.page.getByLabel('Número').first().fill('1');
     await this.page.getByLabel('Nome ou cor').first().fill('Verde');
     await this.page.getByRole('button', { name: 'Adicionar área' }).click();
@@ -745,7 +757,7 @@ export class FullEventJourney {
 
   async confirmWeighIn() {
     await this.page.goto(`/admin/eventos/${this.identity.eventId}/resultados`);
-    await this.page.getByRole('heading', { name: `Resultados — ${this.identity.eventName}` }).waitFor();
+    await this.page.getByRole('heading', { level: 1, name: this.identity.eventName }).waitFor();
     await this.page.getByRole('button', { name: new RegExp(this.identity.categoryNames.semi4) }).click();
     await this.page.getByRole('button', { name: 'Marcar pesagem como realizada' }).click();
     await this.page.getByText('Pesagem marcada como realizada.').waitFor();

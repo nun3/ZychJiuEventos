@@ -10,6 +10,7 @@ import {
   isOwnedTeamMediaUrl,
   stripIdentityUrlVersion,
 } from '@/lib/identity/paths'
+import { isFunAvatarPresetUrl } from '@/lib/profile/fun-avatar-presets'
 import { createClient } from '@/lib/supabase/server'
 
 export type ProfileActionResult = { ok: boolean; message: string }
@@ -88,11 +89,12 @@ export async function setMyAvatarUrl(publicUrl: string): Promise<ProfileActionRe
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, message: 'Sessão expirada. Entre novamente.' }
   const clean = stripIdentityUrlVersion(publicUrl)
-  if (!isOwnedProfileMediaUrl(clean, user.id, 'avatar')) {
+  const isPreset = isFunAvatarPresetUrl(clean)
+  if (!isPreset && !isOwnedProfileMediaUrl(clean, user.id, 'avatar')) {
     return { ok: false, message: 'URL de foto inválida para esta conta.' }
   }
   const { data: previous } = await supabase.from('profiles').select('avatar_url').eq('id', user.id).maybeSingle()
-  const keepPath = identityObjectPathFromPublicUrl(clean)
+  const keepPath = isPreset ? null : identityObjectPathFromPublicUrl(clean)
   const { error } = await supabase.from('profiles').update({
     avatar_url: clean,
     updated_at: new Date().toISOString(),
@@ -100,7 +102,7 @@ export async function setMyAvatarUrl(publicUrl: string): Promise<ProfileActionRe
   if (error) return { ok: false, message: 'Não foi possível salvar a foto de perfil.' }
   await purgeIdentitySlotExcept(supabase, keepPath, previous?.avatar_url)
   revalidateProfile()
-  return { ok: true, message: 'Foto de perfil atualizada.' }
+  return { ok: true, message: isPreset ? 'Avatar divertido atualizado.' : 'Foto de perfil atualizada.' }
 }
 
 export async function clearMyAvatar(): Promise<ProfileActionResult> {

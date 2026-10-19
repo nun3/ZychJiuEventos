@@ -14,9 +14,9 @@ export default function EventPublicNavigation({ items }: { items: PublicEventNav
   return (
     <nav
       aria-label="Navegação do campeonato"
-      className="sticky top-16 z-30 border-b border-white/10 bg-mc-nav-dark"
+      className="sticky top-20 z-30 border-b border-white/10 bg-mc-nav-dark"
     >
-      <div className="mx-auto flex w-full max-w-[1360px] gap-1 overflow-x-auto px-4 sm:px-6 lg:gap-2 lg:px-8">
+      <div className="flex w-full gap-1 overflow-x-auto px-4 sm:px-8 lg:gap-2 lg:px-12 xl:px-20">
         {items.map((item) => {
           const Icon = icons[item.id] ?? FileText
           return (

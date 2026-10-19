@@ -1,24 +1,22 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
+import { useMemo, useState } from 'react'
 import { CalendarDays } from 'lucide-react'
 import EventFilters from '@/components/EventFilters'
 import EditorialEventCard from '@/components/EditorialEventCard'
 import HomeHighlightsCarousel from '@/components/HomeHighlightsCarousel'
 import { filterEvents, type Event } from '@/components/ModernEventGrid'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { PageContainer } from '@/components/ui/PageContainer'
 
-export default function HomeClient({ events, highlights }: { events: Event[]; highlights: Event[] }) {
-  const [filters, setFilters] = useState({ eventType: 'Todos', sport: 'Todas', state: 'Todos', search: '', period: 'todos', startDate: '', endDate: '' })
-  const filteredEvents = filterEvents(events, filters)
+export default function HomeClient({ events, highlights, initialSearch = '' }: { events: Event[]; highlights: Event[]; initialSearch?: string }) {
+  const [filters, setFilters] = useState({ eventType: 'Todos', sport: 'Todas', state: 'Todos', search: initialSearch, period: 'todos', startDate: '', endDate: '' })
+  const filteredEvents = useMemo(() => filterEvents(events, filters), [events, filters])
 
   return (
     <>
       <HomeHighlightsCarousel events={highlights} />
       <section id="eventos" className="scroll-mt-20 bg-mc-background py-mc-48 sm:py-mc-64" aria-labelledby="events-title">
-        <PageContainer>
+        <div className="mx-auto w-full px-4 sm:px-8 lg:px-12 xl:px-20">
           <div className="max-w-3xl">
             <p className="font-mc-interface text-sm font-semibold uppercase tracking-[0.16em] text-mc-action">
               Calendário MEU CAMP
@@ -33,7 +31,7 @@ export default function HomeClient({ events, highlights }: { events: Event[]; hi
 
           {events.length ? (
             <div className="mt-mc-32 border-b border-mc-border pb-mc-32">
-              <EventFilters variant="toolbar" onFilterChange={setFilters} />
+              <EventFilters variant="toolbar" initialSearch={initialSearch} onFilterChange={setFilters} />
             </div>
           ) : null}
 
@@ -47,8 +45,8 @@ export default function HomeClient({ events, highlights }: { events: Event[]; hi
                   {filteredEvents.length} {filteredEvents.length === 1 ? 'campeonato' : 'campeonatos'}
                 </p>
               </div>
-              <div className="mt-mc-24 grid gap-mc-32 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredEvents.slice(0, 6).map((event) => <EditorialEventCard key={event.id} event={event} />)}
+              <div className="mt-mc-24 grid gap-mc-24 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filteredEvents.map((event) => <EditorialEventCard key={event.id} event={event} />)}
               </div>
             </section>
           ) : (
@@ -61,41 +59,7 @@ export default function HomeClient({ events, highlights }: { events: Event[]; hi
               className="mt-mc-32 rounded-mc-small border border-mc-border bg-mc-surface"
             />
           )}
-          <Link href="/eventos" className="mt-6 inline-flex min-h-11 items-center rounded-mc-small font-mc-interface text-sm font-semibold text-mc-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
-            Ver todos os campeonatos
-          </Link>
-        </PageContainer>
-      </section>
-
-      <section className="border-y border-mc-border bg-mc-surface-secondary py-mc-48 sm:py-mc-64" aria-labelledby="platform-title">
-        <PageContainer className="grid gap-mc-32 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-mc-64">
-          <div>
-            <p className="font-mc-interface text-sm font-semibold uppercase tracking-[0.16em] text-mc-action">
-              MEU CAMP
-            </p>
-            <h2 id="platform-title" className="mt-mc-8 font-mc-display text-3xl font-semibold leading-tight text-mc-text-primary sm:text-mc-h1">
-              A competição conecta todo mundo.
-            </h2>
-          </div>
-          <div className="divide-y divide-mc-border border-y border-mc-border">
-            <div className="grid gap-mc-8 py-mc-24 sm:grid-cols-[9rem_1fr] sm:gap-mc-24">
-              <h3 className="font-mc-interface font-semibold text-mc-text-primary">Atletas</h3>
-              <p className="font-mc-interface leading-6 text-mc-text-secondary">Encontram eventos, realizam inscrições e acompanham sua participação.</p>
-            </div>
-            <div className="grid gap-mc-8 py-mc-24 sm:grid-cols-[9rem_1fr] sm:gap-mc-24">
-              <h3 className="font-mc-interface font-semibold text-mc-text-primary">Professores</h3>
-              <p className="font-mc-interface leading-6 text-mc-text-secondary">Gerenciam a equipe, inscrevem atletas e acompanham a checagem pública.</p>
-            </div>
-            <div className="grid gap-mc-8 py-mc-24 sm:grid-cols-[9rem_1fr] sm:gap-mc-24">
-              <h3 className="font-mc-interface font-semibold text-mc-text-primary">Responsáveis</h3>
-              <p className="font-mc-interface leading-6 text-mc-text-secondary">Cuidam do cadastro e das inscrições dos atletas sob sua responsabilidade.</p>
-            </div>
-            <div className="grid gap-mc-8 py-mc-24 sm:grid-cols-[9rem_1fr] sm:gap-mc-24">
-              <h3 className="font-mc-interface font-semibold text-mc-text-primary">Organizadores</h3>
-              <p className="font-mc-interface leading-6 text-mc-text-secondary">Conduzem eventos, inscrições, chaves e pagamentos em uma única plataforma.</p>
-            </div>
-          </div>
-        </PageContainer>
+        </div>
       </section>
     </>
   )

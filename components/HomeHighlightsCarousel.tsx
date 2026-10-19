@@ -1,37 +1,31 @@
 'use client'
 
-import { useState, type KeyboardEvent, type TouchEvent } from 'react'
+import { useCallback, useRef, useState, type KeyboardEvent, type TouchEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, CalendarDays, MapPin } from 'lucide-react'
 import type { Event } from './ModernEventGrid'
 
-const statusLabels: Record<string, string> = {
-  publicado: 'Campeonato publicado',
-  inscricao: 'Inscrições abertas',
-  pagamento: 'Pagamento',
-  checagem: 'Checagem',
-  chaves: 'Chaves publicadas',
-  em_andamento: 'Em andamento',
-  concluido: 'Campeonato concluído',
-}
-
 function eventDate(value?: string) {
   if (!value) return ''
   return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
-    .format(new Date(`${value}T12:00:00Z`))
-    .replace('.', '')
-    .toUpperCase()
-    .replace(/\sDE\s/g, ' ')
+    .format(new Date(`${value}T12:00:00Z`)).replace('.', '').toUpperCase().replace(/\sDE\s/g, ' ')
 }
 
 export default function HomeHighlightsCarousel({ events }: { events: Event[] }) {
   const [activeIndex, setActiveIndex] = useState(0)
-  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [previousIndex, setPreviousIndex] = useState<number | null>(null)
+  const touchStartRef = useRef<number | null>(null)
   const activeEvent = events[activeIndex]
   const hasNavigation = events.length > 1
-
-  const select = (index: number) => setActiveIndex((index + events.length) % events.length)
+  const backgroundIndexes = previousIndex === null ? [activeIndex] : [previousIndex, activeIndex]
+  const select = useCallback((index: number) => {
+    setActiveIndex((current) => {
+      const next = (index + events.length) % events.length
+      if (next !== current) setPreviousIndex(current)
+      return next
+    })
+  }, [events.length])
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (!hasNavigation) return
     if (event.key === 'ArrowLeft') { event.preventDefault(); select(activeIndex - 1) }
@@ -40,91 +34,74 @@ export default function HomeHighlightsCarousel({ events }: { events: Event[] }) 
     if (event.key === 'End') { event.preventDefault(); select(events.length - 1) }
   }
   const handleTouchEnd = (event: TouchEvent<HTMLElement>) => {
-    if (touchStart === null || !hasNavigation) return
-    const distance = event.changedTouches[0].clientX - touchStart
+    if (touchStartRef.current === null || !hasNavigation) return
+    const distance = event.changedTouches[0].clientX - touchStartRef.current
     if (Math.abs(distance) >= 48) select(distance > 0 ? activeIndex - 1 : activeIndex + 1)
-    setTouchStart(null)
+    touchStartRef.current = null
   }
 
-  if (!activeEvent) {
-    return (
-      <section className="bg-mc-structure pt-20 text-white" aria-label="Destaques">
-        <div className="mx-auto max-w-7xl px-4 py-mc-24 font-mc-interface text-sm text-slate-200 sm:px-6 lg:px-8">
-          Nenhum campeonato em destaque no momento.
-        </div>
-      </section>
-    )
-  }
+  if (!activeEvent) return <section className="flex min-h-[32rem] items-center bg-mc-structure pt-20 text-white" aria-label="Destaques"><div className="w-full px-4 text-sm text-slate-200 sm:px-8 lg:px-12">Nenhum campeonato em destaque no momento.</div></section>
 
   return (
-    <section
-      className="bg-mc-structure pt-20 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus"
-      aria-roledescription="carrossel"
-      aria-label="Destaques da plataforma"
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
-      onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div className="relative min-h-[430px] overflow-hidden sm:min-h-[500px] lg:min-h-[540px]">
-        <Image
-          key={activeEvent.id}
-          src={activeEvent.image!}
-          alt={`Banner do campeonato ${activeEvent.title}`}
-          fill
-          priority={activeIndex === 0}
-          sizes="100vw"
-          className="object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-mc-structure via-mc-structure/75 to-mc-structure/15" aria-hidden="true" />
-        <div className="absolute inset-0 bg-gradient-to-t from-mc-structure/80 via-transparent to-mc-structure/10" aria-hidden="true" />
+    <section className="relative overflow-hidden bg-mc-structure text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus" aria-roledescription="carrossel" aria-label="Campeonatos em destaque" tabIndex={0} onKeyDown={handleKeyDown} onTouchStart={(event) => { touchStartRef.current = event.touches[0].clientX }} onTouchEnd={handleTouchEnd}>
+      {backgroundIndexes.map((index) => {
+        const event = events[index]
+        const isActive = index === activeIndex
+        return (
+        <div
+          key={event.id}
+          className={`absolute inset-0 transition-opacity duration-500 motion-reduce:transition-none ${isActive ? 'opacity-100' : 'opacity-0'}`}
+          aria-hidden={!isActive}
+          onTransitionEnd={() => { if (!isActive) setPreviousIndex(null) }}
+        >
+          <Image
+            src={event.image!}
+            alt=""
+            fill
+            priority={isActive && index === 0}
+            sizes="100vw"
+            quality={55}
+            className="scale-[1.035] object-cover object-center blur-[5px] brightness-[0.62] saturate-[1.05]"
+          />
+        </div>
+        )
+      })}
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,27,46,0.68)_0%,rgba(7,27,46,0.32)_22%,rgba(7,27,46,0.10)_52%,rgba(7,27,46,0.42)_100%)]" aria-hidden="true" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,27,46,0.38)_0%,rgba(7,27,46,0.08)_36%,rgba(7,27,46,0.70)_72%,rgba(7,27,46,0.96)_100%)]" aria-hidden="true" />
 
-        <div className="relative mx-auto flex min-h-[430px] max-w-7xl items-end px-4 pb-32 pt-mc-48 sm:min-h-[500px] sm:px-6 sm:pb-36 lg:min-h-[540px] lg:items-center lg:px-8 lg:pb-32">
-          <div className="max-w-2xl" role="group" aria-roledescription="slide" aria-label={`${activeIndex + 1} de ${events.length}`}>
-            <p className="font-mc-interface text-xs font-bold uppercase tracking-[0.18em] text-blue-200">
-              {statusLabels[activeEvent.status || ''] || 'Campeonato'}
-            </p>
-            <h2 className="mt-mc-12 line-clamp-3 font-mc-display text-3xl font-bold uppercase leading-tight text-white sm:text-4xl lg:text-mc-display">
-              {activeEvent.title}
-            </h2>
-            <div className="mt-mc-16 flex flex-col gap-mc-8 font-mc-interface text-sm font-medium text-slate-100 sm:flex-row sm:flex-wrap sm:gap-x-mc-24">
-              <span className="inline-flex items-center gap-mc-8"><CalendarDays aria-hidden="true" size={18} />{eventDate(activeEvent.dateObj)}</span>
-              <span className="inline-flex items-start gap-mc-8"><MapPin aria-hidden="true" size={18} className="mt-0.5 shrink-0" />{activeEvent.location}</span>
+      <div className="relative z-10 h-[28rem] sm:h-[30rem] lg:h-[32rem]">
+
+        <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-6 sm:px-8 sm:pb-7 lg:px-12 lg:pb-8 xl:px-20" role="group" aria-roledescription="slide" aria-label={`${activeIndex + 1} de ${events.length}`} aria-live="polite">
+          <div className="grid items-end gap-4 lg:grid-cols-[minmax(18rem,1fr)_auto_auto_auto] lg:gap-0">
+            <div className="min-w-0 lg:pr-7">
+              <p className="mb-2 border-l-2 border-mc-action pl-3 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-blue-300">Campeonato em destaque</p>
+              <h1 className="font-mc-display text-2xl font-bold uppercase leading-tight text-white sm:text-3xl lg:text-4xl">{activeEvent.title}</h1>
             </div>
-            <Link
-              href={`/eventos/${activeEvent.id}`}
-              className="mt-mc-24 inline-flex min-h-11 items-center gap-mc-8 rounded-mc-small bg-mc-action px-mc-16 font-mc-interface text-sm font-bold uppercase tracking-[0.08em] text-white transition-colors duration-mc-normal hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure"
-            >
-              Ver campeonato <ArrowRight aria-hidden="true" size={17} />
-            </Link>
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-100 lg:border-l lg:border-white/20 lg:px-5"><CalendarDays aria-hidden="true" size={18} className="shrink-0 text-blue-300" />{eventDate(activeEvent.dateObj)}</span>
+            <span className="inline-flex items-start gap-2 text-sm font-medium text-slate-100 lg:max-w-72 lg:border-l lg:border-white/20 lg:px-5"><MapPin aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-blue-300" />{activeEvent.location}</span>
+            <Link href={`/eventos/${activeEvent.id}`} className="inline-flex min-h-11 w-fit items-center gap-3 rounded-mc-small bg-mc-action px-5 text-xs font-bold uppercase tracking-[0.12em] text-white transition-colors duration-mc-normal hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">Ver campeonato <ArrowRight aria-hidden="true" size={16} /></Link>
           </div>
         </div>
+      </div>
 
+      <div className="relative z-10">
         {hasNavigation ? (
-          <div className="absolute inset-x-0 bottom-0 bg-mc-structure/90 backdrop-blur-sm">
-            <div className="mx-auto flex max-w-7xl items-center gap-mc-12 px-4 py-mc-12 sm:px-6 lg:px-8">
-              <button type="button" onClick={() => select(activeIndex - 1)} className="hidden min-h-11 min-w-11 items-center justify-center text-white hover:text-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus sm:inline-flex" aria-label="Destaque anterior">
-                <ArrowLeft aria-hidden="true" size={20} />
-              </button>
-              <div className="flex flex-1 snap-x gap-mc-8 overflow-x-auto" role="tablist" aria-label="Selecionar destaque">
+          <div>
+            <div className="flex w-full items-center gap-2 px-3 pb-5 pt-3 sm:gap-4 sm:px-8 sm:pb-6 lg:px-12 lg:pb-7 lg:pt-4 xl:px-20">
+              <button type="button" onClick={() => select(activeIndex - 1)} className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white transition-colors hover:border-mc-action hover:bg-mc-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus" aria-label="Campeonato anterior"><ArrowLeft aria-hidden="true" size={19} /></button>
+              <div className="flex flex-1 snap-x gap-2 overflow-x-auto px-1 [scrollbar-width:none] sm:gap-3" role="tablist" aria-label="Selecionar campeonato em destaque">
                 {events.map((event, index) => (
-                  <button
-                    key={event.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={index === activeIndex}
-                    aria-label={`Mostrar ${event.title}`}
-                    onClick={() => select(index)}
-                    className={`relative h-16 w-28 shrink-0 snap-start overflow-hidden border-2 transition-colors duration-mc-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus ${index === activeIndex ? 'border-mc-action' : 'border-white/25 hover:border-white/60'}`}
-                  >
-                    <Image src={event.image!} alt="" fill sizes="112px" className="object-cover" />
-                    <span className="absolute inset-0 bg-mc-structure/20" aria-hidden="true" />
+                  <button key={event.id} type="button" role="tab" aria-selected={index === activeIndex} aria-label={`Mostrar ${event.title}`} onClick={() => select(index)} className={`relative aspect-[3/2] w-24 shrink-0 snap-start overflow-hidden rounded-mc-small border-2 shadow-[0_8px_22px_rgba(0,0,0,0.22)] transition-all duration-mc-normal motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus sm:w-40 lg:w-52 xl:w-64 ${index === activeIndex ? 'border-blue-400 opacity-100 shadow-[0_0_0_1px_rgba(37,99,235,0.50),0_0_20px_rgba(37,99,235,0.34)]' : 'border-white/20 opacity-80 hover:border-white/50 hover:opacity-100'}`}>
+                    <Image src={event.image!} alt="" fill sizes="(max-width: 639px) 96px, (max-width: 1023px) 160px, (max-width: 1279px) 208px, 256px" className="object-cover" />
+                    <span className="absolute inset-0 bg-mc-structure/[0.04]" aria-hidden="true" />
                   </button>
                 ))}
               </div>
-              <button type="button" onClick={() => select(activeIndex + 1)} className="hidden min-h-11 min-w-11 items-center justify-center text-white hover:text-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus sm:inline-flex" aria-label="Próximo destaque">
-                <ArrowRight aria-hidden="true" size={20} />
-              </button>
+              <div className="hidden shrink-0 items-center gap-2 text-xs font-semibold tabular-nums text-blue-100 sm:flex" aria-label={`Slide ${activeIndex + 1} de ${events.length}`}>
+                <span>{String(activeIndex + 1).padStart(2, '0')}</span><span className="text-white/40">/</span><span>{String(events.length).padStart(2, '0')}</span>
+                <span className="ml-2 h-0.5 w-24 overflow-hidden rounded-full bg-white/20"><span className="block h-full bg-mc-action transition-[width] duration-mc-normal motion-reduce:transition-none" style={{ width: `${((activeIndex + 1) / events.length) * 100}%` }} /></span>
+              </div>
+              <button type="button" onClick={() => select(activeIndex + 1)} className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-white transition-colors hover:border-mc-action hover:bg-mc-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus" aria-label="Próximo campeonato"><ArrowRight aria-hidden="true" size={19} /></button>
             </div>
           </div>
         ) : null}

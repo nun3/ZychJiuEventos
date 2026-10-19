@@ -1,485 +1,149 @@
 'use client'
 
-import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { ChevronDown, ChevronUp, LogOut, Menu, X, ArrowRight } from 'lucide-react'
+import { ArrowRight, CalendarDays, ClipboardList, LayoutDashboard, LogOut, Menu, UserRound, UsersRound, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-type SubLink = { href: string; label: string }
-type MenuKey = 'eventos' | 'noticias' | 'conta' | null
-
-/** Somente rotas públicas/implementadas — sem links quebrados. */
-const eventosLinks: SubLink[] = [
-  { href: '/eventos', label: 'Próximos campeonatos' },
-]
-
-const noticiasLinks: SubLink[] = [
-  { href: '/noticias', label: 'Novidades' },
-]
-
-const contaLinks: SubLink[] = [
-  { href: '/dashboard', label: 'Meu painel' },
-  { href: '/dashboard/meu-perfil', label: 'Meu perfil' },
-  { href: '/dashboard/inscricoes', label: 'Minhas inscrições' },
-  { href: '/dashboard/meus-atletas', label: 'Minhas equipes' },
-  { href: '/admin/eventos', label: 'Meus eventos' },
-]
-
 const CREATE_EVENT_HREF = '/admin/eventos/novo'
-const CREATE_EVENT_LOGIN = `/login?redirectTo=${encodeURIComponent(CREATE_EVENT_HREF)}`
-const SCROLL_THRESHOLD_PX = 64
-const CLOSE_DELAY_MS = 200
+const CREATE_EVENT_REGISTER = `/login?mode=register&redirectTo=${encodeURIComponent(CREATE_EVENT_HREF)}`
+const accountLinks = [
+  { href: '/dashboard', label: 'Meu painel', icon: LayoutDashboard },
+  { href: '/dashboard/meu-perfil', label: 'Meu perfil', icon: UserRound },
+  { href: '/dashboard/inscricoes', label: 'Minhas inscrições', icon: ClipboardList },
+  { href: '/dashboard/meus-atletas', label: 'Minhas equipes', icon: UsersRound },
+  { href: '/admin/eventos', label: 'Meus eventos', icon: CalendarDays },
+]
+type CurrentUser = { name: string; initial: string; avatarUrl: string | null } | null
 
-type CurrentUser = { name: string; initial: string } | null
-
-function isActive(pathname: string, href: string) {
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
-
-export default function ModernNavbar() {
-  const router = useRouter()
+export default function ModernNavbar({ overlayAtTop = false }: { overlayAtTop?: boolean }) {
   const pathname = usePathname()
-  const submenuId = useId()
-  const mobileNavId = useId()
-  const [openMenu, setOpenMenu] = useState<MenuKey>(null)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [mobileExpanded, setMobileExpanded] = useState<MenuKey>(null)
+  const router = useRouter()
   const [currentUser, setCurrentUser] = useState<CurrentUser>(null)
   const [scrolled, setScrolled] = useState(false)
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const navRef = useRef<HTMLElement>(null)
-  const mobileButtonRef = useRef<HTMLButtonElement>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const avatarButtonRef = useRef<HTMLButtonElement>(null)
+  const drawerLayerRef = useRef<HTMLDivElement>(null)
+  const drawerRef = useRef<HTMLElement>(null)
+  const isHomeTop = (pathname === '/' || overlayAtTop) && !scrolled
   const isLoggedIn = currentUser !== null
-  const createEventHref = isLoggedIn ? CREATE_EVENT_HREF : CREATE_EVENT_LOGIN
+  const createEventHref = isLoggedIn ? CREATE_EVENT_HREF : CREATE_EVENT_REGISTER
 
-  const clearCloseTimer = () => {
-    if (closeTimer.current) {
-      clearTimeout(closeTimer.current)
-      closeTimer.current = null
-    }
-  }
-
-  const openDesktopMenu = (key: MenuKey) => {
-    clearCloseTimer()
-    setOpenMenu(key)
-  }
-
-  const scheduleCloseDesktopMenu = () => {
-    clearCloseTimer()
-    closeTimer.current = setTimeout(() => setOpenMenu(null), CLOSE_DELAY_MS)
-  }
-
-  const closeAll = useCallback(() => {
-    clearCloseTimer()
-    setOpenMenu(null)
-    setMobileOpen(false)
-    setMobileExpanded(null)
-  }, [])
+  const closeMenus = useCallback(() => { setDrawerOpen(false); setMobileOpen(false) }, [])
 
   useEffect(() => {
     const supabase = createClient()
-    const applyUser = (user: { email?: string; user_metadata?: Record<string, unknown> } | null) => {
+    let active = true
+    const applyUser = async (user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null) => {
       if (!user) return setCurrentUser(null)
-      const metadataName = typeof user.user_metadata?.nome_completo === 'string'
-        ? user.user_metadata.nome_completo.trim()
-        : ''
+      const metadataName = typeof user.user_metadata?.nome_completo === 'string' ? user.user_metadata.nome_completo.trim() : ''
       const name = metadataName || user.email?.split('@')[0] || 'Usuário'
-      setCurrentUser({ name, initial: name.charAt(0).toUpperCase() })
+      const { data: profile } = await supabase.from('profiles').select('avatar_url').eq('id', user.id).maybeSingle()
+      if (!active) return
+      const metadataAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture
+      const avatar = profile?.avatar_url || metadataAvatar
+      setCurrentUser({ name, initial: name.charAt(0).toUpperCase(), avatarUrl: typeof avatar === 'string' ? avatar : null })
     }
     void supabase.auth.getUser().then(({ data }) => applyUser(data.user))
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => applyUser(session?.user ?? null))
-    return () => listener.subscription.unsubscribe()
-  }, [])
-
-  useEffect(() => {
-    let frame = 0
-    const syncScrolled = (next: boolean) => setScrolled((current) => (current === next ? current : next))
-    const readScrollY = () => window.scrollY || document.documentElement.scrollTop || 0
-    const onScroll = () => {
-      if (frame) return
-      frame = window.requestAnimationFrame(() => {
-        frame = 0
-        const y = readScrollY()
-        syncScrolled(y > SCROLL_THRESHOLD_PX)
-        if (y > SCROLL_THRESHOLD_PX + 80) setOpenMenu(null)
-      })
-    }
-    const anchor = document.createElement('div')
-    Object.assign(anchor.style, { position: 'relative', width: '0', height: '0', overflow: 'visible', pointerEvents: 'none' })
-    const sentinel = document.createElement('div')
-    sentinel.setAttribute('aria-hidden', 'true')
-    Object.assign(sentinel.style, {
-      position: 'absolute', top: '0', left: '0', width: '1px', height: `${SCROLL_THRESHOLD_PX + 1}px`, opacity: '0',
-    })
-    anchor.appendChild(sentinel)
-    document.body.insertBefore(anchor, document.body.firstChild)
-    const observer = new IntersectionObserver(([entry]) => syncScrolled(!entry.isIntersecting), { root: null, threshold: 0 })
-    observer.observe(sentinel)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
+    const syncProfileAvatar = () => { void supabase.auth.getUser().then(({ data }) => applyUser(data.user)) }
+    window.addEventListener('meucamp:avatar-updated', syncProfileAvatar)
     return () => {
-      observer.disconnect()
-      anchor.remove()
-      window.removeEventListener('scroll', onScroll)
-      if (frame) window.cancelAnimationFrame(frame)
+      active = false
+      listener.subscription.unsubscribe()
+      window.removeEventListener('meucamp:avatar-updated', syncProfileAvatar)
     }
   }, [])
 
   useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth >= 1024) {
-        setMobileOpen(false)
-        setMobileExpanded(null)
-      }
-    }
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    const update = () => setScrolled(window.scrollY > 32)
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    return () => window.removeEventListener('scroll', update)
   }, [])
 
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [mobileOpen])
+  useEffect(() => closeMenus(), [pathname, closeMenus])
 
   useEffect(() => {
-    closeAll()
-  }, [pathname, closeAll])
+    drawerLayerRef.current?.toggleAttribute('inert', !drawerOpen)
+  }, [drawerOpen])
 
   useEffect(() => {
-    const onPointer = (event: MouseEvent) => {
-      if (openMenu && navRef.current && !navRef.current.contains(event.target as Node)) {
-        setOpenMenu(null)
-      }
-    }
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return
-      if (mobileOpen) {
-        setMobileOpen(false)
-        mobileButtonRef.current?.focus()
+    if (!drawerOpen && !mobileOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeMenus()
+        avatarButtonRef.current?.focus()
         return
       }
-      if (openMenu) setOpenMenu(null)
+      if (event.key !== 'Tab' || !drawerOpen || !drawerRef.current) return
+      const focusable = Array.from(drawerRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'))
+      if (!focusable.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
     }
-    document.addEventListener('mousedown', onPointer)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onPointer)
-      document.removeEventListener('keydown', onKey)
-      clearCloseTimer()
-    }
-  }, [mobileOpen, openMenu])
+    document.addEventListener('keydown', onKeyDown)
+    if (drawerOpen) closeButtonRef.current?.focus()
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', onKeyDown) }
+  }, [drawerOpen, mobileOpen, closeMenus])
 
   const handleLogout = async () => {
     await createClient().auth.signOut()
-    closeAll()
+    closeMenus()
     router.replace('/login')
     router.refresh()
   }
-
-  const dark = scrolled
-  const topLink = (active: boolean, menuOpen: boolean) => {
-    const base = 'relative inline-flex min-h-11 items-center gap-mc-4 font-mc-interface text-xs font-bold uppercase tracking-[0.16em] transition-colors duration-[180ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
-    if (dark) {
-      return `${base} text-white hover:text-white/80 focus-visible:ring-white focus-visible:ring-offset-mc-nav-dark ${active || menuOpen ? 'after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:bg-mc-action' : ''}`
-    }
-    return `${base} text-mc-text-primary hover:text-mc-action focus-visible:ring-mc-focus focus-visible:ring-offset-white ${active || menuOpen ? 'text-mc-action after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:bg-mc-action' : ''}`
-  }
-
-  const createEventLink = dark
-    ? 'group inline-flex min-h-11 items-center gap-mc-8 font-mc-interface text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors duration-[180ms] hover:text-mc-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-nav-dark'
-    : 'group inline-flex min-h-11 items-center gap-mc-8 font-mc-interface text-xs font-bold uppercase tracking-[0.14em] text-mc-text-primary transition-colors duration-[180ms] hover:text-mc-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2'
-
-  const submenuLinks = openMenu === 'eventos'
-    ? eventosLinks
-    : openMenu === 'noticias'
-      ? noticiasLinks
-      : openMenu === 'conta'
-        ? contaLinks
-        : []
-
-  const renderDesktopTrigger = (
-    key: Exclude<MenuKey, null>,
-    href: string | null,
-    label: string,
-    active: boolean,
-  ) => {
-    const menuOpen = openMenu === key
-    const className = topLink(active, menuOpen)
-    const commonProps = {
-      className,
-      'aria-expanded': menuOpen,
-      'aria-controls': submenuId,
-      onMouseEnter: () => openDesktopMenu(key),
-      onMouseLeave: scheduleCloseDesktopMenu,
-      onFocus: () => openDesktopMenu(key),
-      onKeyDown: (event: ReactKeyboardEvent) => {
-        if (event.key === 'ArrowDown' || event.key === ' ') {
-          event.preventDefault()
-          openDesktopMenu(key)
-        }
-        if (event.key === 'Escape') setOpenMenu(null)
-      },
-    }
-
-    if (href) {
-      return (
-        <Link
-          href={href}
-          aria-current={active ? 'page' : undefined}
-          {...commonProps}
-          onClick={() => openDesktopMenu(key)}
-        >
-          {label}
-          <ChevronDown aria-hidden="true" size={14} className={`transition-transform duration-[180ms] ${menuOpen ? 'rotate-180' : ''}`} />
-        </Link>
-      )
-    }
-
-    return (
-      <button type="button" {...commonProps} onClick={() => openDesktopMenu(menuOpen ? null : key)}>
-        <span className="max-w-[9rem] truncate normal-case tracking-normal">{label}</span>
-        <ChevronDown aria-hidden="true" size={14} className={`transition-transform duration-[180ms] ${menuOpen ? 'rotate-180' : ''}`} />
-      </button>
-    )
-  }
+  const linkClass = isHomeTop ? 'text-white hover:text-blue-200 focus-visible:ring-white' : 'text-mc-text-primary hover:text-mc-action focus-visible:ring-mc-focus'
 
   return (
-    <header
-      ref={navRef}
-      data-scrolled={scrolled ? 'true' : 'false'}
-      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow] duration-[200ms] ${dark ? 'border-b border-white/10 bg-mc-nav-dark shadow-mc-elevated' : 'border-b border-mc-border bg-white shadow-mc-subtle'}`}
-    >
-      <a
-        href="#conteudo-principal"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[70] focus:rounded-mc-small focus:bg-mc-action focus:px-mc-16 focus:py-mc-8 focus:font-mc-interface focus:text-sm focus:font-semibold focus:text-white"
-      >
-        Pular para o conteúdo principal
-      </a>
-
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Desktop */}
-        <div className={`hidden min-h-16 grid-cols-[1fr_auto_1fr] items-center lg:grid ${scrolled ? 'min-h-16' : 'min-h-[4.25rem]'}`}>
-          <nav aria-label="Navegação principal" className="flex items-center justify-self-start gap-mc-24 xl:gap-mc-32">
-            {renderDesktopTrigger('eventos', '/eventos', 'Campeonatos', isActive(pathname, '/eventos'))}
-            {renderDesktopTrigger('noticias', '/noticias', 'Notícias', isActive(pathname, '/noticias'))}
-          </nav>
-
-          <Link
-            href="/"
-            className={`justify-self-center rounded-mc-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${dark ? 'focus-visible:ring-white focus-visible:ring-offset-mc-nav-dark' : 'focus-visible:ring-mc-focus focus-visible:ring-offset-white'}`}
-            aria-label="Meu Camp — página inicial"
-          >
-            <span className="relative block h-7 w-40">
-              <Image
-                src={dark ? '/images/meucamp-wordmark-light.png' : '/images/meucamp-wordmark.png'}
-                alt="MEU CAMP"
-                fill
-                className="object-contain"
-                priority
-                sizes="160px"
-              />
-            </span>
-          </Link>
-
-          <div className="flex items-center justify-self-end gap-mc-16 xl:gap-mc-24">
-            {!isLoggedIn ? (
-              <Link
-                href="/login"
-                className={topLink(isActive(pathname, '/login'), false)}
-              >
-                Entrar
-              </Link>
-            ) : (
-              renderDesktopTrigger('conta', null, currentUser?.name || 'Conta', false)
-            )}
-            <Link href={createEventHref} className={createEventLink}>
-              Criar evento
-              <ArrowRight aria-hidden="true" size={16} className="transition-transform duration-[180ms] group-hover:translate-x-0.5" />
+    <>
+      <header className={`fixed inset-x-0 top-0 z-50 transition-colors duration-mc-normal ${isHomeTop ? 'bg-transparent' : 'border-b border-mc-border bg-white/95 shadow-mc-subtle backdrop-blur-md'}`}>
+        <a href="#conteudo-principal" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[70] focus:rounded-mc-small focus:bg-mc-action focus:px-4 focus:py-2 focus:text-white">Pular para o conteúdo principal</a>
+        <div className="flex min-h-20 w-full items-center justify-between gap-8 px-4 sm:px-8 lg:px-12 xl:px-20">
+          <div className="flex items-center gap-10">
+            <Link href="/" aria-label="MEU CAMP — Início" className="shrink-0 rounded-mc-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2">
+              <span className="relative block h-8 w-40 sm:w-44"><Image src={isHomeTop ? '/images/meucamp-wordmark-light.png' : '/images/meucamp-wordmark.png'} alt="MEU CAMP" fill priority sizes="176px" className="object-contain object-left" /></span>
             </Link>
+            <Link href="/" aria-current={pathname === '/' ? 'page' : undefined} className={`hidden min-h-11 items-center border-b-2 text-xs font-bold uppercase tracking-[0.18em] transition-colors focus-visible:outline-none focus-visible:ring-2 md:inline-flex ${pathname === '/' ? 'border-mc-action' : 'border-transparent'} ${linkClass}`}>Início</Link>
           </div>
-        </div>
-
-        {/* Mobile: logo | hamburger */}
-        <div className="flex min-h-16 items-center justify-between lg:hidden">
-          <Link
-            href="/"
-            className={`rounded-mc-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${dark ? 'focus-visible:ring-white focus-visible:ring-offset-mc-nav-dark' : 'focus-visible:ring-mc-focus focus-visible:ring-offset-white'}`}
-            aria-label="Meu Camp — página inicial"
-          >
-            <span className="relative block h-7 w-36">
-              <Image
-                src={dark ? '/images/meucamp-wordmark-light.png' : '/images/meucamp-wordmark.png'}
-                alt="MEU CAMP"
-                fill
-                className="object-contain object-left"
-                priority
-                sizes="144px"
-              />
-            </span>
-          </Link>
-          <button
-            ref={mobileButtonRef}
-            type="button"
-            className={dark
-              ? 'inline-flex min-h-11 min-w-11 items-center justify-center rounded-mc-small text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-nav-dark'
-              : 'inline-flex min-h-11 min-w-11 items-center justify-center rounded-mc-small text-mc-text-primary hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2'}
-            aria-expanded={mobileOpen}
-            aria-controls={mobileNavId}
-            aria-label={mobileOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
-            onClick={() => setMobileOpen((open) => !open)}
-          >
-            {mobileOpen ? <X aria-hidden="true" size={24} /> : <Menu aria-hidden="true" size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Desktop horizontal submenu strip */}
-      <div
-        id={submenuId}
-        hidden={!openMenu}
-        className={`hidden border-t transition-[max-height,opacity] duration-[180ms] lg:block ${openMenu ? 'max-h-16 opacity-100' : 'pointer-events-none max-h-0 opacity-0'} ${dark ? 'border-white/10 bg-mc-nav-dark' : 'border-mc-border bg-white shadow-mc-subtle'}`}
-        onMouseEnter={clearCloseTimer}
-        onMouseLeave={scheduleCloseDesktopMenu}
-      >
-        {openMenu ? (
-          <div className="mx-auto flex max-w-7xl items-center gap-mc-24 overflow-x-auto px-4 py-mc-12 sm:px-6 lg:gap-mc-32 lg:px-8" role="navigation" aria-label="Submenu">
-            {submenuLinks.map((link) => (
-              <Link
-                key={`${openMenu}-${link.href}-${link.label}`}
-                href={link.href}
-                className={dark
-                  ? 'inline-flex min-h-11 shrink-0 items-center whitespace-nowrap font-mc-interface text-xs font-bold uppercase tracking-[0.14em] text-white/90 transition-colors duration-[180ms] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
-                  : 'inline-flex min-h-11 shrink-0 items-center whitespace-nowrap font-mc-interface text-xs font-bold uppercase tracking-[0.14em] text-mc-text-secondary transition-colors duration-[180ms] hover:text-mc-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus'}
-                onClick={closeAll}
-              >
-                {link.label}
-              </Link>
-            ))}
-            {openMenu === 'conta' ? (
-              <>
-                <span className={`hidden h-5 w-px shrink-0 sm:block ${dark ? 'bg-white/20' : 'bg-mc-border'}`} aria-hidden="true" />
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="ml-auto inline-flex min-h-11 shrink-0 items-center gap-mc-8 whitespace-nowrap font-mc-interface text-xs font-bold uppercase tracking-[0.14em] text-mc-error transition-colors duration-[180ms] hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"
-                >
-                  <LogOut aria-hidden="true" size={15} />
-                  Sair
-                </button>
-              </>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-
-      {/* Mobile menu */}
-      {mobileOpen ? (
-        <nav
-          id={mobileNavId}
-          aria-label="Navegação principal"
-          className="border-t border-mc-border bg-white lg:hidden"
-        >
-          <div className="mx-auto max-w-7xl space-y-mc-4 px-4 py-mc-16 sm:px-6">
-            {([
-              { key: 'eventos' as const, href: '/eventos', label: 'Campeonatos', children: eventosLinks },
-              { key: 'noticias' as const, href: '/noticias', label: 'Notícias', children: noticiasLinks },
-            ]).map((item) => {
-              const expanded = mobileExpanded === item.key
-              return (
-                <div key={item.key} className="border-b border-mc-border">
-                  <div className="flex items-stretch">
-                    <Link
-                      href={item.href}
-                      aria-current={isActive(pathname, item.href) ? 'page' : undefined}
-                      className="flex min-h-12 flex-1 items-center font-mc-interface text-sm font-bold uppercase tracking-[0.14em] text-mc-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"
-                      onClick={closeAll}
-                    >
-                      {item.label}
-                    </Link>
-                    <button
-                      type="button"
-                      className="inline-flex min-h-12 min-w-12 items-center justify-center text-mc-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"
-                      aria-expanded={expanded}
-                      aria-controls={`mobile-sub-${item.key}`}
-                      aria-label={expanded ? `Recolher ${item.label}` : `Expandir ${item.label}`}
-                      onClick={() => setMobileExpanded((current) => (current === item.key ? null : item.key))}
-                    >
-                      {expanded ? <ChevronUp aria-hidden="true" size={18} /> : <ChevronDown aria-hidden="true" size={18} />}
-                    </button>
-                  </div>
-                  {expanded ? (
-                    <ul id={`mobile-sub-${item.key}`} className="space-y-mc-4 pb-mc-12 pl-mc-12">
-                      {item.children.map((child) => (
-                        <li key={child.href + child.label}>
-                          <Link href={child.href} className="flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus" onClick={closeAll}>
-                            {child.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
-              )
-            })}
-
+          <nav aria-label="Navegação principal" className="ml-auto hidden w-auto shrink-0 items-center gap-6 md:flex">
             {isLoggedIn ? (
-              <div className="border-b border-mc-border">
-                <div className="flex items-stretch">
-                  <Link
-                    href="/dashboard"
-                    className="flex min-h-12 flex-1 items-center font-mc-interface text-sm font-bold uppercase tracking-[0.14em] text-mc-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"
-                    onClick={closeAll}
-                  >
-                    Meu painel
-                  </Link>
-                  <button
-                    type="button"
-                    className="inline-flex min-h-12 min-w-12 items-center justify-center text-mc-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"
-                    aria-expanded={mobileExpanded === 'conta'}
-                    aria-controls="mobile-sub-conta"
-                    aria-label={mobileExpanded === 'conta' ? 'Recolher minha conta' : 'Expandir minha conta'}
-                    onClick={() => setMobileExpanded((current) => (current === 'conta' ? null : 'conta'))}
-                  >
-                    {mobileExpanded === 'conta' ? <ChevronUp aria-hidden="true" size={18} /> : <ChevronDown aria-hidden="true" size={18} />}
-                  </button>
-                </div>
-                {mobileExpanded === 'conta' ? (
-                  <ul id="mobile-sub-conta" className="space-y-mc-4 pb-mc-12 pl-mc-12">
-                    {contaLinks.map((child) => (
-                      <li key={child.href}>
-                        <Link href={child.href} className="flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus" onClick={closeAll}>
-                          {child.label}
-                        </Link>
-                      </li>
-                    ))}
-                    <li>
-                      <button type="button" onClick={handleLogout} className="flex min-h-11 items-center gap-mc-8 font-mc-interface text-sm font-semibold text-mc-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
-                        <LogOut aria-hidden="true" size={16} />
-                        Sair
-                      </button>
-                    </li>
-                  </ul>
-                ) : null}
-              </div>
-            ) : (
-              <Link
-                href="/login"
-                className="flex min-h-12 items-center border-b border-mc-border font-mc-interface text-sm font-bold uppercase tracking-[0.14em] text-mc-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"
-                onClick={closeAll}
-              >
-                Entrar
-              </Link>
-            )}
+              <button ref={avatarButtonRef} type="button" aria-label={`Abrir menu de ${currentUser.name}`} aria-expanded={drawerOpen} aria-controls="account-drawer" onClick={() => setDrawerOpen(true)} className={`relative order-2 flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border-2 transition-all duration-mc-slow focus-visible:outline-none focus-visible:ring-2 ${isHomeTop ? 'border-white/70 bg-white/10 text-white focus-visible:ring-white' : 'border-mc-border bg-mc-action/10 text-mc-action focus-visible:ring-mc-focus'} ${drawerOpen ? 'scale-75 opacity-0' : 'opacity-100'}`}>
+                {currentUser.avatarUrl ? <Image src={currentUser.avatarUrl} alt="" fill sizes="44px" className="object-cover" /> : <span className="font-mc-display font-bold">{currentUser.initial}</span>}
+              </button>
+            ) : <Link href="/login" className={`inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-[0.18em] transition-colors focus-visible:outline-none focus-visible:ring-2 ${linkClass}`}>Login</Link>}
+            <Link href={createEventHref} className="group order-1 inline-flex min-h-11 items-center gap-2 rounded-mc-small bg-mc-action px-5 text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Criar evento <ArrowRight aria-hidden="true" size={15} className="transition-transform group-hover:translate-x-1" /></Link>
+          </nav>
+          <button type="button" aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={mobileOpen} aria-controls="mobile-public-menu" onClick={() => setMobileOpen(open => !open)} className={`inline-flex h-11 w-11 items-center justify-center rounded-mc-small focus-visible:outline-none focus-visible:ring-2 md:hidden ${linkClass}`}>{mobileOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}</button>
+        </div>
+        {mobileOpen ? (
+          <nav id="mobile-public-menu" aria-label="Navegação principal mobile" className="border-t border-mc-border bg-white px-4 py-4 shadow-mc-elevated md:hidden">
+            <Link href="/" onClick={closeMenus} className="flex min-h-12 items-center border-b border-mc-border text-sm font-bold uppercase tracking-[0.16em] text-mc-text-primary">Início</Link>
+            {isLoggedIn ? <button type="button" onClick={() => { setMobileOpen(false); setDrawerOpen(true) }} className="flex min-h-12 w-full items-center border-b border-mc-border text-left text-sm font-bold uppercase tracking-[0.16em] text-mc-text-primary">Minha conta</button> : <Link href="/login" onClick={closeMenus} className="flex min-h-12 items-center border-b border-mc-border text-sm font-bold uppercase tracking-[0.16em] text-mc-text-primary">Login</Link>}
+            <Link href={createEventHref} onClick={closeMenus} className="flex min-h-12 items-center gap-2 text-sm font-bold uppercase tracking-[0.16em] text-mc-action">Criar evento <ArrowRight aria-hidden="true" size={16} /></Link>
+          </nav>
+        ) : null}
+      </header>
 
-            <Link href={createEventHref} className={`${createEventLink} mt-mc-12`} onClick={closeAll}>
-              Criar evento
-              <ArrowRight aria-hidden="true" size={16} className="transition-transform duration-[180ms] group-hover:translate-x-0.5" />
-            </Link>
+      <div ref={drawerLayerRef} className={`fixed inset-0 z-[60] transition-visibility duration-mc-normal ${drawerOpen ? 'visible' : 'invisible'}`} aria-hidden={!drawerOpen}>
+        <button type="button" aria-label="Fechar menu da conta" tabIndex={drawerOpen ? 0 : -1} onClick={closeMenus} className={`absolute inset-0 bg-mc-text-primary/55 transition-opacity duration-mc-slow ${drawerOpen ? 'opacity-100' : 'opacity-0'}`} />
+        <aside ref={drawerRef} id="account-drawer" role="dialog" aria-modal="true" aria-labelledby="account-drawer-title" className={`absolute inset-y-0 right-0 flex w-[min(90vw,21.25rem)] flex-col bg-mc-surface shadow-mc-elevated transition-transform duration-mc-slow ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="flex items-center justify-between border-b border-mc-border px-5 py-5">
+            <div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-mc-action">Sua conta</p><h2 id="account-drawer-title" className="mt-1 truncate font-mc-display text-xl font-bold text-mc-text-primary">{currentUser?.name || 'Conta'}</h2></div>
+            <button ref={closeButtonRef} type="button" aria-label="Fechar menu" onClick={() => { setDrawerOpen(false); avatarButtonRef.current?.focus() }} className="flex h-11 w-11 items-center justify-center rounded-mc-small text-mc-text-primary hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"><X aria-hidden="true" /></button>
           </div>
-        </nav>
-      ) : null}
-    </header>
+          <nav aria-label="Menu da conta" className="flex-1 px-3 py-4">{accountLinks.map(link => <Link key={link.href} href={link.href} onClick={closeMenus} className="group flex min-h-14 items-center gap-3 rounded-mc-medium px-3 text-sm font-semibold text-mc-text-primary transition-colors hover:bg-mc-action/5 hover:text-mc-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"><link.icon aria-hidden="true" size={20} className="text-mc-action" />{link.label}<ArrowRight aria-hidden="true" size={16} className="ml-auto transition-transform group-hover:translate-x-1" /></Link>)}</nav>
+          <div className="border-t border-mc-border p-4"><button type="button" onClick={handleLogout} className="flex min-h-12 w-full items-center gap-3 rounded-mc-medium px-3 text-sm font-semibold text-mc-error hover:bg-mc-error/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"><LogOut aria-hidden="true" size={20} />Sair da conta</button></div>
+        </aside>
+      </div>
+    </>
   )
 }

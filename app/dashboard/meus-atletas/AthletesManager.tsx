@@ -150,7 +150,7 @@ export default function AthletesManager({
         </Card>
       ) : null}
 
-      <div className="relative">
+      <div className="relative max-w-md">
         <label htmlFor="athlete-search" className="sr-only">Buscar atleta pelo nome</label>
         <Search aria-hidden="true" size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-mc-text-secondary" />
         <Input id="athlete-search" value={query} onChange={(event) => setQuery(event.target.value)} className="pl-10" placeholder="Buscar pelo nome" />
@@ -158,7 +158,7 @@ export default function AthletesManager({
 
       {visibleAthletes.length === 0 ? (
         <EmptyState
-          icon={<UserRound size={34} />}
+          icon={<span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-mc-action/10 text-mc-action"><UserRound size={28} /></span>}
           title={athletes.length === 0 ? 'Nenhum atleta cadastrado' : 'Nenhum atleta encontrado'}
           description={athletes.length === 0
             ? (!canManageRoster
@@ -174,7 +174,7 @@ export default function AthletesManager({
                 ? <Button variant="outline" onClick={() => setShowTeamForm(true)}>Criar equipe</Button>
                 : <Button onClick={() => setShowAthleteForm(true)} className="gap-mc-8"><Plus aria-hidden="true" size={18} />Cadastrar atleta</Button>)
             : undefined}
-          className="rounded-mc-medium border border-mc-border bg-mc-surface"
+          className="mx-auto max-w-xl rounded-mc-medium border border-mc-border bg-mc-surface px-5 py-8 shadow-mc-subtle"
         />
       ) : (
         <>

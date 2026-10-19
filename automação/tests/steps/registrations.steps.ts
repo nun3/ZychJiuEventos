@@ -11,13 +11,20 @@ When('cria evento com prazo de inscrição vigente', async ({ page, scenarioData
   await page.getByLabel('Data do evento').fill(date(30));
   await page.getByLabel('Local', { exact: true }).fill('Ginásio E2E');
   await page.getByLabel('Valor da inscrição').fill('123.45');
+  const toggle = page.getByRole('button', { name: 'Configurar datas das fases' });
+  if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click();
   for (const [label, start, end] of [['Inscrição', -1, 5], ['Pagamento', 6, 10], ['Checagem', 11, 15], ['Chaves', 16, 20]] as const) {
     const group = page.getByText(label, { exact: true }).locator('..');
     await group.getByLabel('Início').fill(date(start) + 'T00:00');
     await group.getByLabel('Término').fill(date(end) + 'T23:00');
   }
-  await page.getByRole('button', { name: 'Publicar', exact: true }).click();
-  await expect(page).toHaveURL(/\/admin\/eventos$/);
+  await page.getByRole('button', { name: 'Criar evento e continuar' }).click();
+  await expect(page).toHaveURL(/\/admin\/eventos\/[^/]+\/configuracao$/);
+  await page.goto('/admin/eventos');
+  const created = page.getByRole('article').filter({ hasText: scenarioData.event });
+  await created.getByRole('button', { name: `Mais ações de ${scenarioData.event}` }).click();
+  await page.getByRole('menuitem', { name: 'Publicar' }).click();
+  await expect(created.getByText('Publicado', { exact: true })).toBeVisible();
 });
 When('configura categoria elegível para o atleta da inscrição', async ({ page }) => {
   await page.getByLabel('Nome do conjunto').fill('Regras inscrição E2E');
@@ -29,13 +36,16 @@ When('configura categoria elegível para o atleta da inscrição', async ({ page
 });
 When('abre inscrições do evento criado', async ({ page, scenarioData }) => {
   await page.goto('/admin/eventos');
-  const card = page.getByRole('article').filter({ hasText: scenarioData.event });
-  await card.getByRole('button', { name: 'Abrir inscrições' }).click();
-  await expect(card.getByRole('button', { name: 'Abrir inscrições' })).toHaveCount(0);
+  const card = page.locator('tr:visible, article:visible').filter({ hasText: scenarioData.event }).first();
+  await card.getByRole('link', { name: 'Gerenciar evento' }).click();
+  await page.getByRole('button', { name: 'Abrir inscrições' }).click();
+  await expect(page.getByRole('button', { name: 'Abrir inscrições' })).toHaveCount(0);
 });
 When('acessa o formulário de inscrição do evento criado', async ({ page, scenarioData }) => {
-  const card = page.getByRole('article').filter({ hasText: scenarioData.event });
-  await card.getByRole('link', { name: 'Página pública' }).click();
+  await page.goto('/admin/eventos');
+  const card = page.locator('tr:visible, article:visible').filter({ hasText: scenarioData.event }).first();
+  await card.getByRole('button', { name: `Mais ações de ${scenarioData.event}` }).click();
+  await page.getByRole('menuitem', { name: 'Página pública' }).click();
   await page.getByRole('link', { name: 'Inscrever atletas' }).click();
 });
 Then('confirmar inscrições fica bloqueado sem seleção e aceite', async ({ page }) => {

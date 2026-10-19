@@ -8,6 +8,7 @@ import {
   CalendarDays,
   ClipboardList,
   Clock3,
+  CreditCard,
   Download,
   FileText,
   GitBranch,
@@ -35,8 +36,15 @@ import { createClient } from '@/lib/supabase/server'
 import { cn } from '@/components/ui/utils'
 import type { SportCategoryCatalog } from '@/lib/events/category-resolver'
 
+const phaseIcons = {
+  inscricao: SquarePen,
+  pagamento: CreditCard,
+  checagem: ClipboardList,
+  chaves: GitBranch,
+}
+
 function HubContainer({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div {...props} className={cn('mx-auto w-full max-w-[1360px] px-4 sm:px-6 lg:px-8', className)} />
+  return <div {...props} className={cn('w-full px-4 sm:px-8 lg:px-12 xl:px-20', className)} />
 }
 
 export default async function EventPage({ params }: { params: { id: string } }) {
@@ -105,26 +113,26 @@ export default async function EventPage({ params }: { params: { id: string } }) 
       ] as const)
 
   return (
-    <main className="min-h-screen bg-mc-background">
-      <ModernNavbar />
+    <main id="conteudo-principal" className="min-h-screen bg-mc-background">
+      <ModernNavbar overlayAtTop />
 
-      <section className="relative isolate overflow-hidden bg-mc-nav-dark pt-16 text-white">
+      <section className="relative isolate flex min-h-[27rem] overflow-hidden bg-mc-nav-dark pt-20 text-white sm:min-h-[29rem] lg:min-h-[30rem]">
         {event.imagem_cartaz_url ? (
           <>
             <Image
               src={event.imagem_cartaz_url}
               alt=""
               fill
-              unoptimized
               priority
               sizes="100vw"
-              className="-z-20 object-cover object-[center_40%] opacity-60 grayscale"
+              quality={60}
+              className="-z-20 scale-[1.025] object-cover object-center blur-[4px] brightness-[0.58] saturate-110"
             />
-            <div className="absolute inset-0 -z-10 bg-gradient-to-r from-mc-nav-dark via-mc-nav-dark/95 to-mc-nav-dark/20" aria-hidden="true" />
-            <div className="absolute inset-0 -z-10 bg-gradient-to-t from-mc-nav-dark/80 via-transparent to-mc-nav-dark/30" aria-hidden="true" />
+            <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,27,46,0.82)_0%,rgba(7,27,46,0.48)_42%,rgba(7,27,46,0.18)_72%,rgba(7,27,46,0.44)_100%)]" aria-hidden="true" />
+            <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(7,27,46,0.42)_0%,rgba(7,27,46,0.08)_38%,rgba(7,27,46,0.88)_100%)]" aria-hidden="true" />
           </>
         ) : null}
-        <HubContainer className="pt-5">
+        <HubContainer className="flex flex-1 flex-col pt-5">
           <div className="flex flex-wrap items-center justify-between gap-mc-12">
             <Link
               href="/eventos"
@@ -136,8 +144,8 @@ export default async function EventPage({ params }: { params: { id: string } }) 
             <EventShareButton title={event.nome} />
           </div>
 
-          <div className="mt-5 grid items-end gap-6 sm:grid-cols-[minmax(0,1fr)_14rem] lg:min-h-[16rem] lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-10">
-            <div className="min-w-0 pb-6">
+          <div className="mt-auto flex min-h-[17rem] items-end pb-7 pt-8 sm:min-h-[18rem] sm:pb-8 lg:min-h-[19rem] lg:pb-9">
+            <div className="min-w-0 max-w-5xl">
               <p className="inline-flex min-h-6 items-center gap-2 rounded-mc-full bg-white/15 px-2.5 font-mc-interface text-xs font-medium text-white">
                 <span
                   aria-hidden="true"
@@ -149,12 +157,12 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                 {presentation.eventStatus.label}
               </p>
 
-              <h1 className="mt-3 max-w-[42rem] text-balance font-mc-display text-[2.125rem] font-bold uppercase leading-[1.02] tracking-tight text-white md:text-5xl lg:text-[3.75rem]">
+              <h1 className="mt-3 max-w-5xl text-balance font-mc-display text-[2.125rem] font-bold uppercase leading-[1.02] tracking-tight text-white md:text-5xl lg:text-[3.75rem]">
                 {event.nome}
               </h1>
 
-              <dl className="mt-6 grid gap-4 lg:grid-cols-[auto_minmax(0,1fr)] lg:gap-6">
-                <div className="flex items-center gap-3 lg:border-r lg:border-white/15 lg:pr-6">
+              <dl className="mt-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+                <div className="flex items-center gap-3 sm:border-r sm:border-white/20 sm:pr-6">
                   <CalendarDays aria-hidden="true" className="shrink-0 text-white" size={24} />
                   <div>
                     <dt className="sr-only">Data</dt>
@@ -174,35 +182,17 @@ export default async function EventPage({ params }: { params: { id: string } }) 
               </dl>
             </div>
 
-            {event.imagem_cartaz_url ? (
-              <div className="relative mx-auto w-full max-w-[18rem] sm:mx-0">
-                <div className="relative aspect-[4/5] overflow-hidden rounded-t-mc-small bg-mc-nav-dark/40 shadow-mc-elevated sm:aspect-square">
-                  <Image
-                    src={event.imagem_cartaz_url}
-                    alt={`Cartaz de ${event.nome}`}
-                    fill
-                    unoptimized
-                    className="object-contain object-bottom"
-                    sizes="(min-width: 1024px) 256px, (min-width: 640px) 224px, 288px"
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="hidden rounded-t-mc-small border border-white/10 bg-white/5 p-6 lg:flex lg:min-h-[16rem] lg:items-end">
-                <p className="font-mc-display text-2xl font-semibold leading-tight text-white/85">{event.nome}</p>
-              </div>
-            )}
           </div>
         </HubContainer>
       </section>
 
       <EventPublicNavigation items={navItems} />
 
-      <HubContainer className="py-6">
-        <div className="grid items-start gap-5 lg:grid-cols-[13.75rem_minmax(0,1fr)_18.75rem]">
-          <aside className="order-1 lg:sticky lg:top-32 lg:order-none">
+      <HubContainer className="py-8 sm:py-10">
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,72fr)_minmax(19rem,28fr)] lg:gap-6">
+          <div className="order-1 lg:order-none lg:col-span-2">
             <EventContentSidebar sections={sections} />
-          </aside>
+          </div>
 
           <div className="order-2 min-w-0 space-y-mc-16 lg:order-none">
             {presentation.overviewText ? (
@@ -226,34 +216,49 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                 <p className="mt-2 font-mc-interface text-xs text-mc-text-secondary">
                   Datas e horários em {event.timezone.trim()}.
                 </p>
-                <ol className="mt-4">
+                <ol className="mt-6 grid md:grid-cols-4">
                   {presentation.phases.map((phase, index) => {
                     const active = phase.timeline.state === 'atual'
+                    const completed = phase.timeline.state === 'concluida'
+                    const PhaseIcon = phaseIcons[phase.tipo]
+                    const [start, end] = formatPhaseWindow(phase.inicio, phase.fim, event.timezone).split(' até ')
                     return (
                       <li
                         key={phase.id}
-                        className={cn(
-                          'relative ml-1 border-l border-mc-border py-2 pl-5',
-                          index === 0 ? 'pt-0' : '',
-                        )}
+                        className="relative grid grid-cols-[2.5rem_minmax(0,1fr)] gap-3 pb-5 last:pb-0 md:block md:px-2 md:pb-0 md:text-center"
                       >
+                        {index < presentation.phases.length - 1 ? (
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              'absolute bottom-0 left-5 top-10 w-px md:bottom-auto md:left-[calc(50%+1.25rem)] md:right-[calc(-50%+1.25rem)] md:top-5 md:h-0.5 md:w-auto',
+                              completed ? 'bg-mc-success' : active ? 'bg-mc-action/60' : 'bg-mc-border',
+                            )}
+                          />
+                        ) : null}
                         <span
                           aria-hidden="true"
                           className={cn(
-                            'absolute -left-1 top-3 h-2 w-2 rounded-full ring-2 ring-white',
-                            index === 0 ? 'top-1.5' : '',
-                            active ? 'bg-mc-action' : 'bg-mc-text-secondary',
+                            'relative z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border md:mx-auto',
+                            completed
+                              ? 'border-mc-success bg-mc-success text-white'
+                              : active
+                                ? 'border-mc-action bg-mc-action text-white shadow-[0_0_0_5px_rgba(37,99,235,0.10)]'
+                                : 'border-mc-border bg-mc-surface-secondary text-mc-text-secondary',
                           )}
-                        />
-                        <div>
-                          <div className="flex flex-wrap items-center gap-mc-8">
-                            <p className="font-mc-interface text-sm font-medium text-mc-text-primary">
-                              {getPublicPhaseLabel(phase.tipo)}
-                            </p>
-                            <StatusBadge variant={active ? 'success' : 'neutral'}>{phase.timeline.label}</StatusBadge>
+                        >
+                          <PhaseIcon size={18} />
+                        </span>
+                        <div className="min-w-0 md:mt-3">
+                          <p className={cn('font-mc-interface text-sm font-semibold', active ? 'text-mc-action' : 'text-mc-text-primary')}>
+                            {getPublicPhaseLabel(phase.tipo)}
+                          </p>
+                          <div className="mt-1 md:flex md:justify-center">
+                            <StatusBadge variant={active ? 'info' : completed ? 'success' : 'neutral'}>{phase.timeline.label}</StatusBadge>
                           </div>
-                          <p className="mt-1 font-mc-interface text-xs leading-5 text-mc-text-secondary">
-                            {formatPhaseWindow(phase.inicio, phase.fim, event.timezone)}
+                          <p className="mt-2 font-mc-interface text-xs leading-5 text-mc-text-secondary">
+                            <span className="block">{start}</span>
+                            {end ? <span className="block">até {end}</span> : null}
                           </p>
                         </div>
                       </li>
@@ -320,17 +325,21 @@ export default async function EventPage({ params }: { params: { id: string } }) 
             ) : null}
 
             {hasLocation ? (
-              <section id="local" className="scroll-mt-36 rounded-mc-small border border-mc-border bg-mc-surface p-4 sm:p-5">
-                <h2 className="flex items-center gap-2 font-mc-display text-xl font-bold text-mc-text-primary">
-                  <MapPin size={21} aria-hidden="true" className="text-mc-structure" />
-                  Local
-                </h2>
-                <p className="mt-3 font-mc-interface text-sm font-semibold leading-6 text-mc-text-primary">{event.local}</p>
+              <section id="local" className="scroll-mt-36 overflow-hidden rounded-mc-small border border-mc-border bg-mc-surface">
+                <div className="flex items-start gap-4 bg-gradient-to-r from-mc-action/[0.08] to-transparent p-4 sm:p-5">
+                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-mc-action/10 text-mc-action">
+                    <MapPin size={21} aria-hidden="true" />
+                  </span>
+                  <div>
+                    <p className="font-mc-interface text-xs font-semibold uppercase tracking-[0.14em] text-mc-text-secondary">Local do campeonato</p>
+                    <h2 className="mt-1 font-mc-display text-xl font-bold text-mc-text-primary">{event.local}</h2>
+                  </div>
+                </div>
               </section>
             ) : null}
           </div>
 
-          <aside className="order-3 space-y-mc-16 lg:sticky lg:top-32 lg:order-none">
+          <aside className="order-3 space-y-mc-16 lg:sticky lg:top-36 lg:order-none">
             <section aria-labelledby="inscricao-titulo" className="overflow-hidden rounded-mc-small border border-mc-border bg-mc-surface p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 id="inscricao-titulo" className="flex items-center gap-2 font-mc-display text-base font-bold text-mc-text-primary">

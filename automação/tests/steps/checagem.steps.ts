@@ -10,7 +10,7 @@ Given('existe um evento isolado com inscrições mistas para checagem', async ({
 
 When('abre a checagem do evento isolado', async ({ page, checagemData }) => {
   await page.goto(`/admin/eventos/${checagemData.eventId}/checagem`);
-  await expect(page.getByRole('heading', { name: `Checagem — ${checagemData.eventName}` })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: checagemData.eventName })).toBeVisible();
 });
 
 Then('a checagem lista somente os três atletas efetivados', async ({ page, checagemData }) => {

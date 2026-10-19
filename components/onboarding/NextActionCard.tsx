@@ -1,26 +1,46 @@
 import Link from 'next/link'
-import { Card } from '@/components/ui/Card'
+import { ArrowRight, CircleCheck } from 'lucide-react'
 import type { NextAction } from '@/lib/onboarding/event-guidance'
+import { NextActionButton } from './NextActionButton'
 
-export function NextActionCard({ action }: { action: NextAction }) {
+export function NextActionCard({ action, eventId }: { action: NextAction; eventId: string }) {
+  const factsLine = action.facts.length ? action.facts.join(' · ') : null
+  const showLink = Boolean(action.href && action.cta && !action.transition)
+  const showTransition = Boolean(action.transition && action.cta)
+
   return (
-    <Card className="p-mc-16 sm:p-mc-24" aria-labelledby="next-action-title">
-      <p className="font-mc-interface text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">Próxima ação</p>
-      <h2 id="next-action-title" className="mt-mc-8 font-mc-display text-mc-h3 text-mc-text-primary">{action.title}</h2>
-      {action.facts.length ? (
-        <ul className="mt-mc-12 space-y-mc-4 font-mc-interface text-sm text-mc-text-secondary">
-          {action.facts.map((fact) => <li key={fact}>{fact}</li>)}
-        </ul>
+    <aside
+      className="flex flex-col gap-2 rounded-mc-medium border border-mc-success/25 bg-mc-success/10 px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+      aria-labelledby="next-action-title"
+    >
+      <div className="flex min-w-0 items-start gap-2">
+        <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mc-success text-white" aria-hidden="true">
+          <CircleCheck size={16} />
+        </span>
+        <div className="min-w-0">
+          <h2 id="next-action-title" className="font-mc-display text-base leading-6 text-mc-text-primary">
+            {action.title}
+          </h2>
+          <p className="font-mc-interface text-sm leading-5 text-mc-text-secondary">
+            {factsLine ? <span className="font-semibold text-mc-text-primary">{factsLine}. </span> : null}
+            {action.message}
+          </p>
+        </div>
+      </div>
+
+      {showTransition && action.cta && action.transition ? (
+        <NextActionButton eventId={eventId} status={action.transition} label={action.cta} />
       ) : null}
-      <p className="mt-mc-12 font-mc-interface text-sm text-mc-text-primary">{action.message}</p>
-      {action.href && action.cta ? (
+
+      {showLink && action.href && action.cta ? (
         <Link
           href={action.href}
-          className="mt-mc-16 inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"
+          className="inline-flex min-h-9 shrink-0 items-center justify-center gap-2 rounded-mc-medium bg-mc-action px-3 font-mc-interface text-sm font-semibold text-white transition-colors duration-mc-normal hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2"
         >
           {action.cta}
+          <ArrowRight aria-hidden="true" size={16} />
         </Link>
       ) : null}
-    </Card>
+    </aside>
   )
 }

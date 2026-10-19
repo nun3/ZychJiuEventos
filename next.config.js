@@ -4,6 +4,11 @@ const nextConfig = {
   experimental: {
     // Comprovante PIX vai até 4 MB (validado no servidor). A Vercel corta corpos acima de 4,5 MB antes daqui.
     serverActions: { bodySizeLimit: '5mb' },
+    // Reaproveita o payload das abas do evento por alguns segundos. Mutações chamam router.refresh().
+    staleTimes: {
+      dynamic: 30,
+      static: 180,
+    },
   },
   images: {
     remotePatterns: [

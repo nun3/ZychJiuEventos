@@ -1,6 +1,12 @@
 import { expect, type Browser, type BrowserContext, type Locator, type Page, type TestInfo } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 import type { Database, Json } from '../../../lib/supabase/database.types';
+import {
+  getPublicEventPresentation,
+  type PublicEventStatus,
+} from '../../../lib/events/public-event-presentation';
 import {
   applyAuthSession,
   createCleanupClients,
@@ -52,7 +58,28 @@ const EVIDENCE = {
   premiacao: '21-premiacao',
   financeiro: '22-financeiro',
   concluido: '23-evento-concluido',
+  hubPublicado: 'hub-01-publicado',
+  hubInscricao: 'hub-02-inscricao',
+  hubPagamento: 'hub-03-pagamento',
+  hubChecagem: 'hub-04-checagem',
+  hubChaves: 'hub-05-chaves',
+  hubProgramacao: 'hub-06-programacao',
+  hubConcluido: 'hub-07-concluido',
+  hubMobile: 'hub-390-mobile',
 } as const;
+
+const PUBLIC_OVERVIEW =
+  'Campeonato Sandbox MEU CAMP para homologação ponta a ponta. Regras oficiais, categorias e prazos publicados pela organização.';
+
+type HubSnapshot = {
+  stage: string;
+  eventStatusLabel: string;
+  registrationStatusLabel: string;
+  currentPhase: string | null;
+  primaryAction: string;
+  timeline: Array<{ tipo: string; label: string; state: string }>;
+  gaps: string[];
+};
 
 export type HomologationStage =
   | 'protecao'
@@ -117,8 +144,7 @@ function allMatches(operation: JsonRecord) {
 }
 
 function eventCard(page: Page, name: string) {
-  const row = page.getByRole('row').filter({ hasText: name });
-  return row;
+  return page.locator('tr:visible, article:visible').filter({ hasText: name }).first();
 }
 
 async function waitEventStatus(admin: AdminClient, eventId: string, status: string) {
@@ -137,15 +163,24 @@ function hoursFromNow(hours: number) {
 }
 
 async function fillPhase(page: Page, label: string, startOffset: number, endOffset: number) {
+  const toggle = page.getByRole('button', { name: 'Configurar datas das fases' });
+  if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click();
   const group = page.getByText(label, { exact: true }).locator('..');
   await group.getByLabel('Início').fill(`${dateOffset(startOffset)}T00:00`);
   await group.getByLabel('Término').fill(`${dateOffset(endOffset)}T23:00`);
 }
 
 async function waitForPublishedEvent(page: Page) {
-  await page.getByRole('button', { name: 'Publicar', exact: true }).click();
+  const eventName = await page.getByLabel('Nome do evento').inputValue();
+  await page.getByRole('button', { name: 'Criar evento e continuar' }).click();
   try {
-    await page.waitForURL(/\/admin\/eventos$/, { timeout: 20000 });
+    await page.waitForURL(/\/admin\/eventos\/[^/]+\/configuracao$/, { timeout: 20000 });
+    await page.goto('/admin/eventos');
+    const card = page.getByRole('article').filter({ hasText: eventName });
+    await card.getByRole('button', { name: `Mais ações de ${eventName}` }).click();
+    await page.getByRole('menuitem', { name: 'Publicar' }).click();
+    await expect(card.getByText('Publicado', { exact: true })).toBeVisible();
+    return;
   } catch {
     const alert = (await page.getByRole('alert').textContent().catch(() => '')) || '';
     throw new Error(`Publicação do evento não navegou. alerta="${alert.trim()}" url=${page.url()}`);
@@ -264,6 +299,7 @@ export class HomologationJourney {
   userIds: string[] = [];
   cleanupResidual = -1;
   failedStep: string | null = null;
+  hubSnapshots: HubSnapshot[] = [];
 
   private admin!: AdminClient;
   private actor!: ActorClient;
@@ -321,6 +357,114 @@ export class HomologationJourney {
     }
     const body = await this.page.screenshot({ fullPage: true });
     await this.deps.testInfo.attach(name, { body, contentType: 'image/png' });
+  }
+
+  private evidenceDir() {
+    const dir = path.resolve(__dirname, '../../../docs/design-system/evidencias/hub-e2e', this.runId);
+    mkdirSync(dir, { recursive: true });
+    return dir;
+  }
+
+  private async attachPublic(name: string, page: Page) {
+    const body = await page.screenshot({ fullPage: true });
+    await this.deps.testInfo.attach(name, { body, contentType: 'image/png' });
+    writeFileSync(path.join(this.evidenceDir(), `${name}.png`), body);
+  }
+
+  /** Public hub coherence: Hero / timeline / Aside must share one presentation resolution. */
+  async assertPublicHub(stage: string, evidenceName: string, options: { mobile?: boolean } = {}) {
+    const publicPage = await this.publicSurface();
+    const event = await this.admin
+      .from('events')
+      .select('status, informacoes, local, valor_inscricao')
+      .eq('id', this.eventId)
+      .single();
+    if (!event.data) throw new Error(`Hub ${stage}: evento ausente.`);
+    const phases = await this.admin
+      .from('event_phases')
+      .select('id, tipo, inicio, fim')
+      .eq('event_id', this.eventId)
+      .order('inicio');
+    const presentation = getPublicEventPresentation({
+      status: event.data.status as PublicEventStatus,
+      phases: phases.data || [],
+      informacoes: event.data.informacoes,
+    });
+
+    await publicPage.setViewportSize(
+      options.mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 },
+    );
+    await publicPage.goto(`/eventos/${this.eventId}`);
+    await publicPage.getByRole('heading', { name: this.eventName }).waitFor();
+    await expect(publicPage.getByText(presentation.eventStatus.label, { exact: true }).first()).toBeVisible();
+    await expect(publicPage.getByText(presentation.registrationStatus.label, { exact: true }).first()).toBeVisible();
+    await expect(publicPage.getByText(/carrossel|banner oficial da Home|mc-sim/i)).toHaveCount(0);
+    if (presentation.overviewText) {
+      await expect(publicPage.getByRole('heading', { name: 'Visão geral' })).toBeVisible();
+      await expect(publicPage.getByText(presentation.overviewText)).toBeVisible();
+    } else {
+      await expect(publicPage.getByRole('heading', { name: 'Visão geral' })).toHaveCount(0);
+    }
+    await expect(publicPage.getByText(event.data.local, { exact: true }).first()).toBeVisible();
+    await expect(publicPage.getByText('Data do evento', { exact: true })).toHaveCount(0);
+    await expect(publicPage.getByText('Local do evento', { exact: true })).toHaveCount(0);
+
+    if (presentation.phases.length) {
+      const timeline = publicPage.locator('#cronograma');
+      await expect(publicPage.getByRole('heading', { name: 'Prazos e fases' })).toBeVisible();
+      const phaseLabel = (tipo: string) =>
+        tipo === 'inscricao' ? 'Inscrição' : tipo === 'pagamento' ? 'Pagamento' : tipo === 'checagem' ? 'Checagem' : 'Chaves';
+      for (const phase of presentation.phases) {
+        const row = timeline.locator('li').filter({ hasText: phaseLabel(phase.tipo) });
+        await expect(row.getByText(phase.timeline.label, { exact: true }).first()).toBeVisible();
+      }
+      if (presentation.currentPhase === 'pagamento') {
+        const inscricaoRow = timeline.locator('li').filter({ hasText: 'Inscrição' });
+        await expect(inscricaoRow.getByText('Em andamento', { exact: true })).toHaveCount(0);
+        await expect(inscricaoRow.getByText('Concluída', { exact: true })).toBeVisible();
+      }
+    }
+
+    if (presentation.showRegistrationCta) {
+      await expect(publicPage.getByRole('link', { name: 'Fazer inscrição' })).toBeVisible();
+    } else {
+      await expect(publicPage.getByRole('link', { name: 'Fazer inscrição' })).toHaveCount(0);
+      await expect(publicPage.getByRole('link', { name: 'Inscrever atletas' })).toHaveCount(0);
+    }
+
+    await expect(publicPage.getByRole('link', { name: 'Chaves' }).first()).toBeVisible();
+    await expect(publicPage.getByRole('link', { name: 'Programação' }).first()).toBeVisible();
+    await expect(publicPage.getByRole('link', { name: 'Consultar chaves' })).toBeVisible();
+    await expect(publicPage.getByRole('link', { name: 'Consultar programação' })).toBeVisible();
+
+    const gaps: string[] = [];
+    if (!event.data.informacoes?.trim()) gaps.push('DADOS: informacoes vazio');
+    if (!(await publicPage.getByRole('heading', { name: 'Categorias' }).count())) gaps.push('DADOS: categorias ainda não no hub neste estágio');
+    if (!(await publicPage.getByRole('heading', { name: 'Regulamento e documentos' }).count())) {
+      gaps.push('DADOS: regulamento/documentos não publicados neste evento');
+    }
+
+    this.hubSnapshots.push({
+      stage,
+      eventStatusLabel: presentation.eventStatus.label,
+      registrationStatusLabel: presentation.registrationStatus.label,
+      currentPhase: presentation.currentPhase,
+      primaryAction: presentation.primaryAction,
+      timeline: presentation.phases.map((phase) => ({
+        tipo: phase.tipo,
+        label: phase.timeline.label,
+        state: phase.timeline.state,
+      })),
+      gaps,
+    });
+    await this.attachPublic(evidenceName, publicPage);
+    if (!options.mobile) {
+      await publicPage.setViewportSize({ width: 390, height: 844 });
+      await publicPage.goto(`/eventos/${this.eventId}`);
+      await publicPage.getByRole('heading', { name: this.eventName }).waitFor();
+      await this.attachPublic(`${evidenceName}-390`, publicPage);
+      await publicPage.setViewportSize({ width: 1440, height: 1000 });
+    }
   }
 
   private async publicSurface() {
@@ -576,12 +720,13 @@ export class HomologationJourney {
     try {
       await this.asOwner();
       await this.page.goto('/admin/eventos/novo');
-      await this.page.getByRole('heading', { name: 'Criar evento' }).waitFor();
+      await this.page.getByRole('heading', { name: 'Criar novo evento' }).waitFor();
       await this.page.getByLabel('Nome do evento').fill(this.eventName);
       await this.page.getByLabel('Data do evento').fill(dateOffset(30));
       await this.page.keyboard.press('Escape');
-      await this.page.getByLabel('Local', { exact: true }).fill('Ginásio Homologação MEU CAMP');
+      await this.page.getByLabel('Local', { exact: true }).fill('Ginásio Homologação MEU CAMP — Curitiba/PR');
       await this.page.getByLabel('Valor da inscrição (R$)').fill(String(FEE));
+      await this.page.getByLabel('Resumo do evento').fill(PUBLIC_OVERVIEW);
       await fillPhase(this.page, 'Inscrição', -1, 5);
       await fillPhase(this.page, 'Pagamento', 6, 10);
       await fillPhase(this.page, 'Checagem', 11, 15);
@@ -593,8 +738,9 @@ export class HomologationJourney {
       }
       this.eventId = created.data.id;
       await this.attach(EVIDENCE.evento);
+      await this.assertPublicHub('publicado', EVIDENCE.hubPublicado);
 
-      await eventCard(this.page, this.eventName).getByRole('link', { name: 'Configurar' }).click();
+      await eventCard(this.page, this.eventName).getByRole('link', { name: 'Gerenciar evento' }).click();
       await this.page.getByLabel('Nome do conjunto').fill(`${this.runId} Regras`);
       await this.page.getByLabel('Nome da categoria').fill(this.categoryName);
       await this.page.getByLabel('Idade mínima').fill('10');
@@ -640,9 +786,11 @@ export class HomologationJourney {
     try {
       await this.asOwner();
       await this.page.goto('/admin/eventos');
-      await eventCard(this.page, this.eventName).getByRole('button', { name: 'Abrir inscrições' }).click();
+      await eventCard(this.page, this.eventName).getByRole('link', { name: 'Gerenciar evento' }).click();
+      await this.page.getByRole('button', { name: 'Abrir inscrições' }).click();
       await waitEventStatus(this.admin, this.eventId, 'inscricao');
-      await expect(eventCard(this.page, this.eventName).getByRole('button', { name: 'Abrir pagamento' })).toBeVisible();
+      await expect(this.page.getByRole('button', { name: 'Abrir pagamento' })).toBeVisible();
+      await this.assertPublicHub('inscricao', EVIDENCE.hubInscricao);
 
       await this.asUser(this.independent.email, PASSWORD);
       await this.page.setViewportSize({ width: 390, height: 844 });
@@ -685,7 +833,9 @@ export class HomologationJourney {
       .getByRole('row')
       .filter({ hasText: this.a1Name })
       .locator('form')
-      .filter({ has: this.page.getByLabel('Campo') });
+      .filter({ has: this.page.getByLabel('Campo') })
+      .locator('visible=true')
+      .first();
   }
 
   private async submitCorrection(
@@ -707,13 +857,16 @@ export class HomologationJourney {
       await expect(input).toHaveValue(value);
     }
     if (reason) await form.getByLabel('Motivo (opcional)').fill(reason);
-    await form.getByRole('button', { name: 'Enviar solicitação' }).click();
-    const feedback = form.getByRole('status').or(form.getByRole('alert'));
-    await expect(feedback).toBeVisible({ timeout: 20000 });
+    const submit = form.getByRole('button', { name: /Enviar solicitação|Enviando/ });
+    await submit.click();
+    // Feedback pode ficar no form desktop/mobile; a persistência é a fonte de verdade.
+    const feedback = this.page.getByText(/Solicitação enviada|Informe uma faixa|não pode|recusada/i).first();
+    await expect(feedback).toBeVisible({ timeout: 30000 });
     const text = (await feedback.textContent())?.trim() || '';
     if (!text.includes('Solicitação enviada')) {
       throw new Error(`Correção de ${field} recusada na UI: ${text}`);
     }
+    await expect(submit).toHaveText(/Enviar solicitação/, { timeout: 10000 });
   }
 
   private async waitCorrectionRequest(registrationId: string, field: string, status: string) {
@@ -793,10 +946,12 @@ export class HomologationJourney {
     try {
       await this.asOwner();
       await this.page.goto('/admin/eventos');
-      await eventCard(this.page, this.eventName).getByRole('button', { name: 'Abrir pagamento' }).click();
+      await eventCard(this.page, this.eventName).getByRole('link', { name: 'Gerenciar evento' }).click();
+      await this.page.getByRole('button', { name: 'Abrir pagamento' }).click();
       await waitEventStatus(this.admin, this.eventId, 'pagamento');
-      await expect(eventCard(this.page, this.eventName).getByRole('button', { name: 'Abrir checagem' })).toBeVisible();
+      await expect(this.page.getByRole('button', { name: 'Abrir checagem' })).toBeVisible();
       await activatePhaseWindow(this.admin, this.eventId, 'pagamento', 'inscricao');
+      await this.assertPublicHub('pagamento', EVIDENCE.hubPagamento);
       await this.reserveAs(this.independent.email, 1);
       await this.reserveAs(this.professor.email, 1);
       await this.reserveAs(this.responsavel.email, 2);
@@ -848,8 +1003,10 @@ export class HomologationJourney {
       await activatePhaseWindow(this.admin, this.eventId, 'checagem', 'pagamento');
       await this.asOwner();
       await this.page.goto('/admin/eventos');
-      await eventCard(this.page, this.eventName).getByRole('button', { name: 'Abrir checagem' }).click();
+      await eventCard(this.page, this.eventName).getByRole('link', { name: 'Gerenciar evento' }).click();
+      await this.page.getByRole('button', { name: 'Abrir checagem' }).click();
       await waitEventStatus(this.admin, this.eventId, 'checagem');
+      await this.assertPublicHub('checagem', EVIDENCE.hubChecagem);
       const publicPage = await this.publicSurface();
       await publicPage.goto(`/eventos/${this.eventId}/checagem`);
       await publicPage.getByRole('heading', { name: /^Checagem/ }).waitFor();
@@ -861,7 +1018,7 @@ export class HomologationJourney {
       await publicPage.getByRole('button', { name: 'Filtrar' }).click();
       await publicPage.getByText(this.a1Name, { exact: true }).first().waitFor();
       await this.page.goto(`/admin/eventos/${this.eventId}/checagem`);
-      await this.page.getByRole('heading', { name: `Checagem — ${this.eventName}` }).waitFor();
+      await this.page.getByRole('heading', { level: 1, name: this.eventName }).waitFor();
       await this.attach(EVIDENCE.checagem);
       this.ok('checagem');
     } catch (error) {
@@ -974,7 +1131,7 @@ export class HomologationJourney {
       }, { timeout: 20000 }).toBe('chaves');
       await this.page.reload();
       await this.page.getByRole('link', { name: 'Ir para as chaves' }).click();
-      await this.page.getByRole('heading', { name: `Chaves — ${this.eventName}` }).waitFor();
+      await this.page.getByRole('heading', { level: 1, name: this.eventName }).waitFor();
       await this.page.getByRole('button', { name: new RegExp(this.categoryName) }).click();
       await this.page.getByRole('button', { name: 'Gerar chave' }).click();
       await this.page.getByText('Chave gerada em rascunho.').waitFor();
@@ -1007,6 +1164,7 @@ export class HomologationJourney {
       await this.page.goto(`/admin/eventos/${this.eventId}/chaves`);
       await this.page.getByRole('button', { name: new RegExp(this.categoryName) }).click();
       await this.attach(EVIDENCE.publicada);
+      await this.assertPublicHub('chaves', EVIDENCE.hubChaves);
       this.ok('brackets');
     } catch (error) {
       this.fail('brackets', error);
@@ -1033,6 +1191,10 @@ export class HomologationJourney {
       await this.page.getByRole('button', { name: 'Publicar programação' }).click();
       await this.page.getByText('Programação publicada. Áreas e números estão congelados.').waitFor();
       await this.attach(EVIDENCE.programacao);
+      const publicSchedule = await this.publicSurface();
+      await publicSchedule.goto(`/eventos/${this.eventId}/programacao`);
+      await publicSchedule.getByRole('heading', { name: /Programação/ }).waitFor();
+      await this.assertPublicHub('programacao', EVIDENCE.hubProgramacao);
       this.ok('programacao');
     } catch (error) {
       this.fail('areas', error);
@@ -1121,11 +1283,8 @@ export class HomologationJourney {
       await this.page.getByRole('heading', { name: 'Evento concluído' }).waitFor();
       const finished = await this.admin.from('events').select('status').eq('id', this.eventId).single();
       if (finished.data?.status !== 'concluido') throw new Error(`Estado final foi ${finished.data?.status}.`);
+      await this.assertPublicHub('concluido', EVIDENCE.hubConcluido);
       const publicPage = await this.publicSurface();
-      await publicPage.goto(`/eventos/${this.eventId}`);
-      await publicPage.getByRole('heading', { name: this.eventName }).waitFor();
-      await expect(publicPage.getByText('concluido', { exact: true })).toBeVisible();
-      await expect(publicPage.getByRole('link', { name: 'Inscrever atletas' })).toHaveCount(0);
       await publicPage.goto(`/eventos/${this.eventId}/chaves`);
       await publicPage.getByRole('heading', { name: this.categoryName }).waitFor();
       await this.asOwner();
@@ -1138,6 +1297,7 @@ export class HomologationJourney {
       await this.page.getByRole('heading', { name: /Olá,|Painel/ }).waitFor();
       await this.page.goto('/admin/eventos');
       await this.page.getByRole('heading', { name: 'Eventos', exact: true }).waitFor();
+      await this.assertPublicHub('concluido-mobile', EVIDENCE.hubMobile, { mobile: true });
       await this.page.setViewportSize({ width: 1440, height: 1000 });
       this.ok('isolamento');
     } catch (error) {
@@ -1174,6 +1334,7 @@ export class HomologationJourney {
         rejected: this.rejectedCorrectionId,
         pendingAtLock: this.pendingCorrectionId,
       },
+      hubSnapshots: this.hubSnapshots,
       stages: this.stages,
       durationMs: Date.now() - this.startedAt,
       failedStep: this.failedStep,

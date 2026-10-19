@@ -1,6 +1,7 @@
 export const EVENT_GUIDANCE_STEPS = [
   'configuracao',
   'inscricoes',
+  'pagamento',
   'checagem',
   'chaves',
   'programacao',
@@ -21,7 +22,8 @@ export type EventGuidanceStatus =
   | 'cancelado'
   | string
 
-export type EventGuidanceStepState = 'done' | 'current' | 'upcoming'
+export type EventGuidanceStepState = 'done' | 'current' | 'upcoming' | 'blocked'
+export type EventGuidanceTransition = 'inscricao' | 'pagamento' | 'checagem' | 'chaves'
 
 export type EventGuidanceStep = {
   id: EventGuidanceStepId
@@ -46,11 +48,14 @@ export type NextAction = {
   message: string
   href: string | null
   cta: string | null
+  /** Transição já existente. Quando preenchida, o CTA executa a action no shell. */
+  transition?: EventGuidanceTransition | null
 }
 
 export const EVENT_GUIDANCE_LABELS: Record<EventGuidanceStepId, string> = {
   configuracao: 'Configuração',
   inscricoes: 'Inscrições',
+  pagamento: 'Pagamento',
   checagem: 'Checagem',
   chaves: 'Chaves',
   programacao: 'Programação',
@@ -70,6 +75,26 @@ const STATUS_RANK: Record<string, number> = {
   cancelado: -1,
 }
 
+/** Entrada única da lista: o módulo operacional da fase real, sem atalho para todos os módulos. */
+export function adminEventContinuePath(eventId: string, status: string) {
+  const base = `/admin/eventos/${eventId}`
+  switch (status) {
+    case 'rascunho':
+      return `${base}/editar`
+    case 'pagamento':
+      return `${base}/financeiro`
+    case 'checagem':
+      return `${base}/checagem`
+    case 'chaves':
+      return `${base}/chaves`
+    case 'em_andamento':
+    case 'concluido':
+      return `${base}/resultados`
+    default:
+      return `${base}/configuracao`
+  }
+}
+
 export function eventStatusRank(status: EventGuidanceStatus) {
   return STATUS_RANK[status] ?? -1
 }
@@ -77,7 +102,8 @@ export function eventStatusRank(status: EventGuidanceStatus) {
 export function currentGuidanceStep(facts: EventGuidanceFacts): EventGuidanceStepId | null {
   if (facts.status === 'cancelado') return null
   if (facts.status === 'rascunho' || facts.status === 'publicado') return 'configuracao'
-  if (facts.status === 'inscricao' || facts.status === 'pagamento') return 'inscricoes'
+  if (facts.status === 'inscricao') return 'inscricoes'
+  if (facts.status === 'pagamento') return 'pagamento'
   if (facts.status === 'checagem') return 'checagem'
   if (facts.status === 'chaves') {
     if (!facts.hasPublishedBracket) return 'chaves'
@@ -92,7 +118,8 @@ export function currentGuidanceStep(facts: EventGuidanceFacts): EventGuidanceSte
 function isStepComplete(id: EventGuidanceStepId, facts: EventGuidanceFacts) {
   const rank = eventStatusRank(facts.status)
   if (id === 'configuracao') return rank >= 1
-  if (id === 'inscricoes') return rank >= 4
+  if (id === 'inscricoes') return rank >= 3
+  if (id === 'pagamento') return rank >= 4
   if (id === 'checagem') return rank >= 5
   if (id === 'chaves') return rank >= 6 || (facts.status === 'chaves' && facts.hasPublishedBracket)
   if (id === 'programacao') return rank >= 6 || facts.schedulePublished
@@ -100,7 +127,31 @@ function isStepComplete(id: EventGuidanceStepId, facts: EventGuidanceFacts) {
   return false
 }
 
+/** Progresso visual a partir da fase real. Chaves também olha chave e programação publicadas. */
+export function guidanceStepsForPhase(
+  status: string,
+  flags?: { hasPublishedBracket?: boolean; schedulePublished?: boolean },
+): EventGuidanceStep[] {
+  return buildEventGuidanceSteps({
+    eventId: '',
+    status,
+    checkingLocked: false,
+    hasCategory: false,
+    efetivadasCount: 0,
+    pendingRequestsCount: 0,
+    hasPublishedBracket: Boolean(flags?.hasPublishedBracket),
+    schedulePublished: Boolean(flags?.schedulePublished),
+  })
+}
+
 export function buildEventGuidanceSteps(facts: EventGuidanceFacts): EventGuidanceStep[] {
+  if (facts.status === 'cancelado') {
+    return EVENT_GUIDANCE_STEPS.map((id) => ({
+      id,
+      label: EVENT_GUIDANCE_LABELS[id],
+      state: 'blocked',
+    }))
+  }
   const current = currentGuidanceStep(facts)
   return EVENT_GUIDANCE_STEPS.map((id) => {
     let state: EventGuidanceStepState = 'upcoming'
@@ -108,6 +159,18 @@ export function buildEventGuidanceSteps(facts: EventGuidanceFacts): EventGuidanc
     else if (id === current) state = 'current'
     return { id, label: EVENT_GUIDANCE_LABELS[id], state }
   })
+}
+
+const ADMIN_SURFACES = new Set(['configuracao', 'checagem', 'financeiro', 'chaves', 'programacao', 'resultados'])
+
+/** Esconde CTA que só reabre o módulo já aberto. Transições de fase permanecem. */
+export function contextualizeNextAction(action: NextAction, surface: string): NextAction {
+  if (action.transition || !action.href || !action.cta) return action
+  const segment = action.href.split('?')[0].split('/').filter(Boolean).pop()
+  if (segment && ADMIN_SURFACES.has(segment) && segment === surface) {
+    return { ...action, href: null, cta: null }
+  }
+  return action
 }
 
 export function buildNextAction(facts: EventGuidanceFacts): NextAction {
@@ -149,8 +212,9 @@ export function buildNextAction(facts: EventGuidanceFacts): NextAction {
       title: 'Evento publicado',
       facts: ['Categorias prontas'],
       message: 'Abra as inscrições quando o campeonato estiver pronto para receber atletas.',
-      href: '/admin/eventos',
+      href: null,
       cta: 'Abrir inscrições',
+      transition: 'inscricao',
     }
   }
 
@@ -158,9 +222,10 @@ export function buildNextAction(facts: EventGuidanceFacts): NextAction {
     return {
       title: 'Inscrições abertas',
       facts: [efetivadas],
-      message: 'Receba os atletas e avance para pagamento quando a janela de inscrição terminar.',
-      href: '/admin/eventos',
-      cta: 'Ver eventos',
+      message: 'Receba os atletas. Quando a janela terminar, abra o pagamento para confirmar as inscrições.',
+      href: null,
+      cta: 'Abrir pagamento',
+      transition: 'pagamento',
     }
   }
 
@@ -168,9 +233,10 @@ export function buildNextAction(facts: EventGuidanceFacts): NextAction {
     return {
       title: 'Pagamento aberto',
       facts: [efetivadas],
-      message: 'A baixa manual confirma a inscrição. O fechamento usa somente efetivadas e pagamentos confirmados.',
-      href: `${base}/financeiro`,
-      cta: 'Abrir financeiro',
+      message: 'A baixa manual confirma a inscrição. Quando os pagamentos estiverem conferidos, abra a checagem.',
+      href: null,
+      cta: 'Abrir checagem',
+      transition: 'checagem',
     }
   }
 
@@ -199,8 +265,9 @@ export function buildNextAction(facts: EventGuidanceFacts): NextAction {
       title: 'Checagem travada',
       facts: [efetivadas],
       message: 'A lista oficial está congelada. Avance para gerar as chaves.',
-      href: `${base}/checagem`,
+      href: null,
       cta: 'Abrir chaves',
+      transition: 'chaves',
     }
   }
 

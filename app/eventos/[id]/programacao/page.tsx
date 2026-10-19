@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, CalendarClock, CheckCircle2, Flag, Info } from 'lucide-react'
 import ModernFooter from '@/components/ModernFooter'
 import ModernNavbar from '@/components/ModernNavbar'
+import EventPublicNavigation from '@/components/events/public-event/EventPublicNavigation'
 import {
   Alert,
   Card,
@@ -13,7 +14,6 @@ import {
   MobileRecordMeta,
   MobileRecordStatus,
   MobileRecordTitle,
-  PageContainer,
   PageHeader,
   Select,
   StatusBadge,
@@ -21,6 +21,7 @@ import {
 import { getPublicEventSchedule, type PublicScheduleMatch } from '@/lib/events/public-schedule'
 import { formatFightDurationLabel } from '@/lib/events/fight-duration'
 import { findPublicReleaseEvent } from '@/lib/events/public-access'
+import { getPublicEventNavItems } from '@/lib/events/public-event-presentation'
 
 type SearchParams = {
   area?: string
@@ -98,6 +99,7 @@ export default async function PublicSchedulePage({
   const event = await findPublicReleaseEvent(params.id)
   if (!event) notFound()
   const schedule = await getPublicEventSchedule(params.id)
+  const navItems = getPublicEventNavItems({ eventId: event.id, status: event.status, current: 'programacao' })
 
   const filters: SearchParams = {
     area: searchParams.area?.trim() || undefined,
@@ -116,9 +118,12 @@ export default async function PublicSchedulePage({
   )
 
   return (
-    <main className="min-h-screen bg-mc-background">
+    <main id="conteudo-principal" className="min-h-screen bg-mc-background">
       <ModernNavbar />
-      <PageContainer className="pb-mc-64 pt-32 sm:pt-36">
+      <div className="pt-20">
+        <EventPublicNavigation items={navItems} />
+      </div>
+      <div className="w-full px-4 pb-mc-64 pt-8 sm:px-8 sm:pt-10 lg:px-12 xl:px-20">
         <PageHeader
           title={`Programação — ${event.nome}`}
           description="Ordem oficial das lutas por número global e área. Rascunhos não são exibidos."
@@ -213,7 +218,7 @@ export default async function PublicSchedulePage({
             )}
           </div>
         )}
-      </PageContainer>
+      </div>
       <ModernFooter />
     </main>
   )

@@ -17,6 +17,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         canManageEvents={Boolean(actor?.canManageEvents)}
         canManageOrganization={Boolean(actor?.canManageOrganization)}
         isPlatformAdmin={Boolean(actor?.isPlatformAdmin)}
+        fluid
       />
       <div>{children}</div>
     </div>

@@ -29,9 +29,9 @@ export default function ProfileSportsSection({
       <p className="mt-mc-8 font-mc-interface text-sm text-mc-text-secondary">
         Dados esportivos já vinculados à sua conta. A edição segue os fluxos existentes de atleta e equipe.
       </p>
-      <dl className="mt-mc-16 grid gap-mc-12 sm:grid-cols-2">
+      <dl className="mt-mc-16 flex flex-wrap gap-3">
         {rows.map((row) => (
-          <div key={row.label} className="rounded-mc-medium bg-mc-surface-secondary px-mc-16 py-mc-12">
+          <div key={row.label} className="min-w-[11rem] flex-1 basis-44 rounded-mc-medium bg-mc-surface-secondary px-mc-16 py-mc-12 sm:max-w-xs">
             <dt className="font-mc-interface text-xs font-semibold uppercase tracking-[0.12em] text-mc-text-secondary">
               {row.label}
             </dt>
