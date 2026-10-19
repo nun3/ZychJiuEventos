@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { getAdministrativeOrganizationContext } from '@/lib/auth/organization-context-server'
 import { parseFightDurationInput } from '@/lib/events/fight-duration'
 import { allowsPublicOrganization } from '@/lib/events/public-organization'
+import { logger } from '@/lib/observability/logger'
 import { createClient } from '@/lib/supabase/server'
 import { zonedLocalToUtc } from '@/lib/timezone'
 
@@ -23,9 +24,14 @@ async function uploadAsset(
   field: string, file: File | null,
 ) {
   if (!file || file.size === 0) return null
-  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
-  if (!allowed.includes(file.type) || file.size > 10 * 1024 * 1024) throw new Error('Arquivo inválido')
-  const extension = file.name.split('.').pop()?.toLowerCase() || 'bin'
+  const allowed = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'application/pdf': 'pdf',
+  } as const
+  const extension = allowed[file.type as keyof typeof allowed]
+  if (!extension || file.size > 10 * 1024 * 1024) throw new Error('Arquivo inválido')
   const path = `${organizationId}/${eventId}/${field}.${extension}`
   const { error } = await supabase.storage.from('event-assets').upload(path, file, { upsert: true, contentType: file.type })
   if (error) throw new Error('Falha no upload')
@@ -139,7 +145,10 @@ export async function transitionEvent(eventId: string, status: EventTransitionSt
   }
   const { error } = await supabase.from('events').update({ status }).eq('id', eventId)
   if (error?.code === '23514') return failure('Transição de estado inválida.')
-  if (error) return failure('Não foi possível alterar o estado do evento.')
+  if (error) {
+    logger.error('event.transition.failed', { operation: 'transition', eventId, result: status })
+    return failure('Não foi possível alterar o estado do evento.')
+  }
   revalidatePath('/')
   revalidateTag('public-home-events')
   revalidatePath('/admin/eventos')
@@ -156,6 +165,7 @@ export async function transitionEvent(eventId: string, status: EventTransitionSt
     concluido: 'Evento concluído.',
     cancelado: 'Evento cancelado.',
   }
+  if (status === 'publicado') logger.info('event.published', { operation: 'transition', eventId, result: status })
   return { ok: true, message: messages[status] }
 }
 

@@ -6,6 +6,7 @@ import { GatewayError } from '@/lib/payments/gateway'
 import { isPlatformSettlementEnabled } from '@/lib/payments/settlement-config'
 import { issueSettlementCharge } from '@/lib/payments/settlement-issuance'
 import { createSettlementGateway, SupabaseOrganizationCustomerStore, SupabaseSettlementIssuanceStore } from '@/lib/payments/settlement-server'
+import { logger } from '@/lib/observability/logger'
 import { createPrivilegedClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -40,6 +41,7 @@ export async function createEventSettlement(formData: FormData): Promise<CreateS
 
   const { data, error } = await supabase.rpc('create_event_financial_settlement', { target_event_id: eventId })
   if (error || !data || typeof data !== 'object' || Array.isArray(data) || data.kind !== 'event_financial_settlement') {
+    logger.warn('settlement.create.rejected', { operation: 'create', eventId, result: 'rejected' })
     return { ok: false, message: createMessages[error?.message || ''] || 'Fechamento recusado: confira sua permissão e as inscrições pagas.' }
   }
   revalidatePath(`/admin/eventos/${eventId}/financeiro`)
@@ -86,6 +88,11 @@ export async function paySettlementPix(_previous: PaySettlementState, formData: 
     }
     return { error: null, pix: result.pix, pending: result.instructionsPending }
   } catch (error) {
+    logger.error('settlement.issue.failed', {
+      operation: 'issue',
+      eventId: settlement.event_id,
+      result: error instanceof GatewayError ? error.code : 'unexpected',
+    })
     if (error instanceof GatewayError && error.code === 'configuration') {
       return { error: 'Pagamento do fechamento indisponível: configuração do Asaas Sandbox incompleta.', pix: null, pending: false }
     }

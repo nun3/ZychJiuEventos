@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button'
 import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
 import { PageContainer } from '@/components/ui/PageContainer'
+import { safeInternalPath } from '@/lib/http/safe-redirect'
 import { createClient } from '@/lib/supabase/client'
 import SignupAccountForm from './SignupAccountForm'
 
@@ -71,11 +72,7 @@ function LoginPageContent() {
       return
     }
 
-    const requestedPath = searchParams.get('redirectTo')
-    const redirectTo = requestedPath?.startsWith('/') && !requestedPath.startsWith('//')
-      ? requestedPath
-      : '/dashboard'
-    window.location.assign(redirectTo)
+    window.location.assign(safeInternalPath(searchParams.get('redirectTo')))
   }
 
   const openRegistration = (registerType: SignupRole) => {

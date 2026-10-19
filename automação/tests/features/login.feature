@@ -7,7 +7,7 @@ Feature: Fluxo de autenticação do portal Meu Camp
   @smoke @P0 @navigation
   Scenario: acessar a tela de login pela página inicial
     Given o usuário acessa a página inicial
-    When seleciona o link "Entrar"
+    When seleciona o link "Login"
     Then a rota de login deve ser exibida
     And o formulário deve apresentar os campos de e-mail e senha
 

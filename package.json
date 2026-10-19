@@ -7,8 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:types": "npx --yes supabase@latest gen types typescript --project-id kfvypacjzlzwwblsbpwj --schema public > lib/supabase/database.types.ts",
-    "test:bdd": "cucumber-js --require ts-node/register --require ./tests/bdd/support/**/*.ts --require ./tests/bdd/steps/**/*.ts ./tests/bdd/features/**/*.feature"
+    "typecheck": "tsc --noEmit",
+    "test": "npm run test:unit",
+    "test:unit": "npm --prefix automação run test:unit",
+    "test:bdd": "npm --prefix automação run test:bdd",
+    "test:smoke": "npm --prefix automação run test:smoke",
+    "hardening:check": "node scripts/hardening-check.js",
+    "verify": "npm run lint && npm run typecheck && npm run test:unit && npm run hardening:check && npm run build",
+    "db:types": "npx --yes supabase@latest gen types typescript --project-id kfvypacjzlzwwblsbpwj --schema public > lib/supabase/database.types.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",

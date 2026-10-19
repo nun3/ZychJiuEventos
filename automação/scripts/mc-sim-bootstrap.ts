@@ -1,4 +1,4 @@
-import { chromium } from '@playwright/test';
+import { chromium, expect } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { createCleanupClients, loadCleanupEnv, resolveOwnerId } from '../tests/support/e2e-cleanup';
@@ -68,7 +68,8 @@ async function main() {
     await page.goto('/login?redirectTo=%2Fadmin%2Feventos%2Fnovo');
     await page.getByRole('button', { name: 'Entrar na conta', exact: true }).waitFor({ state: 'visible' });
     await page.getByRole('button', { name: 'Entrar na conta', exact: true }).waitFor({ state: 'attached' });
-    await page.waitForTimeout(300);
+    await expect(page.locator('#login-email')).toBeVisible();
+    await expect(page.locator('#login-email')).toBeEnabled();
     await page.locator('#login-email').fill(email);
     await page.locator('#login-password').fill(password);
     await page.getByRole('button', { name: 'Entrar na conta', exact: true }).click();

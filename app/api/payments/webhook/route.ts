@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { logger } from '@/lib/observability/logger'
 import { createPrivilegedClient } from '@/lib/supabase/admin'
 import { authenticateAsaasWebhook, dispatchAsaasWebhook, MAX_WEBHOOK_BODY_BYTES, readLimitedText, type WebhookDispatch } from '@/lib/payments/webhook'
 
@@ -10,7 +11,9 @@ const PROCESSORS = {
 } as const
 
 export async function POST(request: NextRequest) {
+  const started = Date.now()
   if (!authenticateAsaasWebhook(request.headers.get('asaas-access-token'), process.env.ASAAS_WEBHOOK_TOKEN)) {
+    logger.warn('payment.webhook.rejected', { operation: 'webhook', result: 'unauthorized', durationMs: Date.now() - started })
     return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
   }
 
@@ -22,6 +25,7 @@ export async function POST(request: NextRequest) {
     }
     dispatch = dispatchAsaasWebhook(JSON.parse(await readLimitedText(request.body)))
   } catch {
+    logger.warn('payment.webhook.rejected', { operation: 'webhook', result: 'invalid', durationMs: Date.now() - started })
     return NextResponse.json({ error: 'Payload inválido.' }, { status: 400 })
   }
 
@@ -45,6 +49,12 @@ export async function POST(request: NextRequest) {
       if (existingError || !existing) throw existingError || new Error('Evento duplicado ausente.')
       eventId = existing.id
       if (existing.status === 'processado' || existing.status === 'ignorado') {
+        logger.info('payment.webhook.duplicate', {
+          operation: 'webhook',
+          paymentId: 'payment' in dispatch.event ? dispatch.event.payment.id : null,
+          result: 'duplicate',
+          durationMs: Date.now() - started,
+        })
         return NextResponse.json({ accepted: true, duplicate: true })
       }
     }
@@ -52,10 +62,18 @@ export async function POST(request: NextRequest) {
     const { data: result, error: processError } = await supabase.rpc(PROCESSORS[dispatch.route], { target_event_id: eventId })
     if (processError) throw processError
     if (result && typeof result === 'object' && !Array.isArray(result) && result.kind === 'failed') {
+      logger.error('payment.webhook.failed', { operation: 'webhook', result: 'reprocess', durationMs: Date.now() - started })
       return NextResponse.json({ error: 'Evento persistido para reprocessamento.' }, { status: 503 })
     }
+    logger.info('payment.webhook.accepted', {
+      operation: 'webhook',
+      paymentId: 'payment' in dispatch.event ? dispatch.event.payment.id : null,
+      result: duplicate ? 'duplicate' : dispatch.route,
+      durationMs: Date.now() - started,
+    })
     return NextResponse.json({ accepted: true, duplicate, result })
   } catch {
+    logger.error('payment.webhook.failed', { operation: 'webhook', result: 'persist', durationMs: Date.now() - started })
     return NextResponse.json({ error: 'Não foi possível registrar o evento.' }, { status: 503 })
   }
 }

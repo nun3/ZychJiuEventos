@@ -239,6 +239,7 @@ async function main() {
     while (Date.now() < deadline) {
       ;[row] = await settlement()
       if (row.status === 'pago' && row.distribution_status === 'concluido') break
+      // justificado: espera estado externo do Asaas Sandbox, não sincronização de DOM
       await new Promise((resolve) => setTimeout(resolve, 3000))
     }
     report.final = {

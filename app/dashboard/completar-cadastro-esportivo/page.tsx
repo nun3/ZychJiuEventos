@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { UsersRound } from 'lucide-react'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
+import { safeInternalPath } from '@/lib/http/safe-redirect'
 import { getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 import { Alert } from '@/components/ui/Alert'
@@ -11,10 +12,6 @@ import { PageContainer } from '@/components/ui/PageContainer'
 import { PageHeader } from '@/components/ui/PageHeader'
 import CompleteSportsProfileForm from './CompleteSportsProfileForm'
 
-function safeRedirect(value: string | undefined) {
-  return value?.startsWith('/') && !value.startsWith('//') ? value : '/dashboard'
-}
-
 export default async function CompleteSportsProfilePage({
   searchParams,
 }: {
@@ -23,7 +20,7 @@ export default async function CompleteSportsProfilePage({
   const actor = await getDashboardActor()
   if (!actor) redirect('/login?redirectTo=/dashboard/completar-cadastro-esportivo')
   if (actor.tipoCadastro !== 'atleta') redirect('/dashboard')
-  if (actor.hasSelfAthlete) redirect(safeRedirect(searchParams.redirectTo))
+  if (actor.hasSelfAthlete) redirect(safeInternalPath(searchParams.redirectTo))
 
   const supabase = createClient()
   const scope = getPublicOrganizationScope()
@@ -34,7 +31,7 @@ export default async function CompleteSportsProfilePage({
       : Promise.resolve({ data: [] as Array<{ id: string; nome: string }>, error: null }),
   ])
   const teams = teamsResult.data || []
-  const redirectTo = safeRedirect(searchParams.redirectTo)
+  const redirectTo = safeInternalPath(searchParams.redirectTo)
 
   return (
     <main className="py-mc-32 sm:py-mc-48">

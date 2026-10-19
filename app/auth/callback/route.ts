@@ -1,8 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { safeInternalPath } from '@/lib/http/safe-redirect'
+import { logger } from '@/lib/observability/logger'
 import { createClient } from '@/lib/supabase/server'
 
 function safeRedirectPath(value: string | null) {
-  return value?.startsWith('/') && !value.startsWith('//') ? value : '/dashboard'
+  return safeInternalPath(value)
 }
 
 export async function GET(request: NextRequest) {
@@ -17,6 +19,12 @@ export async function GET(request: NextRequest) {
     if (!error) {
       return NextResponse.redirect(new URL(redirectTo, request.url))
     }
+    logger.warn('auth.callback.exchange_failed', { operation: 'exchange', result: 'rejected' })
+  } else {
+    logger.warn('auth.callback.rejected', {
+      operation: 'exchange',
+      result: authErrorCode === 'otp_expired' ? 'expired' : 'invalid',
+    })
   }
 
   if (authErrorCode === 'otp_expired') {
