@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { isAsaasWebhookAuthorized } from '@/lib/payments/asaas-config'
 import { logger } from '@/lib/observability/logger'
 import { createPrivilegedClient } from '@/lib/supabase/admin'
-import { authenticateAsaasWebhook, dispatchAsaasWebhook, MAX_WEBHOOK_BODY_BYTES, readLimitedText, type WebhookDispatch } from '@/lib/payments/webhook'
+import { dispatchAsaasWebhook, MAX_WEBHOOK_BODY_BYTES, readLimitedText, type WebhookDispatch } from '@/lib/payments/webhook'
 
 export const runtime = 'nodejs'
 
@@ -12,7 +13,7 @@ const PROCESSORS = {
 
 export async function POST(request: NextRequest) {
   const started = Date.now()
-  if (!authenticateAsaasWebhook(request.headers.get('asaas-access-token'), process.env.ASAAS_WEBHOOK_TOKEN)) {
+  if (!isAsaasWebhookAuthorized(request.headers.get('asaas-access-token'))) {
     logger.warn('payment.webhook.rejected', { operation: 'webhook', result: 'unauthorized', durationMs: Date.now() - started })
     return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
   }
