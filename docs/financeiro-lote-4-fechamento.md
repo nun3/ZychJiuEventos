@@ -58,6 +58,30 @@ Fonte de verdade do Lote 4. Convive com o Lote 3 (PIX direto ao organizador) e c
 
 ## Limites
 
-- Fora do escopo: subconta, BaaS, split do atleta, cartão/boleto do atleta, payouts, bloqueio de inadimplente, Asaas Produção.
+- Fora do escopo: subconta, BaaS, split do atleta, cartão/boleto do atleta, payouts, bloqueio de inadimplente. A seleção da conta Asaas de produção está descrita abaixo e não liga o checkout do atleta.
 - Cancelamento e estorno de fechamento não têm transição automática (eventos ficam registrados para conciliação).
-- Na Vercel, a emissão só liga com as variáveis de habilitação acima; sem elas o card informa que o pagamento está desligado. O webhook não depende delas.
+- Na Vercel, a emissão só liga com as variáveis de habilitação da conta ativa; sem elas o card informa que o pagamento está desligado. O webhook autentica pelo token dessa conta e não emite cobrança.
+
+## Asaas Sandbox
+
+`ASAAS_ENVIRONMENT=sandbox` usa somente:
+
+- `https://api-sandbox.asaas.com/v3`
+- `ASAAS_SANDBOX_API_KEY`
+- `ASAAS_WEBHOOK_TOKEN`
+- `ASAAS_SPLIT_RECIPIENT_WALLET_ID`
+
+O percentual continua `ASAAS_SPLIT_RECIPIENT_PERCENT=50`.
+
+## Asaas Production
+
+`ASAAS_ENVIRONMENT=production` usa somente:
+
+- `https://api.asaas.com/v3`
+- `ASAAS_PRODUCTION_API_KEY`
+- `ASAAS_PRODUCTION_WEBHOOK_TOKEN`
+- `ASAAS_PRODUCTION_SPLIT_RECIPIENT_WALLET_ID`
+
+Produção só fica completa quando as três variáveis de produção estão presentes. Não há fallback para chave, token ou carteira de Sandbox. Uma variável ausente falha como configuração.
+
+`PAYMENTS_MANUAL_ONLY=true` continua mantendo o checkout do atleta fora do Asaas. `PLATFORM_SETTLEMENT_ASAAS_ENABLED` continua decidindo se o fechamento da plataforma pode emitir.
