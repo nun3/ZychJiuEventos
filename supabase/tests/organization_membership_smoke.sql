@@ -95,13 +95,13 @@ begin
   end;
   if not rejected then raise exception 'FAIL: owner promoveu outro owner'; end if;
 
-  rejected := false;
-  begin
-    perform public.add_organization_member(org_a, 'stranger-' || stranger::text || '@example.invalid', 'staff');
-  exception when others then
-    rejected := true;
-  end;
-  if not rejected then raise exception 'FAIL: owner atribuiu staff'; end if;
+  perform public.add_organization_member(org_a, 'stranger-' || stranger::text || '@example.invalid', 'staff');
+  if not exists (
+    select 1 from public.organization_members
+     where organization_id = org_a and user_id = stranger and role = 'staff'
+  ) then
+    raise exception 'FAIL: owner nao atribuiu staff';
+  end if;
 
   rejected := false;
   begin
@@ -112,7 +112,7 @@ begin
   if not rejected then raise exception 'FAIL: owner removeu a si mesmo'; end if;
 
   select count(*) into listed from public.list_organization_members(org_a);
-  if listed <> 3 then raise exception 'FAIL: lista da org A deveria ter 3 membros, veio %', listed; end if;
+  if listed <> 4 then raise exception 'FAIL: lista da org A deveria ter 4 membros, veio %', listed; end if;
   reset role;
 
   perform set_config('request.jwt.claim.sub', organizer_a::text, true);

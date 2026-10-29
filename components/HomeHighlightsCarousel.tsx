@@ -1,10 +1,12 @@
 'use client'
 
-import { useCallback, useRef, useState, type KeyboardEvent, type TouchEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type TouchEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, CalendarDays, MapPin } from 'lucide-react'
 import type { Event } from './ModernEventGrid'
+
+const AUTOPLAY_MS = 6000
 
 function eventDate(value?: string) {
   if (!value) return ''
@@ -15,6 +17,7 @@ function eventDate(value?: string) {
 export default function HomeHighlightsCarousel({ events }: { events: Event[] }) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [previousIndex, setPreviousIndex] = useState<number | null>(null)
+  const [isPaused, setIsPaused] = useState(false)
   const touchStartRef = useRef<number | null>(null)
   const activeEvent = events[activeIndex]
   const hasNavigation = events.length > 1
@@ -38,12 +41,71 @@ export default function HomeHighlightsCarousel({ events }: { events: Event[] }) 
     const distance = event.changedTouches[0].clientX - touchStartRef.current
     if (Math.abs(distance) >= 48) select(distance > 0 ? activeIndex - 1 : activeIndex + 1)
     touchStartRef.current = null
+    setIsPaused(false)
   }
+  const handleBlur = (event: FocusEvent<HTMLElement>) => {
+    const next = event.relatedTarget
+    if (next instanceof Node && event.currentTarget.contains(next)) return
+    setIsPaused(false)
+  }
+
+  useEffect(() => {
+    if (!hasNavigation) return
+
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    let intervalId: number | null = null
+
+    const stop = () => {
+      if (intervalId === null) return
+      window.clearInterval(intervalId)
+      intervalId = null
+    }
+
+    const advance = () => {
+      setActiveIndex((current) => {
+        const next = (current + 1) % events.length
+        if (next !== current) setPreviousIndex(current)
+        return next
+      })
+    }
+
+    const sync = () => {
+      stop()
+      if (media.matches || isPaused) return
+      intervalId = window.setInterval(advance, AUTOPLAY_MS)
+    }
+
+    sync()
+    media.addEventListener('change', sync)
+    return () => {
+      stop()
+      media.removeEventListener('change', sync)
+    }
+  }, [hasNavigation, events.length, isPaused, activeIndex])
 
   if (!activeEvent) return <section className="flex min-h-[32rem] items-center bg-mc-structure pt-20 text-white" aria-label="Destaques"><div className="w-full px-4 text-sm text-slate-200 sm:px-8 lg:px-12">Nenhum campeonato em destaque no momento.</div></section>
 
   return (
-    <section className="relative overflow-hidden bg-mc-structure text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus" aria-roledescription="carrossel" aria-label="Campeonatos em destaque" tabIndex={0} onKeyDown={handleKeyDown} onTouchStart={(event) => { touchStartRef.current = event.touches[0].clientX }} onTouchEnd={handleTouchEnd}>
+    <section
+      className="relative overflow-hidden bg-mc-structure text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus"
+      aria-roledescription="carrossel"
+      aria-label="Campeonatos em destaque"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={handleBlur}
+      onTouchStart={(event) => {
+        touchStartRef.current = event.touches[0].clientX
+        setIsPaused(true)
+      }}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={() => {
+        touchStartRef.current = null
+        setIsPaused(false)
+      }}
+    >
       {backgroundIndexes.map((index) => {
         const event = events[index]
         const isActive = index === activeIndex

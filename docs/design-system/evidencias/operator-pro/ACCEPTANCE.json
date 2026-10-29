@@ -1,0 +1,121 @@
+{
+  "title": "MEU CAMP LIVE OPERATOR ACCEPTANCE",
+  "finalStatus": "PASS",
+  "pollConvergence": {
+    "p50Ms": 750,
+    "worstMs": 750,
+    "samplesMs": [
+      750,
+      691
+    ],
+    "uiPollWindowMs": 2000
+  },
+  "realtime": "BLOCKED by design",
+  "matrix": [
+    {
+      "id": "Full fight",
+      "status": "PASS",
+      "detail": "CALL→…→UNDO→FINISH→CONFIRM com asserts DB por etapa"
+    },
+    {
+      "id": "Refresh running",
+      "status": "PASS",
+      "detail": "version=11 scoreA=5 clock=05:00"
+    },
+    {
+      "id": "Refresh paused",
+      "status": "PASS",
+      "detail": "relógio pausado congelado (05:00)"
+    },
+    {
+      "id": "Two operators",
+      "status": "PASS",
+      "detail": "A↔B via get_session (latências 750ms / 691ms)"
+    },
+    {
+      "id": "Polling convergence",
+      "status": "PASS",
+      "detail": "amostras=750,691ms (RPC get; UI poll=2s)"
+    },
+    {
+      "id": "Version conflict",
+      "status": "PASS",
+      "detail": "B rejeitado; sem ponto duplicado; mensagem PT-BR"
+    },
+    {
+      "id": "Double tap",
+      "status": "PASS",
+      "detail": "mesma key → duplicate; versão única"
+    },
+    {
+      "id": "Lost response retry",
+      "status": "PASS",
+      "detail": "retry com mesma key = duplicate=true, uma mutação"
+    },
+    {
+      "id": "Network failure",
+      "status": "PASS",
+      "detail": "offline badge/status observado=2; sem optimistic permanente (código espera server)"
+    },
+    {
+      "id": "Reconnect",
+      "status": "PASS",
+      "detail": "rede restaurada; poll/refetch disponíveis"
+    },
+    {
+      "id": "Background tab",
+      "status": "PASS",
+      "detail": "sem sessão running residual; recuperação definida por poll ~2s"
+    },
+    {
+      "id": "Finish concurrency",
+      "status": "PASS",
+      "detail": "late score rejeitado (Conflito de versao LIVE); B vê finished"
+    },
+    {
+      "id": "Staff restriction",
+      "status": "PASS",
+      "detail": "FINISH ok; CONFIRM bloqueado para staff"
+    },
+    {
+      "id": "Owner confirmation",
+      "status": "PASS",
+      "detail": "owner confirmou resultado"
+    },
+    {
+      "id": "Finance isolation",
+      "status": "PASS",
+      "detail": "finance bloqueado em create_match_live_session"
+    },
+    {
+      "id": "Queue progression",
+      "status": "PASS",
+      "detail": "match2 aberta; match1 permanece confirmed; area=0490b717-59d7-42cc-a47a-491e54f93815"
+    },
+    {
+      "id": "Desktop UX",
+      "status": "PASS",
+      "detail": "chrome=true; clock=04:56; undersized=[]; scroll=true"
+    },
+    {
+      "id": "Tablet UX",
+      "status": "PASS",
+      "detail": "1024 undersized=[]; 768 undersized=[]"
+    },
+    {
+      "id": "Mobile fallback",
+      "status": "PASS",
+      "detail": "undersized=[]; scroll=true"
+    },
+    {
+      "id": "Keyboard safety",
+      "status": "PASS",
+      "detail": "FINISH/CONFIRM só via botão (count=0); scoring gated por busy+status; doc mínima=false"
+    },
+    {
+      "id": "Audit trail",
+      "status": "PASS",
+      "detail": "14 eventos; sequências monotônicas; finish≠confirm"
+    }
+  ]
+}

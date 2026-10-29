@@ -19,6 +19,7 @@ const descriptions: Partial<Record<AdminEventSurface, string>> = {
   financeiro: 'Conciliação operacional das reservas e fechamento a partir das inscrições e pagamentos persistidos.',
   chaves: 'Gere a sugestão automática, ajuste o casamento em rascunho e publique a versão oficial.',
   programacao: 'Distribua subchaves por área e organize a numeração global das lutas.',
+  operacao: 'Mesa ao vivo da área: placar, cronômetro e fila no mesmo ecrã.',
   resultados: 'Confirme pesagem e premiação por subchave. O resultado continua vindo das lutas já operadas.',
 }
 
@@ -37,8 +38,8 @@ type EventAdminShellProps = {
 }
 
 /**
- * Cabeçalho das seis superfícies. O módulo entra como filho e, no clique,
- * dá lugar ao estado de carregando antes de o servidor responder.
+ * Cabeçalho das superfícies administrativas. Operação ao vivo sai deste shell
+ * (rota irmã). No clique interno, o módulo dá lugar ao carregando até o server responder.
  */
 export function EventAdminShell({ event, guidance, children }: EventAdminShellProps) {
   const pathSurface = adminEventSurfaceFromPath(usePathname())
