@@ -736,7 +736,7 @@ async function main() {
         timeout: 45000,
       })
       if (!response || response.status() >= 500) throw new Error(`HTTP ${response?.status()}`)
-      await page.waitForTimeout(1500)
+      await page.getByRole('main').or(page.locator('body')).first().waitFor({ state: 'visible', timeout: 15000 })
       const body = await page.locator('body').innerText()
       if (/Configuracao do Supabase ausente|Internal Server Error/i.test(body)) throw new Error('app sem env/runtime')
     } catch (error) {
@@ -755,10 +755,18 @@ async function main() {
       await page.context().setOffline(true)
       const syncBefore = await page.getByRole('status').first().textContent().catch(() => '')
       await page.getByRole('button', { name: /Abrir luta|Iniciar|\+2/i }).first().click({ timeout: 3000 }).catch(() => null)
-      await page.waitForTimeout(800)
+      await page
+        .getByText(/Sem conexão|Erro|Atualizando/i)
+        .first()
+        .waitFor({ state: 'visible', timeout: 5000 })
+        .catch(() => null)
       const offlineBadge = await page.getByText(/Sem conexão|Erro|Atualizando/i).count()
       await page.context().setOffline(false)
-      await page.waitForTimeout(2500)
+      await page
+        .getByText(/Sincronizado|Atualizando|Sem conexão|Erro/i)
+        .first()
+        .waitFor({ state: 'visible', timeout: 10000 })
+        .catch(() => null)
       const afterOnline = await page.getByText(/Sincronizado|Atualizando|Sem conexão|Erro/i).count()
       mark(
         'Network failure',
@@ -785,16 +793,21 @@ async function main() {
         mark('Background tab', 'PASS', 'sem sessão running residual; recuperação definida por poll ~2s')
       }
 
-      // Ergonomics
+      // Ergonomics — espera frame após resize (sem sleep artificial)
+      const settleViewport = async () => {
+        await page.locator('body').evaluate(
+          () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))),
+        )
+      }
       const desktop = await minTouch(page)
       await page.setViewportSize({ width: 1024, height: 768 })
-      await page.waitForTimeout(400)
+      await settleViewport()
       const tablet1024 = await minTouch(page)
       await page.setViewportSize({ width: 768, height: 1024 })
-      await page.waitForTimeout(400)
+      await settleViewport()
       const tablet768 = await minTouch(page)
       await page.setViewportSize({ width: 390, height: 844 })
-      await page.waitForTimeout(400)
+      await settleViewport()
       const mobile = await minTouch(page)
 
       const opReady = desktop.hasOperacaoChrome || desktop.hasAreaPicker
