@@ -1,0 +1,36 @@
+{
+  "title": "UNDO targeted",
+  "ok": true,
+  "matrix": [
+    {
+      "id": "UNDO score",
+      "status": "PASS",
+      "detail": "version=10"
+    },
+    {
+      "id": "UNDO advantage",
+      "status": "PASS",
+      "detail": "version=9"
+    },
+    {
+      "id": "UNDO penalty",
+      "status": "PASS",
+      "detail": "version=8"
+    },
+    {
+      "id": "UNDO invalid lifecycle actions",
+      "status": "PASS",
+      "detail": "start/lifecycle rejeitados; pontuação-only"
+    },
+    {
+      "id": "UNDO duplicate",
+      "status": "PASS",
+      "detail": "Acao ja desfeita"
+    },
+    {
+      "id": "Cross-session isolation",
+      "status": "PASS",
+      "detail": "Transicao LIVE invalida: finished -> undo"
+    }
+  ]
+}

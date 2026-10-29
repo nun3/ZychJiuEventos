@@ -43,6 +43,7 @@ export default function AddMemberForm() {
         <FormField id="member-role" label="Papel" required>
           <Select name="role" required defaultValue="organizer">
             <option value="organizer">Organizador</option>
+            <option value="staff">Staff</option>
             <option value="finance">Financeiro</option>
           </Select>
         </FormField>

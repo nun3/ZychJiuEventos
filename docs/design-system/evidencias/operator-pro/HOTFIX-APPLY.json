@@ -1,0 +1,16 @@
+{
+  "migration": "202610290001_match_live_undo_ambiguity_hotfix.sql",
+  "sha256": "f29aa726d156133b5111ac6bf2f6a96dee3f368c97493c5707069529ab311495",
+  "originalMigration": "202610250001_match_live_domain.sql",
+  "originalSha256": "ee17f5f9a7ef69d8c4af59289570c849de349bf0709ca417e7ba77d84776f463",
+  "originalUnchanged": true,
+  "projectRef": "kfvypacjzlzwwblsbpwj",
+  "projectName": "zigjiu",
+  "started": "2026-10-29T23:12:08.213Z",
+  "ended": "2026-10-29T23:12:09.217Z",
+  "httpStatus": 201,
+  "ok": true,
+  "source": "supabase Management API database/query via zigjiu SQL Editor session",
+  "warnings": [],
+  "errors": []
+}

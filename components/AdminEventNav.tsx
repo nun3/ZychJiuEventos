@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   GitBranch,
   Layers3,
+  Radio,
   Trophy,
   Wallet,
 } from 'lucide-react'
@@ -18,6 +19,7 @@ const surfaces = [
   { segment: 'financeiro', label: 'Financeiro', icon: Wallet },
   { segment: 'chaves', label: 'Chaves', icon: GitBranch },
   { segment: 'programacao', label: 'Programação', icon: CalendarClock },
+  { segment: 'operacao', label: 'Operação', icon: Radio },
   { segment: 'resultados', label: 'Resultados', icon: Trophy },
 ] as const
 
