@@ -2,14 +2,10 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { CheckCircle2, UserRound, UsersRound } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import { EmptyState } from '@/components/ui/EmptyState'
 import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
-import { StatusBadge } from '@/components/ui/StatusBadge'
 import { categorize, type Category, type Competitor } from '@/lib/categorization'
 import { registerAthletes } from './actions'
 
@@ -47,27 +43,27 @@ export default function RegistrationForm({ event, athletes, categories, register
       })}
     >
       <div className="space-y-mc-16">
-        <div className="flex flex-col gap-mc-8 border-b border-mc-border pb-mc-16 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-2 border-b border-mc-border pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="font-mc-display text-mc-h2 text-mc-text-primary">Atletas disponíveis</h2>
-            <p className="mt-mc-4 font-mc-interface text-sm text-mc-text-secondary">A categoria é calculada com os dados esportivos atuais e a data do evento.</p>
+            <h2 className="font-mc-display text-3xl font-bold uppercase leading-[0.95] tracking-[-0.03em] text-mc-text-primary">Atletas disponíveis</h2>
+            <p className="mt-3 font-mc-interface text-sm text-mc-text-secondary">A categoria é calculada com os dados esportivos atuais e a data do evento.</p>
           </div>
-          <StatusBadge variant={selected.length ? 'info' : 'neutral'} className="self-start sm:self-auto">{selected.length} {selected.length === 1 ? 'selecionado' : 'selecionados'}</StatusBadge>
+          <p className="font-mc-interface text-[11px] font-bold uppercase tracking-[0.14em] text-mc-text-primary">
+            {selected.length} {selected.length === 1 ? 'selecionado' : 'selecionados'}
+          </p>
         </div>
 
         {!athletes.length ? (
-          <EmptyState
-            icon={<UsersRound size={34} />}
-            title="Nenhum atleta gerenciado"
-            description="Cadastre um atleta gerenciado ou, se você for o atleta, complete o cadastro esportivo antes de se inscrever."
-            action={(
-              <span className="flex flex-col gap-mc-8 sm:flex-row sm:gap-mc-16">
-                <Link href="/dashboard/completar-cadastro-esportivo" className="font-mc-interface font-semibold text-mc-action hover:underline">Completar cadastro esportivo</Link>
-                <Link href="/dashboard/meus-atletas" className="font-mc-interface font-semibold text-mc-action hover:underline">Cadastrar atleta gerenciado</Link>
-              </span>
-            )}
-            className="rounded-mc-medium border border-mc-border bg-mc-surface"
-          />
+          <section className="border-y border-mc-border py-14">
+            <h3 className="font-mc-display text-3xl font-bold uppercase leading-[0.95] tracking-[-0.03em] text-mc-text-primary">Nenhum atleta gerenciado</h3>
+            <p className="mt-4 max-w-xl font-mc-interface text-base leading-7 text-mc-text-secondary">
+              Cadastre um atleta gerenciado ou, se você for o atleta, complete o cadastro esportivo antes de se inscrever.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Link href="/dashboard/completar-cadastro-esportivo" className="inline-flex min-h-12 items-center font-mc-interface text-[11px] font-bold uppercase tracking-[0.14em] text-mc-text-primary hover:text-mc-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">Completar cadastro esportivo</Link>
+              <Link href="/dashboard/meus-atletas" className="inline-flex min-h-12 items-center font-mc-interface text-[11px] font-bold uppercase tracking-[0.14em] text-mc-text-primary hover:text-mc-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">Cadastrar atleta gerenciado</Link>
+            </div>
+          </section>
         ) : (
           <fieldset disabled={pending} className="space-y-mc-12">
             <legend className="sr-only">Selecione os atletas para inscrição</legend>
@@ -76,8 +72,8 @@ export default function RegistrationForm({ event, athletes, categories, register
               const registered = registeredIds.includes(athlete.id) || completed.includes(athlete.id)
               const unavailable = registered || !result.category
               return (
-                <Card key={athlete.id} className={`p-mc-16 transition-colors duration-mc-normal ${selected.includes(athlete.id) ? 'border-mc-action bg-mc-action/5' : ''}`}>
-                  <div className="flex items-start gap-mc-12">
+                <article key={athlete.id} className={`border-b border-mc-border py-5 ${selected.includes(athlete.id) ? 'border-l-4 border-l-mc-action pl-3' : ''}`}>
+                  <div className="flex items-start gap-3">
                     <input
                       type="checkbox"
                       name="athlete_id"
@@ -94,13 +90,13 @@ export default function RegistrationForm({ event, athletes, categories, register
                           <p className="font-mc-interface font-semibold text-mc-text-primary">{athlete.nome_completo}</p>
                           <p className="mt-mc-4 font-mc-interface text-sm text-mc-text-secondary">{athlete.faixa} · {athlete.peso_kg} kg</p>
                         </div>
-                        {registered ? (
-                          <StatusBadge variant="warning">Inscrição ativa</StatusBadge>
-                        ) : result.category ? (
-                          <StatusBadge variant="success" icon={<CheckCircle2 size={14} />}>Elegível</StatusBadge>
-                        ) : (
-                          <StatusBadge variant="error">Sem categoria</StatusBadge>
-                        )}
+                        <p className="font-mc-interface text-[11px] font-bold uppercase tracking-[0.14em] text-mc-text-primary">
+                          <span
+                            aria-hidden="true"
+                            className={`mr-2 inline-block h-2 w-2 ${registered ? 'bg-mc-warning' : result.category ? 'bg-mc-success' : 'bg-mc-error'}`}
+                          />
+                          {registered ? 'Inscrição ativa' : result.category ? 'Elegível' : 'Sem categoria'}
+                        </p>
                       </div>
                       <p className="mt-mc-12 border-t border-mc-border pt-mc-12 font-mc-interface text-sm text-mc-text-secondary">
                         {registered ? 'Já possui inscrição ativa neste evento.' : result.category?.nome || result.reason}
@@ -136,36 +132,35 @@ export default function RegistrationForm({ event, athletes, categories, register
                       {registered ? <Link href={`/dashboard/meus-atletas/${athlete.id}/inscricoes`} className="mt-mc-8 inline-flex min-h-10 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">Ver histórico de inscrições</Link> : null}
                     </div>
                   </div>
-                </Card>
+                </article>
               )
             })}
           </fieldset>
         )}
       </div>
 
-      <aside className="space-y-mc-16 lg:sticky lg:top-32">
-        <Card className="p-mc-16 sm:p-mc-24">
-          <UserRound aria-hidden="true" size={25} className="text-mc-action" />
-          <p className="mt-mc-16 font-mc-interface text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">Resumo da inscrição</p>
-          <dl className="mt-mc-12 space-y-mc-12 font-mc-interface text-sm">
-            <div className="flex justify-between gap-mc-16"><dt className="text-mc-text-secondary">Valor por atleta</dt><dd className="font-semibold text-mc-text-primary">{money(event.valor_inscricao)}</dd></div>
-            <div className="flex justify-between gap-mc-16"><dt className="text-mc-text-secondary">Selecionados</dt><dd className="font-semibold text-mc-text-primary">{selected.length}</dd></div>
-            <div className="flex justify-between gap-mc-16 border-t border-mc-border pt-mc-12"><dt className="font-semibold text-mc-text-primary">Total</dt><dd className="font-mc-display text-lg font-semibold text-mc-text-primary">{money(Math.round(event.valor_inscricao * 100) * selected.length / 100)}</dd></div>
+      <aside className="space-y-6 lg:sticky lg:top-36">
+        <section className="border border-mc-text-primary p-5">
+          <p className="font-mc-interface text-[11px] font-semibold uppercase tracking-[0.18em] text-mc-text-secondary">Resumo da inscrição</p>
+          <dl className="mt-4 space-y-3 font-mc-interface text-sm">
+            <div className="flex justify-between gap-4"><dt className="text-mc-text-secondary">Valor por atleta</dt><dd className="font-semibold text-mc-text-primary">{money(event.valor_inscricao)}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-mc-text-secondary">Selecionados</dt><dd className="font-semibold text-mc-text-primary">{selected.length}</dd></div>
+            <div className="flex justify-between gap-4 border-t border-mc-border pt-3"><dt className="font-semibold text-mc-text-primary">Total</dt><dd className="font-mc-display text-lg font-semibold text-mc-text-primary">{money(Math.round(event.valor_inscricao * 100) * selected.length / 100)}</dd></div>
           </dl>
-        </Card>
+        </section>
 
-        <Card variant="subtle" className="bg-mc-surface-secondary p-mc-16 sm:p-mc-24">
-          <h2 className="font-mc-display text-lg font-semibold text-mc-text-primary">Termos de inscrição — MVP-2026-09</h2>
-          <p className="mt-mc-8 font-mc-interface text-sm leading-5 text-mc-text-secondary">Confirmo que os dados esportivos estão corretos e que possuo autorização para inscrever os atletas selecionados. A categoria e o valor serão registrados no momento da inscrição. A inscrição ficará pendente de pagamento.</p>
-          {event.regulamento_url ? <a href={event.regulamento_url} target="_blank" rel="noreferrer" className="mt-mc-8 inline-flex min-h-10 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">Ler regulamento do evento</a> : null}
-          <label className="mt-mc-16 flex items-start gap-mc-8 border-t border-mc-border pt-mc-16 font-mc-interface text-sm text-mc-text-primary">
-            <input type="checkbox" name="terms" checked={accepted} disabled={pending} onChange={e => setAccepted(e.target.checked)} required className="mt-0.5 h-5 w-5 shrink-0 rounded border-mc-border text-mc-action focus:ring-mc-focus" />
+        <section className="border border-mc-border p-5">
+          <h2 className="font-mc-display text-lg font-bold uppercase leading-none tracking-[-0.03em] text-mc-text-primary">Termos de inscrição — MVP-2026-09</h2>
+          <p className="mt-3 font-mc-interface text-sm leading-6 text-mc-text-secondary">Confirmo que os dados esportivos estão corretos e que possuo autorização para inscrever os atletas selecionados. A categoria e o valor serão registrados no momento da inscrição. A inscrição ficará pendente de pagamento.</p>
+          {event.regulamento_url ? <a href={event.regulamento_url} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-12 items-center font-mc-interface text-[11px] font-bold uppercase tracking-[0.14em] text-mc-text-primary hover:text-mc-action">Ler regulamento do evento</a> : null}
+          <label className="mt-4 flex items-start gap-2 border-t border-mc-border pt-4 font-mc-interface text-sm text-mc-text-primary">
+            <input type="checkbox" name="terms" checked={accepted} disabled={pending} onChange={e => setAccepted(e.target.checked)} required className="mt-0.5 h-5 w-5 shrink-0 border border-mc-border text-mc-action focus:ring-mc-focus" />
             Li e aceito os termos de inscrição.
           </label>
-        </Card>
+        </section>
 
         {message ? <Alert role="status">{message}</Alert> : null}
-        <Button type="submit" size="large" disabled={pending || !accepted || !selected.length} className="w-full">{pending ? 'Inscrevendo...' : 'Confirmar inscrições'}</Button>
+        <Button type="submit" size="large" disabled={pending || !accepted || !selected.length} className="w-full rounded-none">{pending ? 'Inscrevendo...' : 'Confirmar inscrições'}</Button>
       </aside>
     </form>
   )

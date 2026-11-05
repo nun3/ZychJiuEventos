@@ -36,13 +36,13 @@ export default function EventCategoriesPreview({
     <section className="scroll-mt-36">
       <div className="flex flex-wrap items-end justify-between gap-mc-12">
         <div>
-          <h2 className="font-mc-display text-mc-h2 text-mc-text-primary">Categorias</h2>
+          <h2 className="font-mc-display text-3xl font-bold uppercase leading-[0.95] tracking-[-0.03em] text-mc-text-primary">Categorias</h2>
           <p className="mt-mc-8 font-mc-interface text-sm text-mc-text-secondary">
             Versão ativa {version} · {categories.length} {categories.length === 1 ? 'categoria' : 'categorias'}
           </p>
         </div>
       </div>
-      <div className="mt-4 flex flex-col gap-4 rounded-mc-small border border-mc-border bg-mc-surface-secondary/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-6 flex flex-col gap-4 border-l-4 border-mc-action py-1 pl-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="font-mc-display text-base font-semibold text-mc-text-primary">Não sabe em qual categoria se encaixa?</p>
           <p className="mt-1 font-mc-interface text-sm text-mc-text-secondary">Informe seus dados e descubra sua divisão antes da inscrição.</p>

@@ -7,7 +7,8 @@ import { allowsPublicOrganization, getPublicOrganizationScope } from './public-o
 export const publicEventStatuses = ['publicado', 'inscricao', 'pagamento', 'checagem', 'chaves', 'em_andamento', 'concluido'] as const
 type EventStatus = Database['public']['Enums']['event_status']
 
-const publicEventColumns = 'id, organization_id, nome, status, data_evento, local, timezone, informacoes, valor_inscricao, imagem_cartaz_url, regulamento_url, tabela_peso_url' as const
+const publicEventColumns =
+  'id, organization_id, nome, status, data_evento, local, timezone, informacoes, valor_inscricao, imagem_cartaz_url, regulamento_url, tabela_peso_url, local_nome, local_cep, local_logradouro, local_numero, local_complemento, local_bairro, local_cidade, local_uf, local_latitude, local_longitude' as const
 
 export async function findPublicReleaseEvent(eventId: string, statuses: readonly EventStatus[] | null = [...publicEventStatuses]) {
   const scope = getPublicOrganizationScope()

@@ -1,13 +1,10 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
-import ModernNavbar from '@/components/ModernNavbar'
 import { Alert } from '@/components/ui/Alert'
-import { PageContainer } from '@/components/ui/PageContainer'
-import { PageHeader } from '@/components/ui/PageHeader'
+import { PublicEventFrame } from '@/components/events/public-event/PublicEventFrame'
 import { createClient } from '@/lib/supabase/server'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 import { findPublicReleaseEvent } from '@/lib/events/public-access'
+import type { PublicEventStatus } from '@/lib/events/public-event-presentation'
 import RegistrationForm from './RegistrationForm'
 
 export default async function RegistrationPage({ params }: { params: { id: string } }) {
@@ -35,35 +32,29 @@ export default async function RegistrationPage({ params }: { params: { id: strin
   const managed = new Set(managers.data?.map(m => m.athlete_id))
   const allowed = athletes.data?.filter(a => a.user_id === user.id || managed.has(a.id)) || []
   return (
-    <main className="min-h-screen bg-mc-background">
-      <ModernNavbar />
-      <PageContainer className="pb-mc-64 pt-32 sm:pt-36">
-        <PageHeader
-          title={`Inscrição — ${event.nome}`}
-          description="Selecione os atletas elegíveis, confira a categoria calculada e aceite os termos para confirmar."
-          breadcrumb={(
-            <Link href={`/eventos/${event.id}`} className="inline-flex min-h-10 items-center gap-mc-8 font-semibold text-mc-action hover:underline">
-              <ArrowLeft aria-hidden="true" size={18} />
-              Voltar ao evento
-            </Link>
-          )}
-        />
-        <div className="mt-mc-32">
-          {failed ? (
-            <Alert variant="error" role="alert">Não foi possível carregar os dados. Tente novamente.</Alert>
-          ) : !open ? (
-            <Alert variant="warning" role="alert" title="Inscrições indisponíveis">Este evento está fora do prazo de inscrição.</Alert>
-          ) : (
-            <RegistrationForm
-              event={event}
-              athletes={allowed}
-              categories={rules.data?.event_categories || []}
-              registeredIds={registrations.data?.map(r => r.athlete_id) || []}
-              actor={{ name: actor?.name || '', canLinkSelf: Boolean(actor?.isProfessor) }}
-            />
-          )}
-        </div>
-      </PageContainer>
-    </main>
+    <PublicEventFrame
+      eventId={event.id}
+      status={event.status as PublicEventStatus}
+      current="informacoes"
+      kicker="Inscrição"
+      title={`Inscrição — ${event.nome}`}
+      lede="Selecione os atletas elegíveis, confira a categoria calculada e aceite os termos para confirmar."
+    >
+      <div className="mt-10">
+        {failed ? (
+          <Alert variant="error" role="alert">Não foi possível carregar os dados. Tente novamente.</Alert>
+        ) : !open ? (
+          <Alert variant="warning" role="alert" title="Inscrições indisponíveis">Este evento está fora do prazo de inscrição.</Alert>
+        ) : (
+          <RegistrationForm
+            event={event}
+            athletes={allowed}
+            categories={rules.data?.event_categories || []}
+            registeredIds={registrations.data?.map(r => r.athlete_id) || []}
+            actor={{ name: actor?.name || '', canLinkSelf: Boolean(actor?.isProfessor) }}
+          />
+        )}
+      </div>
+    </PublicEventFrame>
   )
 }

@@ -298,34 +298,34 @@ export type PublicEventNavItem = {
 export function getPublicEventNavItems(params: {
   eventId: string
   status: PublicEventStatus
-  current: 'informacoes' | 'checagem' | 'chaves' | 'programacao'
+  current: 'informacoes' | 'participantes' | 'checagem' | 'chaves' | 'lutas' | 'programacao' | 'resultados'
 }): PublicEventNavItem[] {
-  const presentation = getPublicEventStatus(params.status)
   const base = `/eventos/${params.eventId}`
-  const items: PublicEventNavItem[] = [
-    { id: 'informacoes', label: 'Informações', href: base, current: params.current === 'informacoes' },
+  const items: Array<Omit<PublicEventNavItem, 'current'> & { key: typeof params.current }> = [
+    { id: 'informacoes', key: 'informacoes', label: 'Informações', href: base },
+    { id: 'participantes', key: 'participantes', label: 'Participantes', href: `${base}/participantes` },
+    { id: 'chaves', key: 'chaves', label: 'Chaves', href: `${base}/chaves` },
+    { id: 'lutas', key: 'lutas', label: 'Lutas', href: `${base}/lutas` },
+    { id: 'programacao', key: 'programacao', label: 'Horário', href: `${base}/programacao` },
+    { id: 'resultados', key: 'resultados', label: 'Resultados', href: `${base}/resultados` },
   ]
-  if (presentation.showCheckingLink) {
-    items.push({
-      id: 'checagem',
-      label: 'Checagem',
-      href: `${base}/checagem`,
-      current: params.current === 'checagem',
-    })
-  }
-  items.push(
-    { id: 'chaves', label: 'Chaves', href: `${base}/chaves`, current: params.current === 'chaves' },
-    { id: 'programacao', label: 'Programação', href: `${base}/programacao`, current: params.current === 'programacao' },
-  )
-  return items
+  return items.map((item) => ({
+    id: item.id,
+    label: item.label,
+    href: item.href,
+    current: params.current === item.key || (params.current === 'checagem' && item.key === 'participantes'),
+  }))
 }
 
 export type PublicEventSectionId =
-  | 'visao-geral'
+  | 'sobre'
+  | 'local'
+  | 'valores'
   | 'cronograma'
   | 'categorias'
   | 'documentos'
-  | 'local'
+  | 'checagem'
+  | 'chaves'
 
 export type PublicEventSection = {
   id: PublicEventSectionId
@@ -334,17 +334,23 @@ export type PublicEventSection = {
 
 export function buildPublicEventSections(flags: {
   hasOverview: boolean
+  hasLocation: boolean
+  hasValues: boolean
   hasPhases: boolean
   hasCategories: boolean
   hasDocuments: boolean
-  hasLocation: boolean
+  hasChecking: boolean
+  hasBrackets: boolean
 }): PublicEventSection[] {
   const sections: PublicEventSection[] = []
-  if (flags.hasOverview) sections.push({ id: 'visao-geral', label: 'Visão geral' })
+  if (flags.hasOverview) sections.push({ id: 'sobre', label: 'Sobre o evento' })
+  if (flags.hasLocation) sections.push({ id: 'local', label: 'Local do evento' })
+  if (flags.hasValues) sections.push({ id: 'valores', label: 'Valor da inscrição' })
   if (flags.hasPhases) sections.push({ id: 'cronograma', label: 'Prazos e fases' })
   if (flags.hasCategories) sections.push({ id: 'categorias', label: 'Categorias' })
-  if (flags.hasDocuments) sections.push({ id: 'documentos', label: 'Regulamento e documentos' })
-  if (flags.hasLocation) sections.push({ id: 'local', label: 'Local' })
+  if (flags.hasDocuments) sections.push({ id: 'documentos', label: 'Regulamento' })
+  if (flags.hasChecking) sections.push({ id: 'checagem', label: 'Checagem' })
+  if (flags.hasBrackets) sections.push({ id: 'chaves', label: 'Chaves' })
   return sections
 }
 
@@ -354,13 +360,16 @@ export function formatPublicEventDate(dataEvento: string, timeZone = 'UTC') {
     long: new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(date),
     weekday: new Intl.DateTimeFormat('pt-BR', { weekday: 'long', timeZone: 'UTC' }).format(date),
     // data_evento is date-only; do not invent a clock time
-    dateOnlyLabel: new Intl.DateTimeFormat('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'UTC',
-    }).format(date),
+    dateOnlyLabel: (() => {
+      const label = new Intl.DateTimeFormat('pt-BR', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(date)
+      return label.charAt(0).toUpperCase() + label.slice(1)
+    })(),
     timeZone,
   }
 }

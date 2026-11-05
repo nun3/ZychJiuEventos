@@ -1,26 +1,12 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, CalendarClock, CheckCircle2, Flag, Info } from 'lucide-react'
-import ModernFooter from '@/components/ModernFooter'
-import ModernNavbar from '@/components/ModernNavbar'
-import {
-  Alert,
-  Card,
-  EmptyState,
-  FormField,
-  MobileRecord,
-  MobileRecordHeader,
-  MobileRecordMeta,
-  MobileRecordStatus,
-  MobileRecordTitle,
-  PageContainer,
-  PageHeader,
-  Select,
-  StatusBadge,
-} from '@/components/ui'
+import { Alert } from '@/components/ui/Alert'
+import { FormField } from '@/components/ui/FormField'
+import { Select } from '@/components/ui/Select'
+import { PublicEventFrame } from '@/components/events/public-event/PublicEventFrame'
 import { getPublicEventSchedule, type PublicScheduleMatch } from '@/lib/events/public-schedule'
 import { formatFightDurationLabel } from '@/lib/events/fight-duration'
 import { findPublicReleaseEvent } from '@/lib/events/public-access'
+import type { PublicEventStatus } from '@/lib/events/public-event-presentation'
 
 type SearchParams = {
   area?: string
@@ -51,40 +37,37 @@ function matchesFilters(match: PublicScheduleMatch, filters: SearchParams) {
   return true
 }
 
+function statusLabel(match: PublicScheduleMatch) {
+  if (match.isWalkover || match.status === 'wo') return 'WO'
+  if (match.status === 'concluido') return 'Concluída'
+  return 'Pendente'
+}
+
 function MatchRecord({ match }: { match: PublicScheduleMatch }) {
   const duration = formatFightDurationLabel(match.durationMinutes, 'long')
   return (
-    <MobileRecord aria-label={`Luta ${match.fightNumber}`}>
-      <MobileRecordHeader>
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mc-text-secondary">Luta</p>
-          <MobileRecordTitle className="mt-mc-4">Luta {match.fightNumber}</MobileRecordTitle>
-        </div>
-        <StatusBadge variant={match.status === 'pendente' ? 'neutral' : match.isWalkover ? 'warning' : 'success'}>
-          {match.status === 'pendente' ? 'Pendente' : match.isWalkover ? 'WO' : 'Concluída'}
-        </StatusBadge>
-      </MobileRecordHeader>
-      <MobileRecordMeta>
-        Área {match.areaNumber} — {match.areaName} · {match.category} · Subchave {match.groupLabel} · {roundLabel(match)}{duration ? ` · ${duration}` : ''}
-      </MobileRecordMeta>
-      <div className="mt-mc-16 grid min-w-0 gap-mc-8 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-start">
-        <p className={`break-words font-semibold ${match.winner === match.sideA.name ? 'text-mc-success' : 'text-mc-text-primary'}`}>
-          {sideLine(match.sideA)}
+    <article aria-label={`Luta ${match.fightNumber}`} className="grid items-center gap-3 border-b border-mc-border py-4 md:grid-cols-[5rem_minmax(0,1fr)_auto]">
+      <p className="border-l-4 border-mc-action pl-3 font-mc-display text-2xl font-bold leading-none">{String(match.fightNumber).padStart(2, '0')}</p>
+      <div className="min-w-0">
+        <p className="font-mc-interface text-[11px] font-semibold uppercase tracking-[0.14em] text-mc-text-secondary">
+          Luta {match.fightNumber} · Área {match.areaNumber} — {match.areaName} · {match.category} · Subchave {match.groupLabel} · {roundLabel(match)}{duration ? ` · ${duration}` : ''}
         </p>
-        <span aria-hidden="true" className="text-sm text-mc-text-secondary">×</span>
-        <p className={`break-words font-semibold sm:text-right ${match.winner === match.sideB.name ? 'text-mc-success' : 'text-mc-text-primary'}`}>
-          {sideLine(match.sideB)}
+        <p className="mt-1 font-mc-interface text-base font-semibold text-mc-text-primary">
+          <span className={match.winner === match.sideA.name ? 'text-mc-success' : undefined}>{sideLine(match.sideA)}</span>
+          <span className="mx-2 font-normal text-mc-text-secondary">×</span>
+          <span className={match.winner === match.sideB.name ? 'text-mc-success' : undefined}>{sideLine(match.sideB)}</span>
         </p>
-      </div>
-      {match.winner ? (
-        <MobileRecordStatus>
-          <p className={`flex items-center gap-mc-4 text-sm font-semibold ${match.isWalkover ? 'text-mc-warning' : 'text-mc-success'}`}>
-            {match.isWalkover ? <Flag aria-hidden="true" size={16} /> : <CheckCircle2 aria-hidden="true" size={16} />}
+        {match.winner ? (
+          <p className="mt-1 font-mc-interface text-sm font-semibold text-mc-text-primary">
             {match.isWalkover ? `Vitória por WO: ${match.winner}` : `Vencedor: ${match.winner}`}
           </p>
-        </MobileRecordStatus>
-      ) : null}
-    </MobileRecord>
+        ) : null}
+      </div>
+      <p className="font-mc-interface text-[11px] font-bold uppercase tracking-[0.14em] text-mc-text-primary">
+        <span aria-hidden="true" className={`mr-2 inline-block h-2 w-2 ${match.status === 'pendente' ? 'bg-mc-text-secondary' : match.isWalkover ? 'bg-mc-warning' : 'bg-mc-success'}`} />
+        {statusLabel(match)}
+      </p>
+    </article>
   )
 }
 
@@ -116,40 +99,32 @@ export default async function PublicSchedulePage({
   )
 
   return (
-    <main className="min-h-screen bg-mc-background">
-      <ModernNavbar />
-      <PageContainer className="pb-mc-64 pt-32 sm:pt-36">
-        <PageHeader
-          title={`Programação — ${event.nome}`}
-          description="Ordem oficial das lutas por número global e área. Rascunhos não são exibidos."
-          breadcrumb={
-            <Link href={`/eventos/${event.id}`} className="inline-flex min-h-10 items-center gap-mc-8 rounded-mc-small px-mc-8 font-semibold text-mc-action hover:bg-mc-action/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
-              <ArrowLeft aria-hidden="true" size={18} />
-              Voltar para o evento
-            </Link>
-          }
-          actions={<StatusBadge variant={schedule.matches.length ? 'success' : 'neutral'}>{schedule.matches.length ? 'Publicada' : 'Indisponível'}</StatusBadge>}
-        />
-
+    <PublicEventFrame
+      eventId={event.id}
+      status={event.status as PublicEventStatus}
+      current="programacao"
+      kicker="Ordem oficial"
+      title={`Horário — ${event.nome}`}
+      lede="Ordem oficial das lutas por número global e área. Rascunhos não são exibidos."
+    >
         {schedule.error ? (
-          <Alert className="mt-mc-24" role="alert" variant="error" title="Não foi possível carregar a programação">
+          <Alert className="mt-10" role="alert" variant="error" title="Não foi possível carregar a programação">
             Tente novamente. Nenhum dado administrativo foi exposto.
           </Alert>
         ) : !schedule.matches.length ? (
-          <EmptyState
-            className="mt-mc-24 rounded-mc-medium border border-mc-border bg-mc-surface"
-            icon={<CalendarClock size={34} />}
-            title="Nenhuma programação publicada"
-            description="A ordem oficial das lutas aparecerá aqui depois que a organização publicar a programação."
-          />
+          <section className="mt-12 border-y border-mc-border py-14">
+            <h2 className="font-mc-display text-3xl font-bold uppercase leading-[0.95] tracking-[-0.03em] text-mc-text-primary">Nenhuma programação publicada</h2>
+            <p className="mt-4 max-w-xl font-mc-interface text-base leading-7 text-mc-text-secondary">
+              A ordem oficial das lutas aparecerá aqui depois que a organização publicar a programação.
+            </p>
+          </section>
         ) : (
-          <div className="mt-mc-24 space-y-mc-24">
-            <Alert variant="info" icon={<Info size={20} />} title="Consulta oficial">
+          <div className="mt-12 space-y-8">
+            <p className="max-w-2xl font-mc-interface text-sm leading-6 text-mc-text-secondary">
               A fila segue o número global da luta. Filtre por área, categoria, equipe ou professor operacional da inscrição. A duração oficial aparece como Tempo quando a organização a configurou.
-            </Alert>
+            </p>
 
-            <Card className="p-mc-16 sm:p-mc-24">
-              <form method="get" className="grid gap-mc-16 md:grid-cols-5 md:items-end">
+            <form method="get" className="grid gap-4 border-y border-mc-border py-6 md:grid-cols-5 md:items-end">
                 <FormField id="area" label="Área">
                   <Select name="area" defaultValue={filters.area || ''}>
                     <option value="">Todas</option>
@@ -183,12 +158,11 @@ export default async function PublicSchedulePage({
                 </FormField>
                 <button
                   type="submit"
-                  className="inline-flex min-h-11 items-center justify-center rounded-mc-medium bg-mc-action px-mc-16 font-mc-interface text-sm font-semibold text-white transition-colors duration-mc-normal hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2"
+                  className="inline-flex min-h-12 items-center justify-center bg-mc-text-primary px-4 font-mc-interface text-[11px] font-bold uppercase tracking-[0.14em] text-white transition-colors duration-200 hover:bg-mc-structure focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"
                 >
                   Filtrar
                 </button>
               </form>
-            </Card>
 
             {filters.professor ? (
               <h2 className="font-mc-display text-mc-h2 text-mc-text-primary">Lutas do professor {filters.professor}</h2>
@@ -197,7 +171,7 @@ export default async function PublicSchedulePage({
             ) : null}
 
             {visible.length ? (
-              <ol className="space-y-mc-12">
+              <ol className="border-t border-mc-border">
                 {visible.map((match) => (
                   <li key={match.fightNumber}>
                     <MatchRecord match={match} />
@@ -205,16 +179,15 @@ export default async function PublicSchedulePage({
                 ))}
               </ol>
             ) : (
-              <EmptyState
-                className="rounded-mc-medium border border-mc-border bg-mc-surface"
-                title="Nenhuma luta neste filtro"
-                description="Ajuste área, categoria, equipe ou professor para ver a fila oficial."
-              />
+              <section className="border-y border-mc-border py-14">
+                <h2 className="font-mc-display text-3xl font-bold uppercase leading-[0.95] tracking-[-0.03em] text-mc-text-primary">Nenhuma luta neste filtro</h2>
+                <p className="mt-4 max-w-xl font-mc-interface text-base leading-7 text-mc-text-secondary">
+                  Ajuste área, categoria, equipe ou professor para ver a fila oficial.
+                </p>
+              </section>
             )}
           </div>
         )}
-      </PageContainer>
-      <ModernFooter />
-    </main>
+    </PublicEventFrame>
   )
 }

@@ -34,7 +34,7 @@ export default function EventShareButton({ title }: { title: string }) {
     <button
       type="button"
       onClick={share}
-      className="inline-flex min-h-11 items-center gap-2 rounded-mc-full bg-white px-4 font-mc-interface text-xs font-semibold text-mc-text-primary transition-colors duration-mc-normal hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure sm:min-h-9"
+      className="inline-flex min-h-12 items-center gap-2 bg-white px-5 font-mc-interface text-[11px] font-bold uppercase tracking-[0.14em] text-mc-text-primary transition-colors duration-200 hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-nav-dark"
     >
       {copied ? <Check size={16} aria-hidden="true" /> : <Share2 size={16} aria-hidden="true" />}
       {copied ? 'Link copiado' : 'Compartilhar'}
