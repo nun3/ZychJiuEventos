@@ -5,7 +5,7 @@
 **Veredito:** **UI RELEASE CANDIDATE — READY**
 
 Referência de produção (rollback funcional): `FUNCTIONAL-RELEASE` / `dpl_5bo3LahBCroVETNjbZ4fAExxn2YA`.  
-Branch: `wip/local-pre-reconcile-20261019` / `hotfix/ui-rc-packaging` · **HEAD:** `7de09c4` · tree: `cf4287b` · base anterior: `f7e78b0`.
+Branch: `wip/local-pre-reconcile-20261019` / `hotfix/ui-rc-packaging` · **HEAD:** `7ed6bf7` · packaging: `7de09c4` · tree packaging: `cf4287b` · base anterior: `f7e78b0`.
 
 ## Causa raiz
 
