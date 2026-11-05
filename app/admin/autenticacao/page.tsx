@@ -1,37 +1,62 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
 import { PageContainer } from '@/components/ui/PageContainer'
+import { resolveAdminPostLoginRedirect } from '@/lib/auth/post-login-redirect'
 import { createClient } from '@/lib/supabase/client'
 
 export default function AdminAuthPage() {
-  const router = useRouter()
   const [usuario, setUsuario] = useState('')
   const [senha, setSenha] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(false)
 
+  useEffect(() => {
+    let active = true
+    const supabase = createClient()
+    void supabase.auth.getUser().then(({ data }) => {
+      if (!active || !data.user) return
+      const params = new URLSearchParams(window.location.search)
+      const redirectTo = resolveAdminPostLoginRedirect(params.get('redirectTo'))
+      window.location.replace(redirectTo)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!erro) return
+    document.getElementById('admin-auth-error')?.focus()
+  }, [erro])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (carregando) return
     setErro('')
     setCarregando(true)
 
-    const { error } = await createClient().auth.signInWithPassword({ email: usuario.trim(), password: senha })
-    if (error) {
-      setErro('E-mail ou senha inválidos')
+    try {
+      const { error } = await createClient().auth.signInWithPassword({ email: usuario.trim(), password: senha })
+      if (error) {
+        setErro('E-mail ou senha inválidos')
+        setCarregando(false)
+        return
+      }
+      const params = new URLSearchParams(window.location.search)
+      const redirectTo = resolveAdminPostLoginRedirect(params.get('redirectTo'))
+      window.location.assign(redirectTo)
+    } catch {
+      setErro('Não foi possível autenticar agora. Tente novamente.')
       setCarregando(false)
-      return
     }
-    router.replace('/admin/eventos')
-    router.refresh()
   }
 
   return (
@@ -46,25 +71,35 @@ export default function AdminAuthPage() {
             </p>
           </header>
           <div className="p-mc-24 sm:p-mc-32 lg:p-mc-48">
-            {erro ? <Alert variant="error" role="alert" className="mb-mc-24">{erro}</Alert> : null}
+            {erro ? (
+              <Alert
+                id="admin-auth-error"
+                tabIndex={-1}
+                variant="error"
+                role="alert"
+                className="mb-mc-24 scroll-mt-24 outline-none"
+              >
+                {erro}
+              </Alert>
+            ) : null}
             <form onSubmit={handleSubmit} className="space-y-mc-24">
               <FormField id="admin-email" label="E-mail" required>
                 <Input type="email" value={usuario} onChange={(event) => setUsuario(event.target.value)} placeholder="nome@exemplo.com" required autoComplete="email" />
               </FormField>
-              <FormField id="admin-password" label="Senha" required>
-                <div className="relative">
+              <div className="relative">
+                <FormField id="admin-password" label="Senha" required>
                   <Input type={mostrarSenha ? 'text' : 'password'} value={senha} onChange={(event) => setSenha(event.target.value)} placeholder="Digite sua senha" required autoComplete="current-password" className="pr-12" />
-                  <button type="button" onClick={() => setMostrarSenha((value) => !value)} className="absolute inset-y-0 right-0 inline-flex min-w-11 items-center justify-center text-mc-text-secondary hover:text-mc-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus" aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}>
-                    {mostrarSenha ? <EyeOff aria-hidden="true" size={18} /> : <Eye aria-hidden="true" size={18} />}
-                  </button>
-                </div>
-              </FormField>
+                </FormField>
+                <button type="button" onClick={() => setMostrarSenha((value) => !value)} className="absolute bottom-0 right-0 inline-flex h-11 min-w-11 items-center justify-center text-mc-text-secondary hover:text-mc-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus" aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}>
+                  {mostrarSenha ? <EyeOff aria-hidden="true" size={18} /> : <Eye aria-hidden="true" size={18} />}
+                </button>
+              </div>
               <div className="flex justify-end">
                 <Link href="/recuperar-senha" className="inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">
                   Esqueci a senha
                 </Link>
               </div>
-              <Button type="submit" size="large" disabled={carregando} className="w-full">
+              <Button id="admin-login-submit" type="submit" size="large" disabled={carregando} className="w-full scroll-mt-24">
                 {carregando ? 'Entrando...' : 'Entrar'}
               </Button>
             </form>

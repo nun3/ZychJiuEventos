@@ -10,10 +10,12 @@ export default function EventActions({
   eventId,
   status,
   checkingLocked = false,
+  showCancel = true,
 }: {
   eventId: string
   status: string
   checkingLocked?: boolean
+  showCancel?: boolean
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -39,7 +41,7 @@ export default function EventActions({
       {status === 'pagamento' ? <Button size="small" disabled={pending} onClick={() => run(() => transitionEvent(eventId, 'checagem'))}>Abrir checagem</Button> : null}
       {status === 'checagem' && checkingLocked ? <Button size="small" disabled={pending} onClick={() => run(() => transitionEvent(eventId, 'chaves'))}>Abrir chaves</Button> : null}
       {status === 'em_andamento' ? <Button size="small" disabled={pending} onClick={() => run(() => transitionEvent(eventId, 'concluido'))}>Concluir evento</Button> : null}
-      {!['cancelado', 'concluido'].includes(status) ? <Button size="small" variant="outline" disabled={pending} onClick={() => run(() => transitionEvent(eventId, 'cancelado'))}>Cancelar</Button> : null}
+      {showCancel && !['cancelado', 'concluido'].includes(status) ? <Button size="small" variant="outline" disabled={pending} onClick={() => run(() => transitionEvent(eventId, 'cancelado'))}>Cancelar</Button> : null}
     </div>
     {error ? <Alert variant="error" role="alert" className="p-mc-8">{error}</Alert> : null}
   </div>

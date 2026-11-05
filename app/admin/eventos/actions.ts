@@ -2,6 +2,10 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { getAdministrativeOrganizationContext } from '@/lib/auth/organization-context-server'
+import {
+  validateCategoryInputAgainstCatalog,
+  type CatalogCategoryDefinition,
+} from '@/lib/events/catalog-category-sync'
 import { parseFightDurationInput } from '@/lib/events/fight-duration'
 import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
@@ -144,9 +148,9 @@ export async function transitionEvent(eventId: string, status: EventTransitionSt
   revalidateTag('public-home-events')
   revalidatePath('/admin/eventos')
   revalidatePath(`/eventos/${eventId}`)
-  revalidatePath(`/admin/eventos/${eventId}/checagem`)
-  revalidatePath(`/admin/eventos/${eventId}/chaves`)
-  revalidatePath(`/admin/eventos/${eventId}/resultados`)
+  for (const segment of ['configuracao', 'checagem', 'financeiro', 'chaves', 'programacao', 'resultados', 'editar']) {
+    revalidatePath(`/admin/eventos/${eventId}/${segment}`)
+  }
   const messages: Record<EventTransitionStatus, string> = {
     publicado: 'Evento publicado.',
     inscricao: 'Inscrições abertas.',
@@ -184,30 +188,47 @@ export async function createCategoryRuleSet(formData: FormData): Promise<EventAc
     const { data: catalog } = await supabase.from('sport_category_catalogs').select('id').eq('id', categoryCatalogId).not('publicado_em', 'is', null).maybeSingle()
     if (!catalog) return failure('O catálogo esportivo informado não está publicado.')
   }
+  let definition: CatalogCategoryDefinition | null = null
   if (catalogCategoryId) {
     if (!categoryCatalogId) return failure('Selecione o catálogo antes de vincular uma categoria.')
-    const { data: definition } = await supabase.from('sport_category_definitions').select('id').eq('id', catalogCategoryId).eq('catalog_id', categoryCatalogId).maybeSingle()
-    if (!definition) return failure('A categoria não pertence ao catálogo selecionado.')
+    const { data: catalogDefinition } = await supabase
+      .from('sport_category_definitions')
+      .select('id, codigo, nome, divisao_etaria, idade_min, idade_max, genero, faixa_min_ordem, faixa_max_ordem, peso_min_kg, peso_max_kg, ordem')
+      .eq('id', catalogCategoryId)
+      .eq('catalog_id', categoryCatalogId)
+      .maybeSingle()
+    if (!catalogDefinition) return failure('A categoria não pertence ao catálogo selecionado.')
+    definition = catalogDefinition
+  }
+  const duration = parseFightDurationInput(text(formData, 'fight_duration_minutes'))
+  if (!duration.ok) {
+    return failure('Informe uma duração entre 0,5 e 20 minutos, em passos de 0,5, ou deixe em branco.')
+  }
+  const validatedCategory = validateCategoryInputAgainstCatalog(
+    {
+      categoryName: text(formData, 'category_name'),
+      genero: text(formData, 'genero'),
+      idadeMinRaw: text(formData, 'idade_min'),
+      idadeMaxRaw: text(formData, 'idade_max'),
+      faixaMinRaw: text(formData, 'faixa_min'),
+      faixaMaxRaw: text(formData, 'faixa_max'),
+      pesoMinRaw: text(formData, 'peso_min'),
+      pesoMaxRaw: text(formData, 'peso_max'),
+    },
+    definition,
+  )
+  if (!validatedCategory.ok) {
+    return failure(validatedCategory.message)
   }
   const { data: current } = await supabase.from('category_rule_sets').select('versao').eq('event_id', eventId).order('versao', { ascending: false }).limit(1).maybeSingle()
   const { data: rule, error } = await supabase.from('category_rule_sets').insert({ event_id: eventId, nome, versao: (current?.versao || 0) + 1, ativo: false, category_catalog_id: categoryCatalogId }).select('id').single()
   if (error || !rule) return failure('Não foi possível criar a versão de categorias.')
-  const duration = parseFightDurationInput(text(formData, 'fight_duration_minutes'))
-  if (!duration.ok) {
-    await supabase.from('category_rule_sets').delete().eq('id', rule.id)
-    return failure('Informe uma duração entre 0,5 e 20 minutos, em passos de 0,5, ou deixe em branco.')
-  }
   const category = {
-    rule_set_id: rule.id, nome: text(formData, 'category_name'), idade_min: Number(text(formData, 'idade_min')),
-    idade_max: Number(text(formData, 'idade_max')), faixa_min_ordem: Number(text(formData, 'faixa_min')),
-    faixa_max_ordem: Number(text(formData, 'faixa_max')), peso_min_kg: Number(text(formData, 'peso_min')),
-    peso_max_kg: Number(text(formData, 'peso_max')), genero: text(formData, 'genero'), ordem: 1,
+    rule_set_id: rule.id,
+    ...validatedCategory.value,
+    ordem: 1,
     fight_duration_minutes: duration.value,
     catalog_category_id: catalogCategoryId,
-  }
-  if (!category.nome || !category.genero || category.idade_max < category.idade_min || category.faixa_max_ordem < category.faixa_min_ordem || category.peso_max_kg < category.peso_min_kg) {
-    await supabase.from('category_rule_sets').delete().eq('id', rule.id)
-    return failure('Limites da categoria inválidos.')
   }
   const { error: categoryError } = await supabase.from('event_categories').insert(category)
   if (categoryError) {
