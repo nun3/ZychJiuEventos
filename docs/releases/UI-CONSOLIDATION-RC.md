@@ -1,72 +1,75 @@
 # MEU CAMP — UI Consolidation Release Candidate
 
-**Status:** pacote autossuficiente após hotfix de empacotamento. Sem deploy. Sem push.  
+**Status:** pacote autossuficiente. Sem deploy. Sem push.  
 **Data:** 5 de novembro de 2026  
-**Veredito:** **UI RELEASE CANDIDATE — READY** (sujeito a smoke G5 do lote de packaging)
+**Veredito:** **UI RELEASE CANDIDATE — READY**
 
-Referência de produção (rollback funcional): `FUNCTIONAL-RELEASE` / `dpl_5bo3LahBCroVETNjbZ4fAExxn2YA` / `5b465409ac594945aad9bb8e81f9061e1612167e`.  
-Branch de packaging: `hotfix/ui-rc-packaging` · base anterior: `f7e78b0`.
+Referência de produção (rollback funcional): `FUNCTIONAL-RELEASE` / `dpl_5bo3LahBCroVETNjbZ4fAExxn2YA`.  
+Branch: `wip/local-pre-reconcile-20261019` / `hotfix/ui-rc-packaging` · **HEAD:** `7de09c4` · tree: `cf4287b` · base anterior: `f7e78b0`.
 
-## Causa raiz (bloqueio de produção)
+## Causa raiz
 
-O RC `f7e78b0` importava módulos e exports presentes apenas no working tree sujo:
+O RC `f7e78b0` não era autossuficiente: rotas públicas e admin commitadas importavam módulos/exports só presentes no working tree sujo. O READY anterior foi invalidado no gate de publicação isolada.
 
-1. Home cinematográfica experimental (`InteractiveChampionshipDemo`, `cinematic-preview-events`) — **excluída**.
-2. `DateTimeField` — UI estável usada por `EditEventForm` — **incluída**.
-3. Hub de organizador (`loadOrganizerEventHub`, tipos, `adminEventContinuePath`, `guidanceStepsForPhase`) — **incluídos**.
-4. `EventProgress` compact + `Coachmark` sem `userId` obrigatório — APIs já consumidas pelo hub/shell RC — **incluídos**.
-5. Colunas `local_*` em `database.types` — tipos alinhados ao select público já commitado — **incluídos**.
+## Grafo (diretas → classificação → ação)
 
-O READY anterior ao hotfix foi invalidado porque os testes rodaram sobre árvore dirty, não sobre o commit isolado.
-
-## Grafo de dependências
-
-```
-app/eventos/page.tsx
-  ├─ EventsFeaturedStage / EventsCatalog (estável, RC)
-  └─ ✗ home-cinematic / cinematic-preview  → REMOVIDO
-
-app/eventos/[id]/page.tsx
-  ├─ findPublicReleaseEvent + local_* (estável)
-  └─ ✗ getDevelopmentPreviewEvent → REMOVIDO (preview-* → notFound)
-
-EditEventForm
-  └─ DateTimeField → INCLUÍDO (estável)
-
-EventsHub / admin/eventos/page
-  ├─ loadOrganizerEventHub + tipos → INCLUÍDO
-  ├─ adminEventContinuePath / guidanceStepsForPhase → INCLUÍDO
-  └─ EventProgress(variant=compact) → INCLUÍDO
-
-EventAdminShell
-  └─ Coachmark({ id }) → INCLUÍDO (API alinhada ao shell)
-
-public-access select local_*
-  └─ database.types events.local_* → INCLUÍDO
-```
+| Dependência | Consumidor | Classe | Ação |
+| --- | --- | --- | --- |
+| `InteractiveChampionshipDemo` | `app/eventos/page.tsx` | experimental | removido o import; calendário RC preservado |
+| `getCinematicPreviewEvents` | `app/eventos/page.tsx` | experimental | removido; usa só `getPublicEvents` |
+| `getDevelopmentPreviewEvent` | `app/eventos/[id]/page.tsx` | experimental | removido; `preview-*` → `notFound()` |
+| `DateTimeField` | `EditEventForm` | estável/necessária | incluído |
+| `loadOrganizerEventHub` + tipos | hub admin | necessária | incluído em `dashboard-facts` |
+| `adminEventContinuePath` / `guidanceStepsForPhase` | hub | necessária | incluído em `event-guidance` |
+| `EventProgress` compact | `EventsHub` | necessária | incluído |
+| `Coachmark({ id })` | `EventAdminShell` | necessária | incluído (API alinhada ao shell) |
+| `events.local_*` em types | `public-access` / detalhe | necessária | incluído em `database.types` |
+| webhook / Asaas / home cinematic files | — | não relacionada / experimental | excluídos |
 
 ## Commits do RC
 
 | Lote | Hash | Mensagem |
 | --- | --- | --- |
-| 1–5 + docs | `c9f2947`…`f7e78b0` | consolidação visual |
-| 6 Packaging | *(preenchido após commit)* | hotfix de empacotamento |
+| 1 Fundamentos | `c9f2947` | StatusBadge canônico |
+| 2 Navegação | `70f9d61` | barras pública/interna/admin |
+| 3 Telas públicas | `ea60487` | calendário e interior |
+| 4 Admin + LIVE | `28a537d` | superfícies operacionais |
+| 5 Docs/testes | `7d78556`…`f7e78b0` | manifesto RC |
+| 6 Packaging | `7de09c4` | `fix(ui): tornar o RC de consolidação autossuficiente` |
 
-## Excluído (permanece fora do pacote)
+## Incluído neste hotfix
+
+- `components/ui/DateTimeField.tsx`
+- exports do hub em `lib/onboarding/dashboard-facts.ts`
+- `adminEventContinuePath` + `guidanceStepsForPhase` + estado `blocked` em `event-guidance.ts`
+- `components/onboarding/EventProgress.tsx` / `Coachmark.tsx` (API do RC)
+- colunas `local_*` em `lib/supabase/database.types.ts`
+- desacoplamento público de cinematic
+- ajuste de `automação/tests/catalog-presentation.test.ts`
+
+## Excluído
 
 - `components/home-cinematic/**`
 - `lib/home/cinematic-preview-events.ts`
 - home cinematográfica / docs HOME-*
-- alterações de webhook/Asaas/pagamentos
-- demais dirty tree (~100+ arquivos)
+- webhook/Asaas/pagamentos e demais dirty tree
 
-## Testes no checkout de packaging (pré-smoke)
+## Evidências — checkout limpo `7de09c4` (`/tmp/jiu-ui-rc-verify`)
 
 | Verificação | Resultado |
 | --- | --- |
-| TypeScript | PASS |
+| Dirty no checkout | 0 |
+| Cinematic no pacote | ausente |
+| `npx tsc --noEmit` | PASS |
 | Lint (escopo RC) | PASS |
-| Unitários relevantes (33) | PASS |
+| Unitários relevantes | PASS (33) |
 | `next build` | PASS |
-| Smoke público / autenticado | *(G5 em checkout limpo do novo HEAD)* |
+| Smoke público 1440/390 | PASS (`public_failed` 0) |
+| Smoke autenticado | PASS (login, hub→LIVE, live-exit, logout/relogin, console) |
 | Deploy / push | NOT_RUN |
+
+## Riscos residuais
+
+- Working tree original continua sujo com experimentais; não misturar no promote.
+- Harness `tools/e2e-isolated/ui-rc-smoke.mjs` permanece fora do git.
+- Domínio oficial ainda em `dpl_5bo3LahBCroVETNjbZ4fAExxn2YA` até novo ciclo de publicação.
