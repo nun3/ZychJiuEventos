@@ -1,102 +1,31 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { CalendarDays } from 'lucide-react'
-import EventFilters from '@/components/EventFilters'
-import EditorialEventCard from '@/components/EditorialEventCard'
-import HomeHighlightsCarousel from '@/components/HomeHighlightsCarousel'
-import { filterEvents, type Event } from '@/components/ModernEventGrid'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { PageContainer } from '@/components/ui/PageContainer'
+import { useMemo, useState } from 'react'
+import { CinematicStory } from '@/components/home-cinematic/CinematicStory'
+import { type Event } from '@/components/ModernEventGrid'
+import { getCinematicPreviewEvents } from '@/lib/home/cinematic-preview-events'
 
-export default function HomeClient({ events, highlights }: { events: Event[]; highlights: Event[] }) {
-  const [filters, setFilters] = useState({ eventType: 'Todos', sport: 'Todas', state: 'Todos', search: '', period: 'todos', startDate: '', endDate: '' })
-  const filteredEvents = filterEvents(events, filters)
+export default function HomeClient({
+  events,
+  highlights,
+}: {
+  events: Event[]
+  highlights: Event[]
+}) {
+  const [search, setSearch] = useState('')
+  const previewEvents = events.length === 0 && process.env.NODE_ENV === 'development'
+  const catalog = useMemo(() => (previewEvents ? getCinematicPreviewEvents() : events), [events, previewEvents])
+  const openingEvents = useMemo(
+    () => (previewEvents || highlights.length === 0 ? catalog : highlights),
+    [catalog, highlights, previewEvents],
+  )
 
   return (
-    <>
-      <HomeHighlightsCarousel events={highlights} />
-      <section id="eventos" className="scroll-mt-20 bg-mc-background py-mc-48 sm:py-mc-64" aria-labelledby="events-title">
-        <PageContainer>
-          <div className="max-w-3xl">
-            <p className="font-mc-interface text-sm font-semibold uppercase tracking-[0.16em] text-mc-action">
-              Calendário MEU CAMP
-            </p>
-            <h1 id="events-title" className="mt-mc-8 font-mc-display text-3xl font-semibold leading-tight text-mc-text-primary sm:text-mc-h1">
-              Encontre seu próximo campeonato.
-            </h1>
-            <p className="mt-mc-12 font-mc-interface text-mc-body text-mc-text-secondary">
-              Pesquise campeonatos publicados por nome, estado ou data.
-            </p>
-          </div>
-
-          {events.length ? (
-            <div className="mt-mc-32 border-b border-mc-border pb-mc-32">
-              <EventFilters variant="toolbar" onFilterChange={setFilters} />
-            </div>
-          ) : null}
-
-          {filteredEvents.length ? (
-            <section className="mt-mc-32" aria-labelledby="upcoming-events-title">
-              <div className="flex flex-wrap items-end justify-between gap-mc-12">
-                <h2 id="upcoming-events-title" className="font-mc-display text-mc-h2 font-bold uppercase tracking-[-0.02em] text-mc-text-primary">
-                  Próximos campeonatos
-                </h2>
-                <p className="font-mc-interface text-sm text-mc-text-secondary">
-                  {filteredEvents.length} {filteredEvents.length === 1 ? 'campeonato' : 'campeonatos'}
-                </p>
-              </div>
-              <div className="mt-mc-24 grid gap-mc-32 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredEvents.slice(0, 6).map((event) => <EditorialEventCard key={event.id} event={event} />)}
-              </div>
-            </section>
-          ) : (
-            <EmptyState
-              icon={<CalendarDays size={32} />}
-              title={events.length ? 'Nenhum campeonato encontrado' : 'Nenhum campeonato publicado'}
-              description={events.length
-                ? 'Nenhum campeonato corresponde aos filtros. Limpe a busca ou o período para ver o calendário completo.'
-                : 'Os próximos campeonatos aparecerão aqui assim que forem publicados.'}
-              className="mt-mc-32 rounded-mc-small border border-mc-border bg-mc-surface"
-            />
-          )}
-          <Link href="/eventos" className="mt-6 inline-flex min-h-11 items-center rounded-mc-small font-mc-interface text-sm font-semibold text-mc-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
-            Ver todos os campeonatos
-          </Link>
-        </PageContainer>
-      </section>
-
-      <section className="border-y border-mc-border bg-mc-surface-secondary py-mc-48 sm:py-mc-64" aria-labelledby="platform-title">
-        <PageContainer className="grid gap-mc-32 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-mc-64">
-          <div>
-            <p className="font-mc-interface text-sm font-semibold uppercase tracking-[0.16em] text-mc-action">
-              MEU CAMP
-            </p>
-            <h2 id="platform-title" className="mt-mc-8 font-mc-display text-3xl font-semibold leading-tight text-mc-text-primary sm:text-mc-h1">
-              A competição conecta todo mundo.
-            </h2>
-          </div>
-          <div className="divide-y divide-mc-border border-y border-mc-border">
-            <div className="grid gap-mc-8 py-mc-24 sm:grid-cols-[9rem_1fr] sm:gap-mc-24">
-              <h3 className="font-mc-interface font-semibold text-mc-text-primary">Atletas</h3>
-              <p className="font-mc-interface leading-6 text-mc-text-secondary">Encontram eventos, realizam inscrições e acompanham sua participação.</p>
-            </div>
-            <div className="grid gap-mc-8 py-mc-24 sm:grid-cols-[9rem_1fr] sm:gap-mc-24">
-              <h3 className="font-mc-interface font-semibold text-mc-text-primary">Professores</h3>
-              <p className="font-mc-interface leading-6 text-mc-text-secondary">Gerenciam a equipe, inscrevem atletas e acompanham a checagem pública.</p>
-            </div>
-            <div className="grid gap-mc-8 py-mc-24 sm:grid-cols-[9rem_1fr] sm:gap-mc-24">
-              <h3 className="font-mc-interface font-semibold text-mc-text-primary">Responsáveis</h3>
-              <p className="font-mc-interface leading-6 text-mc-text-secondary">Cuidam do cadastro e das inscrições dos atletas sob sua responsabilidade.</p>
-            </div>
-            <div className="grid gap-mc-8 py-mc-24 sm:grid-cols-[9rem_1fr] sm:gap-mc-24">
-              <h3 className="font-mc-interface font-semibold text-mc-text-primary">Organizadores</h3>
-              <p className="font-mc-interface leading-6 text-mc-text-secondary">Conduzem eventos, inscrições, chaves e pagamentos em uma única plataforma.</p>
-            </div>
-          </div>
-        </PageContainer>
-      </section>
-    </>
+    <CinematicStory
+      openingEvents={openingEvents}
+      previewEvents={previewEvents}
+      search={search}
+      onSearchChange={setSearch}
+    />
   )
 }

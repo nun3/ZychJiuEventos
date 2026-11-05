@@ -11,7 +11,9 @@ import EventPublicNavigation from '@/components/events/public-event/EventPublicN
 import EventShareButton from '@/components/events/public-event/EventShareButton'
 import { PublicEventHero, PublicHeroLink } from '@/components/events/public-event/PublicEventHero'
 import { PublicEventVenueMap } from '@/components/events/public-event/PublicEventVenueMap'
+import type { Event } from '@/components/ModernEventGrid'
 import { findPublicReleaseEvent } from '@/lib/events/public-access'
+import { catalogStatusLabel, eventDateParts } from '@/lib/events/catalog-presentation'
 import {
   buildPublicEventSections,
   formatPhaseWindow,
@@ -21,6 +23,7 @@ import {
   getPublicPhaseLabel,
   type PublicBadgeVariant,
 } from '@/lib/events/public-event-presentation'
+import { getDevelopmentPreviewEvent } from '@/lib/home/cinematic-preview-events'
 import { geocodeAddress } from '@/lib/location/lookup'
 import { createClient } from '@/lib/supabase/server'
 import { cn } from '@/components/ui/utils'
@@ -52,8 +55,39 @@ function HubContainer({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return <div {...props} className={cn('w-full px-4 sm:px-8 lg:px-12 xl:px-20', className)} />
 }
 
+function PreviewChampionship({ event }: { event: Event }) {
+  const date = eventDateParts(event.dateObj)
+  const meta = [date?.long, event.location].filter(Boolean).join(' · ')
+  return (
+    <main id="conteudo-principal" className="min-h-screen overflow-x-clip bg-mc-background pt-16">
+      <ModernNavbar />
+      <PublicEventHero
+        title={event.title}
+        imageUrl={event.image}
+        statusLabel={catalogStatusLabel(event.status)}
+        meta={meta}
+        note="Campeonato fictício para ensaiar a página. Nada foi publicado. Inscrição, chaves e placar acontecem só na demonstração deste navegador."
+        share={<EventShareButton title={event.title} />}
+        actions={<PublicHeroLink href="/eventos#experimentar-demo">Experimentar sem cadastro</PublicHeroLink>}
+      />
+      <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-8 lg:px-12 xl:px-20">
+        <p className="font-mc-interface text-[11px] font-semibold uppercase tracking-[0.18em] text-mc-text-secondary">Status publicado</p>
+        <h2 className={`mt-3 max-w-3xl ${sectionTitle}`}>Sem inscrição, sem chaves e sem cobrança.</h2>
+        <p className="mt-5 max-w-2xl font-mc-interface text-base leading-7 text-mc-text-secondary">
+          Neste ensaio o campeonato está publicado e as inscrições ainda não abriram. No evento real, esta mesma tela mostra os prazos, o valor, as categorias e os documentos gravados pelo organizador.
+        </p>
+      </section>
+      <ModernFooter />
+    </main>
+  )
+}
+
 export default async function EventPage({ params }: { params: { id: string } }) {
-  if (params.id.startsWith('preview-')) notFound()
+  if (params.id.startsWith('preview-')) {
+    const preview = getDevelopmentPreviewEvent(params.id)
+    if (!preview) notFound()
+    return <PreviewChampionship event={preview} />
+  }
 
   noStore()
   const supabase = createClient()

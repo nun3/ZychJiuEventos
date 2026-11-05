@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Space_Grotesk } from 'next/font/google'
+import { SiteScrollChoreography } from '@/components/motion/SiteScrollChoreography'
 import './globals.css'
 
 // Keep legacy weights available while pages migrate independently.
@@ -18,7 +19,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={`${inter.variable} ${spaceGrotesk.variable}`}>
-      <body>{children}</body>
+      <body>
+        <SiteScrollChoreography>{children}</SiteScrollChoreography>
+      </body>
     </html>
   )
 }
