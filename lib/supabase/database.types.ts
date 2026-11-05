@@ -1090,6 +1090,16 @@ export type Database = {
           imagem_cartaz_url: string | null
           informacoes: string | null
           local: string
+          local_bairro: string | null
+          local_cep: string | null
+          local_cidade: string | null
+          local_complemento: string | null
+          local_latitude: number | null
+          local_logradouro: string | null
+          local_longitude: number | null
+          local_nome: string | null
+          local_numero: string | null
+          local_uf: string | null
           nome: string
           organization_id: string
           regulamento_url: string | null
@@ -1110,6 +1120,16 @@ export type Database = {
           imagem_cartaz_url?: string | null
           informacoes?: string | null
           local: string
+          local_bairro?: string | null
+          local_cep?: string | null
+          local_cidade?: string | null
+          local_complemento?: string | null
+          local_latitude?: number | null
+          local_logradouro?: string | null
+          local_longitude?: number | null
+          local_nome?: string | null
+          local_numero?: string | null
+          local_uf?: string | null
           nome: string
           organization_id: string
           regulamento_url?: string | null
@@ -1130,6 +1150,16 @@ export type Database = {
           imagem_cartaz_url?: string | null
           informacoes?: string | null
           local?: string
+          local_bairro?: string | null
+          local_cep?: string | null
+          local_cidade?: string | null
+          local_complemento?: string | null
+          local_latitude?: number | null
+          local_logradouro?: string | null
+          local_longitude?: number | null
+          local_nome?: string | null
+          local_numero?: string | null
+          local_uf?: string | null
           nome?: string
           organization_id?: string
           regulamento_url?: string | null

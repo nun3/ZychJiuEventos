@@ -5,13 +5,11 @@ import ModernNavbar from '@/components/ModernNavbar'
 import ModernFooter from '@/components/ModernFooter'
 import { EventsCatalog } from '@/components/events/EventsCatalog'
 import { EventsFeaturedStage } from '@/components/events/EventsFeaturedStage'
-import { InteractiveChampionshipDemo } from '@/components/home-cinematic/InteractiveChampionshipDemo'
-import { getCinematicPreviewEvents } from '@/lib/home/cinematic-preview-events'
 import { getPublicEvents } from '@/lib/events/public-events'
 
 export const metadata: Metadata = {
   title: 'Eventos | Meu Camp',
-  description: 'Calendário público de campeonatos do MEU CAMP e demonstração interativa sem cadastro.',
+  description: 'Calendário público de campeonatos do MEU CAMP.',
 }
 
 export default async function EventsPage({
@@ -21,17 +19,14 @@ export default async function EventsPage({
 }) {
   const rawQuery = searchParams?.q
   const initialSearch = (Array.isArray(rawQuery) ? rawQuery[0] : rawQuery)?.trim() || ''
-  const published = await getPublicEvents()
-  const preview = published.length === 0 && process.env.NODE_ENV === 'development'
-  const events = preview ? getCinematicPreviewEvents() : published
+  const events = await getPublicEvents()
 
   return (
     <main id="conteudo-principal" className="min-h-screen overflow-x-clip bg-mc-background pt-16">
       <ModernNavbar />
 
       <EventsFeaturedStage events={events} />
-      <EventsCatalog events={events} initialSearch={initialSearch} preview={preview} />
-      <InteractiveChampionshipDemo />
+      <EventsCatalog events={events} initialSearch={initialSearch} />
 
       <section className="border-t border-mc-border bg-mc-surface py-12">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 sm:px-8 lg:px-12 xl:px-20">

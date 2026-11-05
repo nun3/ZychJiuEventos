@@ -21,7 +21,7 @@ export type EventGuidanceStatus =
   | 'cancelado'
   | string
 
-export type EventGuidanceStepState = 'done' | 'current' | 'upcoming'
+export type EventGuidanceStepState = 'done' | 'current' | 'upcoming' | 'blocked'
 
 export type EventGuidanceStep = {
   id: EventGuidanceStepId
@@ -70,6 +70,26 @@ const STATUS_RANK: Record<string, number> = {
   cancelado: -1,
 }
 
+/** Entrada única da lista: o módulo operacional da fase real, sem atalho para todos os módulos. */
+export function adminEventContinuePath(eventId: string, status: string) {
+  const base = `/admin/eventos/${eventId}`
+  switch (status) {
+    case 'rascunho':
+      return `${base}/editar`
+    case 'pagamento':
+      return `${base}/financeiro`
+    case 'checagem':
+      return `${base}/checagem`
+    case 'chaves':
+      return `${base}/chaves`
+    case 'em_andamento':
+    case 'concluido':
+      return `${base}/resultados`
+    default:
+      return `${base}/configuracao`
+  }
+}
+
 export function eventStatusRank(status: EventGuidanceStatus) {
   return STATUS_RANK[status] ?? -1
 }
@@ -100,7 +120,31 @@ function isStepComplete(id: EventGuidanceStepId, facts: EventGuidanceFacts) {
   return false
 }
 
+/** Progresso visual a partir da fase real. Chaves também olha chave e programação publicadas. */
+export function guidanceStepsForPhase(
+  status: string,
+  flags?: { hasPublishedBracket?: boolean; schedulePublished?: boolean },
+): EventGuidanceStep[] {
+  return buildEventGuidanceSteps({
+    eventId: '',
+    status,
+    checkingLocked: false,
+    hasCategory: false,
+    efetivadasCount: 0,
+    pendingRequestsCount: 0,
+    hasPublishedBracket: Boolean(flags?.hasPublishedBracket),
+    schedulePublished: Boolean(flags?.schedulePublished),
+  })
+}
+
 export function buildEventGuidanceSteps(facts: EventGuidanceFacts): EventGuidanceStep[] {
+  if (facts.status === 'cancelado') {
+    return EVENT_GUIDANCE_STEPS.map((id) => ({
+      id,
+      label: EVENT_GUIDANCE_LABELS[id],
+      state: 'blocked',
+    }))
+  }
   const current = currentGuidanceStep(facts)
   return EVENT_GUIDANCE_STEPS.map((id) => {
     let state: EventGuidanceStepState = 'upcoming'

@@ -8,6 +8,82 @@ import {
   resolveOnboardingProfile,
   type FirstStepsChecklist,
 } from './checklists'
+import { guidanceStepsForPhase, type EventGuidanceStep } from './event-guidance'
+
+export type OrganizerChampionship = {
+  id: string
+  nome: string
+  data_evento: string
+  local: string
+  status: string
+  imagem_cartaz_url: string | null
+  steps: EventGuidanceStep[]
+}
+
+export type OrganizerEventRow = {
+  id: string
+  nome: string
+  data_evento: string
+  local: string
+  status: string
+  timezone: string
+}
+
+export type OrganizerEventHub = {
+  cards: OrganizerChampionship[]
+  rows: OrganizerEventRow[]
+  error: boolean
+}
+
+/** Cards ativos e a tabela completa, com a mesma fase da administração do evento. */
+export async function loadOrganizerEventHub(organizationId: string): Promise<OrganizerEventHub> {
+  const supabase = createClient()
+  const { data: events, error } = await supabase
+    .from('events')
+    .select('id, nome, data_evento, local, status, timezone, imagem_cartaz_url')
+    .eq('organization_id', organizationId)
+    .order('data_evento', { ascending: true })
+
+  if (error) return { cards: [], rows: [], error: true }
+
+  const rows = events || []
+  const chavesIds = rows.filter((event) => event.status === 'chaves').map((event) => event.id)
+  const publishedBrackets = new Set<string>()
+  const publishedSchedules = new Set<string>()
+
+  if (chavesIds.length) {
+    const [{ data: brackets }, { data: schedules }] = await Promise.all([
+      supabase.from('category_brackets').select('event_id').in('event_id', chavesIds).in('status', ['publicada', 'em_andamento', 'concluida']),
+      supabase.from('event_schedules').select('event_id').in('event_id', chavesIds).eq('status', 'publicada'),
+    ])
+    for (const bracket of brackets || []) publishedBrackets.add(bracket.event_id)
+    for (const schedule of schedules || []) publishedSchedules.add(schedule.event_id)
+  }
+
+  return {
+    error: false,
+    rows: rows.map((event) => ({
+      id: event.id,
+      nome: event.nome,
+      data_evento: event.data_evento,
+      local: event.local,
+      status: event.status,
+      timezone: event.timezone,
+    })),
+    cards: rows.filter((event) => event.status !== 'cancelado').map((event) => ({
+      id: event.id,
+      nome: event.nome,
+      data_evento: event.data_evento,
+      local: event.local,
+      status: event.status,
+      imagem_cartaz_url: event.imagem_cartaz_url,
+      steps: guidanceStepsForPhase(event.status, {
+        hasPublishedBracket: publishedBrackets.has(event.id),
+        schedulePublished: publishedSchedules.has(event.id),
+      }),
+    })),
+  }
+}
 
 export async function loadDashboardChecklist(actor: DashboardActor | null, hasPublishedEvent: boolean): Promise<FirstStepsChecklist | null> {
   if (!actor) return null

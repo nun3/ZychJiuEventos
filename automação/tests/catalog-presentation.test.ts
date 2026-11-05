@@ -1,9 +1,29 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { featuredActions, rowActions } from '../../lib/events/catalog-presentation'
-import { getCinematicPreviewEvents, getDevelopmentPreviewEvent } from '../../lib/home/cinematic-preview-events'
+import {
+  featuredActions,
+  isPreviewCatalogEvent,
+  rowActions,
+} from '../../lib/events/catalog-presentation'
 
-const preview = getCinematicPreviewEvents()[0]
+const preview = {
+  id: 'preview-ensaio-rc',
+  status: 'publicado',
+  dateObj: '2030-01-15',
+  daysLeft: 30,
+}
+
+const real = {
+  id: '11111111-1111-1111-1111-111111111111',
+  status: 'publicado',
+  dateObj: '2030-01-15',
+  daysLeft: 30,
+}
+
+test('ids preview- são reconhecidos sem depender de módulos cinematográficos', () => {
+  assert.equal(isPreviewCatalogEvent(preview), true)
+  assert.equal(isPreviewCatalogEvent(real), false)
+})
 
 test('detalhes do ensaio abre a página do campeonato fictício', () => {
   const [rehearsal, details] = rowActions(preview)
@@ -21,7 +41,6 @@ test('o destaque do ensaio leva ao mesmo campeonato', () => {
 })
 
 test('evento publicado de verdade não usa a página fictícia', () => {
-  const real = { ...preview, id: '11111111-1111-1111-1111-111111111111', status: 'publicado' }
   const [primary, secondary] = rowActions(real)
   assert.equal(primary.label, 'Ver campeonato')
   assert.equal(primary.href, `/eventos/${real.id}`)
@@ -33,11 +52,4 @@ test('evento publicado de verdade não usa a página fictícia', () => {
   assert.equal(join.href, `/eventos/${open.id}/inscricao/cadastrar-atleta`)
   assert.equal(details.label, 'Detalhes')
   assert.equal(details.href, `/eventos/${open.id}`)
-})
-
-test('página fictícia só existe em development', () => {
-  assert.equal(getDevelopmentPreviewEvent(preview.id, 'production'), null)
-  assert.equal(getDevelopmentPreviewEvent(preview.id, 'test'), null)
-  assert.equal(getDevelopmentPreviewEvent('evento-real', 'development'), null)
-  assert.equal(getDevelopmentPreviewEvent(preview.id, 'development')?.title, preview.title)
 })

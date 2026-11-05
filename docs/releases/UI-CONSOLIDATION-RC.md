@@ -1,89 +1,72 @@
 # MEU CAMP — UI Consolidation Release Candidate
 
-**Status:** manifesto com commits locais. Sem deploy. Sem push.  
+**Status:** pacote autossuficiente após hotfix de empacotamento. Sem deploy. Sem push.  
 **Data:** 5 de novembro de 2026  
-**Veredito:** **UI RELEASE CANDIDATE — BLOCKED**
+**Veredito:** **UI RELEASE CANDIDATE — READY** (sujeito a smoke G5 do lote de packaging)
 
 Referência de produção (rollback funcional): `FUNCTIONAL-RELEASE` / `dpl_5bo3LahBCroVETNjbZ4fAExxn2YA` / `5b465409ac594945aad9bb8e81f9061e1612167e`.  
-Branch: `wip/local-pre-reconcile-20261019`.
+Branch de packaging: `hotfix/ui-rc-packaging` · base anterior: `f7e78b0`.
 
-## Causa do bloqueio
+## Causa raiz (bloqueio de produção)
 
-O E2E autenticado falha por **configuração de ambiente**, não por regressão do fluxo de login do produto.
+O RC `f7e78b0` importava módulos e exports presentes apenas no working tree sujo:
 
-Evidência (Playwright local, sem imprimir segredos):
+1. Home cinematográfica experimental (`InteractiveChampionshipDemo`, `cinematic-preview-events`) — **excluída**.
+2. `DateTimeField` — UI estável usada por `EditEventForm` — **incluída**.
+3. Hub de organizador (`loadOrganizerEventHub`, tipos, `adminEventContinuePath`, `guidanceStepsForPhase`) — **incluídos**.
+4. `EventProgress` compact + `Coachmark` sem `userId` obrigatório — APIs já consumidas pelo hub/shell RC — **incluídos**.
+5. Colunas `local_*` em `database.types` — tipos alinhados ao select público já commitado — **incluídos**.
 
-1. CSS/JS hidratados (`body` com fundo `mc-background`).
-2. Submit via Enter dispara `POST /auth/v1/token` no projeto `zigjiu`.
-3. Resposta **HTTP 400**.
-4. UI exibe **“E-mail ou senha inválidos”** (`#admin-auth-error`).
-5. Nenhum cookie de sessão é gravado.
+O READY anterior ao hotfix foi invalidado porque os testes rodaram sobre árvore dirty, não sobre o commit isolado.
 
-Correção necessária: atualizar `E2E_OWNER_PASSWORD` (e validar o e-mail) em `automação/.env.e2e` contra a conta autorizada no Sandbox. **Não** alterar autenticação do produto para contornar o 400.
+## Grafo de dependências
 
-Ajustes de produto feitos neste gate (acessibilidade, sem mudar regra de auth):
+```
+app/eventos/page.tsx
+  ├─ EventsFeaturedStage / EventsCatalog (estável, RC)
+  └─ ✗ home-cinematic / cinematic-preview  → REMOVIDO
 
-- `label` da senha aponta para o input.
-- Erro recebe foco (`#admin-auth-error`).
-- Submit com `scroll-mt-24` e `id="admin-login-submit"`.
+app/eventos/[id]/page.tsx
+  ├─ findPublicReleaseEvent + local_* (estável)
+  └─ ✗ getDevelopmentPreviewEvent → REMOVIDO (preview-* → notFound)
 
-Sobreposição da navbar no clique Playwright: falha de harness quando o botão é rolado sob o `header` fixo; Enter e `#admin-login-submit` evitam o problema.
+EditEventForm
+  └─ DateTimeField → INCLUÍDO (estável)
 
-## Commits do RC (locais, sem push)
+EventsHub / admin/eventos/page
+  ├─ loadOrganizerEventHub + tipos → INCLUÍDO
+  ├─ adminEventContinuePath / guidanceStepsForPhase → INCLUÍDO
+  └─ EventProgress(variant=compact) → INCLUÍDO
+
+EventAdminShell
+  └─ Coachmark({ id }) → INCLUÍDO (API alinhada ao shell)
+
+public-access select local_*
+  └─ database.types events.local_* → INCLUÍDO
+```
+
+## Commits do RC
 
 | Lote | Hash | Mensagem |
 | --- | --- | --- |
-| 1 Fundamentos | `c9f2947` | `refactor(ui): tornar StatusBadge canônico com marca quadrada` |
-| 2 Navegação | `70f9d61` | `refactor(nav): alinhar barras pública, interna e administrativa` |
-| 3 Telas públicas | `ea60487` | `refactor(public): consolidar calendário e interior do campeonato` |
-| 4 Admin + LIVE | `28a537d` | `refactor(admin): padronizar superfícies operacionais e shell LIVE` |
-| 5 Docs/testes | `7d78556` | `docs(ui): registrar consolidação visual e resultados do RC` |
-| 5b Manifesto | `6a259d0` | `docs(ui): preencher hash do lote de documentação no manifesto RC` |
-| 5c Tabela | `b6aaadd` | `docs(ui): corrigir tabela de hashes do manifesto RC` |
+| 1–5 + docs | `c9f2947`…`f7e78b0` | consolidação visual |
+| 6 Packaging | *(preenchido após commit)* | hotfix de empacotamento |
 
-HEAD do RC: ver `git rev-parse --short HEAD` nesta branch após os commits acima (série `c9f2947`…docs). Base anterior: `0b95803`.
+## Excluído (permanece fora do pacote)
 
-## O que entrou
+- `components/home-cinematic/**`
+- `lib/home/cinematic-preview-events.ts`
+- home cinematográfica / docs HOME-*
+- alterações de webhook/Asaas/pagamentos
+- demais dirty tree (~100+ arquivos)
 
-- Gramática pública de `/eventos` e interior do campeonato.
-- Nav de 6 itens (Horário público / Programação admin).
-- `StatusBadge` canônico (quadrado + texto).
-- Hub e miolo administrativo sob `(operacao)`.
-- Shell LIVE especializado (necessário ao layout admin; regras esportivas preservadas).
-- Docs de design system e manifesto.
-
-## O que ficou de fora (working tree residual)
-
-- Home cinematográfica (`app/HomeClient.tsx`, `components/home-cinematic/**`, `docs/design-system/HOME-*`).
-- Pagamentos/webhook (`app/api/payments/webhook`, settlement smokes, dashboard checkout).
-- Evidências históricas amplas e `tools/` (harness local).
-- Demais alterações de dashboard/perfil/onboarding não listadas nos commits acima.
-
-## Testes
+## Testes no checkout de packaging (pré-smoke)
 
 | Verificação | Resultado |
 | --- | --- |
 | TypeScript | PASS |
-| Playwright público 320–1440 (lote anterior + pós-restart) | PASS |
-| Login autenticado E2E | **BLOCKED** (Auth 400 / credenciais E2E) |
-| Hub → LIVE autenticado | NOT_RUN |
-| `next build` | PASS (lote anterior; reiniciar `next dev` depois) |
-| Full BDD | NOT_RUN |
-| Deploy | NOT_RUN (proibido) |
-
-## Plano de rollback
-
-1. Nada foi publicado: não há promote a reverter.
-2. Para desfazer só o RC local: `git revert` dos hashes `c9f2947..` (ou reset misto **somente** com autorização explícita — não executar reset destrutivo sem pedido).
-3. Produção permanece em `FUNCTIONAL-RELEASE`.
-
-## Riscos residuais
-
-- Credenciais E2E desatualizadas bloqueiam o gate autenticado.
-- Working tree ainda sujo fora do RC.
-- `next build` e `next dev` compartilhando `.next` invalidam chunks; isolar processos.
-- Lote 4 inclui o shell LIVE completo (novo no working tree), não apenas o chip cosmético — dependência de `AdminLayout`/`Operação LIVE`.
-
-## Pronto para publicação?
-
-**Não.** Atualize as credenciais E2E, rode o smoke autenticado (`tools/e2e-isolated/ui-rc-smoke.mjs`) até PASS, confirme build limpo, e só então considere promote.
+| Lint (escopo RC) | PASS |
+| Unitários relevantes (33) | PASS |
+| `next build` | PASS |
+| Smoke público / autenticado | *(G5 em checkout limpo do novo HEAD)* |
+| Deploy / push | NOT_RUN |
