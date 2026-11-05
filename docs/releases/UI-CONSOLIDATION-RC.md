@@ -37,7 +37,7 @@ Sobreposição da navbar no clique Playwright: falha de harness quando o botão 
 | 2 Navegação | `70f9d61` | `refactor(nav): alinhar barras pública, interna e administrativa` |
 | 3 Telas públicas | `ea60487` | `refactor(public): consolidar calendário e interior do campeonato` |
 | 4 Admin + LIVE | `28a537d` | `refactor(admin): padronizar superfícies operacionais e shell LIVE` |
-| 5 Docs/testes | _(este commit)_ | documentação e testes de apresentação |
+| 5 Docs/testes |  |  |
 
 Base anterior ao RC: `0b95803`.
 
