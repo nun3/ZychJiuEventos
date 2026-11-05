@@ -6,20 +6,40 @@ type StatusBadgeVariant = 'neutral' | 'info' | 'success' | 'warning' | 'error'
 export type StatusBadgeProps = HTMLAttributes<HTMLSpanElement> & {
   variant?: StatusBadgeVariant
   icon?: ReactNode
+  onDark?: boolean
 }
 
-const variants: Record<StatusBadgeVariant, string> = {
-  neutral: 'bg-mc-surface-secondary text-mc-text-secondary',
-  info: 'bg-mc-info/10 text-mc-info',
-  success: 'bg-mc-success/10 text-mc-success',
-  warning: 'bg-mc-warning/10 text-mc-warning',
-  error: 'bg-mc-error/10 text-mc-error',
+const marks: Record<StatusBadgeVariant, string> = {
+  neutral: 'bg-mc-text-secondary',
+  info: 'bg-mc-info',
+  success: 'bg-mc-success',
+  warning: 'bg-mc-warning',
+  error: 'bg-mc-error',
 }
 
-export function StatusBadge({ className, variant = 'neutral', icon, children, ...props }: StatusBadgeProps) {
+export function StatusBadge({
+  className,
+  variant = 'neutral',
+  icon,
+  onDark = false,
+  children,
+  ...props
+}: StatusBadgeProps) {
   return (
-    <span {...props} className={cn('inline-flex min-h-6 items-center gap-1.5 rounded-mc-full px-2.5 py-1 font-mc-interface text-xs font-semibold', variants[variant], className)}>
-      {icon && <span aria-hidden="true">{icon}</span>}
+    <span
+      {...props}
+      className={cn(
+        'inline-flex items-center font-mc-interface text-xs font-semibold',
+        onDark ? 'text-white' : 'text-mc-text-primary',
+        className,
+      )}
+    >
+      <span aria-hidden="true" className={cn('mr-2 inline-block h-2 w-2 shrink-0', marks[variant])} />
+      {icon ? (
+        <span aria-hidden="true" className="mr-1.5 inline-flex">
+          {icon}
+        </span>
+      ) : null}
       <span>{children}</span>
     </span>
   )

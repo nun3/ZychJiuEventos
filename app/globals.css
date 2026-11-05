@@ -56,6 +56,8 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  /* clip não cria contêiner de rolagem, preservando position: sticky. */
+  overflow-x: clip;
   font-family: var(--font-inter), 'Inter', sans-serif;
 }
 
@@ -493,4 +495,12 @@ iframe {
   .iframe-container {
     padding-bottom: 100%; /* Proporção quadrada para telas muito pequenas */
   }
+}
+
+/* Operação administrativa: cantos retos da gramática vigente. Não aplica ao LIVE. */
+[data-mc-admin-op] .rounded-mc-small,
+[data-mc-admin-op] .rounded-mc-medium,
+[data-mc-admin-op] .rounded-mc-large,
+[data-mc-admin-op] .rounded-mc-full {
+  border-radius: 0;
 }
