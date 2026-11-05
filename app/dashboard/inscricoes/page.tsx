@@ -12,8 +12,9 @@ import {
   MobileRecordStatus,
   MobileRecordTitle,
 } from '@/components/ui/MobileRecord'
+import { DashboardPageHero } from '@/components/dashboard/DashboardPageHero'
+import { PanelColumns } from '@/components/dashboard/PanelColumns'
 import { PageContainer } from '@/components/ui/PageContainer'
-import { PageHeader } from '@/components/ui/PageHeader'
 import { StatusBadge, type StatusBadgeProps } from '@/components/ui/StatusBadge'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 import { createClient } from '@/lib/supabase/server'
@@ -143,22 +144,26 @@ export default async function RegistrationsPage() {
   ]
 
   return (
-    <main className="py-mc-32 sm:py-mc-48">
-      <PageContainer>
-        <PageHeader title="Inscrições e pagamentos" description="Consulte inscrições dos atletas que você gerencia e reserve o valor para a baixa manual do organizador. Esta tela não emite PIX nem boleto automaticamente." />
+    <main className="py-5 sm:py-7">
+      <PageContainer fluid className="space-y-5">
+        <DashboardPageHero title="Inscrições e pagamentos" description="Consulte inscrições dos atletas que você gerencia e reserve o valor para a baixa manual do organizador. Esta tela não emite PIX nem boleto automaticamente." />
 
-        <div className="mt-mc-32">
-          {error ? <Alert variant="error" role="alert">Não foi possível carregar as inscrições.</Alert> : null}
-          {!error && !rows.length ? (
+        {error ? <Alert variant="error" role="alert">Não foi possível carregar as inscrições.</Alert> : null}
+        {!error && !rows.length ? (
+          <div className="grid items-start gap-5 lg:grid-cols-2">
             <EmptyState
-              icon={<ClipboardList size={34} />}
+              icon={<span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-mc-action/10 text-mc-action"><ClipboardList size={28} /></span>}
               title="Nenhuma inscrição encontrada"
               description="Você ainda não tem inscrição para acompanhar. Sem inscrição não há pagamento, checagem nem solicitação. Escolha um evento publicado e inscreva o atleta."
               action={<Link href="/eventos" className="inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">Ver eventos publicados</Link>}
-              className="rounded-mc-medium border border-mc-border bg-mc-surface"
+              className="rounded-mc-medium border border-mc-border bg-mc-surface px-5 py-8 shadow-mc-subtle"
             />
-          ) : null}
-          {!error && rows.length ? (
+            <PaymentCheckout registrations={checkoutRows} manualOnly={isPaymentsManualOnly()} />
+          </div>
+        ) : null}
+        {!error && rows.length ? (
+          <PanelColumns
+            main={(
             <section aria-labelledby="registrations-list-title">
               <h2 id="registrations-list-title" className="sr-only">Lista de inscrições</h2>
               <DataTable rows={rows} columns={columns} getRowKey={(registration) => registration.id} caption="Inscrições realizadas" className="hidden md:block" tableClassName="min-w-[900px]" />
@@ -197,12 +202,13 @@ export default async function RegistrationsPage() {
                 ))}
               </div>
             </section>
-          ) : null}
-        </div>
+            )}
+            aside={<PaymentCheckout registrations={checkoutRows} manualOnly={isPaymentsManualOnly()} />}
+          />
+        ) : null}
 
-        {!error && <PaymentCheckout registrations={checkoutRows} manualOnly={isPaymentsManualOnly()} />}
-        {!error && !!scopedPayments.length && (
-          <section className="mt-mc-32" aria-labelledby="reserved-payments-title">
+        {!error && scopedPayments.length ? (
+          <section aria-labelledby="reserved-payments-title">
             <h2 id="reserved-payments-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Pagamentos reservados</h2>
             <p className="mt-mc-8 font-mc-interface text-sm text-mc-text-secondary">A reserva guarda o valor. O status muda quando o organizador registra a baixa.</p>
             <ul className="mt-mc-16 divide-y divide-mc-border overflow-hidden rounded-mc-medium border border-mc-border bg-mc-surface">
@@ -227,7 +233,7 @@ export default async function RegistrationsPage() {
               ))}
             </ul>
           </section>
-        )}
+        ) : null}
       </PageContainer>
     </main>
   )
