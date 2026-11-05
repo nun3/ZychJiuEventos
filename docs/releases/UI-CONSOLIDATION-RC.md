@@ -39,8 +39,9 @@ Sobreposição da navbar no clique Playwright: falha de harness quando o botão 
 | 4 Admin + LIVE | `28a537d` | `refactor(admin): padronizar superfícies operacionais e shell LIVE` |
 | 5 Docs/testes | `7d78556` | `docs(ui): registrar consolidação visual e resultados do RC` |
 | 5b Manifesto | `6a259d0` | `docs(ui): preencher hash do lote de documentação no manifesto RC` |
+| 5c Tabela | `b6aaadd` | `docs(ui): corrigir tabela de hashes do manifesto RC` |
 
-HEAD do RC: `6a259d0`. Base anterior: `0b95803`.
+HEAD do RC: `b6aaadd`. Base anterior: `0b95803`.
 
 ## O que entrou
 
