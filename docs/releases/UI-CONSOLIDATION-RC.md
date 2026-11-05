@@ -41,7 +41,7 @@ Sobreposição da navbar no clique Playwright: falha de harness quando o botão 
 | 5b Manifesto | `6a259d0` | `docs(ui): preencher hash do lote de documentação no manifesto RC` |
 | 5c Tabela | `b6aaadd` | `docs(ui): corrigir tabela de hashes do manifesto RC` |
 
-HEAD do RC: `b6aaadd`. Base anterior: `0b95803`.
+HEAD do RC: ver `git rev-parse --short HEAD` nesta branch após os commits acima (série `c9f2947`…docs). Base anterior: `0b95803`.
 
 ## O que entrou
 
