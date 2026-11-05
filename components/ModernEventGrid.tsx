@@ -21,16 +21,27 @@ export interface Event {
   dateObj?: string
   status?: string
   resultsPublished?: boolean
+  href?: string
 }
 
 interface FilterState { eventType: string; sport: string; state: string; search: string; period: string; startDate: string; endDate: string }
+
+function normalizeSearch(value: string) {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+}
+
+export function matchesEventQuery(event: Pick<Event, 'title' | 'location'>, query: string) {
+  const needle = normalizeSearch(query.trim())
+  if (!needle) return true
+  return normalizeSearch(`${event.title} ${event.location}`).includes(needle)
+}
 
 export function filterEvents(events: Event[], filters: FilterState): Event[] {
   return events.filter((event) => {
     if (filters.eventType !== 'Todos' && event.eventType !== filters.eventType) return false
     if (filters.sport !== 'Todas' && event.sport !== filters.sport) return false
     if (filters.state !== 'Todos' && event.state !== filters.state) return false
-    if (filters.search && !event.title.toLowerCase().includes(filters.search.toLowerCase())) return false
+    if (!matchesEventQuery(event, filters.search)) return false
     const eventDate = event.dateObj ? new Date(`${event.dateObj}T12:00:00`) : null
     if (filters.startDate && eventDate && eventDate < new Date(`${filters.startDate}T00:00:00`)) return false
     if (filters.endDate && eventDate && eventDate > new Date(`${filters.endDate}T23:59:59`)) return false
