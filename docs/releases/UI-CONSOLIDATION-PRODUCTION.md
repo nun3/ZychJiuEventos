@@ -9,7 +9,7 @@
 | Item | Valor |
 | --- | --- |
 | Commit candidato anterior | `f7e78b0` (pacote incompleto) |
-| Commit candidato atual | `7ed6bf7` (docs) / packaging `7de09c4` · tree `cf4287b` |
+| Commit candidato atual (pacote) | `7de09c4` · tree `cf4287b` |
 | Domínio | `https://jiu-three.vercel.app` |
 | Deployment em produção | `dpl_5bo3LahBCroVETNjbZ4fAExxn2YA` (inalterado) |
 | Deploy / promote nesta missão | NOT_RUN |
