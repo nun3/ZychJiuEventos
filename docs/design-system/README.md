@@ -155,5 +155,8 @@ Estas regras orientam a Fase 2 e as migracoes seguintes:
 
 - Tokens novos devem ser adicionados com prefixo `mc-`.
 - Alteracoes de identidade devem ser registradas em `docs/design-system/sprint-6.5.md`.
+- A gramatica visual do calendario, do detalhe publico, das chaves e da navegacao interna esta em `docs/design-system/PADRAO-TELAS.md`.
+- Inventario e consolidacao 2026: `COMPONENT-INVENTORY.md`, `UI-CONSISTENCY-AUDIT.md`, `UI-MIGRATION-REPORT.md`, `UI-REGRESSION-RESULTS.md`.
+- Manifesto do release candidate (sem deploy): `docs/releases/UI-CONSOLIDATION-RC.md`.
 - Toda fase deve passar por build, TypeScript, lint e testes proporcionais ao risco.
 - A migracao visual nao pode alterar autenticacao, pagamentos, Supabase, RLS, APIs, webhooks, Server Actions ou queries.

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
+  buildPublicEventSections,
+  getPublicEventNavItems,
   getPublicEventPresentation,
   resolvePhaseTimelineStatus,
   resolvePublicOverviewText,
@@ -122,6 +124,34 @@ test('visão geral preserva texto público com Sandbox e rejeita curadoria da Ho
     'Campeonato estadual com regras oficiais publicadas.',
   )
   assert.equal(resolvePublicOverviewText('   '), null)
+})
+
+test('navegação pública do campeonato segue Informações, Participantes, Chaves, Lutas, Horário e Resultados', () => {
+  const items = getPublicEventNavItems({ eventId: 'evt-1', status: 'publicado', current: 'participantes' })
+  assert.deepEqual(items.map((item) => item.label), ['Informações', 'Participantes', 'Chaves', 'Lutas', 'Horário', 'Resultados'])
+  assert.equal(items.find((item) => item.label === 'Participantes')?.href, '/eventos/evt-1/participantes')
+  assert.equal(items.find((item) => item.label === 'Horário')?.href, '/eventos/evt-1/programacao')
+  assert.equal(items.find((item) => item.label === 'Lutas')?.href, '/eventos/evt-1/lutas')
+  assert.equal(items.find((item) => item.current)?.label, 'Participantes')
+})
+
+test('subseções de Informações seguem o que o evento publica, sem inventar conteúdo', () => {
+  const sections = buildPublicEventSections({
+    hasOverview: true,
+    hasLocation: true,
+    hasValues: true,
+    hasPhases: true,
+    hasCategories: true,
+    hasDocuments: false,
+    hasChecking: false,
+    hasBrackets: true,
+  })
+  assert.deepEqual(
+    sections.map((section) => section.label),
+    ['Sobre o evento', 'Local do evento', 'Valor da inscrição', 'Prazos e fases', 'Categorias', 'Chaves'],
+  )
+  assert.equal(sections.find((section) => section.label === 'Regulamento'), undefined)
+  assert.equal(sections.find((section) => section.label === 'Checagem'), undefined)
 })
 
 test('hero, timeline e aside não se contradizem no pagamento', () => {
