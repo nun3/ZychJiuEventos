@@ -3,8 +3,13 @@
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { getAdministrativeOrganizationContext } from '@/lib/auth/organization-context-server'
 import {
+  buildCategoryVersionRows,
+  categoryInsertCompensation,
+  expandCatalogSelectionToCategoryRows,
   validateCategoryInputAgainstCatalog,
   type CatalogCategoryDefinition,
+  type CatalogSelectionOverrides,
+  type CategoryVersionRow,
 } from '@/lib/events/catalog-category-sync'
 import { parseFightDurationInput } from '@/lib/events/fight-duration'
 import { allowsPublicOrganization } from '@/lib/events/public-organization'
@@ -220,27 +225,98 @@ export async function createCategoryRuleSet(formData: FormData): Promise<EventAc
   if (!validatedCategory.ok) {
     return failure(validatedCategory.message)
   }
+  const categories = buildCategoryVersionRows(validatedCategory.values, catalogCategoryId, duration.value)
+  const split = validatedCategory.values.length === 2
+  return persistNewCategoryVersion(supabase, eventId, nome, categoryCatalogId, categories, (version) =>
+    split
+      ? `Versão ${version} criada com categorias masculina e feminina separadas.`
+      : `Versão ${version} criada com sucesso.`)
+}
+
+/**
+ * Persistência comum de uma nova versão de categorias: cria `category_rule_sets`, insere o
+ * lote de `event_categories` numa sentença só, compensa se o insert falhar e ativa a versão.
+ * Reaproveitada pelo fluxo de categoria customizada e pela seleção múltipla do catálogo (G2) —
+ * para não duplicar a regra de criação/compensação/ativação.
+ */
+async function persistNewCategoryVersion(
+  supabase: ReturnType<typeof createClient>,
+  eventId: string,
+  nome: string,
+  categoryCatalogId: string | null,
+  rows: CategoryVersionRow[],
+  buildSuccessMessage: (version: number, categoriesCount: number) => string,
+): Promise<EventActionResult> {
   const { data: current } = await supabase.from('category_rule_sets').select('versao').eq('event_id', eventId).order('versao', { ascending: false }).limit(1).maybeSingle()
   const { data: rule, error } = await supabase.from('category_rule_sets').insert({ event_id: eventId, nome, versao: (current?.versao || 0) + 1, ativo: false, category_catalog_id: categoryCatalogId }).select('id').single()
   if (error || !rule) return failure('Não foi possível criar a versão de categorias.')
-  const category = {
-    rule_set_id: rule.id,
-    ...validatedCategory.value,
-    ordem: 1,
-    fight_duration_minutes: duration.value,
-    catalog_category_id: catalogCategoryId,
-  }
-  const { error: categoryError } = await supabase.from('event_categories').insert(category)
+  const categories = rows.map((row) => ({ rule_set_id: rule.id, ...row }))
+  const { error: categoryError } = await supabase.from('event_categories').insert(categories)
   if (categoryError) {
-    await supabase.from('category_rule_sets').delete().eq('id', rule.id)
-    return failure('Não foi possível cadastrar a categoria.')
+    const { error: deleteError } = await supabase.from('category_rule_sets').delete().eq('id', rule.id)
+    return failure(categoryInsertCompensation(Boolean(deleteError)).message)
   }
   const { error: deactivateError } = await supabase.from('category_rule_sets').update({ ativo: false }).eq('event_id', eventId).neq('id', rule.id)
   const { error: activateError } = await supabase.from('category_rule_sets').update({ ativo: true }).eq('id', rule.id)
   if (deactivateError || activateError) return failure('A versão foi criada, mas não pôde ser ativada.')
   revalidatePath(`/admin/eventos/${eventId}/configuracao`)
   revalidatePath(`/eventos/${eventId}`)
-  return { ok: true, message: `Versão ${(current?.versao || 0) + 1} criada com sucesso.` }
+  const version = (current?.versao || 0) + 1
+  return { ok: true, message: buildSuccessMessage(version, categories.length) }
+}
+
+/**
+ * Seleção múltipla de definições oficiais do catálogo, numa única versão (G2, lote 5).
+ *
+ * O organizador escolhe quais definições entram — inclusive "todas" — e cada uma vira 1 ou 2
+ * categorias efetivas (`U` expande para `M` e `F`, preservando o `catalog_category_id`). Não
+ * há mistura automática de sexo: cada linha mantém o gênero efetivo que já tinha. Os limites de
+ * idade, faixa, peso e duração vêm do catálogo; só divisões sem teto no catálogo (ADULTO/MASTER
+ * e a classe mais pesada de cada grupo) exigem um teto operacional informado pelo organizador.
+ */
+export async function createCategoryRuleSetFromCatalog(formData: FormData): Promise<EventActionResult> {
+  const eventId = text(formData, 'event_id')
+  const nome = text(formData, 'rule_name')
+  const categoryCatalogId = text(formData, 'category_catalog_id') || null
+  if (!eventId || nome.length < 3) return failure('Informe o nome do conjunto de regras.')
+  if (!categoryCatalogId || !uuidPattern.test(categoryCatalogId)) return failure('Selecione o catálogo oficial de categorias.')
+  const { event } = await editableEvent(eventId)
+  if (!event) return failure('Evento não encontrado ou sem permissão.')
+  const supabase = createClient()
+  const { data: catalog } = await supabase.from('sport_category_catalogs').select('id').eq('id', categoryCatalogId).not('publicado_em', 'is', null).maybeSingle()
+  if (!catalog) return failure('O catálogo esportivo informado não está publicado.')
+
+  const selectedIds = Array.from(new Set(formData.getAll('catalog_category_ids').map((value) => String(value).trim()).filter(Boolean)))
+  if (!selectedIds.length) return failure('Selecione ao menos uma categoria do catálogo.')
+  if (selectedIds.some((id) => !uuidPattern.test(id))) return failure('Seleção de categoria do catálogo inválida.')
+
+  const { data: definitions, error: definitionsError } = await supabase
+    .from('sport_category_definitions')
+    .select('id, codigo, nome, divisao_etaria, idade_min, idade_max, genero, faixa_min_ordem, faixa_max_ordem, peso_min_kg, peso_max_kg, ordem')
+    .eq('catalog_id', categoryCatalogId)
+    .in('id', selectedIds)
+  if (definitionsError || !definitions || definitions.length !== selectedIds.length) {
+    return failure('Uma ou mais categorias selecionadas não pertencem ao catálogo.')
+  }
+
+  const overrides: CatalogSelectionOverrides = {}
+  for (const definition of definitions) {
+    const idadeMax = text(formData, `override_idade_max__${definition.id}`)
+    const pesoMax = text(formData, `override_peso_max__${definition.id}`)
+    if (idadeMax || pesoMax) overrides[definition.id] = { idadeMax, pesoMax }
+  }
+
+  const duration = parseFightDurationInput(text(formData, 'fight_duration_minutes'))
+  if (!duration.ok) {
+    return failure('Informe uma duração entre 0,5 e 20 minutos, em passos de 0,5, ou deixe em branco.')
+  }
+
+  const expanded = expandCatalogSelectionToCategoryRows(definitions, overrides, duration.value)
+  if (!expanded.ok) return failure(expanded.message)
+
+  const definitionsCount = definitions.length
+  return persistNewCategoryVersion(supabase, eventId, nome, categoryCatalogId, expanded.rows, (version, categoriesCount) =>
+    `Versão ${version} criada com ${categoriesCount} ${categoriesCount === 1 ? 'categoria efetiva' : 'categorias efetivas'} a partir de ${definitionsCount} ${definitionsCount === 1 ? 'definição selecionada' : 'definições selecionadas'} do catálogo.`)
 }
 
 const durationErrors: Record<string, string> = {

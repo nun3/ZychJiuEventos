@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/MobileRecord'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { formatFightDurationLabel, parseFightDurationMinutes } from '@/lib/events/fight-duration'
+import { competitiveGenderLabel } from '@/lib/events/catalog-category-sync'
 import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 import CategoryDurationEditor from './CategoryDurationEditor'
@@ -26,10 +27,7 @@ type CategoryItem = {
 }
 
 function genderLabel(genero: string) {
-  if (genero === 'M') return 'Masculino'
-  if (genero === 'F') return 'Feminino'
-  if (genero === 'U') return 'Unissex (M/F)'
-  return genero
+  return competitiveGenderLabel(genero)
 }
 
 function categoryColumns(eventId: string): Array<DataTableColumn<CategoryItem>> {

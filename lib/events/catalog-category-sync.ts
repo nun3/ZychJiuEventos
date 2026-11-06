@@ -62,7 +62,7 @@ export function deriveCategoryFormStateFromCatalog(
   return {
     catalogCategoryId: definition.id,
     categoryName: shouldSetAutoName ? autoName : currentCategoryName,
-    genero: definition.genero,
+    genero: definition.genero === 'U' ? '' : definition.genero,
     idadeMin: String(definition.idade_min),
     idadeMax: definition.idade_max == null ? '' : String(definition.idade_max),
     faixaMin: String(definition.faixa_min_ordem),
@@ -85,7 +85,7 @@ export type CategoryValidationInput = {
 
 export type ValidatedCategoryPayload = {
   nome: string
-  genero: 'M' | 'F' | 'U'
+  genero: 'M' | 'F'
   idade_min: number
   idade_max: number
   faixa_min_ordem: number
@@ -94,17 +94,63 @@ export type ValidatedCategoryPayload = {
   peso_max_kg: number
 }
 
+export type CategoryVersionRow = ValidatedCategoryPayload & {
+  catalog_category_id: string | null
+  ordem: number
+  fight_duration_minutes: number | null
+}
+
+/** Uma definição compartilhada vira um único lote. O insert desse lote é uma sentença só. */
+export function buildCategoryVersionRows(
+  values: ValidatedCategoryPayload[],
+  catalogCategoryId: string | null,
+  fightDurationMinutes: number | null,
+): CategoryVersionRow[] {
+  return values.map((value) => ({
+    ...value,
+    ordem: 1,
+    fight_duration_minutes: fightDurationMinutes,
+    catalog_category_id: catalogCategoryId,
+  }))
+}
+
+export function categoryInsertCompensation(deleteFailed: boolean) {
+  if (deleteFailed) {
+    return {
+      compensated: false,
+      message: 'Não foi possível cadastrar as categorias. A versão vazia pode ter permanecido inativa.',
+    }
+  }
+  return {
+    compensated: true,
+    message: 'Não foi possível cadastrar as categorias.',
+  }
+}
+
+export function competitiveGenderLabel(genero: string) {
+  if (genero === 'M') return 'Masculino'
+  if (genero === 'F') return 'Feminino'
+  if (genero === 'U') return 'Parâmetros compartilhados'
+  return genero
+}
+
+export function effectiveCategoryName(base: string, genero: 'M' | 'F') {
+  const label = competitiveGenderLabel(genero)
+  return base.toLocaleLowerCase('pt-BR').includes(label.toLocaleLowerCase('pt-BR')) ? base : `${base} ${label}`
+}
+
 export function validateCategoryInputAgainstCatalog(
   input: CategoryValidationInput,
   definition: CatalogCategoryDefinition | null,
-): { ok: true; value: ValidatedCategoryPayload } | { ok: false; message: string } {
+): { ok: true; values: ValidatedCategoryPayload[] } | { ok: false; message: string } {
   const nome = input.categoryName.trim()
   const genero = input.genero.trim().toUpperCase()
+  const sharedDefinition = definition?.genero.trim().toUpperCase() === 'U'
   if (!nome) {
     return { ok: false, message: 'Informe o nome da categoria.' }
   }
-  if (genero !== 'M' && genero !== 'F' && genero !== 'U') {
-    return { ok: false, message: 'Selecione um gênero válido para a categoria.' }
+  if (!sharedDefinition && genero !== 'M' && genero !== 'F') {
+    return { ok: false, message: 'Selecione masculino ou feminino. Uma definição compartilhada não vira categoria mista.' }
   }
 
   const rawFields = [
@@ -147,7 +193,7 @@ export function validateCategoryInputAgainstCatalog(
 
   if (definition) {
     const defGender = definition.genero.trim().toUpperCase()
-    if (genero !== defGender) {
+    if (!sharedDefinition && genero !== defGender) {
       return {
         ok: false,
         message: 'O gênero informado não corresponde à categoria do catálogo selecionada.',
@@ -195,17 +241,122 @@ export function validateCategoryInputAgainstCatalog(
     }
   }
 
+  const limits = {
+    idade_min: idadeMin,
+    idade_max: idadeMax,
+    faixa_min_ordem: faixaMin,
+    faixa_max_ordem: faixaMax,
+    peso_min_kg: Math.round(pesoMin * 100) / 100,
+    peso_max_kg: Math.round(pesoMax * 100) / 100,
+  }
+  if (sharedDefinition) {
+    const values: ValidatedCategoryPayload[] = (['M', 'F'] as const).map((effectiveGender) => ({
+      nome: effectiveCategoryName(nome, effectiveGender),
+      genero: effectiveGender,
+      ...limits,
+    }))
+    if (values[0].nome === values[1].nome) {
+      return { ok: false, message: 'Informe um nome que distinga as categorias masculina e feminina.' }
+    }
+    return { ok: true, values }
+  }
+
   return {
     ok: true,
-    value: {
-      nome,
-      genero: genero as 'M' | 'F' | 'U',
-      idade_min: idadeMin,
-      idade_max: idadeMax,
-      faixa_min_ordem: faixaMin,
-      faixa_max_ordem: faixaMax,
-      peso_min_kg: Math.round(pesoMin * 100) / 100,
-      peso_max_kg: Math.round(pesoMax * 100) / 100,
-    },
+    values: [{ nome, genero: genero as 'M' | 'F', ...limits }],
   }
+}
+
+/**
+ * Seleção múltipla de definições oficiais do catálogo (G2, lote 5 — montagem da tabela).
+ *
+ * Cada definição selecionada usa os limites do catálogo tal como estão: idade, faixa e peso
+ * não são reescritos. Uma definição `U` ainda gera duas categorias efetivas, `M` e `F`, com o
+ * mesmo `catalog_category_id` — a decisão de separar chaves por sexo não muda aqui. Definições
+ * `M` ou `F` geram uma única categoria. O lote inteiro vira um único array para inserção em
+ * uma sentença só, preservando a garantia de "tudo ou nada" que `buildCategoryVersionRows` já
+ * tinha para uma definição.
+ */
+export type CatalogSelectionOverride = { idadeMax?: string; pesoMax?: string }
+export type CatalogSelectionOverrides = Record<string, CatalogSelectionOverride>
+
+/** Uma definição ADULTO/MASTER (idade_max nula) ou a classe mais pesada de um grupo (peso_max_kg nulo) não tem teto no catálogo. */
+export function definitionNeedsOverride(definition: CatalogCategoryDefinition): { idade: boolean; peso: boolean } {
+  return { idade: definition.idade_max == null, peso: definition.peso_max_kg == null }
+}
+
+export function expandCatalogSelectionToCategoryRows(
+  definitions: CatalogCategoryDefinition[],
+  overrides: CatalogSelectionOverrides,
+  fightDurationMinutes: number | null,
+): { ok: true; rows: CategoryVersionRow[] } | { ok: false; message: string } {
+  if (!definitions.length) {
+    return { ok: false, message: 'Selecione ao menos uma categoria do catálogo.' }
+  }
+
+  const rows: CategoryVersionRow[] = []
+  const seenNames = new Set<string>()
+
+  for (const definition of definitions) {
+    const genero = definition.genero.trim().toUpperCase()
+    const baseName = formatCatalogCategoryDefaultName(definition)
+
+    let idadeMax = definition.idade_max
+    if (idadeMax == null) {
+      const raw = overrides[definition.id]?.idadeMax?.trim() || ''
+      const parsed = Number(raw)
+      if (!raw || !Number.isInteger(parsed) || parsed < definition.idade_min) {
+        return {
+          ok: false,
+          message: `Informe a idade máxima para "${baseName}": o catálogo não fixa um teto para esta divisão.`,
+        }
+      }
+      idadeMax = parsed
+    }
+
+    const defPesoMin = Math.round(Number(definition.peso_min_kg) * 100) / 100
+    let pesoMax = definition.peso_max_kg == null ? null : Math.round(Number(definition.peso_max_kg) * 100) / 100
+    if (pesoMax == null) {
+      const raw = overrides[definition.id]?.pesoMax?.trim().replace(',', '.') || ''
+      const parsed = Number(raw)
+      if (!raw || !Number.isFinite(parsed) || parsed <= defPesoMin) {
+        return {
+          ok: false,
+          message: `Informe o peso máximo para "${baseName}": o catálogo não fixa um teto para esta categoria.`,
+        }
+      }
+      pesoMax = Math.round(parsed * 100) / 100
+    }
+
+    const effectiveGenders: Array<'M' | 'F'> = genero === 'U' ? ['M', 'F'] : genero === 'M' || genero === 'F' ? [genero] : []
+    if (!effectiveGenders.length) {
+      return { ok: false, message: `Categoria do catálogo com gênero inválido: "${baseName}".` }
+    }
+
+    for (const effectiveGender of effectiveGenders) {
+      const nome = genero === 'U' ? effectiveCategoryName(baseName, effectiveGender) : baseName
+      if (seenNames.has(nome)) {
+        return {
+          ok: false,
+          message: `Duas categorias selecionadas gerariam o mesmo nome ("${nome}"). Revise a seleção.`,
+        }
+      }
+      seenNames.add(nome)
+      rows.push({
+        nome,
+        genero: effectiveGender,
+        idade_min: definition.idade_min,
+        idade_max: idadeMax,
+        faixa_min_ordem: definition.faixa_min_ordem,
+        faixa_max_ordem: definition.faixa_max_ordem,
+        peso_min_kg: defPesoMin,
+        peso_max_kg: pesoMax,
+        catalog_category_id: definition.id,
+        ordem: definition.ordem ?? 1,
+        fight_duration_minutes: fightDurationMinutes,
+      })
+    }
+  }
+
+  return { ok: true, rows }
 }

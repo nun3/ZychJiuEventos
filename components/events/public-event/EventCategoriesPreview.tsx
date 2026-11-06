@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { competitiveGenderLabel } from '@/lib/events/catalog-category-sync'
 import { formatFightDurationLabel, parseFightDurationMinutes } from '@/lib/events/fight-duration'
 import type { Category } from '@/lib/categorization'
 import EventCategoryFinder from '@/components/events/public-event/EventCategoryFinder'
@@ -62,7 +63,7 @@ export default function EventCategoriesPreview({
             <li key={category.id} className="border-t border-mc-border pt-mc-12">
               <p className="font-mc-display text-base font-semibold text-mc-text-primary">{category.nome}</p>
               <p className="mt-mc-6 font-mc-interface text-sm text-mc-text-secondary">
-                {category.genero} · {category.idade_min}–{category.idade_max} anos · {category.peso_min_kg}–
+                {competitiveGenderLabel(category.genero)} · {category.idade_min}–{category.idade_max} anos · {category.peso_min_kg}–
                 {category.peso_max_kg} kg
                 {duration ? ` · ${duration}` : ''}
               </p>
