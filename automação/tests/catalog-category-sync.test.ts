@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
+  buildCategoryVersionRows,
+  categoryInsertCompensation,
   deriveCategoryFormStateFromCatalog,
   formatCatalogCategoryDefaultName,
   validateCategoryInputAgainstCatalog,
@@ -56,7 +58,7 @@ test('sincroniza categoria infantil unissex (U) com limites exatos do catálogo'
   const state = deriveCategoryFormStateFromCatalog(preMirimGalo)
   assert.equal(state.catalogCategoryId, preMirimGalo.id)
   assert.equal(state.categoryName, 'PRÉ-MIRIM Galo')
-  assert.equal(state.genero, 'U')
+  assert.equal(state.genero, '')
   assert.equal(state.idadeMin, '4')
   assert.equal(state.idadeMax, '5')
   assert.equal(state.faixaMin, '1')
@@ -150,7 +152,127 @@ test('impede salvamento de combinações inconsistentes ou com limites em branco
   )
   assert.equal(validPreMirim.ok, true)
   if (validPreMirim.ok) {
-    assert.equal(validPreMirim.value.genero, 'U')
-    assert.equal(validPreMirim.value.peso_max_kg, 14.7)
+    assert.deepEqual(validPreMirim.values.map((value) => value.genero), ['M', 'F'])
+    assert.deepEqual(validPreMirim.values.map((value) => value.nome), ['PRÉ-MIRIM Galo Masculino', 'PRÉ-MIRIM Galo Feminino'])
+    assert.equal(validPreMirim.values[0].peso_max_kg, 14.7)
+    assert.equal(validPreMirim.values[1].peso_max_kg, 14.7)
+    assert.equal(validPreMirim.values[0].idade_min, 4)
+    assert.equal(validPreMirim.values[1].idade_max, 5)
+    assert.notEqual(validPreMirim.values[0].nome, validPreMirim.values[1].nome)
   }
+
+  const rejectedMixed = validateCategoryInputAgainstCatalog(
+    {
+      categoryName: 'Categoria avulsa',
+      genero: 'U',
+      idadeMinRaw: '18',
+      idadeMaxRaw: '29',
+      faixaMinRaw: '1',
+      faixaMaxRaw: '1',
+      pesoMinRaw: '0',
+      pesoMaxRaw: '76',
+    },
+    null,
+  )
+  assert.equal(rejectedMixed.ok, false)
+})
+
+const femininoLeve: CatalogCategoryDefinition = {
+  ...adultoMasculinoLeve,
+  id: 'ca7a1001-0000-4000-8000-000000000099',
+  genero: 'F',
+  nome: 'Leve',
+  divisao_etaria: 'ADULTO/MASTER',
+}
+
+function limitsOf(input: {
+  categoryName: string
+  genero: string
+  idadeMinRaw: string
+  idadeMaxRaw: string
+  faixaMinRaw: string
+  faixaMaxRaw: string
+  pesoMinRaw: string
+  pesoMaxRaw: string
+}, definition: CatalogCategoryDefinition | null) {
+  return validateCategoryInputAgainstCatalog(input, definition)
+}
+
+test('definição M cria só a masculina e definição F cria só a feminina', () => {
+  const masculine = limitsOf({
+    categoryName: 'ADULTO/MASTER Masculino Leve',
+    genero: 'M',
+    idadeMinRaw: '18',
+    idadeMaxRaw: '40',
+    faixaMinRaw: '1',
+    faixaMaxRaw: '9',
+    pesoMinRaw: '70.1',
+    pesoMaxRaw: '76',
+  }, adultoMasculinoLeve)
+  assert.equal(masculine.ok, true)
+  if (masculine.ok) assert.deepEqual(masculine.values.map((value) => value.genero), ['M'])
+
+  const feminine = limitsOf({
+    categoryName: 'ADULTO/MASTER Feminino Leve',
+    genero: 'F',
+    idadeMinRaw: '18',
+    idadeMaxRaw: '40',
+    faixaMinRaw: '1',
+    faixaMaxRaw: '9',
+    pesoMinRaw: '70.1',
+    pesoMaxRaw: '76',
+  }, femininoLeve)
+  assert.equal(feminine.ok, true)
+  if (feminine.ok) assert.deepEqual(feminine.values.map((value) => value.genero), ['F'])
+})
+
+test('o lote de U é uma inserção só, com os dois sexos e o mesmo catalog_category_id', () => {
+  const materialized = limitsOf({
+    categoryName: 'PRÉ-MIRIM Galo',
+    genero: '',
+    idadeMinRaw: '4',
+    idadeMaxRaw: '5',
+    faixaMinRaw: '1',
+    faixaMaxRaw: '9',
+    pesoMinRaw: '0',
+    pesoMaxRaw: '14.7',
+  }, preMirimGalo)
+  assert.equal(materialized.ok, true)
+  if (!materialized.ok) return
+  const rows = buildCategoryVersionRows(materialized.values, preMirimGalo.id, 3)
+  assert.equal(rows.length, 2)
+  assert.deepEqual(rows.map((row) => row.genero), ['M', 'F'])
+  assert.equal(rows[0].catalog_category_id, preMirimGalo.id)
+  assert.equal(rows[1].catalog_category_id, rows[0].catalog_category_id)
+  assert.equal(rows[0].peso_max_kg, rows[1].peso_max_kg)
+  assert.equal(rows[0].idade_min, rows[1].idade_min)
+  assert.equal(rows[0].faixa_max_ordem, rows[1].faixa_max_ordem)
+  assert.equal(rows[0].fight_duration_minutes, 3)
+  assert.equal(rows[1].fight_duration_minutes, 3)
+  assert.notEqual(rows[0].nome, rows[1].nome)
+})
+
+test('falha do insert compensa a versão vazia; se o delete falha, a versão pode permanecer', () => {
+  assert.deepEqual(categoryInsertCompensation(false), {
+    compensated: true,
+    message: 'Não foi possível cadastrar as categorias.',
+  })
+  assert.equal(categoryInsertCompensation(true).compensated, false)
+})
+
+test('retry depois de falha recomeça o lote inteiro, sem completar um sexo só', () => {
+  const again = limitsOf({
+    categoryName: 'PRÉ-MIRIM Galo',
+    genero: '',
+    idadeMinRaw: '4',
+    idadeMaxRaw: '5',
+    faixaMinRaw: '1',
+    faixaMaxRaw: '9',
+    pesoMinRaw: '0',
+    pesoMaxRaw: '14.7',
+  }, preMirimGalo)
+  assert.equal(again.ok, true)
+  if (!again.ok) return
+  const retry = buildCategoryVersionRows(again.values, preMirimGalo.id, null)
+  assert.deepEqual(retry.map((row) => row.genero), ['M', 'F'])
 })
