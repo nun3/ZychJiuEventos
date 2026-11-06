@@ -47,3 +47,4 @@ next-env.d.ts
 !.env.e2e.example
 !automação/.env.homologation.example
 .cursor/
+.claude/settings.local.json
