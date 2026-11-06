@@ -17,8 +17,15 @@ export default async function EditEventPage({ params }: { params: { id: string }
     redirect(`/admin/autenticacao?redirectTo=${encodeURIComponent(`/admin/eventos/${params.id}/editar`)}`)
   }
 
+  // Esta página não escolhe uma organização "ativa": o evento (e sua organização) já é fixado
+  // por `params.id`, e `allowsPublicOrganization` + RLS decidem se este usuário pode acessá-lo.
+  // Por isso, uma filiação administrativa ambígua não deve bloquear o acesso aqui — bloquear só
+  // por ambiguidade impediria um operador com múltiplas organizações de editar rascunhos de
+  // qualquer uma delas, mesmo quando o evento pedido é claramente seu.
   const organization = await getAdministrativeOrganizationContext()
-  if (organization.status !== 'resolved') redirect('/dashboard?erro=sem_permissao')
+  if (organization.status !== 'resolved' && organization.reason !== 'ambiguous') {
+    redirect('/dashboard?erro=sem_permissao')
+  }
 
   const actor = await getDashboardActor()
   const { data: event } = await supabase

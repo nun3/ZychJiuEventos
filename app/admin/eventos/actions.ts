@@ -11,6 +11,7 @@ import {
   type CatalogSelectionOverrides,
   type CategoryVersionRow,
 } from '@/lib/events/catalog-category-sync'
+import { assertCategoryVersionEditable } from '@/lib/events/category-rule-set-lifecycle'
 import { parseFightDurationInput } from '@/lib/events/fight-duration'
 import { allowsPublicOrganization } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
@@ -230,6 +231,8 @@ export async function createCategoryRuleSet(formData: FormData): Promise<EventAc
   if (catalogCategoryId && !uuidPattern.test(catalogCategoryId)) return failure('Categoria do catálogo inválida.')
   const { event } = await editableEvent(eventId)
   if (!event) return failure('Evento não encontrado ou sem permissão.')
+  const editability = assertCategoryVersionEditable(event)
+  if (!editability.ok) return failure(editability.message)
   const supabase = createClient()
   if (categoryCatalogId) {
     const { data: catalog } = await supabase.from('sport_category_catalogs').select('id').eq('id', categoryCatalogId).not('publicado_em', 'is', null).maybeSingle()
@@ -298,9 +301,12 @@ async function persistNewCategoryVersion(
     const { error: deleteError } = await supabase.from('category_rule_sets').delete().eq('id', rule.id)
     return failure(categoryInsertCompensation(Boolean(deleteError)).message)
   }
-  const { error: deactivateError } = await supabase.from('category_rule_sets').update({ ativo: false }).eq('event_id', eventId).neq('id', rule.id)
-  const { error: activateError } = await supabase.from('category_rule_sets').update({ ativo: true }).eq('id', rule.id)
-  if (deactivateError || activateError) return failure('A versão foi criada, mas não pôde ser ativada.')
+  // RPC `activate_category_rule_set` faz a troca de versão ativa numa transação só (lock +
+  // desativar as demais + ativar esta) em vez de duas atualizações sequenciais sem transação —
+  // uma falha entre as duas podia deixar o evento sem versão ativa, e duas ativações concorrentes
+  // do mesmo evento podiam intercalar e deixar duas versões ativas ao mesmo tempo.
+  const { error: activateError } = await supabase.rpc('activate_category_rule_set', { p_rule_set_id: rule.id })
+  if (activateError) return failure('A versão foi criada, mas não pôde ser ativada. Os dados enviados não foram perdidos; peça para tentar novamente.')
   revalidatePath(`/admin/eventos/${eventId}/configuracao`)
   revalidatePath(`/eventos/${eventId}`)
   const version = (current?.versao || 0) + 1
@@ -324,6 +330,8 @@ export async function createCategoryRuleSetFromCatalog(formData: FormData): Prom
   if (!categoryCatalogId || !uuidPattern.test(categoryCatalogId)) return failure('Selecione o catálogo oficial de categorias.')
   const { event } = await editableEvent(eventId)
   if (!event) return failure('Evento não encontrado ou sem permissão.')
+  const editability = assertCategoryVersionEditable(event)
+  if (!editability.ok) return failure(editability.message)
   const supabase = createClient()
   const { data: catalog } = await supabase.from('sport_category_catalogs').select('id').eq('id', categoryCatalogId).not('publicado_em', 'is', null).maybeSingle()
   if (!catalog) return failure('O catálogo esportivo informado não está publicado.')

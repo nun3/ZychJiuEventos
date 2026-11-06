@@ -2195,6 +2195,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_category_rule_set: {
+        Args: { p_rule_set_id: string }
+        Returns: undefined
+      }
       apply_suggested_bracket_composition: {
         Args: { target_bracket_id: string }
         Returns: undefined
