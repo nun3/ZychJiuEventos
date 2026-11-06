@@ -10,7 +10,7 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 | Worktree | `/home/nune/Meus Projetos/jiu-event-readiness` |
 | Branch | `integration/event-readiness-20261106` |
 | Candidato funcional validado | `a6dadbb` |
-| HEAD desta atualização | `c270279` |
+| HEAD desta atualização | política MCP (este lote) |
 
 O working tree original de `jiu` não foi modificado neste lote.
 
@@ -51,14 +51,30 @@ Este lote de ambiente não reexecutou essas suítes.
 - Seleção da base Git dos próximos lotes (`b0a32c7` vs este candidato).
 - ~~`createCategoryRuleSet` — troca de versão ativa sem atomicidade, sem proteção contra
   concorrência, sem restrição por estado.~~ Corrigido em 6 nov 2026 (ver rodada abaixo). **Migration
-  ainda não aplicada em `zigjiu`** — a correção só funciona de ponta a ponta depois que
-  `supabase/migrations/202611060001_category_rule_set_atomic_activation.sql` for aplicada e
-  `lib/supabase/database.types.ts` for regenerado.
+  autorizada e ainda não aplicada em `zigjiu`:**
+  `supabase/migrations/202611060001_category_rule_set_atomic_activation.sql`. A correção só
+  funciona de ponta a ponta depois da aplicação e da regeneração de
+  `lib/supabase/database.types.ts`. Não foi aplicada nesta missão de configuração.
 - **Residual, não corrigido nesta rodada (severidade baixa, documentado e aceito):** dependência
   de RLS para autorização em `editableEvent` (sem checagem redundante na aplicação); UI de
   `/admin/eventos/[id]/editar` acessível a `staff`/`finance` por SELECT RLS antes do gate de
   escrita (pré-existente, não é regressão desta rodada); reenvio duplo de criação de versão de
   categorias pode gerar uma versão extra inofensiva (sem idempotency key).
+
+## Rodada de 6 nov 2026 — política MCP Supabase de produção
+
+Missão de configuração. Sem SQL de escrita, sem `apply_migration`, sem deploy e sem push.
+
+O proprietário autorizou o Claude Code a usar o MCP de produção `zigjiu` com `read_only=false`,
+restrito a esse projeto. Consultas de migrations, schema e advisors passam a ser livres neste
+escopo. SQL de escrita e aplicação de migration exigem o checklist de `CLAUDE.md` e aprovação
+humana nas ferramentas `mcp__supabase__execute_sql` e `mcp__supabase__apply_migration`.
+
+A migration `202611060001_category_rule_set_atomic_activation.sql` está autorizada para a
+próxima missão e **não foi aplicada aqui**.
+
+Arquivos deste lote: `CLAUDE.md`, `.claude/settings.json`,
+`.claude/skills/validacao-por-risco/SKILL.md`, `docs/engineering/CURRENT-HANDOFF.md`.
 
 ## Rodada de 6 nov 2026 (missão P0 integrada) — categorias, organizações e preparação de RC
 
@@ -243,20 +259,18 @@ com leitura real do estado atual de banco e Vercel antes de considerar a publica
 
 ## Próxima missão
 
-Decisões que só o proprietário pode tomar, nesta ordem de impacto:
+O Claude Code está preparado para aplicar a migration já autorizada, na sessão seguinte, com
+aprovação humana nas ferramentas de escrita:
 
-1. **Autorizar a aplicação da migration** `202611060001_category_rule_set_atomic_activation.sql`
-   em `zigjiu` (fora do que esta sessão pode fazer sozinha) — sem isso, a correção de categorias
-   não tem efeito em produção.
-2. Decisão de ambiente para homologação com escrita, carga (250/400 atletas) e concorrência real
-   — continua sem isso desde a rodada anterior.
-3. Escolha da linhagem financeira A/B/C.
-4. Manter a regra “cada lote parte de `b0a32c7`” ou passar a trabalhar a partir deste candidato
+1. **Aplicar** `supabase/migrations/202611060001_category_rule_set_atomic_activation.sql` em
+   `zigjiu`, seguindo a política de produção em `CLAUDE.md` (confirmar projeto, revisar o SQL,
+   dependências, backup, validar e registrar). Não aplicada nesta missão de configuração.
+2. Regenerar `lib/supabase/database.types.ts` com `supabase gen types` depois da aplicação.
+3. Smoke test seguro descrito na seção de RC acima, antes de qualquer decisão de publicação.
+4. Decisão de ambiente para homologação com escrita, carga (250/400 atletas) e concorrência real.
+5. Escolha da linhagem financeira A/B/C.
+6. Manter a regra “cada lote parte de `b0a32c7`” ou passar a trabalhar a partir deste candidato
    integrado.
-
-Depois da migration aplicada e dos tipos regenerados (`supabase gen types`), o próximo trabalho
-técnico recomendado é o smoke test seguro descrito na seção de RC acima, antes de qualquer
-decisão de publicação.
 
 Publicação continua bloqueada até: migration aplicada, homologação com escrita, revisão da
 integração Vercel, release candidate com rollback preparado, e aprovação explícita do
@@ -270,6 +284,12 @@ proprietário. Ver "Recomendação GO/NO-GO" na rodada acima.
 - Explore nativo; sem explorador customizado
 - Skill: `.claude/skills/validacao-por-risco/SKILL.md`
 - Permissões de projeto em `.claude/settings.json`
+- MCP `supabase`: local, HTTP, `✔ Connected`, escopo `zigjiu`, `read_only=false`,
+  `features=database,debugging`. Configuração efetiva conferida com `claude mcp get supabase`.
+  Não alterada nesta missão (já estava correta). Sem `bypassPermissions` e sem `skip_elicitations`.
+- Ferramentas autorizadas: `list_migrations`, `execute_sql`, `apply_migration`, `get_advisors`.
+  Leitura (`list_migrations`, `get_advisors`) em `allow`. Escrita (`execute_sql`,
+  `apply_migration`) em `ask`. Regras MCP sem parênteses — a 2.1.319 ignora `mcp__…(…)`.
 
 ## Proposta de atualização do roteiro de economia de tokens
 

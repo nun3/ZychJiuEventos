@@ -15,6 +15,10 @@
       "Read(credentials.json)",
       "Read(~/.ssh/**)"
     ],
+    "allow": [
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__get_advisors"
+    ],
     "ask": [
       "Bash(git push *)",
       "Bash(git push)",
@@ -22,7 +26,9 @@
       "Bash(npx vercel *)",
       "Bash(npx supabase *)",
       "Bash(supabase *)",
-      "mcp__vercel__*"
+      "mcp__vercel__*",
+      "mcp__supabase__execute_sql",
+      "mcp__supabase__apply_migration"
     ],
     "disableBypassPermissionsMode": "disable"
   }

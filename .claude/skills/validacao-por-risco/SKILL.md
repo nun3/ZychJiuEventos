@@ -7,7 +7,8 @@ description: Define as verificações necessárias conforme o tipo de alteraçã
 
 Orienta o agente principal. Não executa comandos remotos automaticamente.
 Não abre `.env*` nem `automação/.env.e2e`.
-Não escreve em produção, não aplica migration e não cobra Asaas sem autorização explícita.
+Não escreve em produção, não aplica migration e não cobra Asaas sem autorização explícita do proprietário.
+Migration autorizada segue a política de produção em `CLAUDE.md` e exige aprovação humana nas ferramentas de escrita.
 
 TypeScript, lint, build e testes cabem ao agente principal.
 O `lot-verifier` só lê diffs e logs já produzidos.

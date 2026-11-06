@@ -26,6 +26,30 @@ Não promover o working tree original de `jiu`.
 Não mexer em `jiu-live`, no stash nem em `homework`.
 
 Permissões em `.claude/settings.json` restringem o Claude Code; não são isolamento absoluto.
+Não habilitar `bypassPermissions` nem `skip_elicitations`.
+
+## MCP Supabase (`zigjiu`)
+
+O Claude Code pode usar o MCP de produção `zigjiu` com `read_only=false`.
+A conexão permanece restrita a esse projeto. Sem outros projetos ou organizações.
+
+Ferramentas autorizadas: `list_migrations`, `execute_sql`, `apply_migration`, `get_advisors`.
+
+Consultas de migrations, schema e advisors são livres dentro deste escopo.
+
+Para SQL de escrita ou `apply_migration`:
+
+1. Confirmar o projeto de destino (`zigjiu`).
+2. Revisar integralmente o SQL.
+3. Verificar dependências e impactos.
+4. Conferir o estado de backup.
+5. Executar somente alterações autorizadas pelo proprietário.
+6. Validar o resultado.
+7. Registrar evidências e riscos.
+
+Não executar migrations indiscriminadamente nem operações destrutivas não autorizadas.
+
+Escrita administrativa (`execute_sql`, `apply_migration`) exige aprovação humana em `.claude/settings.json`.
 
 ## Worktrees
 
