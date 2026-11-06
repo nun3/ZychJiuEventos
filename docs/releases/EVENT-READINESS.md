@@ -425,3 +425,32 @@ reais nunca foi exercitada, por falta de ambiente aprovado pelo proprietário. I
 NO-GO, independentemente do código estar correto. Decisões ainda pendentes do proprietário:
 escolha de ambiente de homologação com escrita, linhagem financeira A/B/C, e base Git dos
 próximos lotes.
+
+---
+
+## 11. Rodada de 6 de novembro de 2026 — tentativa de homologação local isolada (BLOCKED)
+
+Autorização do proprietário: preparar ambiente Supabase local isolado com dados sintéticos,
+executar Playwright E2E real (jornada completa, permissões, concorrência, isolamento entre
+organizações, massa de 250/400 atletas) e publicar automaticamente se GO. Proibido usar dados
+reais, carga em produção ou novas migrations em `zigjiu`.
+
+**Ambiente local: BLOCKED.** `supabase start` exige Docker/Podman para o stack local (Postgres +
+Auth + PostgREST); nenhum dos dois está instalado, e `sudo` exige senha interativa indisponível
+nesta sessão. Único ambiente já configurado (`.env.local`/`automação/.env.e2e`, via link
+simbólico para o working tree original) aponta para o próprio `zigjiu` de produção — usá-lo para
+escrita/carga violaria a própria autorização desta rodada. Registrado como BLOCKED, conforme a
+cláusula de contingência da missão, sem tentativa de contorno (não se instalou Docker sem
+autorização explícita, não se usaram mocks como substituto de E2E real).
+
+**Consequência direta:** o item obrigatório "testes críticos E2E com persistência PASS" do
+release gate desta missão não pôde ser produzido. **GO/NO-GO: NO-GO. Nenhuma publicação.** Motivo
+idêntico ao da rodada anterior (§10) — a lacuna de ambiente para escrita/carga/concorrência real,
+agora confirmada estruturalmente bloqueada (não apenas "sem decisão", mas sem Docker disponível
+para a rota local).
+
+Reaproveitado sem mudança: `tsc`/lint/build/unitários (229/230) e a migration `202611060001`
+(aplicada e validada na rodada anterior, §10) — nenhum código novo nesta rodada.
+
+**Desbloqueio depende do proprietário:** instalar Docker/Podman nesta máquina (requer senha de
+root), ou autorizar explicitamente uma rota alternativa de homologação com escrita.

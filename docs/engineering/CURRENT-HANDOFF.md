@@ -10,7 +10,7 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 | Worktree | `/home/nune/Meus Projetos/jiu-event-readiness` |
 | Branch | `integration/event-readiness-20261106` |
 | Candidato funcional validado | `a6dadbb` |
-| HEAD desta atualização | `162c370` |
+| HEAD desta atualização | `227dc62` |
 
 O working tree original de `jiu` não foi modificado neste lote.
 
@@ -305,6 +305,48 @@ afetado 0 linhas reais.
 
 Publicação continua bloqueada até: homologação com escrita real, decisão de ambiente, e aprovação
 explícita do proprietário sobre os itens acima. A migration já não é mais bloqueador.
+
+## Rodada de 6 nov 2026 — tentativa de homologação local (BLOCKED, sem publicação)
+
+Missão sob autorização explícita do proprietário: preparar ambiente Supabase local isolado com
+dados sintéticos, executar Playwright E2E real (jornada completa, permissões, concorrência,
+isolamento entre organizações, massa de 250/400 atletas) e publicar automaticamente se GO.
+Orçamento de 45 min; ambiente não ficou pronto em ~2 min — bloqueador é estrutural, não de tempo.
+
+**Ambiente local: BLOCKED.** `supabase start` (stack local do Supabase: Postgres + Auth +
+PostgREST) exige Docker ou Podman; nenhum dos dois está instalado nesta máquina, e `sudo`
+solicita senha interativa que não pode ser fornecida nesta sessão — então não há caminho para
+instalar Docker sem intervenção manual do proprietário. Confirmado também que não existe um
+ambiente local já configurado como alternativa: `.env.local` e `automação/.env.e2e` são links
+simbólicos para o working tree original `jiu` (não abertos, conforme `CLAUDE.md`), e por
+convenção de nomenclatura e pela decisão já registrada ("homologação por segundo projeto Supabase
+cancelada em 6 nov 2026") apontam para o mesmo projeto de produção `zigjiu` — usá-los para escrita
+ou carga seria testar em produção, que esta missão proíbe explicitamente.
+
+**Testes E2E com persistência real: NOT_RUN — BLOCKED BY ENVIRONMENT.** Nenhum teste de jornada
+completa, concorrência, isolamento entre organizações ou massa sintética foi executado nesta
+rodada — não por já estarem cobertos, mas porque não havia onde executá-los sem tocar produção.
+Nenhum teste de interface simulada foi usado como substituto (a própria missão proíbe declarar GO
+assim).
+
+**O que foi reaproveitado/reconfirmado, sem mudança de código:** `tsc`, lint, build e unitários
+229/230 já confirmados na rodada anterior sobre o mesmo HEAD de código (`c270279`); migration
+`202611060001` já aplicada e validada na rodada anterior.
+
+**Preservado, sem alteração:** working tree original `jiu` intocado; nenhuma escrita em
+produção além da migration já registrada; nenhum projeto Supabase novo criado; nenhum dado
+pessoal copiado.
+
+**GO/NO-GO: NO-GO. Nenhuma publicação na Vercel foi realizada.** "Testes críticos E2E com
+persistência PASS" é item obrigatório do release gate desta missão e está BLOCKED, não PASS —
+isso por si só impede GO, independentemente dos demais itens estarem corretos.
+
+**Próximo passo real para desbloquear:** o proprietário precisa decidir e executar uma de duas
+rotas — (a) instalar Docker/Podman nesta máquina (requer senha de root, fora do alcance desta
+sessão), ou (b) autorizar explicitamente um ambiente alternativo (ex.: Supabase local via outro
+mecanismo, ou uma janela de homologação controlada em `zigjiu` com dados sintéticos e critérios de
+limpeza). Sem uma dessas decisões, a lacuna de "jornada esportiva com escrita/carga/concorrência
+real" persistirá em toda rodada futura, como já ocorreu em três rodadas consecutivas.
 
 ## Ambiente Claude Code (este lote)
 
