@@ -24,14 +24,18 @@ export default function PasswordRecoveryPage() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (loading) return
     setLoading(true)
     setExpired(false)
     const email = String(new FormData(event.currentTarget).get('email') || '').trim()
-    await createClient().auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?redirectTo=/atualizar-senha`,
-    })
-    setMessage('Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.')
-    setLoading(false)
+    try {
+      await createClient().auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?redirectTo=/atualizar-senha`,
+      })
+    } finally {
+      setMessage('Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.')
+      setLoading(false)
+    }
   }
 
   return (
@@ -50,7 +54,7 @@ export default function PasswordRecoveryPage() {
             <div className="p-mc-24 sm:p-mc-32 lg:p-mc-48">
               {expired ? <Alert variant="warning" role="status" className="mb-mc-24">Esse link expirou ou já foi utilizado. Solicite um novo.</Alert> : null}
               {message ? <Alert variant="success" role="status" className="mb-mc-24">{message}</Alert> : null}
-              <form className="space-y-mc-24" onSubmit={handleSubmit}>
+              <form className="space-y-mc-24" aria-labelledby="recovery-title" onSubmit={handleSubmit}>
                 <FormField id="recovery-email" label="E-mail cadastrado" required>
                   <Input name="email" type="email" required autoComplete="email" placeholder="nome@exemplo.com" />
                 </FormField>
