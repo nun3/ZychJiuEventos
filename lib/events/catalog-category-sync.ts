@@ -134,7 +134,7 @@ export function competitiveGenderLabel(genero: string) {
   return genero
 }
 
-function effectiveCategoryName(base: string, genero: 'M' | 'F') {
+export function effectiveCategoryName(base: string, genero: 'M' | 'F') {
   const label = competitiveGenderLabel(genero)
   return base.toLocaleLowerCase('pt-BR').includes(label.toLocaleLowerCase('pt-BR')) ? base : `${base} ${label}`
 }
@@ -265,4 +265,98 @@ export function validateCategoryInputAgainstCatalog(
     ok: true,
     values: [{ nome, genero: genero as 'M' | 'F', ...limits }],
   }
+}
+
+/**
+ * Seleção múltipla de definições oficiais do catálogo (G2, lote 5 — montagem da tabela).
+ *
+ * Cada definição selecionada usa os limites do catálogo tal como estão: idade, faixa e peso
+ * não são reescritos. Uma definição `U` ainda gera duas categorias efetivas, `M` e `F`, com o
+ * mesmo `catalog_category_id` — a decisão de separar chaves por sexo não muda aqui. Definições
+ * `M` ou `F` geram uma única categoria. O lote inteiro vira um único array para inserção em
+ * uma sentença só, preservando a garantia de "tudo ou nada" que `buildCategoryVersionRows` já
+ * tinha para uma definição.
+ */
+export type CatalogSelectionOverride = { idadeMax?: string; pesoMax?: string }
+export type CatalogSelectionOverrides = Record<string, CatalogSelectionOverride>
+
+/** Uma definição ADULTO/MASTER (idade_max nula) ou a classe mais pesada de um grupo (peso_max_kg nulo) não tem teto no catálogo. */
+export function definitionNeedsOverride(definition: CatalogCategoryDefinition): { idade: boolean; peso: boolean } {
+  return { idade: definition.idade_max == null, peso: definition.peso_max_kg == null }
+}
+
+export function expandCatalogSelectionToCategoryRows(
+  definitions: CatalogCategoryDefinition[],
+  overrides: CatalogSelectionOverrides,
+  fightDurationMinutes: number | null,
+): { ok: true; rows: CategoryVersionRow[] } | { ok: false; message: string } {
+  if (!definitions.length) {
+    return { ok: false, message: 'Selecione ao menos uma categoria do catálogo.' }
+  }
+
+  const rows: CategoryVersionRow[] = []
+  const seenNames = new Set<string>()
+
+  for (const definition of definitions) {
+    const genero = definition.genero.trim().toUpperCase()
+    const baseName = formatCatalogCategoryDefaultName(definition)
+
+    let idadeMax = definition.idade_max
+    if (idadeMax == null) {
+      const raw = overrides[definition.id]?.idadeMax?.trim() || ''
+      const parsed = Number(raw)
+      if (!raw || !Number.isInteger(parsed) || parsed < definition.idade_min) {
+        return {
+          ok: false,
+          message: `Informe a idade máxima para "${baseName}": o catálogo não fixa um teto para esta divisão.`,
+        }
+      }
+      idadeMax = parsed
+    }
+
+    const defPesoMin = Math.round(Number(definition.peso_min_kg) * 100) / 100
+    let pesoMax = definition.peso_max_kg == null ? null : Math.round(Number(definition.peso_max_kg) * 100) / 100
+    if (pesoMax == null) {
+      const raw = overrides[definition.id]?.pesoMax?.trim().replace(',', '.') || ''
+      const parsed = Number(raw)
+      if (!raw || !Number.isFinite(parsed) || parsed <= defPesoMin) {
+        return {
+          ok: false,
+          message: `Informe o peso máximo para "${baseName}": o catálogo não fixa um teto para esta categoria.`,
+        }
+      }
+      pesoMax = Math.round(parsed * 100) / 100
+    }
+
+    const effectiveGenders: Array<'M' | 'F'> = genero === 'U' ? ['M', 'F'] : genero === 'M' || genero === 'F' ? [genero] : []
+    if (!effectiveGenders.length) {
+      return { ok: false, message: `Categoria do catálogo com gênero inválido: "${baseName}".` }
+    }
+
+    for (const effectiveGender of effectiveGenders) {
+      const nome = genero === 'U' ? effectiveCategoryName(baseName, effectiveGender) : baseName
+      if (seenNames.has(nome)) {
+        return {
+          ok: false,
+          message: `Duas categorias selecionadas gerariam o mesmo nome ("${nome}"). Revise a seleção.`,
+        }
+      }
+      seenNames.add(nome)
+      rows.push({
+        nome,
+        genero: effectiveGender,
+        idade_min: definition.idade_min,
+        idade_max: idadeMax,
+        faixa_min_ordem: definition.faixa_min_ordem,
+        faixa_max_ordem: definition.faixa_max_ordem,
+        peso_min_kg: defPesoMin,
+        peso_max_kg: pesoMax,
+        catalog_category_id: definition.id,
+        ordem: definition.ordem ?? 1,
+        fight_duration_minutes: fightDurationMinutes,
+      })
+    }
+  }
+
+  return { ok: true, rows }
 }
