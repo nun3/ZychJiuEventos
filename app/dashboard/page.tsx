@@ -1,197 +1,141 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowRight, Building2, CalendarDays, ClipboardList, MapPin, Plus, UsersRound } from 'lucide-react'
+import { ArrowRight, Building2, CalendarDays, ClipboardList, ExternalLink, HelpCircle, MapPin, Newspaper, UsersRound } from 'lucide-react'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 import { getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
+import { DashboardPageHero } from '@/components/dashboard/DashboardPageHero'
+import { EventCover } from '@/components/dashboard/EventCover'
+import { panelClass, PanelColumns } from '@/components/dashboard/PanelColumns'
 import { Alert } from '@/components/ui/Alert'
-import { Card } from '@/components/ui/Card'
-import { EmptyState } from '@/components/ui/EmptyState'
 import { PageContainer } from '@/components/ui/PageContainer'
-import { PageHeader } from '@/components/ui/PageHeader'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 import { FirstStepsChecklistCard } from '@/components/onboarding/FirstStepsChecklist'
 import { loadDashboardChecklist } from '@/lib/onboarding/dashboard-facts'
+import { adminEventStatusLabel, adminEventStatusVariant } from '@/lib/events/admin-event-presentation'
 
-const formatter = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' })
-const checkingStatuses = ['checagem', 'chaves', 'em_andamento', 'concluido']
+const dateFormat = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' })
+const monthFormat = new Intl.DateTimeFormat('pt-BR', { month: 'short', timeZone: 'UTC' })
+const focus = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2'
 
 export default async function DashboardHome({ searchParams }: { searchParams: { erro?: string } }) {
   const supabase = createClient()
   const actor = await getDashboardActor()
+  if (!actor) redirect('/login?redirectTo=%2Fdashboard')
+  if (actor.needsSportsProfile) redirect('/dashboard/completar-cadastro-esportivo')
+  const accountName = actor.name.trim() || (await supabase.auth.getUser()).data.user?.email?.split('@')[0] || ''
   const scope = getPublicOrganizationScope()
   let events: Array<{ id: string; nome: string; data_evento: string; local: string; status: string; imagem_cartaz_url: string | null }> = []
+  let eventsError = scope.mode === 'blocked'
   if (scope.mode !== 'blocked') {
-    let published = supabase.from('events').select('id, nome, data_evento, local, status, imagem_cartaz_url').neq('status', 'rascunho').neq('status', 'cancelado').order('data_evento')
-    if (scope.mode === 'restricted') published = published.eq('organization_id', scope.organizationId)
-    const { data } = await published
-    events = data || []
+    let query = supabase.from('events').select('id, nome, data_evento, local, status, imagem_cartaz_url').neq('status', 'rascunho').neq('status', 'cancelado').order('data_evento')
+    if (scope.mode === 'restricted') query = query.eq('organization_id', scope.organizationId)
+    const result = await query
+    events = result.data || []
+    eventsError = Boolean(result.error)
   }
-  const isProfessor = Boolean(actor?.isProfessor)
-  const canManageEvents = Boolean(actor?.canManageEvents)
-  const hasSelfAthlete = Boolean(actor?.hasSelfAthlete)
-  if (actor?.needsSportsProfile) {
-    redirect('/dashboard/completar-cadastro-esportivo')
+  let athletesQuery = supabase.from('athletes').select('id', { count: 'exact', head: true })
+  if (scope.mode === 'restricted') athletesQuery = athletesQuery.eq('organization_id', scope.organizationId)
+  const [athletes, organizations, own, managed, checklist] = await Promise.all([
+    scope.mode === 'blocked' ? Promise.resolve({ count: null, error: true }) : athletesQuery,
+    supabase.from('organization_members').select('organization_id', { count: 'exact', head: true }).eq('user_id', actor.userId),
+    supabase.from('athletes').select('id').eq('user_id', actor.userId),
+    supabase.from('athlete_managers').select('athlete_id').eq('manager_id', actor.userId),
+    loadDashboardChecklist(actor, events.length > 0),
+  ])
+  const athleteIds = Array.from(new Set([...(own.data || []).map(item => item.id), ...(managed.data || []).map(item => item.athlete_id)]))
+  let registrations: { count: number | null; error: unknown } = { count: 0, error: null }
+  if (scope.mode === 'blocked' || own.error || managed.error) {
+    registrations = { count: null, error: true }
+  } else if (athleteIds.length) {
+    let query = supabase.from('registrations').select('id, events!inner(organization_id)', { count: 'exact', head: true }).in('athlete_id', athleteIds)
+    if (scope.mode === 'restricted') query = query.eq('events.organization_id', scope.organizationId)
+    registrations = await query
   }
-
-  const checklist = await loadDashboardChecklist(actor, events.length > 0)
-
-  const operationalLinks = [
-    hasSelfAthlete ? {
-      href: '/eventos',
-      title: 'Fazer minha inscrição',
-      description: 'Cadastro esportivo concluído. Escolha um evento publicado para se inscrever.',
-      icon: CalendarDays,
-    } : null,
-    canManageEvents ? {
-      href: '/admin/eventos',
-      title: 'Gerenciar eventos',
-      description: 'Acesse configurações, status e ações das suas competições.',
-      icon: CalendarDays,
-    } : null,
-    actor?.canManageOrganization ? {
-      href: '/dashboard/organizacao',
-      title: 'Organização e membros',
-      description: 'Veja os membros da sua organização e adicione contas já cadastradas.',
-      icon: Building2,
-    } : null,
-    actor?.isPlatformAdmin ? {
-      href: '/platform/organizacoes',
-      title: 'Organizações da plataforma',
-      description: 'Crie organizações e associe o proprietário inicial.',
-      icon: Building2,
-    } : null,
-    {
-      href: '/dashboard/meus-atletas',
-      title: isProfessor ? 'Minha equipe e atletas' : 'Consultar atletas',
-      description: isProfessor
-        ? 'Crie sua equipe, cadastre atletas vinculados e mantenha os dados das inscrições.'
-        : 'Encontre atletas, equipes e dados usados nas inscrições.',
-      icon: UsersRound,
-    },
-    {
-      href: '/dashboard/inscricoes',
-      title: 'Inscrições e pagamentos',
-      description: 'Acompanhe inscrições, reservas e o status de pagamento. A baixa é feita pelo organizador.',
-      icon: ClipboardList,
-    },
-  ].filter((item): item is NonNullable<typeof item> => Boolean(item))
+  const metrics = [
+    { label: 'Atletas', value: athletes.error ? null : athletes.count, note: 'Acessíveis à sua conta', icon: UsersRound, color: 'bg-mc-action/10 text-mc-action' },
+    { label: 'Inscrições', value: registrations.error ? null : registrations.count, note: 'Suas e dos atletas vinculados', icon: ClipboardList, color: 'bg-mc-action/10 text-mc-action' },
+    { label: 'Organizações', value: organizations.error ? null : organizations.count, note: 'Vínculos da sua conta', icon: Building2, color: 'bg-mc-warning/10 text-mc-warning' },
+    { label: 'Eventos publicados', value: eventsError ? null : events.length, note: 'No calendário acessível', icon: CalendarDays, color: 'bg-mc-success/10 text-mc-success' },
+  ]
+  const links = [
+    actor.canManageOrganization ? { href: '/dashboard/organizacao', title: 'Organização', description: 'Gerencie membros e permissões.', icon: Building2 } : null,
+    { href: '/dashboard/meus-atletas', title: 'Atletas', description: 'Consulte e gerencie seus atletas.', icon: UsersRound },
+    { href: '/dashboard/inscricoes', title: 'Inscrições', description: 'Acompanhe inscrições e pagamentos.', icon: ClipboardList },
+    { href: '/eventos', title: 'Calendário público', description: 'Veja e compartilhe os próximos eventos.', icon: CalendarDays },
+    actor.hasSelfAthlete ? { href: '/eventos', title: 'Fazer minha inscrição', description: 'Escolha um campeonato para participar.', icon: ClipboardList } : null,
+    actor.isPlatformAdmin ? { href: '/platform/organizacoes', title: 'Organizações da plataforma', description: 'Administre organizações e proprietários.', icon: Building2 } : null,
+  ].filter((link): link is NonNullable<typeof link> => Boolean(link))
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+  const upcoming = events.filter(event => event.data_evento >= today && event.status !== 'concluido').slice(0, 4)
 
   return (
-    <main className="py-mc-32 sm:py-mc-48">
-      <PageContainer>
-        <PageHeader
-          title={actor?.name?.trim() ? `Olá, ${actor.name.trim().split(' ')[0]}` : canManageEvents ? 'Painel do organizador' : isProfessor ? 'Painel do professor' : 'Painel'}
-          description={canManageEvents
-            ? `${actor?.organization?.organizationName ? `${actor.organization.organizationName} · ` : ''}${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Você administra eventos. Daqui sai para atletas, inscrições e a operação do campeonato.`
-            : isProfessor
-              ? `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Gerencie sua equipe, inscreva atletas e acompanhe a checagem pública.`
-              : hasSelfAthlete
-                ? `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Cadastro esportivo concluído. Você já pode fazer a própria inscrição nos eventos publicados.`
-                : `${actor?.name?.trim() ? `${actor.name.trim()} · ` : ''}Acompanhe seus atletas, inscrições e os eventos publicados.`}
-          actions={canManageEvents ? (
-            <Link
-              href="/admin/eventos/novo"
-              className="inline-flex min-h-11 items-center justify-center gap-mc-8 rounded-mc-medium bg-mc-action px-mc-16 font-mc-interface text-sm font-semibold text-white transition-colors duration-mc-normal hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2"
-            >
-              <Plus aria-hidden="true" size={18} />
-              Novo evento
-            </Link>
-          ) : hasSelfAthlete ? (
-            <Link
-              href="/eventos"
-              className="inline-flex min-h-11 items-center justify-center gap-mc-8 rounded-mc-medium bg-mc-action px-mc-16 font-mc-interface text-sm font-semibold text-white transition-colors duration-mc-normal hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2"
-            >
-              Fazer minha inscrição
-            </Link>
-          ) : null}
+    <main className="py-5 sm:py-7">
+      <PageContainer fluid className="space-y-5">
+        {searchParams.erro === 'sem_permissao' ? <Alert variant="error" role="alert" title="Acesso administrativo negado">Esta conta não administra eventos. Use a equipe, as inscrições e a checagem pública.</Alert> : null}
+        <DashboardPageHero
+          title={accountName ? `Olá, ${accountName.split(' ')[0]}` : 'Olá!'}
+          description={(
+            <>
+              <span className="block font-mc-display text-xl font-semibold text-white sm:text-2xl">Seu painel</span>
+              <span className="mt-2 block">Aqui você acompanha a sua conta, organiza sua equipe, inscrições e o calendário.{actor.canManageEvents ? ' O gerenciamento dos campeonatos está na aba Eventos.' : ''}</span>
+            </>
+          )}
         />
+        <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {metrics.map(metric => <div key={metric.label} className="flex min-w-0 items-start gap-3 rounded-mc-medium border border-mc-border bg-mc-surface p-4 shadow-mc-subtle">
+                <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-medium ${metric.color}`}><metric.icon aria-hidden="true" size={22} /></span>
+                <div className="min-w-0"><dt className="text-sm font-semibold text-mc-text-primary">{metric.label}</dt><dd className="mt-1 font-mc-display text-3xl font-bold leading-8 text-mc-text-primary">{metric.value === null ? '—' : metric.value}</dd><p className="mt-1 text-sm leading-5 text-mc-text-secondary">{metric.value === null ? 'Não foi possível carregar' : metric.note}</p></div>
+              </div>)}
+            </dl>
 
-        {searchParams.erro === 'sem_permissao' ? (
-          <Alert variant="error" role="alert" className="mt-mc-24" title="Acesso administrativo negado">
-            Esta conta não administra eventos. Use a equipe, as inscrições e a checagem pública.
-          </Alert>
-        ) : null}
+            {checklist ? <FirstStepsChecklistCard userId={actor.userId} checklist={checklist} /> : null}
 
-        {actor && checklist ? (
-          <div className="mt-mc-24">
-            <FirstStepsChecklistCard userId={actor.userId} checklist={checklist} />
-          </div>
-        ) : null}
-
-        <div className="mt-mc-32 grid gap-mc-24 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-          <section aria-labelledby="operations-title">
-            <h2 id="operations-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Áreas de operação</h2>
-            <Card className="mt-mc-16 divide-y divide-mc-border overflow-hidden">
-              {operationalLinks.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="group flex min-h-24 items-center gap-mc-16 p-mc-16 transition-colors duration-mc-normal hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus sm:p-mc-24"
-                >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-medium bg-mc-action/10 text-mc-action">
-                    <item.icon aria-hidden="true" size={22} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <strong className="block font-mc-interface font-semibold text-mc-text-primary">{item.title}</strong>
-                    <span className="mt-mc-4 block font-mc-interface text-sm leading-5 text-mc-text-secondary">{item.description}</span>
-                  </span>
-                  <ArrowRight aria-hidden="true" size={18} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
-                </Link>
-              ))}
-            </Card>
-          </section>
-
-          <section aria-labelledby="published-events-title">
-            <div className="flex items-end justify-between gap-mc-16">
-              <div>
-                <h2 id="published-events-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Competições publicadas</h2>
-                <p className="mt-mc-4 font-mc-interface text-sm text-mc-text-secondary">Inscreva atletas e consulte a checagem pública quando ela estiver aberta.</p>
+        <PanelColumns
+          main={(
+            <>
+            <section aria-labelledby="operations-title" className={panelClass}>
+              <h2 id="operations-title" className="font-mc-display text-xl font-bold text-mc-text-primary">Áreas de operação</h2>
+              <p className="mt-1 text-sm text-mc-text-secondary">Acesse rapidamente as principais áreas da sua conta.</p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {links.map(link => <Link key={link.title} href={link.href} className={`group flex min-w-0 items-start gap-3 rounded-mc-medium border border-mc-border p-4 transition-colors hover:border-mc-action/30 hover:bg-mc-surface-secondary ${focus}`}>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-mc-small bg-mc-action/10 text-mc-action"><link.icon size={22} aria-hidden="true" /></span>
+                  <span className="min-w-0 flex-1"><strong className="block text-sm text-mc-text-primary">{link.title}</strong><span className="mt-1 block text-sm leading-5 text-mc-text-secondary">{link.description}</span></span><ArrowRight size={16} aria-hidden="true" className="mt-1 shrink-0 text-mc-text-secondary transition-transform group-hover:translate-x-0.5" />
+                </Link>)}
               </div>
-              <Link href="/eventos" className="shrink-0 font-mc-interface text-sm font-semibold text-mc-action hover:underline">Ver calendário</Link>
-            </div>
+            </section>
 
-            {events.length ? (
-              <Card className="mt-mc-16 divide-y divide-mc-border overflow-hidden">
-                {events.slice(0, 6).map((event) => (
-                  <div key={event.id} className="grid gap-mc-12 p-mc-16 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-mc-24">
-                    <Link
-                      href={`/eventos/${event.id}`}
-                      className="group min-w-0 rounded-mc-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"
-                    >
-                      <strong className="block truncate font-mc-interface font-semibold text-mc-text-primary group-hover:text-mc-action">{event.nome}</strong>
-                      <span className="mt-mc-8 flex items-start gap-mc-8 font-mc-interface text-sm text-mc-text-secondary">
-                        <MapPin aria-hidden="true" size={17} className="mt-0.5 shrink-0 text-mc-action" />
-                        {event.local}
-                      </span>
-                    </Link>
-                    <div className="flex flex-col items-start gap-mc-8 font-mc-interface text-sm font-semibold sm:items-end">
-                      <span className="inline-flex items-center gap-mc-8 text-mc-text-primary">
-                        <CalendarDays aria-hidden="true" size={17} className="text-mc-action" />
-                        {formatter.format(new Date(`${event.data_evento}T12:00:00Z`))}
-                      </span>
-                      {event.status === 'inscricao' ? (
-                        <Link href={`/eventos/${event.id}/inscricao/cadastrar-atleta`} className="text-mc-action hover:underline">
-                          {hasSelfAthlete ? 'Fazer minha inscrição' : 'Inscrever atletas'}
-                        </Link>
-                      ) : null}
-                      {checkingStatuses.includes(event.status) ? (
-                        <Link href={`/eventos/${event.id}/checagem`} className="text-mc-action hover:underline">Consultar checagem</Link>
-                      ) : null}
-                    </div>
+            <section aria-labelledby="published-title" className={panelClass}>
+              <div className="flex flex-wrap items-center justify-between gap-3"><h2 id="published-title" className="font-mc-display text-xl font-bold text-mc-text-primary">Competições publicadas</h2><Link href="/eventos" className={`inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-mc-action ${focus}`}>Ver calendário completo <ArrowRight size={16} aria-hidden="true" /></Link></div>
+              <p className="mt-1 text-sm leading-5 text-mc-text-secondary">Consulte os campeonatos e acesse suas páginas públicas.</p>
+              {eventsError ? <Alert variant="error" className="mt-4">Não foi possível carregar o calendário.</Alert> : events.length ? <div className="mt-4 grid gap-4 md:grid-cols-3">
+                {events.slice(0, 3).map(event => <article key={event.id} className="flex min-w-0 flex-col overflow-hidden rounded-mc-medium border border-mc-border">
+                  <div className="relative"><EventCover src={event.imagem_cartaz_url} name={event.nome} /><span className="absolute left-2 top-2 rounded-mc-full bg-mc-surface"><StatusBadge variant={adminEventStatusVariant(event.status)}>{adminEventStatusLabel(event.status)}</StatusBadge></span></div>
+                  <div className="flex flex-1 flex-col p-3"><h3 className={event.imagem_cartaz_url ? 'break-words font-mc-display text-lg font-semibold leading-6 text-mc-text-primary' : 'sr-only'}>{event.nome}</h3><p className="mt-2 flex gap-2 text-sm text-mc-text-secondary"><CalendarDays size={15} aria-hidden="true" className="shrink-0 text-mc-action" />{dateFormat.format(new Date(`${event.data_evento}T12:00:00Z`))}</p><p className="mt-2 flex gap-2 text-sm leading-5 text-mc-text-secondary"><MapPin size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-mc-action" />{event.local}</p>
+                    <Link href={`/eventos/${event.id}`} aria-label={`Ver página pública de ${event.nome}`} className={`mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-mc-small bg-mc-action/10 px-3 text-sm font-semibold text-mc-action ${focus}`}>Ver página pública <ExternalLink size={14} aria-hidden="true" /></Link>
+                    {event.status === 'inscricao' ? <Link href={`/eventos/${event.id}/inscricao/cadastrar-atleta`} className={`mt-2 inline-flex min-h-10 items-center justify-center text-sm font-semibold text-mc-action ${focus}`}>{actor.hasSelfAthlete ? 'Fazer minha inscrição' : 'Inscrever atletas'}</Link> : null}
+                    {['checagem', 'chaves', 'em_andamento', 'concluido'].includes(event.status) ? <Link href={`/eventos/${event.id}/checagem`} className={`mt-2 inline-flex min-h-10 items-center justify-center text-sm text-mc-action ${focus}`}>Consultar checagem</Link> : null}
                   </div>
-                ))}
-              </Card>
-            ) : (
-              <EmptyState
-                icon={<CalendarDays size={32} />}
-                title="Nenhuma competição publicada"
-                description="Ainda não há campeonato no calendário da organização. Isso significa que não há inscrição nem checagem pública para acompanhar. O próximo passo é o organizador publicar um evento."
-                action={<Link href="/eventos" className="inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline">{hasSelfAthlete ? 'Fazer minha inscrição' : 'Abrir calendário público'}</Link>}
-                className="mt-mc-16 rounded-mc-medium border border-mc-border bg-mc-surface"
-              />
-            )}
-          </section>
-        </div>
+                </article>)}
+              </div> : <p className="py-8 text-sm text-mc-text-secondary">Nenhuma competição publicada no calendário.</p>}
+            </section>
+            </>
+          )}
+          aside={(
+          <aside aria-label="Calendário e informações" className="min-w-0 space-y-5">
+            <section className={panelClass} aria-labelledby="upcoming-title">
+              <div className="flex items-center justify-between gap-3"><h2 id="upcoming-title" className="font-mc-display text-lg font-bold text-mc-text-primary">Próximos eventos</h2><Link href="/eventos" className={`inline-flex min-h-10 items-center text-xs font-semibold text-mc-action ${focus}`}>Ver todos →</Link></div>
+              <div className="mt-3 divide-y divide-mc-border">{upcoming.map(event => <Link key={event.id} href={`/eventos/${event.id}`} className={`flex items-start gap-3 py-4 ${focus}`}>
+                <time dateTime={event.data_evento} className="flex w-12 shrink-0 flex-col items-center rounded-mc-medium bg-mc-action/10 py-2 text-mc-structure"><span className="font-mc-display text-xl font-bold">{event.data_evento.slice(8, 10)}</span><span className="text-xs uppercase">{monthFormat.format(new Date(`${event.data_evento}T12:00:00Z`)).replace('.', '')}</span></time>
+                <span className="min-w-0"><strong className="block break-words text-sm leading-5 text-mc-text-primary">{event.nome}</strong><span className="mt-1 block text-xs leading-5 text-mc-text-secondary">{event.local}</span></span>
+              </Link>)}</div>
+              {!upcoming.length ? <p className="py-4 text-sm text-mc-text-secondary">{eventsError ? 'Calendário indisponível no momento.' : 'Nenhum próximo evento no calendário.'}</p> : null}
+            </section>
+            <section className={panelClass} aria-labelledby="news-title"><h2 id="news-title" className="font-mc-display text-lg font-bold text-mc-text-primary">Notícias e comunicados</h2><Newspaper size={24} aria-hidden="true" className="mt-5 text-mc-action" /><p className="mt-3 text-sm leading-6 text-mc-text-secondary">Nenhuma notícia publicada por enquanto.</p><Link href="/noticias" className={`mt-3 inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-mc-action ${focus}`}>Acessar notícias <ArrowRight size={16} aria-hidden="true" /></Link></section>
+            <section className={panelClass} aria-labelledby="help-title"><div className="flex gap-3"><HelpCircle size={28} aria-hidden="true" className="shrink-0 text-mc-action" /><div><h2 id="help-title" className="font-mc-display text-lg font-bold text-mc-text-primary">Precisa de ajuda?</h2><p className="mt-2 text-sm leading-6 text-mc-text-secondary">Entre em contato com a equipe do MEU CAMP.</p></div></div><a href="mailto:contato@meucamp.com.br" className={`mt-4 flex min-h-11 items-center justify-center gap-2 rounded-mc-small bg-mc-action/10 text-sm font-semibold text-mc-action ${focus}`}>Falar com o suporte <ArrowRight size={16} aria-hidden="true" /></a></section>
+          </aside>
+          )}
+        />
       </PageContainer>
     </main>
   )

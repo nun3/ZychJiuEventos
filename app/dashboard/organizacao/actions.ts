@@ -41,7 +41,7 @@ export async function addOrganizationMember(formData: FormData): Promise<Members
   if (error) return { ok: false, message: mapMembershipError(error.message) }
 
   revalidatePath('/dashboard/organizacao')
-  return { ok: true, message: role === 'finance' ? 'Membro financeiro adicionado.' : 'Organizador adicionado.' }
+  return { ok: true, message: role === 'staff' ? 'Staff adicionado.' : role === 'finance' ? 'Membro financeiro adicionado.' : 'Organizador adicionado.' }
 }
 
 export async function removeOrganizationMember(formData: FormData): Promise<MembershipActionResult> {

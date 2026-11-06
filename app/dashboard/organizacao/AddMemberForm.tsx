@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { OWNER_ASSIGNABLE_ROLES, organizationRoleLabel } from '@/lib/organizations/membership'
 import { addOrganizationMember, type MembershipActionResult } from './actions'
 
 export default function AddMemberForm() {
@@ -42,8 +43,9 @@ export default function AddMemberForm() {
         </FormField>
         <FormField id="member-role" label="Papel" required>
           <Select name="role" required defaultValue="organizer">
-            <option value="organizer">Organizador</option>
-            <option value="finance">Financeiro</option>
+            {OWNER_ASSIGNABLE_ROLES.map((role) => (
+              <option key={role} value={role}>{organizationRoleLabel(role)}</option>
+            ))}
           </Select>
         </FormField>
       </div>

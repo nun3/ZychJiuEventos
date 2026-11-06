@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function PlatformLayout({ children }: { children: React.ReactNode }) {
   const actor = await getDashboardActor()
   return (
-    <div className="min-h-screen bg-mc-background pt-20">
+    <div className="min-h-screen bg-mc-background pt-16">
       <ModernNavbar />
       <InternalNavigation
         canManageEvents={Boolean(actor?.canManageEvents)}

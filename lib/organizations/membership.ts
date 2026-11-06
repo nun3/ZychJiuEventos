@@ -1,4 +1,4 @@
-export const OWNER_ASSIGNABLE_ROLES = ['organizer', 'finance'] as const
+export const OWNER_ASSIGNABLE_ROLES = ['organizer', 'finance', 'staff'] as const
 export type OwnerAssignableRole = (typeof OWNER_ASSIGNABLE_ROLES)[number]
 
 export const ORGANIZATION_ROLE_LABELS = {
