@@ -131,7 +131,7 @@ export const test = base.extend<{
   },
   fullEvent: async ({ page, context, browser }, use, testInfo) => {
     base.skip(process.env.E2E_ALLOW_WRITES !== 'true', 'Defina E2E_ALLOW_WRITES=true para a jornada Full Event no Sandbox.');
-    testInfo.setTimeout(480_000);
+    testInfo.setTimeout(Number(process.env.MC_FULL_EVENT_TIMEOUT_MS) || 480_000);
     const journey = await createFullEventJourney({
       page,
       context,

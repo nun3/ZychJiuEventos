@@ -1,0 +1,26 @@
+{
+  "runId": "MC-LOCAL-20261106-192048",
+  "target": "127.0.0.1:54321",
+  "event": {
+    "id": "98f0250c-839e-45ab-9659-23f47c411451",
+    "nome": "MC-LOCAL Evento MC-LOCAL-20261106-192048"
+  },
+  "organization": {
+    "id": "1e06ad17-d7b6-4653-a1a1-3792e7a88fa0",
+    "nome": "MC-LOCAL Organização MC-LOCAL-20261106-192048"
+  },
+  "athleteCount": 400,
+  "effectiveCategoryCount": 144,
+  "concurrency": 50,
+  "registrations": {
+    "attempted": 400,
+    "succeeded": 400,
+    "failed": 0
+  },
+  "latencyMs": {
+    "p50": 39,
+    "p95": 67,
+    "max": 75
+  },
+  "failures": []
+}

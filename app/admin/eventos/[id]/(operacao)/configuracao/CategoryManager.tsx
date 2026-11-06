@@ -125,6 +125,10 @@ export default function CategoryManager({
     setLastAutoName('')
     setSelectedIds(new Set())
     setOverrides({})
+  }
+
+  function clearFormAndMessage() {
+    clearForm()
     setMessage(null)
   }
 
@@ -386,7 +390,7 @@ export default function CategoryManager({
       </div>
 
       <footer className="flex flex-col-reverse gap-mc-12 border-t border-mc-border bg-mc-surface-secondary p-mc-16 sm:flex-row sm:items-center sm:justify-end sm:p-mc-24">
-        <Button type="button" variant="outline" onClick={clearForm} disabled={pending}>
+        <Button type="button" variant="outline" onClick={clearFormAndMessage} disabled={pending}>
           Limpar
         </Button>
         <Button type="submit" disabled={pending} className="gap-mc-8">

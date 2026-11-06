@@ -1,0 +1,51 @@
+{
+  "runId": "MC-LOCAL-20261106-192101",
+  "target": "127.0.0.1:54321",
+  "event": {
+    "id": "81b8856d-7388-4479-b0ef-97f9e9876445",
+    "nome": "MC-LOCAL Evento MC-LOCAL-20261106-192101"
+  },
+  "organization": {
+    "id": "ab1c807b-8336-4d68-99e4-d3c87e4f1618",
+    "nome": "MC-LOCAL Organização MC-LOCAL-20261106-192101"
+  },
+  "athleteCount": 250,
+  "effectiveCategoryCount": 144,
+  "concurrency": 250,
+  "registrations": {
+    "attempted": 250,
+    "succeeded": 246,
+    "failed": 4
+  },
+  "latencyMs": {
+    "p50": 229,
+    "p95": 365,
+    "max": 369
+  },
+  "failures": [
+    {
+      "athleteId": "bbdce83f-10db-45e2-a5a9-c486d3eee6e2",
+      "ok": false,
+      "message": "TypeError: fetch failed",
+      "durationMs": 159
+    },
+    {
+      "athleteId": "64498d9a-c1da-4a36-b6c9-70f1303bcacd",
+      "ok": false,
+      "message": "TypeError: fetch failed",
+      "durationMs": 162
+    },
+    {
+      "athleteId": "2610ce2f-32a5-461d-8b52-21e2b10c4e0f",
+      "ok": false,
+      "message": "TypeError: fetch failed",
+      "durationMs": 162
+    },
+    {
+      "athleteId": "f31440dd-6bfa-4b9c-b620-ffc04dc03233",
+      "ok": false,
+      "message": "TypeError: fetch failed",
+      "durationMs": 161
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "runId": "MC-LOCAL-20261106-191708",
+  "target": "127.0.0.1:54321",
+  "event": {
+    "id": "0313fbf4-ea53-48ae-80a6-887ce2bf5995",
+    "nome": "MC-LOCAL Evento MC-LOCAL-20261106-191708"
+  },
+  "organization": {
+    "id": "f69fd94f-46e3-4599-991b-1811d6f4ff6b",
+    "nome": "MC-LOCAL Organização MC-LOCAL-20261106-191708"
+  },
+  "athleteCount": 10,
+  "effectiveCategoryCount": 144,
+  "concurrency": 2,
+  "registrations": {
+    "attempted": 10,
+    "succeeded": 0,
+    "failed": 10
+  },
+  "latencyMs": {
+    "p50": 10,
+    "p95": 14,
+    "max": 14
+  },
+  "failures": [
+    {
+      "athleteId": "73f2093e-c88a-434a-8ce1-9cc039e89340",
+      "ok": false,
+      "message": "Autenticacao obrigatoria",
+      "durationMs": 13
+    },
+    {
+      "athleteId": "374bb693-a636-49ca-8e73-db0c65cc5da1",
+      "ok": false,
+      "message": "Autenticacao obrigatoria",
+      "durationMs": 14
+    },
+    {
+      "athleteId": "b092c24e-48fd-4368-a5c4-deb862b3f2e5",
+      "ok": false,
+      "message": "Autenticacao obrigatoria",
+      "durationMs": 9
+    },
+    {
+      "athleteId": "ea388b70-9c3a-4aa9-97ad-c76eaa73946b",
+      "ok": false,
+      "message": "Autenticacao obrigatoria",
+      "durationMs": 8
+    },
+    {
+      "athleteId": "803426fa-5a4d-4359-bff1-13119760e39b",
+      "ok": false,
+      "message": "Autenticacao obrigatoria",
+      "durationMs": 8
+    },
+    {
+      "athleteId": "7b2142c0-18f1-4d68-a095-81ef835a15a5",
+      "ok": false,
+      "message": "Autenticacao obrigatoria",
+      "durationMs": 7
+    },
+    {
+      "athleteId": "6e29dd2b-b106-43c6-8b8d-cdfc7de6ff33",
+      "ok": false,
+      "message": "Autenticacao obrigatoria",
+      "durationMs": 10
+    },
+    {
+      "athleteId": "356f1be7-82c9-48c7-9a79-317c6f07f910",
+      "ok": false,
+      "message": "Autenticacao obrigatoria",
+      "durationMs": 8
+    },
+    {
+      "athleteId": "887108da-6728-448d-b994-e7c380654de3",
+      "ok": false,
+      "message": "Autenticacao obrigatoria",
+      "durationMs": 12
+    },
+    {
+      "athleteId": "7d563c9c-dc6a-4ed6-b5db-b4c1d4510cc7",
+      "ok": false,
+      "message": "Autenticacao obrigatoria",
+      "durationMs": 11
+    }
+  ]
+}

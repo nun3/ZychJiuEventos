@@ -5,6 +5,7 @@ import type { BrowserContext } from '@playwright/test';
 import type { Database } from '../../../lib/supabase/database.types';
 
 export const SANDBOX_HOST = 'kfvypacjzlzwwblsbpwj.supabase.co';
+const LOCAL_HOSTNAMES = new Set(['127.0.0.1', 'localhost', '::1']);
 
 const EVENT_PREFIXES = ['Evento E2E ', 'Checkout E2E', 'Checagem E2E', 'MC-SIM Full Event'] as const;
 const ATHLETE_PREFIXES = ['Atleta E2E ', 'MC-SIM Full Event Atleta'] as const;
@@ -44,6 +45,15 @@ function loadEnvFile(file: string) {
 }
 
 export function loadCleanupEnv() {
+  // Missão de homologação local de 6 nov 2026 (docs/engineering/CURRENT-HANDOFF.md): quando o
+  // processo já roda contra o stack local (NEXT_PUBLIC_SUPABASE_URL apontando para
+  // 127.0.0.1/localhost, definido explicitamente pelo chamador), nunca abre `.env.local` nem
+  // `automação/.env.e2e` — ambos são links simbólicos para o working tree original `jiu` e
+  // apontam para produção (zigjiu), proibidos de abrir pelo CLAUDE.md deste repositório.
+  let currentHost = '';
+  try { currentHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || '').hostname; } catch { /* vazio cai no caminho padrão abaixo */ }
+  if (LOCAL_HOSTNAMES.has(currentHost)) return;
+
   const root = path.resolve(__dirname, '../../..');
   loadEnvFile(path.join(root, '.env.local'));
   loadEnvFile(path.join(root, 'automação/.env.e2e'));
@@ -52,7 +62,14 @@ export function loadCleanupEnv() {
 export function assertSandboxUrl(url: string) {
   let host = '';
   try { host = new URL(url).hostname; } catch { throw new Error('URL Supabase inválida.'); }
-  if (host !== SANDBOX_HOST) throw new Error(`Cleanup abortado: host ${host} não é o Sandbox autorizado.`);
+  if (host === SANDBOX_HOST || LOCAL_HOSTNAMES.has(host)) return;
+  throw new Error(`Cleanup abortado: host ${host} não é o Sandbox autorizado nem o stack local.`);
+}
+
+/** `sb-<ref>-auth-token`, a mesma derivação de `supabase-js` para o nome do cookie de sessão SSR. */
+function sessionCookieName(url: string) {
+  const hostname = new URL(url).hostname;
+  return `sb-${hostname.split('.')[0]}-auth-token`;
 }
 
 function startsWithAny(value: string, prefixes: readonly string[]) {
@@ -99,7 +116,7 @@ export async function applyAuthSession(
   const { data, error } = await actor.auth.signInWithPassword({ email, password });
   if (error || !data.user || !data.session) throw new Error(`Login E2E: ${error?.message || 'falhou'}`);
   await context.addCookies([{
-    name: `sb-${SANDBOX_HOST.split('.')[0]}-auth-token`,
+    name: sessionCookieName(process.env.NEXT_PUBLIC_SUPABASE_URL || ''),
     value: JSON.stringify(data.session),
     url: baseURL,
     httpOnly: false,

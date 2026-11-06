@@ -1,0 +1,33 @@
+{
+  "runId": "MC-LOCAL-20261106-191929",
+  "target": "127.0.0.1:54321",
+  "event": {
+    "id": "890e63de-6584-450f-8f80-c2253e4c280a",
+    "nome": "MC-LOCAL Evento MC-LOCAL-20261106-191929"
+  },
+  "organization": {
+    "id": "8a33e356-866d-4437-92a5-c64d367091a4",
+    "nome": "MC-LOCAL Organização MC-LOCAL-20261106-191929"
+  },
+  "athleteCount": 250,
+  "effectiveCategoryCount": 144,
+  "concurrency": 10,
+  "registrations": {
+    "attempted": 250,
+    "succeeded": 249,
+    "failed": 1
+  },
+  "latencyMs": {
+    "p50": 10,
+    "p95": 15,
+    "max": 94
+  },
+  "failures": [
+    {
+      "athleteId": "85ab7ebc-93ab-4f75-a56e-942e69ed0467",
+      "ok": false,
+      "message": "Nenhuma categoria elegivel para MC-LOCAL Atleta 0206 Felipe Lima",
+      "durationMs": 6
+    }
+  ]
+}

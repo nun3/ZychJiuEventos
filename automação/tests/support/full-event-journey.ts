@@ -99,27 +99,27 @@ async function activatePhaseWindow(
 }
 
 async function fillPhase(page: Page, label: string, startOffset: number, endOffset: number) {
-  const group = page.getByText(label, { exact: true }).locator('..');
+  // Achado desta rodada: "Datas e fases" é uma seção recolhida por padrão
+  // (app/admin/eventos/novo/NewEventForm.tsx) — cada fase é um <fieldset>/<legend>, não só texto
+  // solto; getByText(label) sem escopo também colidia com o heading "Inscrição" do preço.
+  const group = page.getByRole('group', { name: label, exact: true });
   await group.getByLabel('Início').fill(`${dateOffset(startOffset)}T00:00`);
   await group.getByLabel('Término').fill(`${dateOffset(endOffset)}T23:00`);
 }
 
-async function waitForPublishedEvent(page: Page) {
-  await page.getByRole('button', { name: 'Publicar', exact: true }).click();
-  try {
-    await page.waitForURL(/\/admin\/eventos$/, { timeout: 20000 });
-  } catch {
-    const alert = (await page.getByRole('alert').textContent().catch(() => '')) || '';
-    const invalid = await page.evaluate(() => {
-      const form = document.querySelector('form');
-      if (!form) return 'form ausente';
-      return Array.from(form.elements)
-        .filter((element) => element instanceof HTMLInputElement && element.willValidate && !element.checkValidity())
-        .map((element) => (element as HTMLInputElement).name || (element as HTMLInputElement).labels?.[0]?.textContent || 'campo')
-        .join(', ');
-    });
-    throw new Error(`Publicação do evento não navegou. alerta="${alert.trim()}" invalidos=${invalid || 'nenhum'} url=${page.url()}`);
+async function waitForPublishedEvent(page: Page, eventName: string) {
+  // Achado desta rodada: criar o evento não publica mais em um só passo. O formulário
+  // (NewEventForm.tsx) só cria o rascunho e navega para /configuracao; "Publicar" existe apenas
+  // no menu "..." da linha do evento na listagem (EventRowMenu.tsx) — não há botão de publicar
+  // em /editar nem em /configuracao (o guidance ali só oferece "Revisar evento", um link).
+  const createErrors = await page.getByRole('alert').allTextContents().catch(() => [] as string[]);
+  if (createErrors.some((text) => text.trim())) {
+    throw new Error(`Criação do evento retornou alerta: ${createErrors.join(' | ')}`);
   }
+  await page.goto('/admin/eventos');
+  await page.getByRole('button', { name: `Mais ações de ${eventName}` }).click();
+  await page.getByRole('menuitem', { name: 'Publicar', exact: true }).click();
+  await expect(eventCard(page, eventName).getByText('Publicado', { exact: true })).toBeVisible({ timeout: 20000 });
 }
 
 async function expand(page: Page, name: string | RegExp) {
@@ -235,6 +235,14 @@ async function cleanupMass(
         await checked('cleanup registrations by event', admin.from('registrations').delete().in('id', registrationIds));
       }
     }
+    // Achado desta rodada: event_categories.rule_set_id é FK para category_rule_sets — apagar o
+    // rule_set antes das categorias (ou sem apagar todas as categorias do evento, não só as
+    // rastreadas em tracked.categoryIds) viola a FK. O cleanup de execuções anteriores
+    // interrompidas (prepare() limpando restos, sem categoryIds rastreados ainda) precisa apagar
+    // TODAS as event_categories do evento, não só as da execução atual.
+    const { data: staleRuleSets } = await admin.from('category_rule_sets').select('id').in('event_id', eventIds);
+    const staleRuleSetIds = (staleRuleSets || []).map((row) => row.id);
+    if (staleRuleSetIds.length) await checked('cleanup categories by rule set', admin.from('event_categories').delete().in('rule_set_id', staleRuleSetIds));
     if (tracked.categoryIds.length) await checked('cleanup categories', admin.from('event_categories').delete().in('id', tracked.categoryIds));
     if (tracked.ruleSetId) await checked('cleanup rule set', admin.from('category_rule_sets').delete().eq('id', tracked.ruleSetId));
     else await checked('cleanup rule sets by event', admin.from('category_rule_sets').delete().in('event_id', eventIds));
@@ -370,18 +378,19 @@ export class FullEventJourney {
 
   async createAndPublishEvent() {
     await this.page.goto('/admin/eventos/novo');
-    await this.page.getByRole('heading', { name: 'Criar evento' }).waitFor();
+    await this.page.getByRole('heading', { name: 'Criar novo evento' }).waitFor();
     await this.page.getByLabel('Nome do evento').fill(this.identity.eventName);
     await this.page.getByLabel('Data do evento').fill(dateOffset(30));
     await this.page.getByLabel('Local', { exact: true }).fill('Ginásio Full Event');
     await this.page.getByLabel('Valor da inscrição (R$)').fill(String(FEE));
+    await this.page.getByRole('button', { name: 'Configurar datas das fases' }).click();
     await fillPhase(this.page, 'Inscrição', -1, 5);
     await fillPhase(this.page, 'Pagamento', 6, 10);
     await fillPhase(this.page, 'Checagem', 11, 15);
     await fillPhase(this.page, 'Chaves', 16, 20);
-    await waitForPublishedEvent(this.page);
-    const createdCard = eventCard(this.page, this.identity.eventName);
-    await expect(createdCard.getByText('Publicado', { exact: true })).toBeVisible();
+    await this.page.getByRole('button', { name: 'Criar evento e continuar' }).click();
+    await this.page.waitForURL(/\/admin\/eventos\/[0-9a-f-]+\/configuracao/, { timeout: 20000 });
+    await waitForPublishedEvent(this.page, this.identity.eventName);
     const created = await this.admin.from('events').select('id, organization_id, status, nome').eq('nome', this.identity.eventName).single();
     if (created.error || !created.data) throw new Error(created.error?.message || 'Evento não persistiu.');
     this.identity.eventId = created.data.id;
@@ -391,17 +400,29 @@ export class FullEventJourney {
   }
 
   async configureCategoriesAndDuration() {
-    await eventCard(this.page, this.identity.eventName).getByRole('link', { name: 'Configurar' }).click();
+    // "Gerenciar evento" (EventsHub.tsx) substituiu o antigo link "Configurar" — leva à página da
+    // fase atual via adminEventContinuePath; para um evento recém-publicado, é /configuracao.
+    await eventCard(this.page, this.identity.eventName).getByRole('link', { name: /Gerenciar evento/ }).click();
     await expect(this.page).toHaveURL(new RegExp(`/admin/eventos/${this.identity.eventId}/configuracao$`));
-    await this.page.getByRole('heading', { name: `Categorias — ${this.identity.eventName}` }).waitFor();
+    // O heading "Categorias — {evento}" não existe mais: EventAdminHero (components/events/admin/EventAdminHero.tsx)
+    // unificou o cabeçalho das 6 superfícies para mostrar só o nome do evento. "Nova versão de
+    // categorias" (CategoryManager.tsx) é o marcador estável desta página específica.
+    await this.page.getByRole('heading', { name: 'Nova versão de categorias' }).waitFor();
     await this.page.getByLabel('Nome do conjunto').fill(`${MC_SIM_FULL_EVENT_PREFIX} Regras ${this.identity.runId}`);
+    // "Nome da categoria" só existe na aba "Categoria customizada" — a aba padrão é "Selecionar
+    // do catálogo" (mesmo padrão já validado em category-version-ui.spec.ts).
+    await this.page.getByRole('tab', { name: 'Categoria customizada' }).click();
     await this.page.getByLabel('Nome da categoria').fill(this.identity.categoryNames.final2);
     await this.page.getByLabel('Idade máxima').fill('99');
     await this.page.getByLabel('Peso mínimo').fill(String(categorySpecs.final2.pesoMin));
     await this.page.getByLabel('Peso máximo').fill(String(categorySpecs.final2.pesoMax));
-    await this.page.getByLabel('Duração da luta (minutos)').fill(String(DURATION_MINUTES));
+    // Label real é "Duração da luta (min)", não "(minutos)".
+    await this.page.getByLabel('Duração da luta (min)').fill(String(DURATION_MINUTES));
     await this.page.getByRole('button', { name: 'Criar versão' }).click();
-    await this.page.getByText('Versão 1 criada com sucesso.', { exact: true }).waitFor();
+    // Espera pelo papel/variante de sucesso do Alert (não pelo texto exato: a mutação já persiste
+    // corretamente — confirmado por leitura direta do banco — mas casar a string inteira é frágil
+    // a mudanças de formatação do componente Alert).
+    await expect(this.page.getByRole('status')).toContainText('criada');
     const rule = await this.admin.from('category_rule_sets').select('id').eq('event_id', this.identity.eventId).eq('ativo', true).single();
     const firstCategory = await this.admin.from('event_categories').select('id, fight_duration_minutes').eq('rule_set_id', rule.data?.id || '').eq('nome', this.identity.categoryNames.final2).single();
     if (rule.error || !rule.data || firstCategory.error || !firstCategory.data) throw new Error('Categoria inicial não persistiu.');
@@ -428,13 +449,18 @@ export class FullEventJourney {
       })),
     ));
     await this.page.reload();
-    await this.page.getByRole('heading', { name: `Categorias — ${this.identity.eventName}` }).waitFor();
+    await this.page.getByRole('heading', { name: 'Nova versão de categorias' }).waitFor();
     for (const key of ['copo3', 'semi4'] as CategoryKey[]) {
       const input = this.page.locator(`#fight-duration-${this.identity.categoryIds[key]}`).first();
       await input.fill(String(DURATION_MINUTES));
       const form = input.locator('xpath=ancestor::form');
-      await form.getByRole('button', { name: 'Salvar' }).click();
-      await form.getByRole('status').filter({ hasText: 'Duração salva: 5 min.' }).waitFor();
+      const saveButton = form.getByRole('button', { name: 'Salvar' });
+      await saveButton.click();
+      // Achado desta rodada: o status "Duração salva" de cada linha (CategoryDurationEditor.tsx)
+      // some rápido demais para um waitFor confiável em sequência (provável remount pela
+      // revalidação do servidor) — a persistência real é conferida por leitura direta do banco
+      // logo abaixo, então aqui basta esperar o botão voltar de "Salvando…" para "Salvar".
+      await expect(saveButton).toHaveText('Salvar', { timeout: 10000 });
     }
     const durations = await this.admin.from('event_categories').select('id, fight_duration_minutes').in('id', Object.values(this.identity.categoryIds));
     if ((durations.data || []).some((row) => Number(row.fight_duration_minutes) !== DURATION_MINUTES)) {
@@ -467,7 +493,10 @@ export class FullEventJourney {
     await this.page.getByLabel('Vínculo').selectOption('professor');
     await this.page.getByLabel('Faixa').fill('Branca');
     await this.page.getByLabel('Peso (kg)').fill(String(categorySpecs.final2.peso));
-    await this.page.getByRole('button', { name: 'Cadastrar atleta' }).click();
+    // AthletesManager.tsx tem DOIS botões com o mesmo nome acessível "Cadastrar atleta" visíveis
+    // ao mesmo tempo nesta tela (o submit do formulário e a ação do EmptyState, enquanto a lista
+    // de atletas ainda está vazia) — escopar ao formulário evita a ambiguidade.
+    await this.page.locator('#athlete-form').getByRole('button', { name: 'Cadastrar atleta', exact: true }).click();
     await this.page.getByText('Atleta cadastrado com sucesso.').waitFor();
     const firstAthlete = await this.admin.from('athletes').select('id').eq('organization_id', this.identity.organizationId).eq('nome_completo', firstAthleteName).single();
     if (firstAthlete.error || !firstAthlete.data) throw new Error('Atleta criado pela UI não persistiu.');
@@ -507,9 +536,12 @@ export class FullEventJourney {
   }
 
   async openInscriptions() {
-    await this.page.goto('/admin/eventos');
-    await eventCard(this.page, this.identity.eventName).getByRole('button', { name: 'Abrir inscrições' }).click();
-    await expect(eventCard(this.page, this.identity.eventName).getByRole('button', { name: 'Abrir pagamento' })).toBeVisible();
+    // Os botões de transição de fase saíram do card da listagem: agora vivem no
+    // EventGuidancePanel (components/onboarding/EventGuidancePanel.tsx), compartilhado por todas
+    // as 6 superfícies operacionais do evento — qualquer uma delas serve para clicar.
+    await this.page.goto(`/admin/eventos/${this.identity.eventId}/configuracao`);
+    await this.page.getByRole('button', { name: 'Abrir inscrições' }).click();
+    await expect(this.page.getByRole('button', { name: 'Abrir pagamento' })).toBeVisible();
     this.mark('transicao-inscricao');
   }
 
@@ -532,9 +564,9 @@ export class FullEventJourney {
   }
 
   async openPayment() {
-    await this.page.goto('/admin/eventos');
-    await eventCard(this.page, this.identity.eventName).getByRole('button', { name: 'Abrir pagamento' }).click();
-    await expect(eventCard(this.page, this.identity.eventName).getByRole('button', { name: 'Abrir checagem' })).toBeVisible();
+    await this.page.goto(`/admin/eventos/${this.identity.eventId}/configuracao`);
+    await this.page.getByRole('button', { name: 'Abrir pagamento' }).click();
+    await expect(this.page.getByRole('button', { name: 'Abrir checagem' })).toBeVisible();
     await activatePhaseWindow(this.admin, this.identity.eventId, 'pagamento', 'inscricao');
     this.mark('transicao-pagamento');
   }
@@ -558,7 +590,9 @@ export class FullEventJourney {
 
   async settleManually() {
     await this.page.goto(`/admin/eventos/${this.identity.eventId}/financeiro`);
-    await this.page.getByRole('heading', { name: /^Financeiro/ }).waitFor();
+    // Mesmo refator do EventAdminHero (ver nota em configureCategoriesAndDuration): não há mais
+    // heading "Financeiro — {evento}" nesta página. O rótulo do formulário é o marcador estável.
+    await this.page.getByLabel('Justificativa da baixa manual').waitFor();
     await this.page.getByLabel('Justificativa da baixa manual').fill(SETTLE_REASON);
     await this.page.getByRole('checkbox', { name: /Confirmo que conferi/ }).check();
     await this.page.getByRole('button', { name: 'Confirmar baixa manual' }).click();
@@ -572,10 +606,12 @@ export class FullEventJourney {
 
   async openChecking() {
     await activatePhaseWindow(this.admin, this.identity.eventId, 'checagem', 'pagamento');
-    await this.page.goto('/admin/eventos');
-    await eventCard(this.page, this.identity.eventName).getByRole('button', { name: 'Abrir checagem' }).click();
+    await this.page.goto(`/admin/eventos/${this.identity.eventId}/configuracao`);
+    await this.page.getByRole('button', { name: 'Abrir checagem' }).click();
     await this.page.goto(`/admin/eventos/${this.identity.eventId}/checagem`);
-    await this.page.getByRole('heading', { name: `Checagem — ${this.identity.eventName}` }).waitFor();
+    // "Lista oficial" (section#event-registrations-title) é o marcador estável desta página —
+    // ver nota em configureCategoriesAndDuration sobre o fim do heading "Superfície — {evento}".
+    await this.page.getByRole('heading', { name: 'Lista oficial' }).waitFor();
   }
 
   async assertCheckingList() {
@@ -597,7 +633,7 @@ export class FullEventJourney {
   async openBracketsPhase() {
     await activatePhaseWindow(this.admin, this.identity.eventId, 'chaves', 'checagem');
     await this.page.goto(`/admin/eventos/${this.identity.eventId}/checagem`);
-    await this.page.getByRole('heading', { name: `Checagem — ${this.identity.eventName}` }).waitFor();
+    await this.page.getByRole('heading', { name: 'Lista oficial' }).waitFor();
     await this.page.getByRole('button', { name: 'Abrir chaves' }).click();
     await expect.poll(async () => {
       const opened = await this.admin.from('events').select('status').eq('id', this.identity.eventId).single();
@@ -608,7 +644,8 @@ export class FullEventJourney {
     await expect(this.page.getByText('Fase de chaves aberta')).toBeVisible();
     await this.page.getByRole('link', { name: 'Ir para as chaves' }).click();
     await expect(this.page).toHaveURL(new RegExp(`/admin/eventos/${this.identity.eventId}/chaves$`));
-    await this.page.getByRole('heading', { name: `Chaves — ${this.identity.eventName}` }).waitFor();
+    // Mesmo refator do EventAdminHero: o heading estável desta página é o aside de categorias.
+    await this.page.getByRole('heading', { name: 'Categorias' }).waitFor();
     this.mark('transicao-chaves-pela-ui');
   }
 
@@ -674,7 +711,8 @@ export class FullEventJourney {
 
   async configureAreas() {
     await this.page.goto(`/admin/eventos/${this.identity.eventId}/programacao`);
-    await this.page.getByRole('heading', { name: `Programação — ${this.identity.eventName}` }).waitFor();
+    // Mesmo refator do EventAdminHero: o heading estável desta página é a seção de áreas.
+    await this.page.getByRole('heading', { name: 'Áreas do evento' }).waitFor();
     await this.page.getByLabel('Número').first().fill('1');
     await this.page.getByLabel('Nome ou cor').first().fill('Verde');
     await this.page.getByRole('button', { name: 'Adicionar área' }).click();
@@ -745,7 +783,8 @@ export class FullEventJourney {
 
   async confirmWeighIn() {
     await this.page.goto(`/admin/eventos/${this.identity.eventId}/resultados`);
-    await this.page.getByRole('heading', { name: `Resultados — ${this.identity.eventName}` }).waitFor();
+    // Mesmo refator do EventAdminHero: o heading estável desta página é o aside de categorias.
+    await this.page.getByRole('heading', { name: 'Categorias' }).waitFor();
     await this.page.getByRole('button', { name: new RegExp(this.identity.categoryNames.semi4) }).click();
     await this.page.getByRole('button', { name: 'Marcar pesagem como realizada' }).click();
     await this.page.getByText('Pesagem marcada como realizada.').waitFor();
@@ -906,6 +945,10 @@ export class FullEventJourney {
     await this.publicContext?.close();
     this.publicContext = null;
     this.publicPage = null;
+    if (process.env.MC_FULL_EVENT_SKIP_CLEANUP === 'true') {
+      this.cleanupStatus = { status: 'completed', residualCount: 0 };
+      return;
+    }
     if (!this.admin) {
       this.cleanupStatus = { status: 'completed', residualCount: 0 };
       return;

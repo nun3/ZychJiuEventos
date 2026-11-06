@@ -348,6 +348,120 @@ mecanismo, ou uma janela de homologação controlada em `zigjiu` com dados sint�
 limpeza). Sem uma dessas decisões, a lacuna de "jornada esportiva com escrita/carga/concorrência
 real" persistirá em toda rodada futura, como já ocorreu em três rodadas consecutivas.
 
+## Rodada de 6 nov 2026 — Docker disponível: homologação local real, em andamento (checkpoint)
+
+Missão sob autorização explícita do proprietário, continuação da rodada anterior (BLOCKED por
+falta de Docker). **Docker passou a estar disponível nesta sessão.** Stack Supabase local
+(`supabase start`, projeto `jiu-event-readiness`) confirmado isolado de produção: banco vazio no
+início da sessão, `linked_project: null`, todas as 43 migrations locais aplicadas (incluindo
+`202611060001`). `.env.local`/`automação/.env.e2e` (symlinks para o `jiu` original, apontando para
+`zigjiu`) não foram abertos; app e testes foram apontados para o stack local via variáveis de
+ambiente exportadas no processo, nunca via esses arquivos. Checkpoint intermediário solicitado pelo
+proprietário — a investigação do achado do item 2 abaixo **não foi concluída**, propositalmente,
+para registrar evidência antes de continuar.
+
+### 1. Resultado das tentativas do E2E completo
+
+Não foram "quatro tentativas": foram ~13 execuções incrementais de
+`tests/features/full-event.feature` (jornada completa, nunca antes executada contra um app real —
+historicamente sempre `NOT_RUN — BLOCKED BY ENVIRONMENT`). Cada execução avançou um passo e revelou
+o próximo ponto de drift entre o roteiro de teste e a UI atual (o roteiro nunca tinha sido validado
+contra código real). Progresso acumulado, nesta ordem: login do organizador → criação do evento →
+**publicação** (descoberta: publicar não é mais parte do mesmo formulário; vive no menu "..." da
+listagem) → criação de versão de categorias na aba customizada → edição de duração por categoria →
+cadastro de 2 equipes → cadastro de 1 atleta via UI → abertura da fase de inscrição. Bloqueado no
+passo seguinte (inscrever o atleta no evento), descrito no item 2.
+
+### 2. Primeira falha reproduzível atual e causa provável
+
+`GET /eventos/{id}` (página pública do evento) devolve **404 para todo e qualquer evento**,
+independente de autenticação — reproduzido via `curl` direto, fora do Playwright. Causa raiz
+confirmada por leitura direta do schema local: `lib/events/public-access.ts`
+(`publicEventColumns`/`findPublicReleaseEvent`) seleciona colunas estruturadas de endereço
+(`local_nome`, `local_cep`, `local_logradouro`, `local_numero`, `local_complemento`,
+`local_bairro`, `local_cidade`, `local_uf`, `local_latitude`, `local_longitude`) que **não existem**
+na tabela `events` — confirmado com `\d public.events`: só existe a coluna livre `local text`. O
+erro do Postgres é descartado silenciosamente (`const { data } = await query.maybeSingle()` ignora
+`error`), então a função devolve `null` exatamente como "não encontrado", mascarando um erro de
+schema como 404. **Isso não é específico deste teste: toda página pública de evento publicado
+quebra assim, no ambiente local.** Mesmo padrão de colunas aparece em
+`app/admin/eventos/[id]/editar/EditEventForm.tsx`, `components/events/VenueFields.tsx` e
+`lib/supabase/database.types.ts` — parece uma feature de endereço estruturado (CEP, geocoding; ver
+`automação/tests/venue-location.test.ts`, que passa porque testa só a lógica de formatação,
+mockada, nunca o schema real) implementada em código e tipos mas cuja migration nunca foi escrita
+ou aplicada. **Não investigado ainda se produção (`zigjiu`) tem o mesmo gap** — não verificado
+nesta sessão por instrução explícita de não continuar a investigação antes deste checkpoint.
+
+### 3. Arquivos alterados e correções efetivamente validadas
+
+- `app/admin/eventos/[id]/(operacao)/configuracao/CategoryManager.tsx` — **bug de produto real,
+  corrigido**: `clearForm()` chamava `setMessage(null)` imediatamente depois do sucesso, apagando a
+  confirmação "Versão N criada com sucesso." antes de qualquer renderização a mostrar — afeta todo
+  organizador criando uma versão de categorias, catálogo ou customizada, não só este teste. Corrigido
+  separando `clearForm()` (só limpa campos) de `clearFormAndMessage()` (usado exclusivamente pelo
+  botão "Limpar"). Validado: `tsc`, lint, unitários, e reexecução da jornada passando por este passo
+  repetidas vezes após a correção.
+- `automação/tests/support/e2e-cleanup.ts` — estendido para aceitar o stack local
+  (127.0.0.1/localhost) além do Sandbox `zigjiu` existente (`assertSandboxUrl`), e o nome do cookie
+  de sessão SSR passou a ser derivado da URL real (`sb-<ref>-auth-token`) em vez de fixo no ref do
+  zigjiu. `loadCleanupEnv()` agora pula a leitura de `.env.local`/`automação/.env.e2e` quando
+  `NEXT_PUBLIC_SUPABASE_URL` já aponta para o stack local. Validado: specs `auth-experience` (13/13),
+  `category-version-ui` (2/2) e `integration-lots` (8/8) — todos agora com **escrita real** no stack
+  local (antes rodavam só em modo leitura, por risco de tocar produção).
+- `automação/tests/support/fixtures.ts` — timeout da fixture `fullEvent` (antes fixo em 480s) agora
+  aceita override por `MC_FULL_EVENT_TIMEOUT_MS` (padrão inalterado), só para acelerar iteração.
+- `automação/tests/support/full-event-journey.ts` — ~12 correções de locator/fluxo para realinhar o
+  roteiro com a UI atual (nunca antes executado com escrita real). Inclui: heading de criação de
+  evento, expansão da seção "Datas e fases" (recolhida por padrão), fluxo de publicação via menu da
+  listagem (não mais um botão no mesmo formulário), seleção da aba "Categoria customizada", label de
+  duração, correção de FK em `cleanupMass()` (apagava `category_rule_sets` antes de
+  `event_categories`, violando a FK, ao limpar execuções anteriores interrompidas), e escopo do botão
+  "Cadastrar atleta" (duplicado: um para abrir o formulário, outro para enviá-lo, mesmo nome
+  acessível). Adicionado `MC_FULL_EVENT_SKIP_CLEANUP=true` (padrão desligado, sem mudança de
+  comportamento) como válvula de depuração para preservar dados após falha.
+- Novos arquivos, testados isoladamente: `automação/tests/support/local-homologation-guard.ts` +
+  `automação/tests/local-homologation-guard.test.ts` (8/8) — guarda local equivalente ao
+  `independent-homologation-guard.ts`, recusa qualquer host `*.supabase.co`.
+  `automação/scripts/local-homologation-fixtures.ts` — adaptado de
+  `independent-homologation-fixtures.ts` para o stack local; executado com sucesso a 10, 250
+  (concorrência 10 e 25), 400 (concorrência 50 e 100) atletas — ver evidências abaixo.
+  `automação/scripts/local-e2e-accounts.ts` — cria as 3 contas E2E (owner/staff/unauthorized) e um
+  evento publicado de apoio, de forma idempotente.
+
+### 4. Estado dos serviços locais e dados sintéticos
+
+Docker + Supabase local ativos (`supabase start`, projeto `jiu-event-readiness`), 43 migrations
+aplicadas. `next dev` em `:3000`, apontado para o stack local via variáveis de ambiente explícitas
+no processo (nunca `.env.local`). Dados sintéticos residuais ao fim deste checkpoint: as 3 contas
+E2E + 1 evento de apoio (`E2E Local Evento Rascunho`, usado pelos specs de categorias/integração —
+não remover) e os atletas/inscrições dos testes de carga (eventos `MC-LOCAL ...`, inofensivos,
+locais). Todos os resíduos de `MC-SIM Full Event*` (das 13 execuções da jornada) foram limpos nesta
+rodada.
+
+### 5. Testes executados
+
+**PASS:** `tsc --noEmit`; `next lint` (1 warning pré-existente); unitários 237/238 (mesma falha
+pré-existente de alias em `registration-correction.test.ts`, +8 testes novos do guard local, todos
+passando); Playwright `auth-experience` 13/13, `category-version-ui` 2/2, `integration-lots` 8/8 —
+agora com escrita real no stack local. Carga/concorrência: 400 atletas com concorrência 50 e 100,
+**0 falhas**; concorrência extrema de 250 simultâneas de um único processo Node teve 4/250 falhas
+client-side (`TypeError: fetch failed`, não chegaram ao Kong/PostgREST — artefato do driver de
+teste, não do app) — evidências em `docs/releases/evidencias/local-homologation-*.json`.
+**NOT_RUN:** jornada completa via UI segue bloqueada no achado do item 2 antes de chegar a pesagem,
+chaves, programação, placar e resultados — nenhuma dessas superfícies foi exercitada com escrita
+real nesta rodada. `next build` não foi reexecutado após as correções desta rodada (rodá-lo agora
+corromperia o cache do `next dev` ativo, como já ocorreu uma vez nesta sessão — rodar só depois de
+parar o dev server).
+
+**Próximo passo técnico específico:** investigar se existe uma migration de endereço estruturado
+(`local_nome`/`local_cep`/`local_logradouro`/...) nunca escrita ou nunca aplicada — comparar
+`lib/supabase/database.types.ts` com o histórico de migrations e com `PRODUCT.md`/changelog para
+decidir entre (a) escrever e aplicar a migration faltante localmente, ou (b) reverter
+`public-access.ts`/`EditEventForm.tsx`/`VenueFields.tsx` para usar só a coluna `local` existente —
+e então corrigir `findPublicReleaseEvent` para nunca descartar `error` de `maybeSingle()` em
+silêncio (esse descarte é o que transformou um erro de schema em 404 indistinguível de "evento não
+existe"). Decisão sobre qual caminho tomar deliberadamente não foi executada nesta rodada.
+
 ## Ambiente Claude Code (este lote)
 
 - Versão: 2.1.319
