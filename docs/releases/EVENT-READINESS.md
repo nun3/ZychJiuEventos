@@ -2,7 +2,7 @@
 
 **Branch candidata:** `integration/event-readiness-20261106`
 **Worktree:** `/home/nune/Meus Projetos/jiu-event-readiness`
-**HEAD nesta rodada:** `2f47bae`
+**HEAD nesta rodada:** `3ae0578`
 **Referência de prioridade:** evento de 21/11/2026 — não é um limite para reduzir qualidade.
 **Sem push, sem deploy, sem migration/escrita em `zigjiu`.**
 
@@ -106,19 +106,33 @@ decisão correta): `automação/tests/organization-context.test.ts`,
 
 ---
 
-## 4. Consolidação de categorias (herdado do lote anterior, revalidado aqui)
+## 4. Consolidação de categorias (herdado do lote anterior, revalidado e ampliado aqui)
 
-Sem mudança de código nesta rodada — `feat/category-multi-select` entrou por merge. Revalidado no
-candidato integrado:
+`feat/category-multi-select` entrou por merge sem mudança de código nesta rodada; o que mudou
+agora é a profundidade da validação — escala real (144 categorias), não só os 2-4 dos testes
+anteriores:
 
 | Item | Estado |
 | --- | --- |
 | Seleção múltipla e "selecionar todas" | PASS (Playwright, modo leitura) |
-| Expansão U→M/F, mesmo `catalog_category_id` no par | PASS (unitário) |
-| `ordem` do catálogo propagado (não mais fixo em 1) | PASS (unitário) — necessário para `categorize()`/`classifyFromCatalog` desempatarem corretamente com dezenas de categorias por versão |
+| Expansão U→M/F, mesmo `catalog_category_id` no par | PASS (unitário, inclusive com as 99 definições reais — `catalog-full-scale.test.ts`) |
+| `ordem` do catálogo propagado (não mais fixo em 1) | PASS (unitário) — necessário para `categorize()`/`classifyFromCatalog` desempatarem corretamente com dezenas de categorias por versão; confirmado nas 144 categorias efetivas reais, não só em pares isolados |
+| Sobreposição / fronteira entre classes de peso adjacentes | PASS (unitário, `catalog-full-scale.test.ts`) — peso exatamente no teto de uma classe cai nela, não na vizinha, em todo o catálogo real |
+| Separação M/F absoluta | PASS (unitário, `catalog-full-scale.test.ts`) — testado nas 144 categorias reais, não só num par isolado |
 | Uma única versão com todas as categorias selecionadas | PASS (unitário + leitura do código da action) |
-| Compatibilidade com inscrição (`categorize()`, RPC) | Verificado por leitura e teste unitário; **RPC não exercitada contra banco** |
-| Compatibilidade com checagem e chaves | **Não verificado nesta rodada** — os pontos que leem `event_categories` (checagem, chaves, `category-resolver.ts`) não filtram por `catalog_category_id` nem assumem no máximo 2 linhas por versão; nenhuma mudança de contrato foi necessária, mas não há teste direto exercitando checagem/chaves com uma versão de 144 categorias |
+| Compatibilidade com inscrição (`categorize()`, `resolvePublicCategory`, RPC) | Ambos os caminhos que leem `ordem` para desempatar — `categorize()` (evento) e `resolvePublicCategory`/`classifyFromCatalog` (pré-visualização pública) — validados por unitário na escala real (99 definições, 144 categorias efetivas); **a RPC `create_event_registrations` em si não foi exercitada contra banco** |
+| Compatibilidade com checagem (`checagem/page.tsx`) | Validado por leitura: `categoryNames` é um `Map` chaveado por `event_categories.id` (não por `nome` nem por `catalog_category_id`), sem `.limit()` nem suposição de poucas categorias — não há risco de colisão ou truncamento com 144 linhas. Não coberto por teste automatizado direto (ver limitação abaixo) |
+| Compatibilidade com chaves (`chaves/data.ts`) | Validado por leitura: `loadBracketPageData` só consulta categorias que já têm inscrição efetivada ou chave gerada (`athleteCountByCategory` + `bracket.category_id`), não todas as `event_categories` da versão ativa — o tamanho da versão (144) não entra na query. `buildBracketView` filtra tudo por `bracket.id`, sem suposição de quantidade. Não coberto por teste automatizado direto (ver limitação abaixo) |
+
+**Limitação encontrada, não corrigida:** tentei exportar `buildBracketView` e testá-la
+diretamente por unitário (incluindo um teste de volume com 150 brackets simultâneos, para
+confirmar isolamento de dados entre categorias). O arquivo `chaves/data.ts` usa alias `@/*` e
+`import 'server-only'`; `automação/tsconfig.json` não resolve esses alias em tempo de execução —
+a mesma lacuna que já fazia `registration-correction.test.ts` falhar antes desta missão (não
+introduzida aqui). Resolver exigiria adicionar `tsconfig-paths` como dependência de
+desenvolvimento do `automação` — mudança de infraestrutura de teste, fora deste lote. A tentativa
+foi revertida sem deixar diff; a validação de checagem/chaves ficou por leitura de código, não por
+teste automatizado novo.
 
 ---
 
@@ -128,7 +142,7 @@ candidato integrado:
 | --- | --- | --- |
 | TypeScript | `tsc --noEmit` | PASS |
 | Lint | `next lint` (projeto inteiro) | PASS (1 aviso pré-existente) |
-| Unitários | `node --test automação/tests/*.test.ts` | **214/215** — 1 falha pré-existente (`registration-correction.test.ts`, alias `@/lib/supabase/database.types` não resolvido pelo `ts-node` isolado do `automação`; reproduzida de forma idêntica em todos os worktrees desta reconciliação, não introduzida por este lote) |
+| Unitários | `node --test automação/tests/*.test.ts` | **221/222** — 1 falha pré-existente (`registration-correction.test.ts`, alias `@/lib/supabase/database.types` não resolvido pelo `ts-node` isolado do `automação`; reproduzida de forma idêntica em todos os worktrees desta reconciliação, não introduzida por este lote; mesma causa-raiz documentada em §4 para `chaves/data.ts`) |
 | Build | `next build` | PASS |
 | Playwright — categorias | `playwright.categories.config.ts` | 2/2 PASS |
 | Playwright — integração lotes 2/3/4 | `playwright.integration.config.ts` | 7/8 PASS, 1 skip (staff dedicado — `E2E_STAFF` ainda não configurado, limitação já conhecida) |
@@ -278,7 +292,7 @@ provisionado.
 | Dimensão | Estado |
 | --- | --- |
 | Criação de evento | Mais resiliente (fases, uploads, retry) nesta branch candidata; **não publicada, não homologada com escrita** |
-| Categorias | Tabela completa possível numa só versão; **RPC e UI de inscrição com 144 categorias não exercitadas contra banco** |
+| Categorias | Tabela completa possível numa só versão; classificação (`categorize()`), ordem, sobreposições e separação M/F validados na escala real (144 categorias) por unitário; **RPC, checagem e chaves com 144 categorias ainda não exercitadas contra banco** |
 | Organização administrativa | Deixa de escolher arbitrariamente; **não confirmado se algum operador real é afetado** |
 | Dashboard, autenticação, superfícies públicas | Mesma cobertura já validada nos Lotes 2/3/4/6, revalidada aqui |
 | Carga (250/400 atletas, concorrência) | **NOT_RUN — BLOCKED BY ENVIRONMENT** — a estratégia de projeto independente foi cancelada em 6 de novembro; sem um segundo ambiente, não há onde rodar carga ou concorrência sem risco à produção. Não é impossível em definitivo: uma nova decisão de ambiente reabre o caminho |
@@ -298,10 +312,17 @@ implementação com homologação se aplica integralmente aqui.
 
 ## 8. Próxima atividade que pode ser executada automaticamente
 
-**Sem depender de autorização nova:** estender a cobertura de checagem e chaves para uma versão de
-categorias com muitas linhas (§4) — hoje só testada com 1–4 categorias por versão nos specs
-herdados. É um teste novo, não uma mudança de contrato, e não precisa de banco real: pode ser
-unitário sobre os dados que `checagem/page.tsx` e `chaves/data.ts` já leem.
+**Concluído nesta rodada:** `categorize()` e `resolvePublicCategory`/`classifyFromCatalog`
+validados na escala real das 99 definições / 144 categorias efetivas (§4), incluindo fronteiras
+de peso e separação M/F. A tentativa de testar `chaves/data.ts` por unitário esbarrou numa lacuna
+de infraestrutura de teste já existente antes desta missão (§4) — não corrigida, por ser maior que
+este lote.
+
+**Sem depender de autorização nova, ainda não feito:** revisar `EventCategoriesPreview.tsx` e a
+listagem pública de categorias em `app/eventos/[id]/page.tsx` quanto à leitura com até 144 linhas
+— o Lote 5 já registrou como limitação conhecida que essas telas "não foram redesenhadas para até
+144 linhas". Isso é sobre leiturabilidade/UX da tela, não correção; dá para avaliar por leitura de
+código e, se necessário, com teste de snapshot/Playwright sem escrita.
 
 **Bloqueado por decisão/autorização que só você pode dar:**
 
