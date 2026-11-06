@@ -3,7 +3,9 @@ import { test } from 'node:test'
 import {
   buildCategoryVersionRows,
   categoryInsertCompensation,
+  definitionNeedsOverride,
   deriveCategoryFormStateFromCatalog,
+  expandCatalogSelectionToCategoryRows,
   formatCatalogCategoryDefaultName,
   validateCategoryInputAgainstCatalog,
   type CatalogCategoryDefinition,
@@ -275,4 +277,91 @@ test('retry depois de falha recomeça o lote inteiro, sem completar um sexo só'
   if (!again.ok) return
   const retry = buildCategoryVersionRows(again.values, preMirimGalo.id, null)
   assert.deepEqual(retry.map((row) => row.genero), ['M', 'F'])
+})
+
+// --- Seleção múltipla do catálogo (G2, lote 5 — montagem da tabela) ---
+
+const preMirimPluma: CatalogCategoryDefinition = {
+  ...preMirimGalo,
+  id: 'ca7a1001-0000-4000-8000-000000000002',
+  codigo: 'pre_mirim_pluma',
+  nome: 'Pluma',
+  peso_min_kg: 14.8,
+  peso_max_kg: 17.9,
+  ordem: 2,
+}
+
+test('definitionNeedsOverride só exige teto quando o catálogo não fixa idade_max ou peso_max_kg', () => {
+  assert.deepEqual(definitionNeedsOverride(preMirimGalo), { idade: false, peso: false })
+  assert.deepEqual(definitionNeedsOverride(adultoMasculinoLeve), { idade: true, peso: false })
+  assert.deepEqual(definitionNeedsOverride(adultoPesadissimo), { idade: true, peso: true })
+})
+
+test('seleção vazia é rejeitada sem gerar uma versão sem categoria', () => {
+  const result = expandCatalogSelectionToCategoryRows([], {}, null)
+  assert.equal(result.ok, false)
+  if (!result.ok) assert.match(result.message, /selecione ao menos uma categoria/i)
+})
+
+test('seleção parcial de duas definições compartilhadas gera 4 categorias efetivas, com o ordem do catálogo (não 1 fixo)', () => {
+  const result = expandCatalogSelectionToCategoryRows([preMirimGalo, preMirimPluma], {}, 5)
+  assert.equal(result.ok, true)
+  if (!result.ok) return
+  assert.equal(result.rows.length, 4)
+  assert.deepEqual(result.rows.map((row) => row.genero), ['M', 'F', 'M', 'F'])
+  assert.deepEqual(result.rows.map((row) => row.ordem), [1, 1, 2, 2])
+  assert.equal(result.rows[0].catalog_category_id, preMirimGalo.id)
+  assert.equal(result.rows[1].catalog_category_id, preMirimGalo.id)
+  assert.equal(result.rows[2].catalog_category_id, preMirimPluma.id)
+  assert.equal(result.rows[3].catalog_category_id, preMirimPluma.id)
+  assert.ok(result.rows.every((row) => row.fight_duration_minutes === 5))
+  assert.equal(new Set(result.rows.map((row) => row.nome)).size, 4)
+})
+
+test('definições M e F da mesma divisão não se misturam automaticamente, cada uma mantém seu gênero', () => {
+  const result = expandCatalogSelectionToCategoryRows([adultoMasculinoLeve, femininoLeve], { [adultoMasculinoLeve.id]: { idadeMax: '40' }, [femininoLeve.id]: { idadeMax: '40' } }, null)
+  assert.equal(result.ok, true)
+  if (!result.ok) return
+  assert.equal(result.rows.length, 2)
+  assert.deepEqual(result.rows.map((row) => row.genero).sort(), ['F', 'M'])
+  assert.notEqual(result.rows[0].catalog_category_id, result.rows[1].catalog_category_id)
+})
+
+test('"selecionar todas" com divisão sem teto exige idade máxima e peso máximo informados', () => {
+  const missingBoth = expandCatalogSelectionToCategoryRows([adultoMasculinoLeve, adultoPesadissimo], {}, null)
+  assert.equal(missingBoth.ok, false)
+  if (!missingBoth.ok) assert.match(missingBoth.message, /idade máxima/i)
+
+  const missingWeight = expandCatalogSelectionToCategoryRows(
+    [adultoMasculinoLeve, adultoPesadissimo],
+    { [adultoMasculinoLeve.id]: { idadeMax: '45' }, [adultoPesadissimo.id]: { idadeMax: '45' } },
+    null,
+  )
+  assert.equal(missingWeight.ok, false)
+  if (!missingWeight.ok) assert.match(missingWeight.message, /peso máximo/i)
+
+  const complete = expandCatalogSelectionToCategoryRows(
+    [adultoMasculinoLeve, adultoPesadissimo],
+    { [adultoMasculinoLeve.id]: { idadeMax: '45' }, [adultoPesadissimo.id]: { idadeMax: '45', pesoMax: '150' } },
+    null,
+  )
+  assert.equal(complete.ok, true)
+  if (!complete.ok) return
+  assert.equal(complete.rows.find((row) => row.catalog_category_id === adultoMasculinoLeve.id)?.idade_max, 45)
+  assert.equal(complete.rows.find((row) => row.catalog_category_id === adultoPesadissimo.id)?.peso_max_kg, 150)
+})
+
+test('teto informado abaixo do mínimo do catálogo é recusado, sem inventar um valor', () => {
+  const belowAge = expandCatalogSelectionToCategoryRows([adultoMasculinoLeve], { [adultoMasculinoLeve.id]: { idadeMax: '10' } }, null)
+  assert.equal(belowAge.ok, false)
+
+  const belowWeight = expandCatalogSelectionToCategoryRows([adultoPesadissimo], { [adultoPesadissimo.id]: { idadeMax: '40', pesoMax: '50' } }, null)
+  assert.equal(belowWeight.ok, false)
+})
+
+test('duas definições que gerariam o mesmo nome efetivo são recusadas antes do insert', () => {
+  const clash: CatalogCategoryDefinition = { ...preMirimGalo, id: 'ca7a1001-0000-4000-8000-000000000003' }
+  const result = expandCatalogSelectionToCategoryRows([preMirimGalo, clash], {}, null)
+  assert.equal(result.ok, false)
+  if (!result.ok) assert.match(result.message, /mesmo nome/i)
 })
