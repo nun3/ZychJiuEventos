@@ -152,7 +152,37 @@ candidato integrado:
 
 ---
 
-## 6. Homologação independente — scripts preparados
+## 6. Homologação independente — CANCELADA em 6 de novembro de 2026
+
+**A decisão abaixo foi revogada pela diretriz "MEU CAMP — CORREÇÃO IMEDIATA DE DIRETRIZ" (6 de
+novembro de 2026, mesmo dia).** Não haverá um segundo projeto Supabase nesta etapa. O único
+projeto é `zigjiu` / `kfvypacjzlzwwblsbpwj`, Plano Pro, com a estratégia de manter backups e
+seguir o desenvolvimento sem ambiente remoto adicional.
+
+Nenhum recurso remoto chegou a ser criado: o guard (`independent-homologation-guard.ts`) só
+permite escrita com variáveis `HOMOLOG_*` que nunca foram preenchidas, e a única execução do
+gerador (`independent-homologation-fixtures.ts`) rodou sem `--execute` e sem credenciais — parou
+na guarda de ambiente antes de qualquer chamada de rede. Nenhum segundo MCP do Supabase foi
+configurado.
+
+**Backup automático no Pro — verificação tentada, sem resultado novo.** O MCP do Supabase desta
+sessão continua escopado a um único projeto, sem as 10 ferramentas de conta/billing que listam
+backups (`list_projects`, `get_project`, `get_cost` etc. — nenhuma delas está no meu conjunto de
+13 ferramentas, como já relatado antes desta missão). Não há como confirmar por aqui, em leitura,
+se um backup automático já foi concluído desde a atualização para o Pro. Continua exigindo o
+painel: **Database → Backups → Scheduled** no projeto `kfvypacjzlzwwblsbpwj`.
+
+Os arquivos abaixo (commit `5a536a7`) são preservados como registro técnico e permanecem no
+repositório, mas **não devem ser usados** até uma decisão em contrário:
+
+- `automação/tests/support/independent-homologation-guard.ts`
+- `automação/tests/independent-homologation-guard.test.ts`
+- `automação/scripts/independent-homologation-fixtures.ts`
+- `automação/.env.homologation.example`
+
+A seção original, mantida abaixo só como histórico do que foi preparado:
+
+### 6.0 (histórico, não vigente) Homologação independente — scripts preparados
 
 **Objetivo:** permitir testar RPCs, inscrições, falhas parciais e concorrência sem tocar `zigjiu`.
 Nada aqui foi executado contra um banco real nesta sessão — só preparado.
@@ -238,6 +268,8 @@ provisionado.
    depois `--athletes=400`, depois com `--concurrency` crescente, registrando os relatórios JSON
    gerados.
 
+**(Fim do histórico não vigente — ver §6 acima.) Esses quatro passos não devem ser seguidos.**
+
 ---
 
 ## 7. Estado de prontidão para um campeonato de mais de 150 atletas
@@ -248,9 +280,14 @@ provisionado.
 | Categorias | Tabela completa possível numa só versão; **RPC e UI de inscrição com 144 categorias não exercitadas contra banco** |
 | Organização administrativa | Deixa de escolher arbitrariamente; **não confirmado se algum operador real é afetado** |
 | Dashboard, autenticação, superfícies públicas | Mesma cobertura já validada nos Lotes 2/3/4/6, revalidada aqui |
-| Carga (250/400 atletas, concorrência) | Scripts prontos; **nenhuma execução real** |
-| Jornada esportiva ponta a ponta | **Não exercitada** nesta rodada |
+| Carga (250/400 atletas, concorrência) | **NOT_RUN definitivo nesta fase** — a estratégia de projeto independente foi cancelada em 6 de novembro; sem um segundo ambiente, não há onde rodar carga ou concorrência sem risco à produção |
+| Jornada esportiva ponta a ponta com escrita | **NOT_RUN definitivo nesta fase**, pelo mesmo motivo |
 | Financeiro | Fora de escopo deste lote — linhagem A provisória, conforme decisão já registrada |
+
+**Backup como estratégia vigente:** a diretriz de 6 de novembro define manter backups no Pro do
+`zigjiu` em vez de um ambiente separado. A existência de um backup **não** torna `zigjiu` seguro
+para testes destrutivos — restaurar um backup é recuperação, não isolamento. Nenhum teste de
+escrita, RPC ou concorrência passa a ser seguro só por o Pro existir.
 
 **Isto não é homologação operacional.** É o estado do candidato de código, testado estaticamente e
 com os specs Playwright de leitura que já existiam. A frase do `AGENTS.md` sobre não confundir
@@ -267,8 +304,9 @@ unitário sobre os dados que `checagem/page.tsx` e `chaves/data.ts` já leem.
 
 **Bloqueado por decisão/autorização que só você pode dar:**
 
-1. Autorizar a criação do projeto Supabase descartável (§6.5) — sem isso, carga, concorrência e
-   jornada esportiva continuam NOT_RUN.
+1. ~~Autorizar a criação do projeto Supabase descartável~~ — **cancelado em 6 de novembro de
+   2026.** Carga, concorrência e jornada esportiva com escrita permanecem NOT_RUN nesta fase, sem
+   um caminho previsto para sair desse estado além de uma nova decisão sua.
 2. Confirmar se algum operador real tem filiação administrativa ambígua (§3) antes de levar a
    correção adiante — ou autorizar a consulta `execute_sql` bloqueada pelo classificador desta
    sessão.
