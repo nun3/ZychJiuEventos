@@ -32,9 +32,9 @@ test('env de organização sem membership falha fechado e não cai na outra', ()
   assert.deepEqual(resolved, { status: 'unavailable', reason: 'none' });
 });
 
-test('env ausente e mais de uma filiação administrativa falha fechado, sem escolher arbitrariamente', () => {
+test('env ausente e mais de uma filiação administrativa exige escolha explícita, sem escolher arbitrariamente', () => {
   const resolved = resolveAuthenticatedOrganizationContext(memberships, {});
-  assert.deepEqual(resolved, { status: 'unavailable', reason: 'ambiguous' });
+  assert.deepEqual(resolved, { status: 'unavailable', reason: 'ambiguous', options: memberships });
 });
 
 test('env ausente e uma única filiação administrativa resolve normalmente', () => {
@@ -45,4 +45,22 @@ test('env ausente e uma única filiação administrativa resolve normalmente', (
 test('env ausente e nenhuma filiação administrativa falha fechado por ausência', () => {
   const resolved = resolveAuthenticatedOrganizationContext([], {});
   assert.deepEqual(resolved, { status: 'unavailable', reason: 'none' });
+});
+
+test('mais de uma filiação e escolha explícita de organização existente resolve para a escolhida', () => {
+  const resolved = resolveAuthenticatedOrganizationContext(memberships, {}, meuCamp);
+  assert.deepEqual(resolved, {
+    status: 'resolved',
+    context: { organizationId: meuCamp, organizationName: 'MEU CAMP', role: 'owner' },
+  });
+});
+
+test('mais de uma filiação e escolha explícita de organização que não é filiação do usuário falha fechado', () => {
+  const resolved = resolveAuthenticatedOrganizationContext(memberships, {}, other);
+  assert.deepEqual(resolved, { status: 'unavailable', reason: 'invalid-choice', options: memberships });
+});
+
+test('uma única filiação ignora qualquer organizationId pedido e resolve pela única filiação', () => {
+  const resolved = resolveAuthenticatedOrganizationContext([memberships[1]], {}, ricardo);
+  assert.deepEqual(resolved, { status: 'resolved', context: memberships[1] });
 });

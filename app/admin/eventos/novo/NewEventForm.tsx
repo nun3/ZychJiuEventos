@@ -69,12 +69,19 @@ function FilePicker({
   )
 }
 
-export default function NewEventForm() {
+type OrganizationOption = { organizationId: string; organizationName: string }
+
+export default function NewEventForm({
+  organizationOptions,
+}: {
+  organizationOptions?: OrganizationOption[]
+}) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [phasesOpen, setPhasesOpen] = useState(false)
+  const requiresOrganizationChoice = Boolean(organizationOptions && organizationOptions.length > 1)
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -82,6 +89,9 @@ export default function NewEventForm() {
     const form = event.currentTarget
     const data = new FormData(form)
     const next: Record<string, string> = {}
+    if (requiresOrganizationChoice && !textOf(data, 'organization_id')) {
+      next.organization_id = 'Escolha a organização responsável por este evento.'
+    }
     if (textOf(data, 'nome').length < 3) next.nome = 'Informe o nome do evento.'
     if (!textOf(data, 'data_evento')) next.data_evento = 'Informe a data do evento.'
     if (textOf(data, 'local').length < 3) next.local = 'Informe o local do evento.'
@@ -132,6 +142,22 @@ export default function NewEventForm() {
       <PanelColumns
         main={(
           <>
+            {requiresOrganizationChoice ? (
+              <section className={panelClass} aria-labelledby="event-organization-title">
+                <h2 id="event-organization-title" className="font-mc-display text-xl font-semibold text-mc-text-primary">Organização responsável</h2>
+                <p className="mt-1 font-mc-interface text-sm text-mc-text-secondary">Sua conta administra mais de uma organização. Escolha em qual este evento será criado.</p>
+                <div className="mt-4 max-w-md">
+                  <FormField id="organization_id" label="Organização" required error={errors.organization_id}>
+                    <Select name="organization_id" defaultValue="" aria-invalid={Boolean(errors.organization_id)}>
+                      <option value="" disabled>Selecione uma organização</option>
+                      {organizationOptions?.map((option) => (
+                        <option key={option.organizationId} value={option.organizationId}>{option.organizationName}</option>
+                      ))}
+                    </Select>
+                  </FormField>
+                </div>
+              </section>
+            ) : null}
             <section className={panelClass} aria-labelledby="event-essentials-title">
               <h2 id="event-essentials-title" className="font-mc-display text-xl font-semibold text-mc-text-primary">Informações essenciais</h2>
               <p className="mt-1 font-mc-interface text-sm text-mc-text-secondary">Comece com as informações essenciais do campeonato. Você poderá completar os detalhes antes de publicar.</p>

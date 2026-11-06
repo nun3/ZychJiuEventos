@@ -15,9 +15,12 @@ export default async function NewEventPage() {
   if (!authData.user) redirect('/admin/autenticacao?redirectTo=%2Fadmin%2Feventos%2Fnovo')
 
   const organization = await getAdministrativeOrganizationContext()
-  if (organization.status !== 'resolved') redirect('/dashboard?erro=sem_permissao')
+  if (organization.status !== 'resolved' && organization.reason !== 'ambiguous') {
+    redirect('/dashboard?erro=sem_permissao')
+  }
 
   const actor = await getDashboardActor()
+  const organizationOptions = organization.status === 'resolved' ? undefined : organization.options
 
   return (
     <div className="min-h-screen bg-mc-background">
@@ -45,7 +48,7 @@ export default async function NewEventPage() {
               </span>
             )}
           />
-          <NewEventForm />
+          <NewEventForm organizationOptions={organizationOptions} />
         </PageContainer>
       </main>
     </div>

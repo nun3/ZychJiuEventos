@@ -22,7 +22,9 @@ function organizationName(value: unknown) {
  * dependia da ordem não garantida do PostgREST. Buscar todas e delegar fecha essa ambiguidade
  * (ver `resolveAuthenticatedOrganizationContext`) em vez de duplicar a regra aqui.
  */
-export async function getAuthenticatedOrganizationContext(): Promise<OrganizationContextResolution> {
+export async function getAuthenticatedOrganizationContext(
+  requestedOrganizationId?: string,
+): Promise<OrganizationContextResolution> {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { status: 'unavailable' }
@@ -39,13 +41,23 @@ export async function getAuthenticatedOrganizationContext(): Promise<Organizatio
     role: membership.role,
   }))
 
-  return resolveAuthenticatedOrganizationContext(mapped)
+  return resolveAuthenticatedOrganizationContext(mapped, process.env, requestedOrganizationId)
 }
 
-export async function getAdministrativeOrganizationContext(): Promise<OrganizationContextResolution> {
-  const resolved = await getAuthenticatedOrganizationContext()
+/**
+ * `requestedOrganizationId` é a escolha explícita do operador (ex.: um `<select>` no formulário
+ * de criação de evento) quando há mais de uma filiação administrativa. A filiação é buscada de
+ * novo no servidor a cada chamada — a escolha nunca é aceita sem revalidar contra as filiações
+ * reais do usuário autenticado.
+ */
+export async function getAdministrativeOrganizationContext(
+  requestedOrganizationId?: string,
+): Promise<OrganizationContextResolution> {
+  const resolved = await getAuthenticatedOrganizationContext(requestedOrganizationId)
   if (resolved.status !== 'resolved' || !isAdministrativeOrganizationRole(resolved.context.role)) {
-    return { status: 'unavailable' }
+    return resolved.status === 'unavailable' && resolved.reason
+      ? { status: 'unavailable', reason: resolved.reason, options: resolved.options }
+      : { status: 'unavailable' }
   }
   return resolved
 }

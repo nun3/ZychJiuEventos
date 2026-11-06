@@ -72,10 +72,16 @@ export async function createEvent(formData: FormData): Promise<EventActionResult
   const supabase = createClient()
   const { data: authData } = await supabase.auth.getUser()
   if (!authData.user) return failure('Sua sessão expirou. Entre novamente.')
-  const organization = await getAdministrativeOrganizationContext()
+  const requestedOrganizationId = text(formData, 'organization_id')
+  const organization = await getAdministrativeOrganizationContext(
+    uuidPattern.test(requestedOrganizationId) ? requestedOrganizationId : undefined,
+  )
   if (organization.status !== 'resolved') {
     if (organization.reason === 'ambiguous') {
-      return failure('Sua conta pertence a mais de uma organização com permissão para criar eventos, e o sistema não escolhe por você. Peça para o administrador da plataforma vincular sua conta a uma organização só, ou definir PUBLIC_ORGANIZATION_ID.')
+      return failure('Sua conta pertence a mais de uma organização com permissão para criar eventos. Escolha uma organização antes de continuar.')
+    }
+    if (organization.reason === 'invalid-choice') {
+      return failure('A organização selecionada não corresponde a uma filiação administrativa sua. Escolha novamente.')
     }
     return failure('Você não possui permissão para criar eventos.')
   }

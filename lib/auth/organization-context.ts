@@ -8,7 +8,7 @@ export type AuthenticatedOrganizationContext = {
 
 export type OrganizationContextResolution =
   | { status: 'resolved'; context: AuthenticatedOrganizationContext }
-  | { status: 'unavailable'; reason?: 'none' | 'ambiguous' }
+  | { status: 'unavailable'; reason?: 'none' | 'ambiguous' | 'invalid-choice'; options?: AuthenticatedOrganizationContext[] }
 
 export function isAdministrativeOrganizationRole(role: string) {
   return role === 'owner' || role === 'organizer'
@@ -17,6 +17,7 @@ export function isAdministrativeOrganizationRole(role: string) {
 export function resolveAuthenticatedOrganizationContext(
   memberships: AuthenticatedOrganizationContext[],
   env: NodeJS.ProcessEnv = process.env,
+  requestedOrganizationId?: string,
 ): OrganizationContextResolution {
   const scope = getPublicOrganizationScope(env)
 
@@ -30,13 +31,19 @@ export function resolveAuthenticatedOrganizationContext(
     return { status: 'resolved', context: match }
   }
 
-  // Sem PUBLIC_ORGANIZATION_ID, não há como adivinhar qual organização é a "ativa" de um
-  // usuário com mais de uma filiação administrativa. Escolher a primeira (ordem não garantida
-  // pelo PostgREST sem ORDER BY) arriscava criar evento, categoria ou qualquer outra gravação
-  // administrativa na organização errada. Falhar fechado aqui é mais seguro do que adivinhar.
   if (memberships.length === 0) return { status: 'unavailable', reason: 'none' }
-  if (memberships.length > 1) return { status: 'unavailable', reason: 'ambiguous' }
-  return { status: 'resolved', context: memberships[0] }
+  if (memberships.length === 1) return { status: 'resolved', context: memberships[0] }
+
+  // Mais de uma filiação administrativa: não há organização "ativa" implícita. A regra de
+  // produto exige escolha explícita do operador, revalidada aqui contra as filiações reais
+  // (não confiar num organizationId vindo só do cliente) em vez de adivinhar a primeira (ordem
+  // não garantida pelo PostgREST sem ORDER BY) ou de bloquear a criação por completo.
+  if (requestedOrganizationId) {
+    const match = memberships.find((membership) => membership.organizationId === requestedOrganizationId)
+    if (match) return { status: 'resolved', context: match }
+    return { status: 'unavailable', reason: 'invalid-choice', options: memberships }
+  }
+  return { status: 'unavailable', reason: 'ambiguous', options: memberships }
 }
 
 export function resolveOwnedOrganizationContext(
