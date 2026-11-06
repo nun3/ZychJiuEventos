@@ -372,3 +372,56 @@ rodada. Nenhum outro lote integrado depende de migration não aplicada.
 não tem efeito em produção sem a migration aplicada; homologação com escrita continua bloqueada
 por decisão de ambiente ainda pendente do proprietário. Sem bloqueador de correção restante nos
 itens desta rodada — o bloqueio é de processo de publicação, não de código.
+
+---
+
+## 10. Rodada de 6 de novembro de 2026 — aplicação da migration e auditoria de publicação condicional
+
+Autorização do proprietário: aplicar exclusivamente
+`supabase/migrations/202611060001_category_rule_set_atomic_activation.sql` em `zigjiu`, auditar o
+release gate e publicar na Vercel automaticamente **somente se GO integral**.
+
+**Migration: aplicada e validada.** Pré-checagem: `category_rule_sets` estava vazia em produção
+(0 linhas), tornando o saneamento de duplicatas um no-op seguro; schema de `category_rule_sets` e
+`events` (incluindo o enum `event_status`) confere exatamente com o esperado pela função; RLS
+`category_rule_sets_staff_write` confirmada por leitura de `pg_policy`. Aplicada via
+`apply_migration` (registrada como `20261106205820`). Pós-checagem: função
+`activate_category_rule_set` criada como `SECURITY INVOKER` com `search_path` fixo (confere com o
+SQL autorizado); índice único parcial `category_rule_sets_one_active_per_event` criado; advisors
+de segurança idênticos antes/depois (mesmas 7 categorias, mesmas contagens) — nenhum achado novo
+introduzido. Privilégio `EXECUTE` padrão do Postgres ficou aberto a `PUBLIC`/`anon` (a migration
+só concede explicitamente a `authenticated`, sem revogar de `PUBLIC`); comparado a outras funções
+`SECURITY INVOKER` já existentes no schema (`belt_order`, `is_valid_pix_key`, `has_organization_role`),
+esse é o padrão vigente do projeto — a própria RLS, não a concessão de `EXECUTE`, é a fronteira de
+autorização real, e ela permanece correta. Não é uma regressão desta migration.
+
+**Código:** sem diff de código desde o commit já revisado `c270279`/`931e5d4` — confirmado por
+`git diff --stat` (só documentação mudou). `tsc --noEmit` PASS; `next lint` PASS (1 warning
+pré-existente de `<img>`); `next build` completo PASS (60+ rotas); unitários 229/230 (a 1 falha é
+a mesma pré-existente de alias em `registration-correction.test.ts`, não relacionada). Evidência
+de Playwright (categorias 2/2, integração 7/8, auth 13/13) reaproveitada da rodada anterior, sem
+mudança de código que a invalidasse.
+
+**Banco:** bloqueador anterior ("RPC inexistente em produção") **resolvido** pela aplicação desta
+migration. Nenhuma outra migration pendente.
+
+**Jornada esportiva, carga e concorrência real:** **segue NOT_RUN — BLOCKED BY ENVIRONMENT**,
+idêntico às duas rodadas anteriores. Nenhuma decisão de ambiente seguro para escrita foi tomada
+nesta sessão.
+
+**Finanças:** PASS — sem diff, modo manual mantido, sem split/settlement/webhook alterado.
+
+**Vercel/recuperação:** reconfirmado via `list_deployments` — produção ainda
+`dpl_AMKofx7oNmQnQiPhr2xDTWSdUPaa` (`b0a32c7`), candidato de rollback ainda
+`dpl_8S5v1WnraoBefZwARg5fDn8EScfs`. Nenhum deployment novo. Backup automático do plano Pro
+permanece sem confirmação direta por ferramenta (mesma limitação já documentada na rodada
+anterior); risco mitigado pela migration ser aditiva e ter afetado 0 linhas de dados reais.
+
+**GO/NO-GO: NO-GO. Nenhuma publicação na Vercel foi realizada.** A migration resolveu o
+bloqueador de banco, mas o critério de publicação exige que nenhum teste NOT_RUN indispensável
+para a segurança do evento real permaneça aberto — a jornada esportiva completa (inscrição →
+checagem → pesagem → chaves → resultados) com escrita, carga (250/400 atletas) e concorrência
+reais nunca foi exercitada, por falta de ambiente aprovado pelo proprietário. Isso por si só exige
+NO-GO, independentemente do código estar correto. Decisões ainda pendentes do proprietário:
+escolha de ambiente de homologação com escrita, linhagem financeira A/B/C, e base Git dos
+próximos lotes.

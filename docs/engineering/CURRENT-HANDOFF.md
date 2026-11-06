@@ -10,7 +10,7 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 | Worktree | `/home/nune/Meus Projetos/jiu-event-readiness` |
 | Branch | `integration/event-readiness-20261106` |
 | Candidato funcional validado | `a6dadbb` |
-| HEAD desta atualização | `5aa6c2d` |
+| HEAD desta atualização | `162c370` |
 
 O working tree original de `jiu` não foi modificado neste lote.
 
@@ -257,24 +257,54 @@ diferença é o próprio commit de documentação). Working tree limpo, branch e
 Nenhum achado novo. Decisão idêntica à já registrada na rodada de `c270279`, apenas reverificada
 com leitura real do estado atual de banco e Vercel antes de considerar a publicação autorizada.
 
+## Rodada de 6 nov 2026 — aplicação da migration autorizada e auditoria de publicação condicional
+
+Missão sob autorização explícita do proprietário: aplicar exclusivamente
+`supabase/migrations/202611060001_category_rule_set_atomic_activation.sql`, auditar o release
+gate e publicar na Vercel automaticamente **somente se GO integral**. Resumo executivo abaixo;
+detalhe completo em `docs/releases/EVENT-READINESS.md` §10.
+
+**Migration: aplicada em `zigjiu` e validada.** Registrada como `20261106205820`. Pré-checagem
+confirmou `category_rule_sets` vazia em produção (saneamento de duplicatas foi no-op seguro),
+schema compatível (incluindo o enum `event_status` usado pela função), RLS
+`category_rule_sets_staff_write` correta. Pós-checagem confirmou a função `SECURITY INVOKER` com
+`search_path` fixo, o índice único parcial criado, e advisors de segurança idênticos antes/depois
+(nenhum achado novo). Bloqueador anterior de banco ("RPC inexistente em produção") está resolvido.
+
+**Release gate: NO-GO. Nenhuma publicação na Vercel foi realizada.** Código sem diff desde
+`c270279`/`931e5d4` (só documentação mudou) — `tsc`, lint e `next build` completo PASS; unitários
+229/230 (mesma falha pré-existente de alias); Playwright reaproveitado da rodada anterior sem
+mudança que o invalidasse. O motivo do NO-GO é o mesmo das duas rodadas anteriores e **não mudou
+nesta sessão**: a jornada esportiva completa (inscrição → checagem → pesagem → chaves →
+resultados) com escrita, carga (250/400 atletas) e concorrência reais continua **NOT_RUN —
+BLOCKED BY ENVIRONMENT**, indispensável para comprovar a segurança de um evento real e sem
+decisão de ambiente do proprietário. Vercel reconfirmada sem mudança
+(`dpl_AMKofx7oNmQnQiPhr2xDTWSdUPaa` em produção, `dpl_8S5v1WnraoBefZwARg5fDn8EScfs` como rollback).
+
+**Residual:** privilégio `EXECUTE` da nova função ficou aberto a `PUBLIC`/`anon` por padrão do
+Postgres (a migration não revogou de `PUBLIC`); confere com o padrão já usado por outras funções
+`SECURITY INVOKER` deste schema, onde a RLS é a fronteira real de autorização — não é regressão,
+não corrigido por não ter sido pedido. Backup automático do Pro continua sem confirmação direta
+por ferramenta (mesma limitação de rodadas anteriores), risco mitigado por a migration ter
+afetado 0 linhas reais.
+
 ## Próxima missão
 
-O Claude Code está preparado para aplicar a migration já autorizada, na sessão seguinte, com
-aprovação humana nas ferramentas de escrita:
-
-1. **Aplicar** `supabase/migrations/202611060001_category_rule_set_atomic_activation.sql` em
-   `zigjiu`, seguindo a política de produção em `CLAUDE.md` (confirmar projeto, revisar o SQL,
-   dependências, backup, validar e registrar). Não aplicada nesta missão de configuração.
-2. Regenerar `lib/supabase/database.types.ts` com `supabase gen types` depois da aplicação.
-3. Smoke test seguro descrito na seção de RC acima, antes de qualquer decisão de publicação.
-4. Decisão de ambiente para homologação com escrita, carga (250/400 atletas) e concorrência real.
-5. Escolha da linhagem financeira A/B/C.
-6. Manter a regra “cada lote parte de `b0a32c7`” ou passar a trabalhar a partir deste candidato
+1. Regenerar `lib/supabase/database.types.ts` com `supabase gen types` quando o CLI estiver
+   disponível no ambiente (não instalado nesta sessão; a entrada manual já existente compila sem
+   erro, então não é bloqueador).
+2. Smoke test seguro (criar uma versão de categorias num evento de teste sintético, confirmar que
+   só ela fica `ativo = true`, e que ativar outra enquanto a checagem está travada falha) — ainda
+   não executado; pode ser feito agora que a RPC existe em produção, assim que houver evento
+   sintético disponível para isso.
+3. Decisão de ambiente para homologação com escrita, carga (250/400 atletas) e concorrência real
+   — bloqueador central de publicação, inalterado por três rodadas.
+4. Escolha da linhagem financeira A/B/C.
+5. Manter a regra “cada lote parte de `b0a32c7`” ou passar a trabalhar a partir deste candidato
    integrado.
 
-Publicação continua bloqueada até: migration aplicada, homologação com escrita, revisão da
-integração Vercel, release candidate com rollback preparado, e aprovação explícita do
-proprietário. Ver "Recomendação GO/NO-GO" na rodada acima.
+Publicação continua bloqueada até: homologação com escrita real, decisão de ambiente, e aprovação
+explícita do proprietário sobre os itens acima. A migration já não é mais bloqueador.
 
 ## Ambiente Claude Code (este lote)
 
