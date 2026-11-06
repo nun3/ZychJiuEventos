@@ -16,8 +16,9 @@ A expansão da definição compartilhada está implementada e testada no contrat
 | --- | --- | --- |
 | Implementação | `249c2686a06ea82f2586cd53033a37bce695c6aa` | `673497285d2c8aae206dee872a2ab1bf27c9c77d` |
 | Testes | `06c2d5b879dd196e54e8a64bb95755debbfeac91` | `0b4b619bdd59863fdb5964712b890f9b8c9284e7` |
+| Relatório | `e0a631e098b24f5623ee9b0ed96af1aa74253e13` | `020f1834987fac3ed6a1053bf1f2ce7d6876aada` |
 
-O commit de documentação é o que adiciona este arquivo e o ajuste de status em `PRODUCT.md`. O hash final e o tree hash desse commit ficam no registro da validação, lidos com `git rev-parse` depois do commit, porque o hash não pode constar dentro do próprio commit.
+O hash do commit que acrescenta esta linha não entra na tabela: ele apontaria para si mesmo. A validação de TypeScript e dos 29 testes foi repetida no checkout limpo de `e0a631e`.
 
 ## O que entrou
 
