@@ -29,13 +29,20 @@ test('usuário com Ricardo + MEU CAMP e env Ricardo seleciona Ricardo', () => {
 
 test('env de organização sem membership falha fechado e não cai na outra', () => {
   const resolved = resolveAuthenticatedOrganizationContext(memberships, { PUBLIC_ORGANIZATION_ID: other });
-  assert.deepEqual(resolved, { status: 'unavailable' });
+  assert.deepEqual(resolved, { status: 'unavailable', reason: 'none' });
 });
 
-test('env ausente preserva o comportamento multi-organização existente', () => {
+test('env ausente e mais de uma filiação administrativa falha fechado, sem escolher arbitrariamente', () => {
   const resolved = resolveAuthenticatedOrganizationContext(memberships, {});
-  assert.deepEqual(resolved, {
-    status: 'resolved',
-    context: memberships[0],
-  });
+  assert.deepEqual(resolved, { status: 'unavailable', reason: 'ambiguous' });
+});
+
+test('env ausente e uma única filiação administrativa resolve normalmente', () => {
+  const resolved = resolveAuthenticatedOrganizationContext([memberships[1]], {});
+  assert.deepEqual(resolved, { status: 'resolved', context: memberships[1] });
+});
+
+test('env ausente e nenhuma filiação administrativa falha fechado por ausência', () => {
+  const resolved = resolveAuthenticatedOrganizationContext([], {});
+  assert.deepEqual(resolved, { status: 'unavailable', reason: 'none' });
 });

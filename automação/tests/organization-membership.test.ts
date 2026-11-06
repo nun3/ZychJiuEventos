@@ -61,7 +61,7 @@ test('varias orgs fora da release nao escolhem tenant arbitrario', () => {
     { organizationId: ricardo, organizationName: 'Organização Teste Ricardo', role: 'owner' },
     { organizationId: homolog, organizationName: 'MC-ORG-E2E', role: 'owner' },
   ], { PUBLIC_ORGANIZATION_ID: meuCamp });
-  assert.deepEqual(resolved, { status: 'unavailable' });
+  assert.deepEqual(resolved, { status: 'unavailable', reason: 'ambiguous' });
 });
 
 test('run id de organizacoes e rastreavel', () => {

@@ -1,10 +1,10 @@
 import {
   isAdministrativeOrganizationRole,
+  resolveAuthenticatedOrganizationContext,
   resolveOwnedOrganizationContext,
   type AuthenticatedOrganizationContext,
   type OrganizationContextResolution,
 } from '@/lib/auth/organization-context'
-import { getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { createClient } from '@/lib/supabase/server'
 
 function organizationName(value: unknown) {
@@ -14,50 +14,32 @@ function organizationName(value: unknown) {
   return ''
 }
 
+/**
+ * Busca todas as filiações administrativas (owner/organizer) do usuário e delega a escolha da
+ * organização ativa a `resolveAuthenticatedOrganizationContext` — a mesma função pura já coberta
+ * por `organization-context.test.ts`. Antes desta correção, esta função reimplementava a mesma
+ * regra com `.limit(1)` sem `ORDER BY`: com mais de uma filiação, a organização escolhida
+ * dependia da ordem não garantida do PostgREST. Buscar todas e delegar fecha essa ambiguidade
+ * (ver `resolveAuthenticatedOrganizationContext`) em vez de duplicar a regra aqui.
+ */
 export async function getAuthenticatedOrganizationContext(): Promise<OrganizationContextResolution> {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { status: 'unavailable' }
 
-  const scope = getPublicOrganizationScope()
-  if (scope.mode === 'blocked') return { status: 'unavailable' }
-
-  if (scope.mode === 'restricted') {
-    const { data: membership } = await supabase
-      .from('organization_members')
-      .select('organization_id, role, organizations(nome)')
-      .eq('user_id', user.id)
-      .eq('organization_id', scope.organizationId)
-      .maybeSingle()
-
-    if (!membership) return { status: 'unavailable' }
-    return {
-      status: 'resolved',
-      context: {
-        organizationId: membership.organization_id,
-        organizationName: organizationName(membership.organizations),
-        role: membership.role,
-      },
-    }
-  }
-
-  const { data: membership } = await supabase
+  const { data: memberships } = await supabase
     .from('organization_members')
     .select('organization_id, role, organizations(nome)')
     .eq('user_id', user.id)
     .in('role', ['owner', 'organizer'])
-    .limit(1)
-    .maybeSingle()
 
-  if (!membership) return { status: 'unavailable' }
-  return {
-    status: 'resolved',
-    context: {
-      organizationId: membership.organization_id,
-      organizationName: organizationName(membership.organizations),
-      role: membership.role,
-    },
-  }
+  const mapped: AuthenticatedOrganizationContext[] = (memberships || []).map((membership) => ({
+    organizationId: membership.organization_id,
+    organizationName: organizationName(membership.organizations),
+    role: membership.role,
+  }))
+
+  return resolveAuthenticatedOrganizationContext(mapped)
 }
 
 export async function getAdministrativeOrganizationContext(): Promise<OrganizationContextResolution> {

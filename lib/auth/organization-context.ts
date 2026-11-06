@@ -8,7 +8,7 @@ export type AuthenticatedOrganizationContext = {
 
 export type OrganizationContextResolution =
   | { status: 'resolved'; context: AuthenticatedOrganizationContext }
-  | { status: 'unavailable' }
+  | { status: 'unavailable'; reason?: 'none' | 'ambiguous' }
 
 export function isAdministrativeOrganizationRole(role: string) {
   return role === 'owner' || role === 'organizer'
@@ -26,13 +26,17 @@ export function resolveAuthenticatedOrganizationContext(
 
   if (scope.mode === 'restricted') {
     const match = memberships.find((membership) => membership.organizationId === scope.organizationId)
-    if (!match) return { status: 'unavailable' }
+    if (!match) return { status: 'unavailable', reason: 'none' }
     return { status: 'resolved', context: match }
   }
 
-  const first = memberships[0]
-  if (!first) return { status: 'unavailable' }
-  return { status: 'resolved', context: first }
+  // Sem PUBLIC_ORGANIZATION_ID, não há como adivinhar qual organização é a "ativa" de um
+  // usuário com mais de uma filiação administrativa. Escolher a primeira (ordem não garantida
+  // pelo PostgREST sem ORDER BY) arriscava criar evento, categoria ou qualquer outra gravação
+  // administrativa na organização errada. Falhar fechado aqui é mais seguro do que adivinhar.
+  if (memberships.length === 0) return { status: 'unavailable', reason: 'none' }
+  if (memberships.length > 1) return { status: 'unavailable', reason: 'ambiguous' }
+  return { status: 'resolved', context: memberships[0] }
 }
 
 export function resolveOwnedOrganizationContext(
@@ -46,5 +50,6 @@ export function resolveOwnedOrganizationContext(
     if (release) return { status: 'resolved', context: release }
   }
   if (ownerMemberships.length === 1) return { status: 'resolved', context: ownerMemberships[0] }
-  return { status: 'unavailable' }
+  if (ownerMemberships.length === 0) return { status: 'unavailable', reason: 'none' }
+  return { status: 'unavailable', reason: 'ambiguous' }
 }
