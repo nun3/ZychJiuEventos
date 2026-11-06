@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { Alert } from '@/components/ui/Alert'
 import { Card } from '@/components/ui/Card'
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -59,7 +60,13 @@ function categoryColumns(eventId: string): Array<DataTableColumn<CategoryItem>> 
   ]
 }
 
-export default async function EventConfigurationPage({ params }: { params: { id: string } }) {
+export default async function EventConfigurationPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams?: { aviso?: string }
+}) {
   const supabase = createClient()
   const { data: event } = await supabase
     .from('events')
@@ -89,6 +96,12 @@ export default async function EventConfigurationPage({ params }: { params: { id:
     : []
 
   return (
+    <>
+      {searchParams?.aviso === 'arquivo' ? (
+        <Alert variant="warning" role="alert" className="mt-4">
+          Evento salvo como rascunho, mas um arquivo não pôde ser enviado. As fases foram gravadas; banner, regulamento e tabela de peso não ficaram associados a este rascunho.
+        </Alert>
+      ) : null}
       <div className="mt-4 grid items-start gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
         <CategoryManager
           eventId={event.id}
@@ -176,5 +189,6 @@ export default async function EventConfigurationPage({ params }: { params: { id:
           </Card>
         </section>
       </div>
+    </>
   )
 }

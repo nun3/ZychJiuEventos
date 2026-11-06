@@ -114,6 +114,10 @@ export default function NewEventForm() {
     startTransition(async () => {
       const result = await createEvent(data)
       if (!result.ok) {
+        if (result.eventId && /arquivo/i.test(result.message)) {
+          router.push(`/admin/eventos/${result.eventId}/configuracao?aviso=arquivo`)
+          return
+        }
         setMessage(result.message)
         if (/fase|fuso/i.test(result.message)) setPhasesOpen(true)
         return

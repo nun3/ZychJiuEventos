@@ -19,7 +19,9 @@ import { zonedLocalToUtc } from '@/lib/timezone'
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export type EventActionResult = { ok: boolean; message: string; eventId?: string }
-const failure = (message: string): EventActionResult => ({ ok: false, message })
+const failure = (message: string, eventId?: string): EventActionResult => (
+  eventId ? { ok: false, message, eventId } : { ok: false, message }
+)
 const text = (formData: FormData, field: string) => String(formData.get(field) || '').trim()
 
 function slugify(value: string) {
@@ -71,7 +73,12 @@ export async function createEvent(formData: FormData): Promise<EventActionResult
   const { data: authData } = await supabase.auth.getUser()
   if (!authData.user) return failure('Sua sessão expirou. Entre novamente.')
   const organization = await getAdministrativeOrganizationContext()
-  if (organization.status !== 'resolved') return failure('Você não possui permissão para criar eventos.')
+  if (organization.status !== 'resolved') {
+    if (organization.reason === 'ambiguous') {
+      return failure('Sua conta pertence a mais de uma organização com permissão para criar eventos, e o sistema não escolhe por você. Peça para o administrador da plataforma vincular sua conta a uma organização só, ou definir PUBLIC_ORGANIZATION_ID.')
+    }
+    return failure('Você não possui permissão para criar eventos.')
+  }
 
   const slug = `${slugify(nome) || 'evento'}-${Date.now().toString(36)}`
   const { data: event, error: eventError } = await supabase.from('events').insert({
@@ -85,22 +92,51 @@ export async function createEvent(formData: FormData): Promise<EventActionResult
     phases.map(({ tipo, inicio, fim }) => ({ event_id: event.id, tipo, inicio, fim })),
   )
   if (phasesError) {
-    await supabase.from('events').delete().eq('id', event.id)
+    const { error: deleteError } = await supabase.from('events').delete().eq('id', event.id)
+    if (deleteError) {
+      // O rascunho sem fases pode ter permanecido: não afirmar que a limpeza funcionou.
+      // Sem eventId aqui — o rascunho órfão (sem fases) continua visível em /admin/eventos
+      // para exclusão manual; não há retorno automático seguro sem reexecutar o delete.
+      revalidatePath('/admin/eventos')
+      return failure('Não foi possível salvar as fases do evento. O rascunho pode ter permanecido — confira a lista de eventos.')
+    }
     return failure('Não foi possível salvar as fases do evento.')
   }
-  try {
-    const [imagemCartaz, regulamento, tabelaPeso] = await Promise.all([
-      uploadAsset(supabase, organization.context.organizationId, event.id, 'banner', formData.get('banner') as File | null),
-      uploadAsset(supabase, organization.context.organizationId, event.id, 'regulamento', formData.get('regulamento') as File | null),
-      uploadAsset(supabase, organization.context.organizationId, event.id, 'tabela-peso', formData.get('tabela_peso') as File | null),
-    ])
-    if (imagemCartaz || regulamento || tabelaPeso) {
-      await supabase.from('events').update({
-        imagem_cartaz_url: imagemCartaz, regulamento_url: regulamento, tabela_peso_url: tabelaPeso,
-      }).eq('id', event.id)
-    }
-  } catch {
-    return failure('Evento salvo como rascunho, mas um arquivo não pôde ser enviado.')
+
+  // Promise.allSettled em vez de Promise.all: um upload rejeitado não deve descartar os outros
+  // dois que já tiverem terminado. Antes, qualquer falha única perdia os arquivos bem-sucedidos
+  // (o `catch` pulava a gravação das três URLs). Agora cada envio é independente e só o que
+  // falhou é reportado — o resto é gravado e preservado.
+  const [bannerResult, regulamentoResult, tabelaPesoResult] = await Promise.allSettled([
+    uploadAsset(supabase, organization.context.organizationId, event.id, 'banner', formData.get('banner') as File | null),
+    uploadAsset(supabase, organization.context.organizationId, event.id, 'regulamento', formData.get('regulamento') as File | null),
+    uploadAsset(supabase, organization.context.organizationId, event.id, 'tabela-peso', formData.get('tabela_peso') as File | null),
+  ])
+  const imagemCartaz = bannerResult.status === 'fulfilled' ? bannerResult.value : null
+  const regulamento = regulamentoResult.status === 'fulfilled' ? regulamentoResult.value : null
+  const tabelaPeso = tabelaPesoResult.status === 'fulfilled' ? tabelaPesoResult.value : null
+  const failedAssets = [
+    bannerResult.status === 'rejected' ? 'banner' : null,
+    regulamentoResult.status === 'rejected' ? 'regulamento' : null,
+    tabelaPesoResult.status === 'rejected' ? 'tabela de peso' : null,
+  ].filter((label): label is string => label !== null)
+
+  if (imagemCartaz || regulamento || tabelaPeso) {
+    const { error: assetError } = await supabase.from('events').update({
+      imagem_cartaz_url: imagemCartaz, regulamento_url: regulamento, tabela_peso_url: tabelaPeso,
+    }).eq('id', event.id)
+    // Upload bem-sucedido mas sem conseguir gravar a URL: o arquivo existe no Storage sem
+    // referência no evento. Reportar como falha específica em vez de dar sucesso silencioso —
+    // corrigir a causa (RLS, rede) exige investigação; não é reenviado sozinho.
+    if (assetError) failedAssets.push('gravação dos arquivos enviados')
+  }
+  if (failedAssets.length) {
+    revalidatePath('/admin/eventos')
+    revalidatePath(`/admin/eventos/${event.id}/configuracao`)
+    return failure(
+      `Evento salvo como rascunho. Não foi possível enviar: ${failedAssets.join(', ')}. Os demais arquivos enviados foram preservados.`,
+      event.id,
+    )
   }
   if (intent === 'publicar') {
     const { error } = await supabase.from('events').update({ status: 'publicado' }).eq('id', event.id)
