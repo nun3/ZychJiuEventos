@@ -80,13 +80,16 @@ export default function SistemaPage() {
     <InstitutionalPage
       eyebrow="O sistema"
       title="A competição inteira, do cadastro ao fechamento."
+      titleLines={['A competição', 'inteira, do', 'cadastro ao', 'fechamento.']}
+      imageSrc="/images/cinematic/mc-arena.jpg"
+      caption="Do cadastro ao fechamento"
       description="O MEU CAMP organiza a operação de um evento de Jiu-Jitsu. Não é placar, cronômetro, chamada ao vivo nem aplicativo nativo. É a plataforma que o organizador usa para conduzir o campeonato com clareza."
       actions={(
         <>
-          <Link href="/login" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium bg-mc-action px-mc-24 font-mc-interface font-semibold text-white transition-colors hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">
+          <Link href="/login" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium bg-mc-action px-mc-24 font-mc-interface font-semibold text-white transition-colors hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
             Entrar
           </Link>
-          <Link href="/eventos" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium border border-white/60 px-mc-24 font-mc-interface font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">
+          <Link href="/eventos" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium border border-mc-border px-mc-24 font-mc-interface font-semibold text-mc-text-primary transition-colors hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
             Ver calendário
           </Link>
         </>
@@ -94,7 +97,7 @@ export default function SistemaPage() {
     >
       <section aria-labelledby="profiles-title">
         <h2 id="profiles-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Para cada perfil</h2>
-        <div className="mt-mc-24 grid gap-mc-16 md:grid-cols-2">
+        <div data-mc-stagger className="mt-mc-24 grid gap-mc-16 md:grid-cols-2">
           {profiles.map((profile) => (
             <Card key={profile.id} id={profile.id} className="scroll-mt-28 p-mc-16 sm:p-mc-24">
               <h3 className="font-mc-display text-lg font-semibold text-mc-text-primary">{profile.title}</h3>
@@ -108,7 +111,7 @@ export default function SistemaPage() {
 
       <section className="mt-mc-48" aria-labelledby="journey-title">
         <h2 id="journey-title" className="font-mc-display text-mc-h2 text-mc-text-primary">Jornada do evento</h2>
-        <ol className="mt-mc-24 grid gap-mc-16 md:grid-cols-2">
+        <ol data-mc-stagger className="mt-mc-24 grid gap-mc-16 md:grid-cols-2">
           {journey.map((item) => (
             <li key={item.step}>
               <Card className="h-full p-mc-16 sm:p-mc-24">
@@ -123,7 +126,7 @@ export default function SistemaPage() {
 
       <section className="mt-mc-48" aria-labelledby="capabilities-title">
         <h2 id="capabilities-title" className="font-mc-display text-mc-h2 text-mc-text-primary">O que o sistema já faz</h2>
-        <ul className="mt-mc-24 grid gap-mc-12 sm:grid-cols-2 lg:grid-cols-3">
+        <ul data-mc-stagger className="mt-mc-24 grid gap-mc-12 sm:grid-cols-2 lg:grid-cols-3">
           {capabilities.map((item) => (
             <li key={item} className="rounded-mc-medium border border-mc-border bg-mc-surface px-mc-16 py-mc-12 font-mc-interface text-sm font-semibold text-mc-text-primary">
               {item}
