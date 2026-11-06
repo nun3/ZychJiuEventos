@@ -10,7 +10,7 @@ Given('o usuário acessa a página inicial', async ({ page }) => {
 });
 
 When('seleciona o link {string}', async ({ page }, label: string) => {
-  const scope = label === 'Entrar'
+  const scope = label === 'Entrar' || label === 'Login'
     ? page.getByRole('navigation', { name: 'Navegação principal' }).locator('xpath=ancestor::header[1]')
     : page;
   await scope.getByRole('link', { name: label, exact: true }).click();
@@ -47,7 +47,7 @@ Then('o usuário deve permanecer na rota de login', async ({ page }) => {
 });
 
 When('seleciona a aba {string}', async ({ page }, label: string) => {
-  await page.getByRole('button', { name: label, exact: true }).click();
+  await page.getByRole('navigation', { name: 'Opções de acesso' }).getByRole('button', { name: label, exact: true }).click();
 });
 
 Then('a rota de recuperação de senha deve ser exibida', async ({ page }) => {

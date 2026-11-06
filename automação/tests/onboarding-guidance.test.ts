@@ -7,8 +7,11 @@ import {
   resolveOnboardingProfile,
 } from '../../lib/onboarding/checklists';
 import {
+  adminEventContinuePath,
   buildEventGuidanceSteps,
   buildNextAction,
+  guidanceStepsForPhase,
+  contextualizeNextAction,
   currentGuidanceStep,
   type EventGuidanceFacts,
 } from '../../lib/onboarding/event-guidance';
@@ -39,8 +42,18 @@ test('timeline da checagem marca etapas anteriores e deixa chaves adiante', () =
   const steps = buildEventGuidanceSteps(facts());
   assert.equal(currentGuidanceStep(facts()), 'checagem');
   assert.deepEqual(steps.map((step) => step.state), [
-    'done', 'done', 'current', 'upcoming', 'upcoming', 'upcoming', 'upcoming',
+    'done', 'done', 'done', 'current', 'upcoming', 'upcoming', 'upcoming', 'upcoming',
   ]);
+  assert.equal(steps.find((step) => step.state === 'current')?.id, 'checagem');
+});
+
+test('pagamento é a fase atual quando o status real é pagamento', () => {
+  const current = facts({ status: 'pagamento' });
+  assert.equal(currentGuidanceStep(current), 'pagamento');
+  const steps = buildEventGuidanceSteps(current);
+  assert.equal(steps.find((step) => step.id === 'inscricoes')?.state, 'done');
+  assert.equal(steps.find((step) => step.id === 'pagamento')?.state, 'current');
+  assert.equal(steps.find((step) => step.id === 'checagem')?.state, 'upcoming');
 });
 
 test('chaves publicadas sem programação avançam a etapa visual para programação', () => {
@@ -61,10 +74,57 @@ test('CTA da checagem com pedidos pendentes pede revisão, sem inventar fase', (
   assert.equal(action.href, '/admin/eventos/evt-1/checagem');
 });
 
+test('abrir inscrições executa a transição no evento e não volta para a lista', () => {
+  const action = buildNextAction(facts({ status: 'publicado', hasCategory: true, pendingRequestsCount: 0 }));
+  assert.equal(action.cta, 'Abrir inscrições');
+  assert.equal(action.transition, 'inscricao');
+  assert.equal(action.href, null);
+});
+
+test('inscrições abertas não oferecem ver eventos', () => {
+  const action = buildNextAction(facts({ status: 'inscricao', pendingRequestsCount: 0 }));
+  assert.equal(action.title, 'Inscrições abertas');
+  assert.equal(action.cta, 'Abrir pagamento');
+  assert.notEqual(action.cta, 'Ver eventos');
+  assert.equal(action.href, null);
+});
+
+test('cta do módulo ativo some e a transição de fase permanece', () => {
+  const review = buildNextAction(facts());
+  const onChecking = contextualizeNextAction(review, 'checagem');
+  assert.equal(onChecking.cta, null);
+  assert.equal(onChecking.href, null);
+  assert.equal(onChecking.title, 'Checagem aberta');
+
+  const payment = buildNextAction(facts({ status: 'pagamento', pendingRequestsCount: 0 }));
+  const onFinance = contextualizeNextAction(payment, 'financeiro');
+  assert.equal(onFinance.cta, 'Abrir checagem');
+  assert.equal(onFinance.transition, 'checagem');
+});
+
+test('continuar da lista aponta para o módulo da fase', () => {
+  assert.equal(adminEventContinuePath('evt-1', 'publicado'), '/admin/eventos/evt-1/configuracao');
+  assert.equal(adminEventContinuePath('evt-1', 'pagamento'), '/admin/eventos/evt-1/financeiro');
+  assert.equal(adminEventContinuePath('evt-1', 'checagem'), '/admin/eventos/evt-1/checagem');
+  assert.equal(adminEventContinuePath('evt-1', 'chaves'), '/admin/eventos/evt-1/chaves');
+  assert.equal(adminEventContinuePath('evt-1', 'em_andamento'), '/admin/eventos/evt-1/resultados');
+});
+
 test('evento cancelado não oferece CTA operacional', () => {
   const action = buildNextAction(facts({ status: 'cancelado' }));
   assert.equal(action.href, null);
   assert.equal(action.cta, null);
+});
+
+test('progresso do card usa a mesma fase da administração', () => {
+  const payment = guidanceStepsForPhase('pagamento');
+  assert.equal(payment.find((step) => step.id === 'inscricoes')?.state, 'done');
+  assert.equal(payment.find((step) => step.id === 'pagamento')?.state, 'current');
+  assert.equal(payment.find((step) => step.id === 'checagem')?.state, 'upcoming');
+
+  const afterBracket = guidanceStepsForPhase('chaves', { hasPublishedBracket: true });
+  assert.equal(afterBracket.find((step) => step.id === 'chaves')?.state, 'done');
+  assert.equal(afterBracket.find((step) => step.id === 'programacao')?.state, 'current');
 });
 
 test('checklist do organizador só marca etapas já alcançadas no status real', () => {

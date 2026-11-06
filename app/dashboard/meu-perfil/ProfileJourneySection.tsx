@@ -14,8 +14,8 @@ function formatDate(value: string) {
 
 function Metric({ value, label }: { value: number; label: string }) {
   return (
-    <li className="rounded-mc-medium bg-mc-surface-secondary px-mc-16 py-mc-16">
-      <p className="font-mc-display text-3xl font-semibold text-mc-structure">{value}</p>
+    <li className="min-w-[9rem] max-w-[14rem] flex-1 basis-36 rounded-mc-medium bg-mc-surface-secondary px-3 py-3">
+      <p className="font-mc-display text-2xl font-semibold leading-7 text-mc-structure">{value}</p>
       <p className="mt-mc-4 font-mc-interface text-xs font-semibold uppercase tracking-[0.12em] text-mc-text-secondary">
         {label}
       </p>
@@ -51,7 +51,7 @@ export default function ProfileJourneySection({ journey }: { journey: ProfileJou
           <h3 className="font-mc-interface text-xs font-semibold uppercase tracking-[0.14em] text-mc-text-secondary">
             Jornada esportiva
           </h3>
-          <ul className="mt-mc-12 grid grid-cols-2 gap-mc-12 sm:grid-cols-3">
+          <ul className="mt-mc-12 flex flex-wrap gap-3">
             <Metric value={journey.sports.championships} label="Campeonatos" />
             {journey.sports.podiums > 0 ? <Metric value={journey.sports.podiums} label="Pódios" /> : null}
             {journey.sports.gold > 0 ? <Metric value={journey.sports.gold} label="Ouros" /> : null}
@@ -137,7 +137,7 @@ export default function ProfileJourneySection({ journey }: { journey: ProfileJou
           <h3 className="font-mc-interface text-xs font-semibold uppercase tracking-[0.14em] text-mc-text-secondary">
             Minha atuação
           </h3>
-          <ul className="mt-mc-12 grid grid-cols-2 gap-mc-12 sm:grid-cols-3">
+          <ul className="mt-mc-12 flex flex-wrap gap-3">
             {journey.operations.managedAthletes > 0 || journey.operations.championshipsWithAthletes > 0 ? (
               <Metric value={journey.operations.managedAthletes} label="Atletas gerenciados" />
             ) : null}

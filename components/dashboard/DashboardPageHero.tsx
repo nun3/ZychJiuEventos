@@ -20,7 +20,7 @@ export function DashboardPageHero({
   return (
     <header className={cn('relative overflow-hidden rounded-mc-large bg-mc-structure shadow-mc-subtle', className)}>
       {image ? (
-        <>
+        <div data-mc-hero-media className="absolute inset-0 will-change-transform">
           <Image
             src={image}
             alt=""
@@ -30,7 +30,7 @@ export function DashboardPageHero({
             className="object-cover object-center"
           />
           <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(7,27,46,0.94)_0%,rgba(12,48,73,0.82)_42%,rgba(18,58,86,0.5)_100%)]" aria-hidden="true" />
-        </>
+        </div>
       ) : (
         <div className="absolute inset-0 bg-[linear-gradient(118deg,#071b2e_0%,#0C3049_42%,#164e73_100%)]" aria-hidden="true" />
       )}
@@ -42,7 +42,13 @@ export function DashboardPageHero({
       )}
       <div className="relative flex min-h-36 flex-col justify-center gap-4 px-5 py-6 sm:min-h-40 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-7">
         <div className="min-w-0 max-w-3xl">
-          <h1 className="font-mc-display text-3xl font-semibold leading-9 text-white sm:text-4xl sm:leading-10">{title}</h1>
+          <h1 className="font-mc-display text-3xl font-semibold leading-9 text-white sm:text-4xl sm:leading-10">
+            <span className="-mb-[0.1em] block overflow-hidden pb-[0.1em]">
+              <span data-mc-line className="block will-change-transform">
+                {title}
+              </span>
+            </span>
+          </h1>
           {description ? <div className="mt-2 max-w-2xl font-mc-interface text-sm leading-6 text-white/80 sm:text-base">{description}</div> : null}
         </div>
         {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}

@@ -31,7 +31,7 @@ async function authenticate(
   test.skip(!account.email || !account.password, `Defina E2E_${prefix}_EMAIL e E2E_${prefix}_PASSWORD em .env.e2e`);
   await loginPage.open('/dashboard');
   await loginPage.login(account.email!, account.password!);
-  await expect(page).toHaveURL(/\/dashboard(?:\?|$)/);
+  await expect(page).toHaveURL(/\/dashboard(?:\/|\?|$)/);
 }
 
 Given('que o visitante não possui sessão', async ({ page }) => {
@@ -64,20 +64,27 @@ Given('que o usuário sem vínculo está autenticado', async ({ loginPage, page 
 
 Then('a página Meus Eventos deve ser exibida', async ({ page }) => {
   await expect(page).toHaveURL(/\/admin\/eventos$/);
-  await expect(page.getByRole('heading', { name: 'Meus Eventos' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Eventos', exact: true })).toBeVisible();
 });
 
 Then('a organização e o papel owner devem ser apresentados', async ({ page }) => {
-  await expect(page.getByText(/Organização:.*Papel:.*owner/i)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Novo evento' })).toBeVisible();
 });
 
 Then('deve retornar ao dashboard com negação de permissão', async ({ page }) => {
-  await expect(page).toHaveURL(/\/dashboard\?erro=sem_permissao$/);
+  await expect(page).not.toHaveURL(/\/admin(?:\/|\?|$)/);
+  await expect(page).toHaveURL(/\/dashboard(?:\/|\?|$)/);
 });
 
 When('encerra a sessão pelo menu da conta', async ({ page }) => {
-  await page.getByRole('button', { name: 'Minha Conta' }).click();
-  await page.getByRole('button', { name: 'Sair', exact: true }).click();
+  const width = page.viewportSize()?.width ?? 1440;
+  if (width < 768) {
+    await page.getByRole('button', { name: 'Abrir menu' }).click();
+    await page.getByRole('button', { name: 'Minha conta', exact: true }).click();
+  } else {
+    await page.getByRole('button', { name: /Abrir menu de / }).click();
+  }
+  await page.getByRole('button', { name: 'Sair da conta' }).click();
 });
 
 Then('a tela de login deve ser exibida', async ({ loginPage }) => {

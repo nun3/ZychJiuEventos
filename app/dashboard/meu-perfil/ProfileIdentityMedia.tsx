@@ -1,9 +1,11 @@
 'use client'
 
 import { useRef, useState, useTransition } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Camera, ImagePlus, Trash2 } from 'lucide-react'
+import { Camera, ImagePlus, Sparkles, Trash2 } from 'lucide-react'
 import { Alert } from '@/components/ui/Alert'
+import { Dialog } from '@/components/ui/Dialog'
 import {
   clearMyAvatar,
   clearMyBanner,
@@ -16,6 +18,7 @@ import {
   type ProfileActionResult,
 } from './actions'
 import { uploadIdentityImage } from '@/lib/identity/image-upload'
+import { FUN_AVATAR_PRESETS } from '@/lib/profile/fun-avatar-presets'
 import { cn } from '@/components/ui/utils'
 
 type MediaKind = 'avatar' | 'banner' | 'teamLogo' | 'teamPhoto'
@@ -120,15 +123,20 @@ export default function ProfileIdentityMedia({
   const [feedback, setFeedback] = useState<ProfileActionResult | null>(null)
   const [isPending, startTransition] = useTransition()
   const [busyKind, setBusyKind] = useState<MediaKind | null>(null)
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false)
 
-  const run = (kind: MediaKind, work: () => Promise<ProfileActionResult>) => {
+  const run = (kind: MediaKind, work: () => Promise<ProfileActionResult>, onSuccess?: () => void) => {
     setFeedback(null)
     setBusyKind(kind)
     startTransition(async () => {
       const result = await work()
       setFeedback(result)
       setBusyKind(null)
-      if (result.ok) router.refresh()
+      if (result.ok) {
+        if (kind === 'avatar') window.dispatchEvent(new Event('meucamp:avatar-updated'))
+        onSuccess?.()
+        router.refresh()
+      }
     })
   }
 
@@ -146,14 +154,36 @@ export default function ProfileIdentityMedia({
   }
 
   const disabled = isPending || busyKind !== null
+  const selectedAvatar = avatarUrl?.split('?')[0] || null
+
+  const avatarControls = (
+    <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+      <MediaControls
+        label="foto de perfil"
+        hasImage={Boolean(avatarUrl)}
+        disabled={disabled}
+        onPick={(file) => uploadThenPersist('avatar', userId, file, setMyAvatarUrl)}
+        onRemove={() => run('avatar', clearMyAvatar)}
+      />
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setAvatarPickerOpen(true)}
+        className="inline-flex h-10 items-center gap-2 rounded-mc-full border border-mc-border bg-mc-surface px-3 font-mc-interface text-xs font-semibold text-mc-text-primary transition-colors hover:border-mc-action/35 hover:bg-mc-action/5 hover:text-mc-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <Sparkles aria-hidden="true" size={15} />
+        Avatar divertido
+      </button>
+    </div>
+  )
 
   return (
-    <div className="space-y-mc-24">
+    <div className={cn('grid items-start gap-5', team && 'lg:grid-cols-[minmax(0,1.6fr)_minmax(16rem,0.85fr)]')}>
       <section aria-labelledby="profile-identity-title" className="overflow-hidden rounded-mc-large border border-mc-border bg-mc-surface shadow-sm">
-        <div className="relative h-28 bg-mc-structure sm:h-36">
+        <div className="relative h-24 bg-[linear-gradient(118deg,#071b2e_0%,#0C3049_46%,#164e73_100%)] sm:h-28">
           {bannerUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={bannerUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <img src={bannerUrl} alt="" className="absolute inset-0 h-full w-full object-contain object-center p-3" />
           ) : (
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.28),transparent_55%)]" aria-hidden="true" />
           )}
@@ -171,30 +201,26 @@ export default function ProfileIdentityMedia({
 
         <div className="relative px-mc-16 pb-mc-24 pt-mc-16 sm:px-mc-24 sm:pb-mc-32 sm:pt-mc-20">
           <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:gap-mc-24 sm:text-left">
-            <div className="-mt-20 flex shrink-0 flex-col items-center gap-mc-8 sm:-mt-24">
+            <div className="relative z-10 -mt-8 flex shrink-0 flex-col items-center gap-mc-8">
               {avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={avatarUrl}
                   alt={`Foto de ${name}`}
-                  className="h-24 w-24 rounded-full border-4 border-mc-surface object-cover sm:h-28 sm:w-28"
+                  width={80}
+                  height={80}
+                  sizes="80px"
+                  className="h-20 w-20 rounded-full border-4 border-mc-surface bg-mc-surface object-contain shadow-mc-subtle"
                 />
               ) : (
                 <span
-                  className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-mc-surface bg-mc-structure font-mc-display text-2xl font-semibold text-white sm:h-28 sm:w-28 sm:text-3xl"
+                  className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-mc-surface bg-mc-action font-mc-display text-2xl font-semibold text-white shadow-mc-subtle"
                   aria-hidden="true"
                 >
                   {initials}
                 </span>
               )}
               <div className="sm:hidden">
-                <MediaControls
-                  label="foto de perfil"
-                  hasImage={Boolean(avatarUrl)}
-                  disabled={disabled}
-                  onPick={(file) => uploadThenPersist('avatar', userId, file, setMyAvatarUrl)}
-                  onRemove={() => run('avatar', clearMyAvatar)}
-                />
+                {avatarControls}
               </div>
             </div>
 
@@ -223,13 +249,7 @@ export default function ProfileIdentityMedia({
               </div>
 
               <div className="mt-mc-12 hidden sm:flex sm:justify-start">
-                <MediaControls
-                  label="foto de perfil"
-                  hasImage={Boolean(avatarUrl)}
-                  disabled={disabled}
-                  onPick={(file) => uploadThenPersist('avatar', userId, file, setMyAvatarUrl)}
-                  onRemove={() => run('avatar', clearMyAvatar)}
-                />
+                {avatarControls}
               </div>
             </div>
           </div>
@@ -256,7 +276,7 @@ export default function ProfileIdentityMedia({
               <div className="mt-mc-12 flex flex-col items-center gap-mc-12 sm:flex-row sm:items-center">
                 {team.logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={team.logoUrl} alt={`Logo de ${team.nome}`} className="h-14 w-14 rounded-mc-medium object-cover" />
+                  <img src={team.logoUrl} alt={`Logo de ${team.nome}`} className="h-14 w-14 rounded-mc-medium bg-mc-surface object-contain" />
                 ) : (
                   <span className="flex h-14 w-14 items-center justify-center rounded-mc-medium bg-mc-structure font-mc-display text-sm font-semibold text-white" aria-hidden="true">
                     {team.nome.slice(0, 2).toUpperCase()}
@@ -298,6 +318,48 @@ export default function ProfileIdentityMedia({
           </div>
         </section>
       ) : null}
+
+      <Dialog
+        open={avatarPickerOpen}
+        onClose={() => !disabled && setAvatarPickerOpen(false)}
+        title="Avatar divertido"
+        description="Escolha um lutador para representar seu perfil. Você pode trocar por uma foto a qualquer momento."
+        className="max-w-2xl"
+      >
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {FUN_AVATAR_PRESETS.map((preset) => {
+            const isSelected = selectedAvatar === preset.src
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                disabled={disabled}
+                aria-pressed={isSelected}
+                onClick={() => run('avatar', () => setMyAvatarUrl(preset.src), () => setAvatarPickerOpen(false))}
+                className={cn(
+                  'group relative overflow-hidden rounded-mc-medium border bg-mc-surface-secondary p-2 text-left transition-all duration-mc-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                  isSelected
+                    ? 'border-mc-action ring-2 ring-mc-action/20'
+                    : 'border-mc-border hover:border-mc-action/45 hover:bg-mc-action/5',
+                )}
+              >
+                <span className="relative flex aspect-square items-end justify-center overflow-hidden rounded-mc-small bg-[radial-gradient(circle_at_50%_20%,#1c3d59_0%,#0C3049_64%,#071b2e_100%)]">
+                  <Image
+                    src={preset.src}
+                    alt=""
+                    fill
+                    sizes="(max-width: 639px) 45vw, (max-width: 1023px) 28vw, 160px"
+                    quality={65}
+                    className="object-contain transition-transform duration-mc-normal group-hover:scale-[1.03]"
+                  />
+                </span>
+                <span className="mt-2 block font-mc-interface text-sm font-semibold text-mc-text-primary">{preset.label}</span>
+                <span className="mt-0.5 block text-xs text-mc-text-secondary">{isSelected ? 'Selecionado' : preset.description}</span>
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
     </div>
   )
 }

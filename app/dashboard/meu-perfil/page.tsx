@@ -184,8 +184,8 @@ export default async function MeuPerfilPage() {
   }
 
   return (
-    <main className="pb-mc-48 pt-mc-24 sm:pb-mc-64 sm:pt-mc-32">
-      <PageContainer>
+    <main className="py-5 sm:py-7">
+      <PageContainer fluid className="space-y-5">
         {actor?.needsSportsProfile ? (
           <Alert variant="warning" role="status" className="mb-mc-24">
             Seu cadastro esportivo ainda não está completo.{' '}
@@ -208,7 +208,7 @@ export default async function MeuPerfilPage() {
           team={primaryTeam}
         />
 
-        <div className="mt-mc-24 space-y-mc-24">
+        <div className="space-y-5">
           <ProfileSportsSection
             faixa={belt}
             pesoKg={selfAthlete?.peso_kg ?? null}
@@ -219,7 +219,7 @@ export default async function MeuPerfilPage() {
           <ProfileJourneySection journey={journey} />
         </div>
 
-        <div className="mt-mc-24 grid gap-mc-24 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.85fr)]">
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(17rem,0.85fr)]">
           <div className="space-y-mc-24">
             {primaryTeam ? (
               <section aria-labelledby="my-team-title" className="rounded-mc-large border border-mc-border bg-mc-surface p-mc-16 sm:p-mc-24">
@@ -232,7 +232,7 @@ export default async function MeuPerfilPage() {
                     <img
                       src={primaryTeam.logoUrl}
                       alt={`Logo de ${primaryTeam.nome}`}
-                      className="h-16 w-16 shrink-0 rounded-mc-large object-cover"
+                      className="h-16 w-16 shrink-0 rounded-mc-large bg-mc-surface-secondary object-contain"
                     />
                   ) : (
                     <span

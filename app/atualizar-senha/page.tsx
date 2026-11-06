@@ -2,7 +2,6 @@
 
 import { FormEvent, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import ModernFooter from '@/components/ModernFooter'
 import ModernNavbar from '@/components/ModernNavbar'
 import { Alert } from '@/components/ui/Alert'
@@ -13,12 +12,12 @@ import { PageContainer } from '@/components/ui/PageContainer'
 import { createClient } from '@/lib/supabase/client'
 
 export default function UpdatePasswordPage() {
-  const router = useRouter()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (loading) return
     setError('')
     const formData = new FormData(event.currentTarget)
     const password = String(formData.get('password') || '')
@@ -26,14 +25,18 @@ export default function UpdatePasswordPage() {
     if (password.length < 8) return setError('A senha deve ter pelo menos 8 caracteres.')
     if (password !== confirmation) return setError('As senhas não coincidem.')
     setLoading(true)
-    const { error: updateError } = await createClient().auth.updateUser({ password })
-    if (updateError) {
+    try {
+      const { error: updateError } = await createClient().auth.updateUser({ password })
+      if (updateError) {
+        setError('O link expirou ou a senha não pôde ser atualizada. Solicite um novo link.')
+        setLoading(false)
+        return
+      }
+      window.location.assign('/dashboard')
+    } catch {
       setError('O link expirou ou a senha não pôde ser atualizada. Solicite um novo link.')
       setLoading(false)
-      return
     }
-    router.replace('/dashboard')
-    router.refresh()
   }
 
   return (
@@ -51,7 +54,7 @@ export default function UpdatePasswordPage() {
             </header>
             <div className="p-mc-24 sm:p-mc-32 lg:p-mc-48">
               {error ? <Alert variant="error" role="alert" className="mb-mc-24">{error}</Alert> : null}
-              <form className="space-y-mc-24" onSubmit={handleSubmit}>
+              <form className="space-y-mc-24" aria-labelledby="update-password-title" onSubmit={handleSubmit}>
                 <FormField id="new-password" label="Nova senha" required>
                   <Input name="password" type="password" required minLength={8} autoComplete="new-password" />
                 </FormField>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CalendarRange, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -62,11 +62,15 @@ const initialFilters = {
   endDate: '',
 }
 
-const fieldClass = 'min-h-11 rounded-mc-small border-0 bg-mc-surface-secondary ring-1 ring-inset ring-mc-border/80 focus:ring-2 focus:ring-mc-focus/25'
+const fieldClass = 'min-h-11 rounded-mc-small border-0 ring-1 ring-inset ring-mc-border/80 focus:ring-2 focus:ring-mc-focus/25'
 
 export default function EventFilters({ onFilterChange, variant = 'stacked', initialSearch = '' }: EventFiltersProps) {
   const [filters, setFilters] = useState({ ...initialFilters, search: initialSearch })
   const [datesOpen, setDatesOpen] = useState(false)
+
+  useEffect(() => {
+    setFilters((current) => (current.search === initialSearch ? current : { ...current, search: initialSearch }))
+  }, [initialSearch])
 
   const handleFilterChange = (key: keyof typeof filters, value: string) => {
     const nextFilters = { ...filters, [key]: value }
@@ -80,6 +84,7 @@ export default function EventFilters({ onFilterChange, variant = 'stacked', init
     onFilterChange?.(initialFilters)
   }
 
+  const surface = variant === 'toolbar' ? 'bg-mc-surface shadow-none' : 'bg-mc-surface-secondary'
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => value !== initialFilters[key as keyof typeof initialFilters])
   const hasCustomDates = filters.period !== 'todos' || Boolean(filters.startDate || filters.endDate)
 
@@ -97,8 +102,8 @@ export default function EventFilters({ onFilterChange, variant = 'stacked', init
               aria-label="Nome do campeonato"
               value={filters.search}
               onChange={(event) => handleFilterChange('search', event.target.value)}
-              placeholder="Buscar campeonato..."
-              className={`${fieldClass} pl-11 text-base shadow-none`}
+              placeholder={variant === 'toolbar' ? 'Buscar campeonato, cidade ou local...' : 'Buscar campeonato...'}
+              className={`${fieldClass} ${surface} pl-11 text-base`}
             />
           </div>
 
@@ -108,7 +113,7 @@ export default function EventFilters({ onFilterChange, variant = 'stacked', init
               aria-label="Estado"
               value={filters.state}
               onChange={(event) => handleFilterChange('state', event.target.value)}
-              className={`${fieldClass} lg:min-w-[11rem] shadow-none`}
+              className={`${fieldClass} ${surface} lg:min-w-[11rem]`}
             >
               {states.map((state) => <option key={state.value} value={state.value}>{state.label}</option>)}
             </Select>
@@ -118,7 +123,7 @@ export default function EventFilters({ onFilterChange, variant = 'stacked', init
               aria-label="Período"
               value={filters.period}
               onChange={(event) => handleFilterChange('period', event.target.value)}
-              className={`${fieldClass} lg:min-w-[10.5rem] shadow-none`}
+              className={`${fieldClass} ${surface} lg:min-w-[10.5rem]`}
             >
               <option value="todos">Qualquer data</option>
               <option value="este-mes">Este mês</option>
@@ -149,7 +154,7 @@ export default function EventFilters({ onFilterChange, variant = 'stacked', init
                 type="date"
                 value={filters.startDate}
                 onChange={(event) => handleFilterChange('startDate', event.target.value)}
-                className={`${fieldClass} shadow-none`}
+                className={`${fieldClass} ${surface}`}
               />
             </div>
             <div>
@@ -159,7 +164,7 @@ export default function EventFilters({ onFilterChange, variant = 'stacked', init
                 type="date"
                 value={filters.endDate}
                 onChange={(event) => handleFilterChange('endDate', event.target.value)}
-                className={`${fieldClass} shadow-none`}
+                className={`${fieldClass} ${surface}`}
               />
             </div>
           </div>
