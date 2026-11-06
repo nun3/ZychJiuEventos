@@ -2,7 +2,7 @@
 
 **Branch candidata:** `integration/event-readiness-20261106`
 **Worktree:** `/home/nune/Meus Projetos/jiu-event-readiness`
-**HEAD nesta rodada:** `3ae0578`
+**HEAD nesta rodada:** `36abc9d`
 **Referência de prioridade:** evento de 21/11/2026 — não é um limite para reduzir qualidade.
 **Sem push, sem deploy, sem migration/escrita em `zigjiu`.**
 
@@ -318,11 +318,14 @@ de peso e separação M/F. A tentativa de testar `chaves/data.ts` por unitário 
 de infraestrutura de teste já existente antes desta missão (§4) — não corrigida, por ser maior que
 este lote.
 
-**Sem depender de autorização nova, ainda não feito:** revisar `EventCategoriesPreview.tsx` e a
-listagem pública de categorias em `app/eventos/[id]/page.tsx` quanto à leitura com até 144 linhas
-— o Lote 5 já registrou como limitação conhecida que essas telas "não foram redesenhadas para até
-144 linhas". Isso é sobre leiturabilidade/UX da tela, não correção; dá para avaliar por leitura de
-código e, se necessário, com teste de snapshot/Playwright sem escrita.
+**Concluído nesta rodada:** revisão de `EventCategoriesPreview.tsx` e da query de
+`app/eventos/[id]/page.tsx` quanto a 144 categorias — a limitação que o Lote 5 havia registrado
+("não foram redesenhadas para até 144 linhas") **não é um defeito real**: o componente já tinha
+preview de 8 + botão "ver todas as categorias", e a query só limita `category_rule_sets` a 1
+linha (a versão ativa), não o array embutido de `event_categories`. O achado real era outro:
+o botão de expandir/recolher não comunicava estado — sem `aria-expanded` nem `aria-controls`
+apontando para a lista, contra o `AGENTS.md` §10. Corrigido (`36abc9d`); não é regressão desta
+reconciliação, já existia antes.
 
 **Bloqueado por decisão/autorização que só você pode dar:**
 
