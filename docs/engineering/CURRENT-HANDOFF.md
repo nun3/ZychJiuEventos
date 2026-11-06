@@ -216,6 +216,31 @@ Testes: `tsc --noEmit` PASS; `next lint` (arquivos alterados) PASS; suíte unit�
 `registration-correction.test.ts` (resolve módulo contra o `jiu` original, não este worktree),
 não relacionada a esta mudança.
 
+## Auditoria de release gate (sessão de publicação, 6 nov 2026)
+
+Executada sob autorização condicional do proprietário para publicar na Vercel **somente se** o
+release gate resultasse GO. HEAD auditado: `931e5d4` (idêntico a `c270279` em código; a única
+diferença é o próprio commit de documentação). Working tree limpo, branch e HEAD conferem.
+
+**Resultado: NO-GO. Nenhuma publicação realizada.**
+
+- Código e qualidade: PASS (evidência reutilizada da rodada anterior — `tsc`, lint, build,
+  unitários 229/230 com a falha pré-existente de alias, Playwright categorias/integração/auth).
+- Persistência e Supabase: **FAIL** — reconfirmado por leitura real (`mcp__supabase__list_migrations`)
+  que `202611060001_category_rule_set_atomic_activation.sql` continua ausente em `zigjiu`; última
+  migration remota ainda é `20261102034621`. A correção de ativação de categorias chamaria uma RPC
+  inexistente em produção.
+- Jornada esportiva: build completo PASS; escrita/carga/concorrência continuam NOT_RUN — BLOCKED
+  BY ENVIRONMENT (sem mudança desde a rodada anterior).
+- Segurança financeira: PASS — nenhum diff nesta sessão; modo manual, ausência de webhook/split
+  automático reconfirmados pela leitura do manifesto, sem necessidade de reexecutar testes.
+- Deployment Vercel: reconfirmado via `mcp__vercel__list_deployments` — produção ainda é
+  `dpl_AMKofx7oNmQnQiPhr2xDTWSdUPaa` (`b0a32c7`), candidato de rollback ainda
+  `dpl_8S5v1WnraoBefZwARg5fDn8EScfs`. Nenhum deployment novo desde o manifesto de 5 nov.
+
+Nenhum achado novo. Decisão idêntica à já registrada na rodada de `c270279`, apenas reverificada
+com leitura real do estado atual de banco e Vercel antes de considerar a publicação autorizada.
+
 ## Próxima missão
 
 Decisões que só o proprietário pode tomar, nesta ordem de impacto:
