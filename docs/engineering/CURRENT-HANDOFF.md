@@ -10,7 +10,7 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 | Worktree | `/home/nune/Meus Projetos/jiu-event-readiness` |
 | Branch | `integration/event-readiness-20261106` |
 | Candidato funcional validado | `a6dadbb` |
-| HEAD desta atualização | política MCP (este lote) |
+| HEAD desta atualização | `5aa6c2d` |
 
 O working tree original de `jiu` não foi modificado neste lote.
 
