@@ -62,7 +62,7 @@ export function deriveCategoryFormStateFromCatalog(
   return {
     catalogCategoryId: definition.id,
     categoryName: shouldSetAutoName ? autoName : currentCategoryName,
-    genero: definition.genero,
+    genero: definition.genero === 'U' ? '' : definition.genero,
     idadeMin: String(definition.idade_min),
     idadeMax: definition.idade_max == null ? '' : String(definition.idade_max),
     faixaMin: String(definition.faixa_min_ordem),
@@ -85,7 +85,7 @@ export type CategoryValidationInput = {
 
 export type ValidatedCategoryPayload = {
   nome: string
-  genero: 'M' | 'F' | 'U'
+  genero: 'M' | 'F'
   idade_min: number
   idade_max: number
   faixa_min_ordem: number
@@ -94,17 +94,63 @@ export type ValidatedCategoryPayload = {
   peso_max_kg: number
 }
 
+export type CategoryVersionRow = ValidatedCategoryPayload & {
+  catalog_category_id: string | null
+  ordem: number
+  fight_duration_minutes: number | null
+}
+
+/** Uma definição compartilhada vira um único lote. O insert desse lote é uma sentença só. */
+export function buildCategoryVersionRows(
+  values: ValidatedCategoryPayload[],
+  catalogCategoryId: string | null,
+  fightDurationMinutes: number | null,
+): CategoryVersionRow[] {
+  return values.map((value) => ({
+    ...value,
+    ordem: 1,
+    fight_duration_minutes: fightDurationMinutes,
+    catalog_category_id: catalogCategoryId,
+  }))
+}
+
+export function categoryInsertCompensation(deleteFailed: boolean) {
+  if (deleteFailed) {
+    return {
+      compensated: false,
+      message: 'Não foi possível cadastrar as categorias. A versão vazia pode ter permanecido inativa.',
+    }
+  }
+  return {
+    compensated: true,
+    message: 'Não foi possível cadastrar as categorias.',
+  }
+}
+
+export function competitiveGenderLabel(genero: string) {
+  if (genero === 'M') return 'Masculino'
+  if (genero === 'F') return 'Feminino'
+  if (genero === 'U') return 'Parâmetros compartilhados'
+  return genero
+}
+
+function effectiveCategoryName(base: string, genero: 'M' | 'F') {
+  const label = competitiveGenderLabel(genero)
+  return base.toLocaleLowerCase('pt-BR').includes(label.toLocaleLowerCase('pt-BR')) ? base : `${base} ${label}`
+}
+
 export function validateCategoryInputAgainstCatalog(
   input: CategoryValidationInput,
   definition: CatalogCategoryDefinition | null,
-): { ok: true; value: ValidatedCategoryPayload } | { ok: false; message: string } {
+): { ok: true; values: ValidatedCategoryPayload[] } | { ok: false; message: string } {
   const nome = input.categoryName.trim()
   const genero = input.genero.trim().toUpperCase()
+  const sharedDefinition = definition?.genero.trim().toUpperCase() === 'U'
   if (!nome) {
     return { ok: false, message: 'Informe o nome da categoria.' }
   }
-  if (genero !== 'M' && genero !== 'F' && genero !== 'U') {
-    return { ok: false, message: 'Selecione um gênero válido para a categoria.' }
+  if (!sharedDefinition && genero !== 'M' && genero !== 'F') {
+    return { ok: false, message: 'Selecione masculino ou feminino. Uma definição compartilhada não vira categoria mista.' }
   }
 
   const rawFields = [
@@ -147,7 +193,7 @@ export function validateCategoryInputAgainstCatalog(
 
   if (definition) {
     const defGender = definition.genero.trim().toUpperCase()
-    if (genero !== defGender) {
+    if (!sharedDefinition && genero !== defGender) {
       return {
         ok: false,
         message: 'O gênero informado não corresponde à categoria do catálogo selecionada.',
@@ -195,17 +241,28 @@ export function validateCategoryInputAgainstCatalog(
     }
   }
 
+  const limits = {
+    idade_min: idadeMin,
+    idade_max: idadeMax,
+    faixa_min_ordem: faixaMin,
+    faixa_max_ordem: faixaMax,
+    peso_min_kg: Math.round(pesoMin * 100) / 100,
+    peso_max_kg: Math.round(pesoMax * 100) / 100,
+  }
+  if (sharedDefinition) {
+    const values: ValidatedCategoryPayload[] = (['M', 'F'] as const).map((effectiveGender) => ({
+      nome: effectiveCategoryName(nome, effectiveGender),
+      genero: effectiveGender,
+      ...limits,
+    }))
+    if (values[0].nome === values[1].nome) {
+      return { ok: false, message: 'Informe um nome que distinga as categorias masculina e feminina.' }
+    }
+    return { ok: true, values }
+  }
+
   return {
     ok: true,
-    value: {
-      nome,
-      genero: genero as 'M' | 'F' | 'U',
-      idade_min: idadeMin,
-      idade_max: idadeMax,
-      faixa_min_ordem: faixaMin,
-      faixa_max_ordem: faixaMax,
-      peso_min_kg: Math.round(pesoMin * 100) / 100,
-      peso_max_kg: Math.round(pesoMax * 100) / 100,
-    },
+    values: [{ nome, genero: genero as 'M' | 'F', ...limits }],
   }
 }

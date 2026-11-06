@@ -3,6 +3,8 @@
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { getAdministrativeOrganizationContext } from '@/lib/auth/organization-context-server'
 import {
+  buildCategoryVersionRows,
+  categoryInsertCompensation,
   validateCategoryInputAgainstCatalog,
   type CatalogCategoryDefinition,
 } from '@/lib/events/catalog-category-sync'
@@ -223,24 +225,28 @@ export async function createCategoryRuleSet(formData: FormData): Promise<EventAc
   const { data: current } = await supabase.from('category_rule_sets').select('versao').eq('event_id', eventId).order('versao', { ascending: false }).limit(1).maybeSingle()
   const { data: rule, error } = await supabase.from('category_rule_sets').insert({ event_id: eventId, nome, versao: (current?.versao || 0) + 1, ativo: false, category_catalog_id: categoryCatalogId }).select('id').single()
   if (error || !rule) return failure('Não foi possível criar a versão de categorias.')
-  const category = {
+  const categories = buildCategoryVersionRows(validatedCategory.values, catalogCategoryId, duration.value).map((row) => ({
     rule_set_id: rule.id,
-    ...validatedCategory.value,
-    ordem: 1,
-    fight_duration_minutes: duration.value,
-    catalog_category_id: catalogCategoryId,
-  }
-  const { error: categoryError } = await supabase.from('event_categories').insert(category)
+    ...row,
+  }))
+  const { error: categoryError } = await supabase.from('event_categories').insert(categories)
   if (categoryError) {
-    await supabase.from('category_rule_sets').delete().eq('id', rule.id)
-    return failure('Não foi possível cadastrar a categoria.')
+    const { error: deleteError } = await supabase.from('category_rule_sets').delete().eq('id', rule.id)
+    return failure(categoryInsertCompensation(Boolean(deleteError)).message)
   }
   const { error: deactivateError } = await supabase.from('category_rule_sets').update({ ativo: false }).eq('event_id', eventId).neq('id', rule.id)
   const { error: activateError } = await supabase.from('category_rule_sets').update({ ativo: true }).eq('id', rule.id)
   if (deactivateError || activateError) return failure('A versão foi criada, mas não pôde ser ativada.')
   revalidatePath(`/admin/eventos/${eventId}/configuracao`)
   revalidatePath(`/eventos/${eventId}`)
-  return { ok: true, message: `Versão ${(current?.versao || 0) + 1} criada com sucesso.` }
+  const version = (current?.versao || 0) + 1
+  const split = validatedCategory.values.length === 2
+  return {
+    ok: true,
+    message: split
+      ? `Versão ${version} criada com categorias masculina e feminina separadas.`
+      : `Versão ${version} criada com sucesso.`,
+  }
 }
 
 const durationErrors: Record<string, string> = {

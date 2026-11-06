@@ -8,6 +8,7 @@ import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import {
+  competitiveGenderLabel,
   deriveCategoryFormStateFromCatalog,
   formatCatalogCategoryDefaultName,
   INITIAL_CUSTOM_CATEGORY_STATE,
@@ -31,6 +32,7 @@ export default function CategoryManager({
   catalog: { id: string; nome: string; versao: number; definitions: CatalogCategoryDefinition[] } | null
 }) {
   const formRef = useRef<HTMLFormElement>(null)
+  const submitLock = useRef(false)
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)
   const [ruleName, setRuleName] = useState('')
@@ -73,7 +75,7 @@ export default function CategoryManager({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (pending) return
+    if (pending || submitLock.current) return
     const form = event.currentTarget
     const validation = validateCategoryInputAgainstCatalog(
       {
@@ -92,16 +94,21 @@ export default function CategoryManager({
       setMessage({ ok: false, text: validation.message })
       return
     }
+    submitLock.current = true
     const data = new FormData(form)
     startTransition(async () => {
-      const result = await createCategoryRuleSet(data)
-      setMessage({ ok: result.ok, text: result.message })
-      if (result.ok) {
-        formRef.current?.reset()
-        setRuleName('')
-        setFightDuration('')
-        setFields(INITIAL_CUSTOM_CATEGORY_STATE)
-        setLastAutoName('')
+      try {
+        const result = await createCategoryRuleSet(data)
+        setMessage({ ok: result.ok, text: result.message })
+        if (result.ok) {
+          formRef.current?.reset()
+          setRuleName('')
+          setFightDuration('')
+          setFields(INITIAL_CUSTOM_CATEGORY_STATE)
+          setLastAutoName('')
+        }
+      } finally {
+        submitLock.current = false
       }
     })
   }
@@ -162,7 +169,7 @@ export default function CategoryManager({
                 className="min-w-0 sm:col-span-2"
                 description={
                   selectedDefinition
-                    ? `Vinculada a ${selectedDefinition.divisao_etaria} · ${selectedDefinition.genero} · ${selectedDefinition.nome} (${selectedDefinition.peso_min_kg} kg ${selectedDefinition.peso_max_kg == null ? 'sem limite máximo fixo' : `a ${selectedDefinition.peso_max_kg} kg`}).`
+                    ? `Vinculada a ${selectedDefinition.divisao_etaria} · ${competitiveGenderLabel(selectedDefinition.genero)} · ${selectedDefinition.nome} (${selectedDefinition.peso_min_kg} kg ${selectedDefinition.peso_max_kg == null ? 'sem limite máximo fixo' : `a ${selectedDefinition.peso_max_kg} kg`}).`
                     : 'Opcional. Deixe sem vínculo para uma categoria customizada.'
                 }
               >
@@ -174,7 +181,7 @@ export default function CategoryManager({
                   <option value="">Categoria customizada</option>
                   {catalog.definitions.map((definition) => (
                     <option key={definition.id} value={definition.id}>
-                      {definition.divisao_etaria} · {definition.genero} · {definition.nome} ·{' '}
+                      {definition.divisao_etaria} · {competitiveGenderLabel(definition.genero)} · {definition.nome} ·{' '}
                       {definition.peso_max_kg == null ? 'sem limite' : `até ${definition.peso_max_kg} kg`}
                     </option>
                   ))}
@@ -189,17 +196,22 @@ export default function CategoryManager({
             Elegibilidade
           </legend>
           <div className="grid gap-mc-16 sm:grid-cols-2">
-            <FormField id="category-gender" label="Gênero" required>
-              <Select
-                name="genero"
-                value={fields.genero}
-                onChange={(event) => patchFields({ genero: event.target.value })}
-              >
-                <option value="M">Masculino</option>
-                <option value="F">Feminino</option>
-                <option value="U">Unissex (M/F)</option>
-              </Select>
-            </FormField>
+            {selectedDefinition?.genero === 'U' ? (
+              <p className="font-mc-interface text-sm text-mc-text-secondary sm:col-span-2">
+                Esta definição guarda idade, faixa e peso compartilhados. A versão cria duas categorias efetivas, Masculino e Feminino, com os mesmos limites e chaves separadas.
+              </p>
+            ) : (
+              <FormField id="category-gender" label="Gênero" required>
+                <Select
+                  name="genero"
+                  value={fields.genero}
+                  onChange={(event) => patchFields({ genero: event.target.value })}
+                >
+                  <option value="M">Masculino</option>
+                  <option value="F">Feminino</option>
+                </Select>
+              </FormField>
+            )}
             <div className="grid grid-cols-2 gap-mc-12 sm:col-span-2">
               <FormField id="minimum-age" label="Idade mínima" required>
                 <Input
