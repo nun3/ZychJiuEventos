@@ -1,5 +1,19 @@
 begin;
 
+-- O codigo antigo (duas atualizacoes sequenciais sem transacao) pode ter deixado algum evento
+-- com mais de uma versao ativa; sem este saneamento, o indice unico abaixo falharia ao criar.
+-- Mantem ativa a versao mais recente (maior "versao") de cada evento; desativa as demais.
+with keep as (
+  select distinct on (event_id) id
+  from public.category_rule_sets
+  where ativo
+  order by event_id, versao desc
+)
+update public.category_rule_sets
+set ativo = false
+where ativo
+  and id not in (select id from keep);
+
 -- Garante no maximo uma versao ativa de categorias por evento mesmo se algum caminho de codigo
 -- (atual ou futuro) esquecer de desativar as demais antes de ativar uma nova. Backstop no banco,
 -- independente da funcao abaixo.
@@ -22,9 +36,10 @@ as $$
 declare
   v_event_id uuid;
   v_checagem_travada_em timestamptz;
+  v_status public.event_status;
 begin
-  select crs.event_id, e.checagem_travada_em
-    into v_event_id, v_checagem_travada_em
+  select crs.event_id, e.checagem_travada_em, e.status
+    into v_event_id, v_checagem_travada_em, v_status
   from public.category_rule_sets crs
   join public.events e on e.id = crs.event_id
   where crs.id = p_rule_set_id
@@ -32,6 +47,10 @@ begin
 
   if v_event_id is null then
     raise exception 'Conjunto de categorias nao encontrado.' using errcode = 'P0002';
+  end if;
+
+  if v_status in ('cancelado', 'concluido') then
+    raise exception 'Este evento esta cancelado ou concluido; a versao ativa de categorias nao pode mais ser alterada.' using errcode = 'P0003';
   end if;
 
   if v_checagem_travada_em is not null then

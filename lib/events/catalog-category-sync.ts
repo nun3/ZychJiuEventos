@@ -127,6 +127,30 @@ export function categoryInsertCompensation(deleteFailed: boolean) {
   }
 }
 
+/**
+ * Compensação quando a RPC `activate_category_rule_set` falha depois que a versão e suas
+ * categorias já foram gravadas. `blockedByEventState` distingue os erros `P0001`/`P0003`
+ * (checagem travada ou evento cancelado/concluído entre o gate da aplicação e a RPC — corrida
+ * genuína, não um bug) de qualquer outra falha, para não dizer "tente novamente" quando tentar
+ * de novo vai falhar do mesmo jeito.
+ */
+export function categoryActivationCompensation(deleteFailed: boolean, blockedByEventState: boolean) {
+  if (blockedByEventState) {
+    return {
+      compensated: !deleteFailed,
+      message: deleteFailed
+        ? 'O estado do evento mudou enquanto a versão era criada. A versão incompleta pode ter permanecido inativa.'
+        : 'O estado do evento mudou enquanto a versão era criada (checagem travada ou evento cancelado/concluído). Não é mais possível alterar categorias.',
+    }
+  }
+  return {
+    compensated: !deleteFailed,
+    message: deleteFailed
+      ? 'A versão foi criada, mas não pôde ser ativada, e não foi possível desfazê-la. A versão incompleta pode ter permanecido inativa.'
+      : 'A versão foi criada, mas não pôde ser ativada. Os dados enviados não foram perdidos; peça para tentar novamente.',
+  }
+}
+
 export function competitiveGenderLabel(genero: string) {
   if (genero === 'M') return 'Masculino'
   if (genero === 'F') return 'Feminino'

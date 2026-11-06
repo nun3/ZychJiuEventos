@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { getAdministrativeOrganizationContext } from '@/lib/auth/organization-context-server'
 import {
   buildCategoryVersionRows,
+  categoryActivationCompensation,
   categoryInsertCompensation,
   expandCatalogSelectionToCategoryRows,
   validateCategoryInputAgainstCatalog,
@@ -306,7 +307,19 @@ async function persistNewCategoryVersion(
   // uma falha entre as duas podia deixar o evento sem versão ativa, e duas ativações concorrentes
   // do mesmo evento podiam intercalar e deixar duas versões ativas ao mesmo tempo.
   const { error: activateError } = await supabase.rpc('activate_category_rule_set', { p_rule_set_id: rule.id })
-  if (activateError) return failure('A versão foi criada, mas não pôde ser ativada. Os dados enviados não foram perdidos; peça para tentar novamente.')
+  if (activateError) {
+    // A checagem pode ter travado entre o gate no início da action e esta chamada (corrida
+    // genuína, não um bug): a RPC devolve P0001 nesse caso. Tentar de novo não resolveria, então
+    // a mensagem não convida a reenviar. Em qualquer outro erro, a versão criada (inativa) e suas
+    // categorias são desfeitas — `event_categories` antes de `category_rule_sets` por causa do
+    // `ON DELETE RESTRICT` entre as duas tabelas.
+    const blockedByEventState = activateError.code === 'P0001' || activateError.code === 'P0003'
+    const { error: deleteCategoriesError } = await supabase.from('event_categories').delete().eq('rule_set_id', rule.id)
+    const { error: deleteRuleError } = deleteCategoriesError
+      ? { error: deleteCategoriesError }
+      : await supabase.from('category_rule_sets').delete().eq('id', rule.id)
+    return failure(categoryActivationCompensation(Boolean(deleteCategoriesError || deleteRuleError), blockedByEventState).message)
+  }
   revalidatePath(`/admin/eventos/${eventId}/configuracao`)
   revalidatePath(`/eventos/${eventId}`)
   const version = (current?.versao || 0) + 1

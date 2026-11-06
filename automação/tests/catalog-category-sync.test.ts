@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   buildCategoryVersionRows,
+  categoryActivationCompensation,
   categoryInsertCompensation,
   definitionNeedsOverride,
   deriveCategoryFormStateFromCatalog,
@@ -260,6 +261,21 @@ test('falha do insert compensa a versão vazia; se o delete falha, a versão pod
     message: 'Não foi possível cadastrar as categorias.',
   })
   assert.equal(categoryInsertCompensation(true).compensated, false)
+})
+
+test('falha de ativação compensa a versão criada; mensagem não convida a reenviar quando o estado do evento mudou', () => {
+  const generic = categoryActivationCompensation(false, false)
+  assert.equal(generic.compensated, true)
+  assert.match(generic.message, /tentar novamente/)
+
+  const genericDeleteFailed = categoryActivationCompensation(true, false)
+  assert.equal(genericDeleteFailed.compensated, false)
+
+  const racedWithEventState = categoryActivationCompensation(false, true)
+  assert.equal(racedWithEventState.compensated, true)
+  assert.doesNotMatch(racedWithEventState.message, /tentar novamente/)
+
+  assert.equal(categoryActivationCompensation(true, true).compensated, false)
 })
 
 test('retry depois de falha recomeça o lote inteiro, sem completar um sexo só', () => {
