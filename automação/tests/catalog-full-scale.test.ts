@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { categorize, beltOrder, type Category } from '../../lib/categorization';
 import { expandCatalogSelectionToCategoryRows, type CatalogCategoryDefinition } from '../../lib/events/catalog-category-sync';
+import { resolvePublicCategory, type SportCategoryDefinition } from '../../lib/events/category-resolver';
 
 /**
  * Reconstrução fiel das 99 definições do catálogo GI, a partir dos mesmos 11 grupos e pesos
@@ -180,5 +181,41 @@ test('separação M/F é absoluta em todo o catálogo expandido: nenhum atleta c
 test('beltOrder reconhece as 9 faixas usadas na semente real do catálogo', () => {
   for (let order = 1; order <= 9; order += 1) {
     assert.equal(beltOrder(belt(order)), order);
+  }
+});
+
+// --- resolvePublicCategory / classifyFromCatalog (lib/events/category-resolver.ts), mesma
+// escala real de 99 definições. Este é o caminho usado pela pré-visualização pública (fora do
+// contexto de um evento), não o categorize() de lib/categorization.ts testado acima — os dois
+// leem `ordem` para desempatar, e precisam ser validados separadamente.
+
+const publicCatalog: SportCategoryDefinition[] = catalog.map((definition) => ({
+  ...definition,
+  genero: definition.genero as 'U' | 'M' | 'F',
+  catalog_id: 'ca7a1000-0000-4000-8000-000000000001',
+  codigo: definition.codigo || definition.id,
+  ordem: definition.ordem ?? 1,
+}));
+
+test('resolvePublicCategory classifica, sem ambiguidade, um atleta no meio de cada uma das 99 definições reais', () => {
+  for (const definition of catalog) {
+    const age = definition.idade_min + 1;
+    const { eventDate, birth } = eventDateForAge(age);
+    const pesoMax = definition.peso_max_kg ?? definition.peso_min_kg + 10;
+    const weightKg = Math.round(((definition.peso_min_kg + pesoMax) / 2) * 100) / 100;
+    const gender: 'M' | 'F' = definition.genero === 'U' ? 'M' : (definition.genero as 'M' | 'F');
+    const result = resolvePublicCategory({
+      birthDate: birth,
+      gender,
+      belt: belt(Math.round((definition.faixa_min_ordem + definition.faixa_max_ordem) / 2)),
+      weightKg,
+      eventDate,
+      eventCategories: [],
+      catalog: { id: 'ca7a1000-0000-4000-8000-000000000001', version: 1, modality: 'gi', categories: publicCatalog },
+    });
+    assert.equal(result.status, 'resolved', `definição "${definition.divisao_etaria} ${definition.nome}" (${definition.genero}): esperado resolved, obtido ${JSON.stringify(result)}`);
+    if (result.status === 'resolved') {
+      assert.equal(result.classification.catalogCategoryId, definition.id);
+    }
   }
 });
