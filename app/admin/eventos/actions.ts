@@ -15,6 +15,7 @@ import {
 import { assertCategoryVersionEditable } from '@/lib/events/category-rule-set-lifecycle'
 import { parseFightDurationInput } from '@/lib/events/fight-duration'
 import { allowsPublicOrganization } from '@/lib/events/public-organization'
+import { formatVenueLocal, sanitizeCep } from '@/lib/location/cep'
 import { createClient } from '@/lib/supabase/server'
 import { zonedLocalToUtc } from '@/lib/timezone'
 
@@ -25,6 +26,50 @@ const failure = (message: string, eventId?: string): EventActionResult => (
   eventId ? { ok: false, message, eventId } : { ok: false, message }
 )
 const text = (formData: FormData, field: string) => String(formData.get(field) || '').trim()
+
+function optionalNumber(formData: FormData, field: string): number | null {
+  const raw = text(formData, field)
+  if (!raw) return null
+  const value = Number(raw)
+  return Number.isFinite(value) ? value : null
+}
+
+// `local_nome`/`local_cep`/... só chegam de formulários que usam <VenueFields> (hoje, a edição de
+// rascunho). O formulário de criação ainda envia só `local` como texto livre — por isso os campos
+// estruturados ficam `null` nesse caso, preservando o comportamento atual.
+function venuePayload(formData: FormData) {
+  const localNome = text(formData, 'local_nome')
+  const localCep = sanitizeCep(text(formData, 'local_cep'))
+  const localLogradouro = text(formData, 'local_logradouro')
+  const localNumero = text(formData, 'local_numero')
+  const localComplemento = text(formData, 'local_complemento')
+  const localBairro = text(formData, 'local_bairro')
+  const localCidade = text(formData, 'local_cidade')
+  const localUf = text(formData, 'local_uf').toUpperCase()
+  const formatted = text(formData, 'local') || formatVenueLocal({
+    nome: localNome,
+    cep: localCep,
+    logradouro: localLogradouro,
+    numero: localNumero,
+    complemento: localComplemento,
+    bairro: localBairro,
+    cidade: localCidade,
+    uf: localUf,
+  })
+  return {
+    local: formatted,
+    local_nome: localNome || null,
+    local_cep: localCep || null,
+    local_logradouro: localLogradouro || null,
+    local_numero: localNumero || null,
+    local_complemento: localComplemento || null,
+    local_bairro: localBairro || null,
+    local_cidade: localCidade || null,
+    local_uf: localUf || null,
+    local_latitude: optionalNumber(formData, 'local_latitude'),
+    local_longitude: optionalNumber(formData, 'local_longitude'),
+  }
+}
 
 function slugify(value: string) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
@@ -47,7 +92,7 @@ async function uploadAsset(
 
 export async function createEvent(formData: FormData): Promise<EventActionResult> {
   const nome = text(formData, 'nome')
-  const local = text(formData, 'local')
+  const venue = venuePayload(formData)
   const dataEvento = text(formData, 'data_evento')
   const timezone = text(formData, 'timezone') || 'America/Sao_Paulo'
   const informacoes = text(formData, 'informacoes')
@@ -56,7 +101,7 @@ export async function createEvent(formData: FormData): Promise<EventActionResult
   const phaseTypes = ['inscricao', 'pagamento', 'checagem', 'chaves'] as const
   let phases = phaseTypes.map((tipo) => ({ tipo, inicio: text(formData, `${tipo}_inicio`), fim: text(formData, `${tipo}_fim`) }))
 
-  if (nome.length < 3 || local.length < 3 || !dataEvento || !Number.isFinite(valorInscricao) || valorInscricao < 0) return failure('Informe nome, data, local e valor válidos.')
+  if (nome.length < 3 || venue.local.length < 3 || !dataEvento || !Number.isFinite(valorInscricao) || valorInscricao < 0) return failure('Informe nome, data, local e valor válidos.')
   if (phases.some(({ inicio, fim }) => !inicio || !fim || new Date(inicio) >= new Date(fim))) {
     return failure('Cada fase deve possuir início anterior ao término.')
   }
@@ -91,7 +136,19 @@ export async function createEvent(formData: FormData): Promise<EventActionResult
   const slug = `${slugify(nome) || 'evento'}-${Date.now().toString(36)}`
   const { data: event, error: eventError } = await supabase.from('events').insert({
     organization_id: organization.context.organizationId, nome, slug, data_evento: dataEvento,
-    timezone, local, informacoes: informacoes || null, valor_inscricao: valorInscricao,
+    timezone,
+    local: venue.local,
+    local_nome: venue.local_nome,
+    local_cep: venue.local_cep,
+    local_logradouro: venue.local_logradouro,
+    local_numero: venue.local_numero,
+    local_complemento: venue.local_complemento,
+    local_bairro: venue.local_bairro,
+    local_cidade: venue.local_cidade,
+    local_uf: venue.local_uf,
+    local_latitude: venue.local_latitude,
+    local_longitude: venue.local_longitude,
+    informacoes: informacoes || null, valor_inscricao: valorInscricao,
     created_by: authData.user.id, status: 'rascunho',
   }).select('id').single()
   if (eventError || !event) return failure('Não foi possível criar o evento.')
@@ -169,15 +226,36 @@ async function editableEvent(eventId: string) {
 export async function updateEvent(formData: FormData): Promise<EventActionResult> {
   const eventId = text(formData, 'event_id')
   const nome = text(formData, 'nome')
-  const local = text(formData, 'local')
+  const venue = venuePayload(formData)
   const dataEvento = text(formData, 'data_evento')
   const timezone = text(formData, 'timezone') || 'America/Sao_Paulo'
   const valorInscricao = Number(text(formData, 'valor_inscricao').replace(',', '.'))
-  if (!eventId || nome.length < 3 || local.length < 3 || !dataEvento || !Number.isFinite(valorInscricao) || valorInscricao < 0) return failure('Dados do evento inválidos.')
+  const hasStructuredVenue = Boolean(text(formData, 'local_nome') || text(formData, 'local_cep') || text(formData, 'local_logradouro'))
+  const localOk = hasStructuredVenue
+    ? Boolean(venue.local_nome && venue.local_nome.length >= 3 && venue.local_numero)
+    : venue.local.length >= 3
+  if (!eventId || nome.length < 3 || !localOk || !dataEvento || !Number.isFinite(valorInscricao) || valorInscricao < 0) return failure('Dados do evento inválidos.')
   const { supabase, event } = await editableEvent(eventId)
   if (!event) return failure('Evento não encontrado ou sem permissão.')
   if (event.status !== 'rascunho') return failure('Somente rascunhos podem ter os dados básicos editados.')
-  const { error } = await supabase.from('events').update({ nome, local, data_evento: dataEvento, timezone, valor_inscricao: valorInscricao, informacoes: text(formData, 'informacoes') || null }).eq('id', eventId)
+  const { error } = await supabase.from('events').update({
+    nome,
+    local: venue.local,
+    local_nome: venue.local_nome,
+    local_cep: venue.local_cep,
+    local_logradouro: venue.local_logradouro,
+    local_numero: venue.local_numero,
+    local_complemento: venue.local_complemento,
+    local_bairro: venue.local_bairro,
+    local_cidade: venue.local_cidade,
+    local_uf: venue.local_uf,
+    local_latitude: venue.local_latitude,
+    local_longitude: venue.local_longitude,
+    data_evento: dataEvento,
+    timezone,
+    valor_inscricao: valorInscricao,
+    informacoes: text(formData, 'informacoes') || null,
+  }).eq('id', eventId)
   if (error) return failure('Não foi possível atualizar o evento.')
   revalidatePath('/admin/eventos')
   revalidatePath(`/admin/eventos/${eventId}/editar`)

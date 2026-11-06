@@ -22,7 +22,13 @@ export async function findPublicReleaseEvent(eventId: string, statuses: readonly
 
   if (scope.mode === 'restricted') query = query.eq('organization_id', scope.organizationId)
 
-  const { data } = await query.maybeSingle()
+  const { data, error } = await query.maybeSingle()
+  if (error) {
+    // Erro de banco (ex.: drift de schema) não é "evento não encontrado" — mascarar como 404
+    // esconderia uma falha real. Log seguro: só código/mensagem do Postgres, sem dados do evento.
+    console.error('findPublicReleaseEvent: falha ao consultar o evento público', error.code, error.message)
+    throw new Error('Não foi possível carregar o evento.')
+  }
   if (!data || !allowsPublicOrganization(data.organization_id)) return null
   return data
 }
