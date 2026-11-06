@@ -136,19 +136,20 @@ candidato integrado:
 | Responsividade | incluída nos specs acima | 1440/768/390/320 sem overflow horizontal |
 | Permissões | incluída no spec de integração | visitante recusado em rotas privadas; sem vínculo não permanece em `/admin` |
 
-**NOT_RUN, explicitamente:**
+**NOT_RUN — BLOCKED BY ENVIRONMENT** (não impossível em definitivo; reabre com nova decisão de
+ambiente, não com mais esforço de código):
 
 - `@write`/`@full-event`/`@homologation` (BDD, Playwright): não executados. `.env.local` desta
   sessão aponta para `zigjiu`, e essas suítes escrevem de verdade quando `E2E_ALLOW_WRITES=true` —
-  rodá-las aqui arriscaria escrita em produção. Ver §6 para o caminho correto (projeto
-  independente).
+  rodá-las aqui arriscaria escrita em produção. A estratégia de projeto independente que serviria
+  de alvo seguro foi cancelada em 6 de novembro de 2026 (ver §6).
 - Carga sintética de 250 e 400 atletas: o gerador existe (`independent-homologation-fixtures.ts`,
-  §6) mas não foi executado contra nenhum banco — não há projeto independente provisionado nesta
-  sessão (criação de projeto pago exige autorização específica).
+  §6, preservado mas não vigente) — não há ambiente seguro para executá-lo.
 - Concorrência progressiva: o mesmo gerador aceita `--concurrency=N`, mas nenhuma execução real
-  aconteceu. Nenhum número de desempenho deste lote é real; não inventar nenhum.
-- Jornada esportiva completa (inscrição → checagem → pesagem → chave → resultado) com o catálogo
-  de 144 categorias: não exercitada contra banco nesta rodada.
+  aconteceu nem vai acontecer sem um ambiente aprovado. Nenhum número de desempenho deste lote é
+  real; não inventar nenhum.
+- Jornada esportiva completa (inscrição → checagem → pesagem → chave → resultado) com escrita e
+  com o catálogo de 144 categorias: não exercitada contra banco nesta rodada, pelo mesmo bloqueio.
 
 ---
 
@@ -280,8 +281,8 @@ provisionado.
 | Categorias | Tabela completa possível numa só versão; **RPC e UI de inscrição com 144 categorias não exercitadas contra banco** |
 | Organização administrativa | Deixa de escolher arbitrariamente; **não confirmado se algum operador real é afetado** |
 | Dashboard, autenticação, superfícies públicas | Mesma cobertura já validada nos Lotes 2/3/4/6, revalidada aqui |
-| Carga (250/400 atletas, concorrência) | **NOT_RUN definitivo nesta fase** — a estratégia de projeto independente foi cancelada em 6 de novembro; sem um segundo ambiente, não há onde rodar carga ou concorrência sem risco à produção |
-| Jornada esportiva ponta a ponta com escrita | **NOT_RUN definitivo nesta fase**, pelo mesmo motivo |
+| Carga (250/400 atletas, concorrência) | **NOT_RUN — BLOCKED BY ENVIRONMENT** — a estratégia de projeto independente foi cancelada em 6 de novembro; sem um segundo ambiente, não há onde rodar carga ou concorrência sem risco à produção. Não é impossível em definitivo: uma nova decisão de ambiente reabre o caminho |
+| Jornada esportiva ponta a ponta com escrita | **NOT_RUN — BLOCKED BY ENVIRONMENT**, pelo mesmo motivo |
 | Financeiro | Fora de escopo deste lote — linhagem A provisória, conforme decisão já registrada |
 
 **Backup como estratégia vigente:** a diretriz de 6 de novembro define manter backups no Pro do
@@ -305,8 +306,9 @@ unitário sobre os dados que `checagem/page.tsx` e `chaves/data.ts` já leem.
 **Bloqueado por decisão/autorização que só você pode dar:**
 
 1. ~~Autorizar a criação do projeto Supabase descartável~~ — **cancelado em 6 de novembro de
-   2026.** Carga, concorrência e jornada esportiva com escrita permanecem NOT_RUN nesta fase, sem
-   um caminho previsto para sair desse estado além de uma nova decisão sua.
+   2026.** Carga, concorrência e jornada esportiva com escrita permanecem
+   **NOT_RUN — BLOCKED BY ENVIRONMENT**: não impossíveis em definitivo, mas sem um ambiente seguro
+   aprovado para executá-las. Reabrir exige uma nova decisão sua sobre ambiente, não mais código.
 2. Confirmar se algum operador real tem filiação administrativa ambígua (§3) antes de levar a
    correção adiante — ou autorizar a consulta `execute_sql` bloqueada pelo classificador desta
    sessão.
