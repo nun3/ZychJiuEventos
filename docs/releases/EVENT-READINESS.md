@@ -333,6 +333,42 @@ reconciliação, já existia antes.
    2026.** Carga, concorrência e jornada esportiva com escrita permanecem
    **NOT_RUN — BLOCKED BY ENVIRONMENT**: não impossíveis em definitivo, mas sem um ambiente seguro
    aprovado para executá-las. Reabrir exige uma nova decisão sua sobre ambiente, não mais código.
-2. Confirmar se algum operador real tem filiação administrativa ambígua (§3) antes de levar a
-   correção adiante — ou autorizar a consulta `execute_sql` bloqueada pelo classificador desta
-   sessão.
+2. ~~Confirmar se algum operador real tem filiação administrativa ambígua (§3)~~ — confirmado em
+   6 de novembro de 2026 (§9): **0** operadores afetados.
+
+---
+
+## 9. Rodada de 6 de novembro de 2026 — missão P0 integrada (categorias, organizações, RC)
+
+Commits `4d87f78` (organizações, criação de evento), `9c6b743` e `c270279` (categorias +
+organizações listagem/edição). Detalhe completo em
+`docs/engineering/CURRENT-HANDOFF.md`; aqui, o resumo executivo.
+
+**Categorias (P0 do `domain-risk-reviewer`, §4 original):** `createCategoryRuleSet` trocava a
+versão ativa com duas atualizações sequenciais sem transação, sem proteção contra ativação
+concorrente e sem restrição por estado do evento. Migration preparada (não aplicada em `zigjiu`)
+cria um índice único parcial (no máximo uma versão ativa por evento, saneando duplicatas
+pré-existentes antes de criar o índice) e uma função `activate_category_rule_set` atômica. O
+código da aplicação passou a chamar essa RPC e a bloquear a criação de versão quando a checagem
+já travou ou o evento está cancelado/concluído. Revisado pelo `domain-risk-reviewer` (Opus): 3
+achados médios, todos corrigidos antes do commit final; atomicidade e ausência de deadlock
+confirmadas corretas. Verificado pelo `lot-verifier` (Sonnet): sem FAIL, teste novo coerente com
+o código.
+
+**Organizações:** a correção de 6 de novembro (§3) cobria só a criação de evento. Esta rodada
+estendeu a regra de escolha explícita para a listagem (`/admin/eventos`, seletor por `?org=`) e
+removeu um bloqueio incorreto na edição de rascunho (`/admin/eventos/[id]/editar`, que não
+precisa de organização ativa resolvida).
+
+**Testes:** `tsc`, lint e `next build` completo PASS; unitários 229/230 (mesma falha pré-existente
+de alias, não relacionada); consulta agregada reconfirmou 0 operadores com filiação ambígua.
+Jornada esportiva com escrita, carga e concorrência real seguem **NOT_RUN — BLOCKED BY
+ENVIRONMENT** — não há ambiente seguro aprovado para isso.
+
+**Comparação com produção (`b0a32c7`):** única migration nova em todo o diff da branch é a desta
+rodada. Nenhum outro lote integrado depende de migration não aplicada.
+
+**GO/NO-GO: NO-GO.** Código revisado e correto nos itens tratados, mas a correção de categorias
+não tem efeito em produção sem a migration aplicada; homologação com escrita continua bloqueada
+por decisão de ambiente ainda pendente do proprietário. Sem bloqueador de correção restante nos
+itens desta rodada — o bloqueio é de processo de publicação, não de código.
