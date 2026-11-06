@@ -13,19 +13,22 @@ export default function QuemSomosPage() {
     <InstitutionalPage
       eyebrow="Quem somos"
       title="MEU CAMP existe para a competição acontecer."
+      titleLines={['MEU CAMP', 'existe para a', 'competição', 'acontecer.']}
+      imageSrc="/images/cinematic/bjj-2.jpg"
+      caption="Competição antes de SaaS"
       description="Somos uma plataforma de operação esportiva. A primeira modalidade é Jiu-Jitsu. A marca e a arquitetura foram feitas para crescer para outros esportes de combate, sem transformar o produto em SaaS genérico."
       actions={(
         <>
-          <Link href="/sistema" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium bg-mc-action px-mc-24 font-mc-interface font-semibold text-white transition-colors hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">
+          <Link href="/sistema" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium bg-mc-action px-mc-24 font-mc-interface font-semibold text-white transition-colors hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
             Conhecer o sistema
           </Link>
-          <Link href="/academias" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium border border-white/60 px-mc-24 font-mc-interface font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">
+          <Link href="/academias" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium border border-mc-border px-mc-24 font-mc-interface font-semibold text-mc-text-primary transition-colors hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
             Para academias
           </Link>
         </>
       )}
     >
-      <div className="grid gap-mc-24 lg:grid-cols-3">
+      <div data-mc-stagger className="grid gap-mc-24 lg:grid-cols-3">
         <Card className="p-mc-16 sm:p-mc-24">
           <h2 className="font-mc-display text-mc-h3 text-mc-text-primary">Competição antes de SaaS</h2>
           <p className="mt-mc-12 font-mc-interface leading-6 text-mc-text-secondary">

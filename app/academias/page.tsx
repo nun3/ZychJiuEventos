@@ -37,19 +37,22 @@ export default function AcademiasPage() {
     <InstitutionalPage
       eyebrow="Para academias e equipes"
       title="Sua equipe chega na competição organizada."
+      titleLines={['Sua equipe', 'chega na', 'competição', 'organizada.']}
+      imageSrc="/images/cinematic/judo-2.jpg"
+      caption="Equipe até o tatame"
       description="O MEU CAMP não é um sistema de mensalidade, catraca ou CRM de academia. É a ferramenta para o professor e o responsável conduzirem atletas até o evento — e acompanharem o que acontece no dia."
       actions={(
         <>
-          <Link href="/login?mode=register" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium bg-mc-action px-mc-24 font-mc-interface font-semibold text-white transition-colors hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">
+          <Link href="/login?mode=register" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium bg-mc-action px-mc-24 font-mc-interface font-semibold text-white transition-colors hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
             Criar conta
           </Link>
-          <Link href="/eventos" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium border border-white/60 px-mc-24 font-mc-interface font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">
+          <Link href="/eventos" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium border border-mc-border px-mc-24 font-mc-interface font-semibold text-mc-text-primary transition-colors hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
             Ver eventos
           </Link>
         </>
       )}
     >
-      <div className="grid gap-mc-24 md:grid-cols-2">
+      <div data-mc-stagger className="grid gap-mc-24 md:grid-cols-2">
         {uses.map((item) => (
           <Card key={item.title} className="p-mc-16 sm:p-mc-24">
             <item.icon aria-hidden="true" size={22} className="text-mc-action" />
