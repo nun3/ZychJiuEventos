@@ -10,7 +10,7 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 | Worktree | `/home/nune/Meus Projetos/jiu-event-readiness` |
 | Branch | `integration/event-readiness-20261106` |
 | Candidato funcional validado | `a6dadbb` |
-| HEAD desta atualização | `a76363f` |
+| HEAD desta atualização | `4d87f78` |
 
 O working tree original de `jiu` não foi modificado neste lote.
 
@@ -43,15 +43,62 @@ Este lote de ambiente não reexecutou essas suítes.
 ## Bloqueios
 
 - Ambiente seguro para escrita, carga e jornada esportiva completa.
-- Confirmar se algum operador real tem filiação administrativa ambígua.
+- ~~Confirmar se algum operador real tem filiação administrativa ambígua.~~ Confirmado nesta
+  rodada (6 nov 2026): consulta agregada em produção (`zigjiu`, somente leitura) retornou **0**
+  operadores com mais de uma filiação owner/organizer. Pendência do lote anterior encerrada.
 - Escolha da linhagem financeira A/B/C.
 - Seleção da base Git dos próximos lotes (`b0a32c7` vs este candidato).
+- **Novo P0 registrado, não iniciado:** `createCategoryRuleSet` — troca de versão ativa sem
+  atomicidade comprovada, possível ausência de proteção contra versões ativas concorrentes,
+  falta de restrição explícita por estado do campeonato, risco de reenvio/idempotência,
+  dependência de RLS para autorização. Diagnóstico do `domain-risk-reviewer` (Opus) de rodada
+  anterior; ainda não reexecutado contra o código atual.
+
+## Rodada de 6 nov 2026 — organizações (concluída)
+
+Commit `4d87f78`. Regra de produto aplicada à criação de evento (`/admin/eventos/novo`):
+
+1. Uma filiação administrativa (owner/organizer): seleção automática — já estava correto.
+2. Mais de uma: **escolha explícita** do operador num `<select>` no formulário — **gap corrigido
+   nesta rodada**; antes, mais de uma filiação apenas bloqueava a criação (falha fechada) sem
+   oferecer alternativa.
+3. Nenhuma: impede a criação — já estava correto.
+4. Revalidação no servidor: a escolha do formulário é sempre conferida contra as filiações reais
+   do usuário (`organization_members`, papel owner/organizer) a cada chamada de `createEvent`;
+   nunca aceita apenas pelo valor recebido do cliente.
+
+Lacuna adicional encontrada e corrigida: `getAdministrativeOrganizationContext` descartava o
+`reason` (e agora `options`) em todo caso não resolvido. Isso tornava o tratamento de
+`reason === 'ambiguous'` já existente em `createEvent` código morto — nunca era alcançado, mesmo
+antes desta rodada.
+
+Arquivos alterados: `lib/auth/organization-context.ts`, `lib/auth/organization-context-server.ts`,
+`app/admin/eventos/actions.ts`, `app/admin/eventos/novo/page.tsx`,
+`app/admin/eventos/novo/NewEventForm.tsx`, `automação/tests/organization-context.test.ts`.
+
+Fora do escopo desta rodada, propositalmente: `/admin/eventos` (listagem) e
+`/admin/eventos/[id]/editar` continuam com o comportamento antigo (falha fechada) quando
+ambíguo — não é o fluxo de criação que a missão pediu para corrigir.
+
+Testes: `tsc --noEmit` PASS; `next lint` (arquivos alterados) PASS; suíte unitária
+`automação` 224/225 — a 1 falha é a pré-existente de alias em
+`registration-correction.test.ts` (resolve módulo contra o `jiu` original, não este worktree),
+não relacionada a esta mudança.
 
 ## Próxima missão
 
-Decisão do proprietário: manter a regra “cada lote parte de `b0a32c7`” ou passar a trabalhar a partir deste candidato integrado.
+P0 de categorias (`createCategoryRuleSet`, ver Bloqueios acima) — aguardando autorização do
+proprietário para iniciar. Quando autorizada: implementar correções locais, preparar eventuais
+migrations sem aplicar, e solicitar revisão final ao `domain-risk-reviewer` com Opus antes de
+declarar pronto.
 
-Enquanto isso, o próximo trabalho de produto permanece o da prontidão operacional descrita em `docs/releases/EVENT-READINESS.md`, sem push, deploy ou migration.
+Decisão do proprietário, ainda pendente: manter a regra “cada lote parte de `b0a32c7`” ou passar
+a trabalhar a partir deste candidato integrado.
+
+Publicação continua bloqueada até: bloqueios P0 corrigidos (categorias ainda não iniciado),
+revisão de alterações de banco, testes de regressão, revisão da integração Vercel, comparação
+com a versão publicada, release candidate com rollback preparado, e aprovação explícita do
+proprietário. Nenhuma dessas etapas foi executada nesta rodada.
 
 ## Ambiente Claude Code (este lote)
 
