@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button'
 import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
 import { PageContainer } from '@/components/ui/PageContainer'
+import { resolvePostLoginRedirect } from '@/lib/auth/post-login-redirect'
 import { createClient } from '@/lib/supabase/client'
 import SignupAccountForm from './SignupAccountForm'
 
@@ -56,26 +57,29 @@ function LoginPageContent() {
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (loading) return
     setFeedback(null)
     setLoading(true)
     const formData = new FormData(event.currentTarget)
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({
-      email: String(formData.get('email') || '').trim(),
-      password: String(formData.get('password') || ''),
-    })
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: String(formData.get('email') || '').trim(),
+        password: String(formData.get('password') || ''),
+      })
 
-    if (error) {
-      setFeedback({ type: 'error', message: 'E-mail ou senha inválidos.' })
+      if (error) {
+        setFeedback({ type: 'error', message: 'E-mail ou senha inválidos.' })
+        setLoading(false)
+        return
+      }
+
+      const redirectTo = resolvePostLoginRedirect(searchParams.get('redirectTo'), '/dashboard')
+      window.location.assign(redirectTo)
+    } catch {
+      setFeedback({ type: 'error', message: 'Não foi possível entrar agora. Tente novamente.' })
       setLoading(false)
-      return
     }
-
-    const requestedPath = searchParams.get('redirectTo')
-    const redirectTo = requestedPath?.startsWith('/') && !requestedPath.startsWith('//')
-      ? requestedPath
-      : '/dashboard'
-    window.location.assign(redirectTo)
   }
 
   const openRegistration = (registerType: SignupRole) => {

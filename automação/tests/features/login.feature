@@ -7,7 +7,7 @@ Feature: Fluxo de autenticação do portal Meu Camp
   @smoke @P0 @navigation
   Scenario: acessar a tela de login pela página inicial
     Given o usuário acessa a página inicial
-    When seleciona o link "Entrar"
+    When seleciona o link "Login"
     Then a rota de login deve ser exibida
     And o formulário deve apresentar os campos de e-mail e senha
 
@@ -23,7 +23,7 @@ Feature: Fluxo de autenticação do portal Meu Camp
   Scenario: abrir recuperação de senha por e-mail
     Given o usuário está na tela de login
     When seleciona a aba "Recuperar senha"
-    And seleciona o link "Recuperar por e-mail"
+    And seleciona o link "Solicitar link de recuperação"
     Then a rota de recuperação de senha deve ser exibida
     And o botão "Enviar link de recuperação" deve estar disponível
 

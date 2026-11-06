@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { resolveAdminPostLoginRedirect } from '@/lib/auth/post-login-redirect'
 import { getPublicOrganizationScope } from '@/lib/events/public-organization'
 import { getSupabaseConfig } from './config'
 import type { Database } from './database.types'
@@ -49,7 +50,7 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  if (user && pathname.startsWith('/admin') && !isAdminLogin) {
+  if (user && pathname.startsWith('/admin')) {
     const scope = getPublicOrganizationScope()
     const membershipQuery = scope.mode === 'restricted'
       ? supabase.from('organization_members').select('organization_id').eq('organization_id', scope.organizationId).limit(1)
@@ -64,6 +65,11 @@ export async function updateSession(request: NextRequest) {
       dashboardUrl.pathname = '/dashboard'
       dashboardUrl.searchParams.set('erro', 'sem_permissao')
       return NextResponse.redirect(dashboardUrl)
+    }
+
+    if (isAdminLogin) {
+      const targetPath = resolveAdminPostLoginRedirect(request.nextUrl.searchParams.get('redirectTo'))
+      return NextResponse.redirect(new URL(targetPath, request.url))
     }
   }
 
