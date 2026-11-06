@@ -75,6 +75,8 @@ export default function EventCategoriesPreview({
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
+          aria-expanded={expanded}
+          aria-controls="categorias-disponiveis"
           className="mt-mc-20 inline-flex min-h-11 items-center font-mc-interface text-sm font-semibold text-mc-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"
         >
           {expanded ? 'Mostrar menos' : `Ver todas as categorias (${categories.length})`}
