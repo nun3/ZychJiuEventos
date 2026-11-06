@@ -14,9 +14,12 @@ export default function NoticiasPage() {
     <InstitutionalPage
       eyebrow="Notícias"
       title="Acompanhe o esporte e a plataforma."
+      titleLines={['Acompanhe o', 'esporte e a', 'plataforma.']}
+      imageSrc="/images/cinematic/bjj-3.jpg"
+      caption="Área editorial"
       description="Esta área editorial reunirá notícias do MEU CAMP, acontecimentos dos campeonatos e atualizações relevantes. Ainda não há publicações."
       actions={(
-        <Link href="/eventos" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium bg-mc-action px-mc-24 font-mc-interface font-semibold text-white transition-colors hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-mc-structure">
+        <Link href="/eventos" className="inline-flex min-h-12 items-center justify-center rounded-mc-medium bg-mc-action px-mc-24 font-mc-interface font-semibold text-white transition-colors hover:bg-mc-action/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
           Ver campeonatos
         </Link>
       )}
