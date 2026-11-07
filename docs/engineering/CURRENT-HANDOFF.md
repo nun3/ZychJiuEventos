@@ -50,9 +50,12 @@ Este lote de ambiente não reexecutou essas suítes.
   resolve o bloqueador "ambiente" para fins de correção de código; a decisão sobre homologar
   também contra um ambiente diferente do local (e sobre a cadência/local definitivo de
   homologação) continua do proprietário.
-- **Novo, crítico, não corrigido nesta rodada:** o mesmo bug de schema drift que bloqueava a
-  página pública no ambiente local **existe em produção (`zigjiu`) agora**. Ver rodada "Correção
-  do 404 de schema drift..." abaixo para evidência e decisão pendente.
+- ~~"Novo, crítico": o mesmo bug de schema drift existiria em produção agora.~~ **Falso alarme,
+  verificado e descartado em 6 nov 2026** por GET HTTP real + leitura direta do schema — ver rodada
+  "Verificação P0: produção NÃO está indisponível — correção do falso alarme" abaixo. A suspeita
+  original foi inferida só pela ausência de entrada em `list_migrations`, sem verificar o schema
+  real nem fazer a requisição HTTP; as colunas `local_*` já existem em `zigjiu` (aplicadas fora do
+  histórico de migrations rastreado) e a página pública do único evento publicado responde 200.
 - ~~Confirmar se algum operador real tem filiação administrativa ambígua.~~ Confirmado em 6 nov
   2026: consulta agregada em produção (`zigjiu`, somente leitura) retornou **0** operadores com
   mais de uma filiação owner/organizer.
@@ -565,7 +568,13 @@ resultados → conclusão — 3 execuções consecutivas sem flake.** Também re
 23/23. Dados sintéticos de cada execução (`MC-SIM Full Event*`) limpos automaticamente pela própria
 suíte ao final; confirmado por consulta direta ao banco local (0 resíduos).
 
-### D. Achado crítico fora do escopo original da missão: o mesmo 404 está em produção agora
+### D. Achado crítico fora do escopo original da missão: o mesmo 404 está em produção agora — **RETRATADO, ver rodada seguinte**
+
+**Esta seção registrava uma suspeita que se provou falsa.** Mantida como registro do raciocínio
+original (inferência só por `list_migrations`, sem verificar o schema real nem fazer a requisição
+HTTP) — a correção e a evidência real estão na rodada "Verificação P0" logo abaixo. Resumo da
+retratação: as colunas `local_*` **já existem em `zigjiu`** (aplicadas fora do histórico de
+migrations rastreado) e a página pública do evento publicado responde HTTP 200 normalmente.
 
 Ao investigar se a feature de endereço estruturado era intencional, foi necessário confirmar a
 linhagem de commits de produção. Isso revelou, por leitura **somente leitura** do MCP Supabase em
@@ -594,6 +603,106 @@ testada e aplicada localmente (`supabase/migrations/202611060002_event_venue_fie
 pronta para revisão e, se autorizada, aplicação em produção seguindo o checklist de `CLAUDE.md`
 (confirmar projeto, revisar SQL, verificar dependências/backup, aplicar, validar, registrar
 evidência).
+
+## Rodada de 6 nov 2026 — Verificação P0: produção NÃO está indisponível (correção do falso alarme)
+
+Missão do proprietário, em resposta direta ao achado da seção D: confirmar por evidência real (HTTP
++ schema), não reaplicar a migration sem autorização explícita, nenhum deploy, nenhuma cobrança
+real.
+
+### 1. Evento publicado identificado (somente leitura, `zigjiu`)
+
+`select id, nome, slug, status, organization_id from events where status = 'publicado'` → exatamente
+1 linha: evento "TESTE" (`id 52bb0f67-dba2-478c-9551-6c3c4e902feb`, slug `teste-mvvs2eq2`).
+
+### 2. GET HTTP real contra produção
+
+`GET https://jiu-three.vercel.app/eventos/52bb0f67-dba2-478c-9551-6c3c4e902feb` →
+**`HTTP/2 200`**, ~5.2s, `x-vercel-cache: MISS` (resposta não veio de cache — é o handler atual,
+não um artefato antigo), `x-matched-path: /eventos/[id]`. Corpo confirmado como o conteúdo real do
+evento, não uma página de erro genérica: heading "TESTE", "Campeonato publicado", data "Sábado, 28
+de novembro de 2026", e o texto de local completo. **A página pública está no ar e funcional.** A
+suspeita da seção D estava errada.
+
+### 3. Causa da divergência: colunas já existem em produção, fora do histórico rastreado
+
+`select column_name, data_type, is_nullable from information_schema.columns where table_name =
+'events' and column_name like 'local%'` contra `zigjiu` (schema real, não a lista de migrations)
+devolve as 10 colunas `local_*`, todas presentes, nullable, tipos batendo exatamente com a migration
+local. **As colunas já existem em produção** — só não aparecem em `list_migrations` porque foram
+aplicadas por fora do histórico rastreado (não há `supabase/patches/` neste worktree para confirmar
+o mecanismo exato; não investigado além disso, por não ser necessário para a decisão).
+
+Confirmado também que o evento "TESTE" tem os campos estruturados **populados com dados reais**
+(`local_nome`, `local_cep`, `local_logradouro`, `local_numero`, `local_cidade`, `local_uf`
+preenchidos; `local_latitude`/`local_longitude` nulos). Como o código publicado em produção
+(`b0a32c7`) confirmadamente **não** tem `venuePayload`/gravação de `local_nome` em
+`app/admin/eventos/actions.ts` (conferido lendo `git show b0a32c7:app/admin/eventos/actions.ts` —
+zero ocorrências), esses dados não vieram do formulário da aplicação. Foram inseridos por outro
+caminho (SQL direto, Table Editor do Supabase Studio, ou script) — consistente com o nome "TESTE" do
+evento. Mecanismo exato não identificado; não é necessário para fechar esta verificação.
+
+**Erro de raciocínio da seção D, para registro:** inferir "não está em `list_migrations`" ⇒ "coluna
+não existe" é inválido quando o schema pode ter sido alterado fora da ferramenta de migrations. A
+verificação correta é o schema real (`information_schema`) ou a reprodução direta do sintoma (HTTP),
+não a metadata de rastreamento de migrations. As duas verificações pedidas pelo proprietário nesta
+rodada são exatamente as que faltavam antes de alarmar.
+
+### 4. Confirmação do item 4 da missão
+
+**A ausência das colunas `local_*` NÃO é causa de problema em produção, porque elas não estão
+ausentes em produção.** O 404 original era exclusivo do ambiente **local** desta sessão (schema
+local atrasado em relação tanto ao código quanto à produção).
+
+### 5. Revisão de segurança da migration `202611060002_event_venue_fields.sql`
+
+- **Compatibilidade com eventos existentes:** todas as 10 colunas são `add column if not exists`,
+  nullable, sem `default`. Linhas existentes recebem `NULL` automaticamente. Para este caso
+  específico, a migration seria um no-op em produção (colunas já existem) — `if not exists` garante
+  isso com segurança, sem erro.
+- **Preservação de `local`:** a migration não toca em `local` (não altera tipo, não altera
+  nullability, não copia nem apaga dado). Confirmado também que a coluna `local` de "TESTE" continua
+  com o texto humano completo, intacta.
+- **Sem reescrita destrutiva:** nenhum `drop`, `update`, `delete` ou `alter column ... using`. Só
+  `add column` (10x) e `comment on column` (4x, metadata pura).
+- **Índices/constraints/defaults/locks:** nenhum índice, constraint (check/unique/FK) ou default
+  adicionado. `ADD COLUMN` nullable sem default é alteração só de metadata no Postgres (≥ 11) — não
+  reescreve a tabela, lock `ACCESS EXCLUSIVE` breve (bloqueia todo acesso a `events` por uma fração
+  de segundo, não pelo tamanho da tabela). Risco de lock prolongado só existiria se outra transação
+  já estivesse segurando lock conflitante em `events` no momento da execução.
+- **Reversibilidade:** schema trivialmente reversível (`drop column if exists` nas 10 colunas). Mas
+  **não é reversível sem perda de dado** neste caso específico — o evento "TESTE" já tem endereço
+  estruturado real; um rollback apagaria esses valores. Irrelevante para a decisão desta rodada, já
+  que não há nada para aplicar ou reverter em produção.
+
+### 6. Backup
+
+Não verificado por ferramenta nesta rodada — mesma limitação já registrada em rodadas anteriores:
+não há tool MCP disponível nesta sessão para confirmar o estado do backup automático do plano
+Supabase em uso. Como nenhuma escrita é recomendada (ver item 7), isso não bloqueia a decisão desta
+vez, mas continua sendo uma lacuna de verificação para quando uma escrita real for necessária.
+
+### 7. Diagnóstico final e GO/NO-GO
+
+**Diagnóstico:** produção não está e não esteve indisponível por este motivo. O achado da rodada
+anterior (seção D) foi um falso alarme, causado por uma inferência incompleta (ausência em
+`list_migrations`, sem checar o schema real nem fazer a requisição HTTP). O schema de produção já
+tem as colunas de endereço estruturado, aplicadas por um caminho não rastreado pelas migrations
+deste repositório, com dado real em pelo menos um evento.
+
+**SQL final:** nenhum. Não há necessidade de aplicar
+`202611060002_event_venue_fields.sql` (ou qualquer variante) em `zigjiu` — o resultado que ela
+produziria já existe lá.
+
+**GO/NO-GO: NO-GO para aplicar a migration em produção — não por ser insegura, mas por ser
+desnecessária.** Nenhuma ação de escrita em produção é recomendada neste momento.
+
+**Pendência de process (não urgente, para quando o proprietário quiser tratar):** reconciliar o
+histórico de migrations rastreado com o schema real de `zigjiu` (registrar formalmente a entrada
+correspondente em `supabase_migrations.schema_migrations` lá, como bookkeeping, já que o efeito já
+existe) e entender como essas colunas/dado de teste entraram fora do fluxo de migrations — para
+evitar que a próxima pessoa (humana ou agente) tire a mesma conclusão errada que esta sessão tirou
+antes de verificar.
 
 ## Ambiente Claude Code (este lote)
 
