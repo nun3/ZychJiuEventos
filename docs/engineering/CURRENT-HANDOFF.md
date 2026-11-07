@@ -10,7 +10,7 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 | Worktree | `/home/nune/Meus Projetos/jiu-event-readiness` |
 | Branch | `integration/event-readiness-20261106` |
 | Candidato funcional validado | `a6dadbb` |
-| HEAD desta atualização | `227dc62` |
+| HEAD desta atualização | `aca7c44` |
 
 O working tree original de `jiu` não foi modificado neste lote.
 
@@ -42,8 +42,17 @@ Este lote de ambiente não reexecutou essas suítes.
 
 ## Bloqueios
 
-- Ambiente seguro para escrita, carga e jornada esportiva completa — **ainda bloqueado**, decisão
-  de ambiente pendente do proprietário.
+- ~~Ambiente seguro para escrita, carga e jornada esportiva completa.~~ Carga/concorrência
+  confirmadas em rodada anterior (Docker). **Jornada esportiva completa com escrita real
+  confirmada em 6 nov 2026** (ver rodada "Correção do 404 de schema drift..."): `full-event.feature`
+  passou de ponta a ponta (inscrição → pagamento → checagem → chaves → programação → LIVE →
+  resultados → conclusão), 3 execuções consecutivas sem flake, no stack Supabase local. Isso
+  resolve o bloqueador "ambiente" para fins de correção de código; a decisão sobre homologar
+  também contra um ambiente diferente do local (e sobre a cadência/local definitivo de
+  homologação) continua do proprietário.
+- **Novo, crítico, não corrigido nesta rodada:** o mesmo bug de schema drift que bloqueava a
+  página pública no ambiente local **existe em produção (`zigjiu`) agora**. Ver rodada "Correção
+  do 404 de schema drift..." abaixo para evidência e decisão pendente.
 - ~~Confirmar se algum operador real tem filiação administrativa ambígua.~~ Confirmado em 6 nov
   2026: consulta agregada em produção (`zigjiu`, somente leitura) retornou **0** operadores com
   mais de uma filiação owner/organizer.
@@ -461,6 +470,130 @@ decidir entre (a) escrever e aplicar a migration faltante localmente, ou (b) rev
 e então corrigir `findPublicReleaseEvent` para nunca descartar `error` de `maybeSingle()` em
 silêncio (esse descarte é o que transformou um erro de schema em 404 indistinguível de "evento não
 existe"). Decisão sobre qual caminho tomar deliberadamente não foi executada nesta rodada.
+
+## Rodada de 6 nov 2026 — correção do 404 de schema drift e homologação E2E local completa
+
+Continuação direta do checkpoint acima ("Docker disponível"). Missão: resolver o 404 de schema
+drift da página pública e retomar o E2E a partir do ponto bloqueado. Commits `8dec5ba` e `aca7c44`,
+sobre o HEAD `3f2e3f7`.
+
+### A. Causa raiz e decisão: endereço estruturado é recurso intencional, não abandonado
+
+Investigado pelo histórico git (não só pelo estado atual): a migration
+`202610300001_event_venue_fields.sql` existia e foi aplicada em commit `3b41f53` (`feat(events): CEP
+venue, map preview and automatic phase dates`, 30 out 2026), que entregou a feature de ponta a
+ponta — migration, `venuePayload()` em `app/admin/eventos/actions.ts` (grava os campos estruturados
+no create/update), `VenueFields.tsx`, API routes de CEP/geocoding, testes. Esse commit vive em
+`feature/meu-camp-live` e **não é ancestral** desta branch nem de `b0a32c7`.
+
+O refactor `28a537d` (`refactor(admin): padronizar superfícies operacionais e shell LIVE`, 5 nov
+2026, ancestral de `b0a32c7` — **está em produção**) trouxe `VenueFields.tsx`, `EditEventForm.tsx` e
+as colunas `local_*` em `database.types.ts` para esta linhagem, mas **sem a migration e sem o
+`venuePayload()`** — ou seja, a integração trouxe metade de uma feature completa e testada,
+deixando a outra metade (schema + gravação) para trás. Não é um recurso abandonado por decisão de
+produto: é uma lacuna de integração. Daí a escolha pela migration incremental, não pelo reverter.
+
+Decisão (conforme a missão pedia): **migration incremental**, aditiva, nullable, preserva `local` e
+eventos antigos — reaplica o conteúdo original de `202610300001` como
+`supabase/migrations/202611060002_event_venue_fields.sql`. Aplicada **somente no Supabase local**
+(`supabase_db_jiu-event-readiness`, `psql` direto no container — `supabase` CLI não está no PATH
+desta sessão — e registrada manualmente em `supabase_migrations.schema_migrations`). **Não aplicada
+em `zigjiu`.**
+
+Também restaurado `venuePayload()` em `app/admin/eventos/actions.ts` (`createEvent`/`updateEvent`):
+sem isso, a migration criaria colunas que `EditEventForm`/`VenueFields` já enviam na edição de
+rascunho, mas que o servidor sempre descartava — a migration sozinha teria resolvido o 404 mas
+deixado o formulário de edição gravando em um buraco negro. `NewEventForm.tsx` (criação) continua
+sem `<VenueFields>` — fora do escopo desta correção, nenhum comportamento quebrado por isso (campos
+estruturados ficam `null` em eventos criados por lá, como já era o caso antes desta rodada).
+
+`findPublicReleaseEvent` (`lib/events/public-access.ts`) corrigido: antes descartava `error` de
+`.maybeSingle()` em silêncio, devolvendo `null` — indistinguível de "evento não existe" para as 7
+páginas públicas que chamam essa função. Agora loga `error.code`/`error.message` (sem dados do
+evento) e lança, distinguindo erro de banco de 404 real.
+
+### B. Verificação local
+
+Schema confirmado por `\d public.events` no container: as 10 colunas `local_*` agora existem.
+GET público reproduzido e corrigido: as 7 rotas públicas de evento (`/eventos/[id]`, `/chaves`,
+`/checagem`, `/lutas`, `/resultados`, `/participantes`, `/programacao`) voltaram a HTTP 200 contra
+um evento publicado real no stack local (antes, 404 em todas).
+
+`tsc --noEmit`: PASS. `next lint` (arquivos alterados): PASS. `next build` **não executado** —
+`next dev` de uma sessão anterior continuava ativo nesta sessão (reaproveitado para os testes
+abaixo); parar o processo foi negado pelo classificador de permissões desta sessão. Mesma cautela
+do checkpoint anterior: rodar `next build` com `next dev` ativo arrisca corromper o cache.
+Unitários: 237/238, mesma falha pré-existente de alias (`registration-correction.test.ts`); uma
+reexecução isolada mostrou `organization-context.test.ts` falhando junto, mas duas reexecuções
+completas subsequentes voltaram a 237/238 — flake de execução concorrente dos arquivos de teste,
+não regressão desta rodada (passa isoladamente).
+
+### C. E2E completo: `full-event.feature` passou pela primeira vez
+
+Com o 404 corrigido, o roteiro (nunca antes executado com escrita real até o fim, por não existir
+ambiente até a rodada anterior) avançou e revelou oito pontos de drift entre o roteiro de teste e a
+UI/produto atuais — nenhum regressão desta sessão, todos de texto/estrutura de locator desatualizado
+em `automação/tests/support/full-event-journey.ts`:
+
+1. Link de inscrição é "Fazer inscrição", não "Inscrever atletas".
+2. Heading "Lista oficial" aparece duas vezes na página de checagem (precisa `exact: true`).
+3. Rótulo visível do slot de chave é "01 Slot" (badge numérico antes do texto), não "Slot 01".
+4. Heading público da programação é "Horário — {evento}", não "Programação — {evento}".
+5. "Evento concluído" aparece duas vezes (heading + parágrafo) na tela de resultados — precisa
+   `.first()`.
+6. Asserção `getByText('Evento: concluido')` nunca correspondeu a texto real da UI atual (grep
+   confirma zero ocorrências em `app/`/`components/`) — removida; a asserção seguinte, mais
+   específica, mais a checagem direta no banco (`finished.data?.status`), já cobrem o estado.
+   O mesmo texto obsoleto também existe em `automação/tests/steps/event-status-transitions.steps.ts`
+   (teste diferente, não executado nesta rodada, fora do escopo) — provavelmente quebrado também,
+   não corrigido por não fazer parte desta jornada.
+7. Status público final é "Evento finalizado", não "concluido".
+8. CTA que deve sumir ao encerrar o evento é "Fazer inscrição", não "Inscrever atletas" (mesmo
+   texto do item 1).
+
+Também corrigido, fora do roteiro de teste: `app/dashboard/inscricoes/PaymentCheckout.tsx` tinha
+`aria-labelledby` num `<Card>` (renderiza `<div>`) sem `role` — sem role explícito, uma `<div>` não
+vira landmark ARIA "region" mesmo com `aria-labelledby`. Adicionado `role="region"`, uma correção de
+acessibilidade real (não só para destravar o locator do teste): o painel "Reservar pagamento" passa
+a ser navegável como região por leitores de tela.
+
+**Resultado: `full-event.feature` (`@P0 @positive`) passou de ponta a ponta — inscrição → pagamento
+→ checagem → travar checagem → chaves (gerar, ajustar rascunho, publicar) → programação (áreas,
+subchaves, reordenar, publicar) → pesagem → operação LIVE (resultado normal, WO) → premiação →
+resultados → conclusão — 3 execuções consecutivas sem flake.** Também reconfirmados sem regressão:
+`auth-experience.spec.ts` (13), `category-version-ui.spec.ts` (2), `integration-lots.spec.ts` (8) —
+23/23. Dados sintéticos de cada execução (`MC-SIM Full Event*`) limpos automaticamente pela própria
+suíte ao final; confirmado por consulta direta ao banco local (0 resíduos).
+
+### D. Achado crítico fora do escopo original da missão: o mesmo 404 está em produção agora
+
+Ao investigar se a feature de endereço estruturado era intencional, foi necessário confirmar a
+linhagem de commits de produção. Isso revelou, por leitura **somente leitura** do MCP Supabase em
+`zigjiu` (`list_migrations`, livre neste escopo por `CLAUDE.md`) e por análise de `git merge-base`:
+
+- `28a537d` (que traz `VenueFields.tsx`/`EditEventForm.tsx`/as colunas `local_*` em
+  `database.types.ts` para a linhagem, sem a migration) **é ancestral de `b0a32c7`**, o commit
+  publicado em produção desde 5 nov 2026 19:44 (`docs/repository/PRODUCTION-MANIFEST.md`).
+- `zigjiu` não tem nenhuma migration de endereço estruturado (`list_migrations` confirma a lista
+  completa; nenhuma entrada corresponde).
+- Existe exatamente **1 evento com `status = 'publicado'`** em produção agora (consulta agregada,
+  somente leitura, `execute_sql`: `select status, count(*) from events group by status`).
+
+**Conclusão: a página pública desse evento publicado está, com alta probabilidade, devolvendo 404
+para todo visitante em produção, desde o deploy de `b0a32c7`** — pelo mesmo mecanismo exato
+diagnosticado e corrigido nesta rodada no ambiente local (colunas `local_*` ausentes em `events`,
+erro do Postgres descartado em silêncio por `findPublicReleaseEvent`). Não confirmado por uma
+requisição HTTP real contra a URL de produção nesta rodada (fora do escopo e das permissões desta
+sessão sem autorização adicional) — a conclusão é por leitura de schema e de linhagem de commit, não
+por reprodução direta do sintoma em produção.
+
+**Nenhuma ação corretiva foi tomada em `zigjiu`.** Migration de produção, `execute_sql` e
+`apply_migration` exigem autorização explícita do proprietário e aprovação humana por ferramenta,
+conforme `CLAUDE.md` — fora do que esta missão (escopo: ambiente local) autorizava. A migration já
+testada e aplicada localmente (`supabase/migrations/202611060002_event_venue_fields.sql`) está
+pronta para revisão e, se autorizada, aplicação em produção seguindo o checklist de `CLAUDE.md`
+(confirmar projeto, revisar SQL, verificar dependências/backup, aplicar, validar, registrar
+evidência).
 
 ## Ambiente Claude Code (este lote)
 
