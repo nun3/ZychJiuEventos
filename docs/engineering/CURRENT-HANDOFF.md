@@ -10,7 +10,8 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 | Worktree | `/home/nune/Meus Projetos/jiu-event-readiness` |
 | Branch | `integration/event-readiness-20261106` |
 | Candidato funcional validado | `a6dadbb` |
-| HEAD desta atualização | `aca7c44` |
+| HEAD desta atualização | `bc69b91` (código em `aca7c44`) |
+| Release gate técnico | **GO** (6 nov 2026 — ver seção abaixo e `EVENT-READINESS.md` §12) |
 
 O working tree original de `jiu` não foi modificado neste lote.
 
@@ -703,6 +704,44 @@ correspondente em `supabase_migrations.schema_migrations` lá, como bookkeeping,
 existe) e entender como essas colunas/dado de teste entraram fora do fluxo de migrations — para
 evitar que a próxima pessoa (humana ou agente) tire a mesma conclusão errada que esta sessão tirou
 antes de verificar.
+
+## Rodada de 6 nov 2026 — conclusão do release gate técnico: GO
+
+Missão: concluir o release gate técnico do candidato atual, sem push/deploy/migration/escrita em
+`zigjiu`. Detalhe completo em `docs/releases/EVENT-READINESS.md` §12; resumo executivo abaixo.
+
+Encerrado com segurança um `next dev` órfão deste worktree (confirmado por `cwd` antes de agir; um
+`next-server` de outro diretório, `/tmp/jiu-ui-rc-verify`, foi identificado e preservado intocado).
+`next build` completo **PASS** (uma primeira tentativa falhou por instabilidade transitória de rede
+no `next/font/google`, não por código — confirmado por `curl`/`fetch` direto funcionando normalmente
+e pela segunda tentativa compilando sem nenhuma mudança). `tsc` e `next lint` **PASS**. Unitários
+237/238 **PASS** (mesma falha pré-existente de alias). Evidência Playwright reaproveitada sem
+mudança de código (`auth-experience` 13/13, `category-version-ui` 2/2, `integration-lots` 8/8,
+`full-event.feature` 3× consecutivas sem flake com escrita real).
+
+Reconfirmado por leitura direta e independente (não só pelo handoff): migration
+`20261106205820`/`activate_category_rule_set` aplicada em `zigjiu` com `SECURITY INVOKER`; as 10
+colunas `local_*` já existem em produção (migration de endereço estruturado continua desnecessária).
+**Nenhuma migration pendente bloqueia este candidato.**
+
+Revisão de segurança do diff completo desde `b0a32c7`: a parte de categorias/organizações já tinha
+revisão de rodadas anteriores; o `domain-risk-reviewer` cobriu nesta rodada o restante
+(`middleware.ts`, upload de avatar, membros de organização, dashboard/onboarding, login/recuperação/
+atualização de senha) — **PASS em tudo, nenhum achado crítico/alto/médio**. Confirmado sem open
+redirect no fluxo de login/admin, RLS por `auth.uid()` protegendo upload de avatar, autorização
+server-side (nunca por input do formulário) na gestão de membros. Sem diff financeiro nesta branch.
+Advisors de segurança (`zigjiu`): 7 achados, todos pré-existentes, nenhum novo. Vercel: produção e
+candidato de rollback inalterados.
+
+**GO/NO-GO: GO para publicação deste candidato (HEAD de código `aca7c44`).** Primeira rodada desta
+série em que nenhum gate obrigatório permanece `NOT_RUN`/`BLOCKED` — a migration, a jornada esportiva
+completa com escrita/carga/concorrência real, e a revisão de segurança do diff completo (que faltava
+cobrir integralmente) fecharam nesta rodada. **Nenhuma publicação foi realizada** — fora do escopo
+autorizado desta missão.
+
+**Pendente, mas não bloqueador deste candidato:** linhagem financeira A/B/C; base Git dos próximos
+lotes; smoke test pós-deploy; regeneração cosmética de `database.types.ts`; confirmação de backup
+automático por ferramenta (sem tool disponível, mitigado por não haver escrita destrutiva planejada).
 
 ## Ambiente Claude Code (este lote)
 

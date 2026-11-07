@@ -454,3 +454,155 @@ Reaproveitado sem mudança: `tsc`/lint/build/unitários (229/230) e a migration 
 
 **Desbloqueio depende do proprietário:** instalar Docker/Podman nesta máquina (requer senha de
 root), ou autorizar explicitamente uma rota alternativa de homologação com escrita.
+
+---
+
+## 12. Rodada de 6 de novembro de 2026 — conclusão do release gate técnico: GO
+
+Missão: concluir o release gate técnico do candidato atual (HEAD de código `aca7c44`, HEAD do
+repositório `bc69b91` após esta rodada — a diferença é só documentação). Sem push, sem deploy, sem
+migration/escrita em `zigjiu`, nesta missão. O incidente de 404 em produção registrado no §10/D
+já havia sido retratado (produção nunca esteve indisponível; ver `CURRENT-HANDOFF.md`, rodada
+"Verificação P0").
+
+### 12.1 Ambiente
+
+Identificado e encerrado com segurança um processo `next dev` órfão de sessão anterior
+(`PID 264546` e sua árvore, incluindo `next-server`), confirmado por `cwd` como pertencente a este
+worktree antes de qualquer ação. Um `next-server` adicional (`PID 29660`) foi identificado como
+pertencente a `/tmp/jiu-ui-rc-verify` — diretório não relacionado — e preservado intocado.
+
+### 12.2 Build, TypeScript, lint
+
+`next build` completo: **PASS** (60+ rotas). Uma primeira tentativa falhou por timeout/instabilidade
+transitória da busca de fontes do Google (`next/font/google`, erro `Cannot read properties of null`
+no loader) — confirmado como rede, não código: `curl`/`fetch` direto ao mesmo endpoint funcionou
+normalmente, e a segunda tentativa do build compilou sem mudança nenhuma no código. `tsc --noEmit`:
+**PASS**. `next lint` (projeto inteiro): **PASS**, só o aviso pré-existente de `<img>` em
+`components/EventDetails.tsx`.
+
+### 12.3 Testes de regressão
+
+Unitários (`npm run test:unit` em `automação`, runner correto via `ts-node/register`): **237/238
+PASS** — a 1 falha é a mesma pré-existente já documentada em todas as rodadas anteriores
+(`registration-correction.test.ts`, alias `@/lib/supabase/database.types` resolvido contra o
+`node_modules` do `jiu` original via symlink, não deste worktree; não é regressão).
+
+Evidência Playwright **reaproveitada, não reexecutada** (código idêntico desde a última execução
+real, conforme instrução de não reexecutar E2E/carga sem necessidade): `auth-experience.spec.ts`
+13/13, `category-version-ui.spec.ts` 2/2, `integration-lots.spec.ts` 8/8 (sem o skip de staff
+registrado em rodadas mais antigas), e, mais relevante, **`full-event.feature` (`@P0 @positive`)
+passou de ponta a ponta — inscrição → pagamento → checagem → chaves → programação → LIVE →
+premiação → resultados → conclusão — 3 execuções consecutivas sem flake, com escrita real no stack
+Supabase local** (registrado na rodada "correção do 404 de schema drift" do `CURRENT-HANDOFF.md`).
+Carga: 400 atletas com concorrência 50 e 100, 0 falhas; 250 simultâneas de um único processo Node
+tiveram 4/250 falhas client-side (`fetch failed` antes de chegar ao servidor — artefato do driver
+de teste, não do app). Isso resolve, pela primeira vez nesta série de rodadas, o item que motivou
+todos os NO-GO anteriores: "testes críticos E2E com persistência real" deixa de ser
+**NOT_RUN/BLOCKED** e passa a **PASS**.
+
+### 12.4 Dependência de migration em produção — verificado por leitura direta, não só por documento
+
+Reconfirmado nesta rodada, por consulta própria e independente (`mcp__supabase__list_migrations` e
+`execute_sql`, somente leitura, contra `zigjiu`):
+
+- `20261106205820` (`category_rule_set_atomic_activation`) **está na lista de migrations
+  aplicadas**, e a função `activate_category_rule_set` existe com `prosecdef = false`
+  (`SECURITY INVOKER`, como o código exige).
+- As 10 colunas `local_*` em `events` **já existem** em produção (consulta direta a
+  `information_schema.columns`) — a migration `202611060002_event_venue_fields.sql` continua
+  desnecessária em `zigjiu`, só aplicada localmente, conforme já diagnosticado.
+
+**Nenhuma migration pendente bloqueia este candidato em produção.**
+
+### 12.5 Diff de segurança desde `b0a32c7` — revisão completa
+
+`git diff --stat b0a32c7..HEAD` (excluindo docs/json): 93 arquivos, nenhum em `lib/payments/` nem
+nas rotas de pagamento — **linhagem financeira sem diff**, confirma o que o handoff já registrava.
+
+Duas frentes de revisão, cobrindo a totalidade do diff de domínio/segurança:
+
+1. **Já revisado em rodadas anteriores** (categorias — ativação atômica, restrição por estado;
+   organizações — escolha explícita de filiação, listagem e edição): sem achados novos, nenhuma
+   mudança de código desde então.
+2. **Revisado nesta rodada**, pelo `domain-risk-reviewer`, nos arquivos ainda não auditados desta
+   integração (lotes de dashboard/onboarding/autenticação): `lib/supabase/middleware.ts` (ordem do
+   redirect pós-login admin), upload/seleção de avatar (`ProfileIdentityMedia.tsx`,
+   `fun-avatar-presets.ts`, `lib/identity/*`), adição/remoção de membro de organização
+   (`app/dashboard/organizacao/*`), onboarding/dashboard (`app/dashboard/page.tsx`,
+   `lib/onboarding/*`) e páginas de autenticação (`login`, `recuperar-senha`, `atualizar-senha`).
+   **PASS em todos os itens, nenhum achado crítico, alto ou médio.** Pontos confirmados: a checagem
+   de permissão sempre roda antes do redirect pós-login; `resolvePostLoginRedirect`/
+   `resolveAdminPostLoginRedirect` bloqueiam `//` e paths fora de `/` (sem open redirect); upload de
+   avatar é limitado por tipo/tamanho no cliente e por `allowed_mime_types`/5 MB e RLS por
+   `auth.uid()` no Storage; adicionar/remover membro de organização exige `requireOwnedOrganization`
+   e nunca aceita `organizationId` do formulário; `owner` não é atribuível via UI; as queries de
+   dashboard/onboarding são só leitura e filtram pelo usuário autenticado; `app/auth/callback` não
+   tem diff desde `b0a32c7` (comportamento já em produção, não revisado de novo por não ter mudado).
+   Verificado também, por leitura direta do diff: a refatoração de `app/login/page.tsx` troca uma
+   checagem de redirect inline (já segura) pelo mesmo helper centralizado — sem mudança de postura
+   de segurança, só centralização.
+
+### 12.6 Advisors de segurança (zigjiu)
+
+`mcp__supabase__get_advisors(type=security)`: 7 achados (6 `WARN`, 1 `INFO`), nenhum `ERROR`. Todos
+pré-existentes e já catalogados em rodadas anteriores (RLS sem policy em tabelas financeiras
+administrativas, `search_path` mutável em funções antigas, exposição via GraphQL, funções
+`SECURITY DEFINER` executáveis por `anon`/`authenticated`, proteção de senha vazada desligada).
+Confirmado que `activate_category_rule_set` **não** aparece na lista de funções com `search_path`
+mutável (tem `search_path` fixo, como já documentado). Nenhum achado novo introduzido por este
+candidato.
+
+### 12.7 Vercel
+
+`list_deployments(target=production)`: produção ainda `dpl_AMKofx7oNmQnQiPhr2xDTWSdUPaa` (`b0a32c7`),
+`READY`. Candidato de rollback ainda `dpl_8S5v1WnraoBefZwARg5fDn8EScfs`, `READY`. Nenhum deployment
+novo desde o manifesto.
+
+### 12.8 Arquivos não commitados
+
+`automação/node_modules` (dependências locais, não rastreadas — hígido), `supabase/.gitignore` e
+`supabase/config.toml` (configuração do stack Supabase local usado na homologação E2E desta série de
+rodadas, sem segredo, `project_id = "jiu-event-readiness"`). Nenhum risco de produção; nenhum
+commitado nesta rodada por serem artefatos de ambiente local, não código de produto.
+
+### 12.9 Tabela de gates obrigatórios
+
+| Gate | Resultado |
+| --- | --- |
+| TypeScript (`tsc --noEmit`) | PASS |
+| Lint (`next lint`, projeto inteiro) | PASS (1 aviso pré-existente) |
+| Build (`next build`, projeto inteiro) | PASS |
+| Unitários (`automação`) | PASS — 237/238, 1 falha pré-existente não relacionada |
+| E2E com escrita real (jornada completa) | **PASS** — 3 execuções consecutivas sem flake (evidência reaproveitada, código inalterado) |
+| Carga/concorrência (250/400 atletas) | PASS — 0 falhas de app/servidor; falhas client-side isoladas são artefato do driver de teste |
+| Migration/RPC necessária em produção | PASS — aplicada e validada, reconfirmado por leitura direta nesta rodada |
+| Diff de segurança (auth, dados, categorias, organizações) desde `b0a32c7` | PASS — nenhum achado crítico/alto/médio em nenhuma frente revisada |
+| Linhagem financeira | PASS — sem diff nesta branch |
+| Advisors de segurança | PASS — nenhum achado novo |
+| Deployment Vercel | PASS — produção e rollback confirmados estáveis, sem deploy órfão |
+
+### 12.10 GO/NO-GO
+
+**GO para publicação deste candidato (HEAD de código `aca7c44`).** Todos os gates obrigatórios
+registrados nas rodadas anteriores como bloqueadores — a migration de categorias, a jornada
+esportiva completa com escrita/carga/concorrência real, e a revisão de segurança do diff completo —
+estão agora **PASS**, com evidência verificada nesta rodada por leitura direta (não só por
+documento). Esta é a primeira rodada desta série em que nenhum item obrigatório permanece
+`NOT_RUN`/`BLOCKED`.
+
+**Esta missão não publicou nada** (fora do escopo autorizado: sem push, sem deploy). A decisão acima
+é a recomendação técnica para quando o proprietário autorizar a publicação.
+
+**Pendências que não bloqueiam este candidato, mas seguem abertas para o proprietário:**
+
+1. Escolha da linhagem financeira A/B/C — fora de escopo desta branch (sem diff financeiro).
+2. Seleção da base Git dos próximos lotes (`b0a32c7` vs este candidato integrado) — decisão de
+   processo, não afeta a segurança deste candidato específico.
+3. Smoke test seguro pós-deploy (criar versão de categorias num evento sintético em produção,
+   confirmar atomicidade) — recomendado logo após a publicação, não antes.
+4. Regenerar `lib/supabase/database.types.ts` via `supabase gen types` quando o CLI estiver
+   disponível — cosmético, a entrada manual já compila sem erro.
+5. Confirmação do backup automático do plano Pro por ferramenta — continua sem tool disponível
+   nesta sessão; mitigado por nenhuma escrita destrutiva estar planejada para o deploy deste
+   candidato.
