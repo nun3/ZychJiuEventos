@@ -606,3 +606,123 @@ documento). Esta é a primeira rodada desta série em que nenhum item obrigatór
 5. Confirmação do backup automático do plano Pro por ferramenta — continua sem tool disponível
    nesta sessão; mitigado por nenhuma escrita destrutiva estar planejada para o deploy deste
    candidato.
+
+---
+
+## 13. Rodada de 6 de novembro de 2026 — deploy controlado e smoke tests pós-deploy
+
+Missão sob autorização explícita e detalhada do proprietário: publicar o candidato validado
+(`aca7c44`, decisão GO do §12) na Vercel e executar smoke tests pós-deploy. Sem migration, sem
+alteração de variáveis de ambiente/credenciais/configuração financeira, sem cobrança real.
+
+### 13.1 Pré-deploy
+
+Confirmado: branch `integration/event-readiness-20261106`, HEAD `1ac1dcd` (documentação; código
+idêntico a `aca7c44` — `git diff --stat aca7c44..HEAD` só mostra os dois arquivos de doc), working
+tree limpo. Os 3 artefatos locais não rastreados (`automação/node_modules`,
+`supabase/.gitignore`, `supabase/config.toml`, e `supabase/.branches` revelado ao mover o primeiro)
+foram movidos para fora do repositório antes do deploy — a CLI da Vercel ignora `.gitignore`, só
+`.vercelignore`/lista padrão, então ficariam sujeitos a upload se não removidos — e restaurados
+integralmente depois. Projeto Vercel de destino confirmado por `mcp__vercel__get_project`:
+`jiu` / `prj_OWAnDfWWQp3i0YJtJkhAmAjocJ3n`, `accountId team_oMHOWmepHEpkKiYjFWwf3edx`, deployment
+anterior `dpl_AMKofx7oNmQnQiPhr2xDTWSdUPaa` (`b0a32c7`), registrado como candidato de rollback.
+Este worktree foi vinculado ao projeto (`.vercel/project.json`, já coberto por `.gitignore`) — não
+se usou nem se promoveu o working tree original de `jiu`. Nenhuma migration, variável de ambiente
+ou configuração financeira foi tocada nesta missão.
+
+### 13.2 Deploy
+
+`vercel --prod --yes`, a partir deste worktree. **Sucesso na primeira tentativa** (sem o retry por
+`next/font` que o manifesto de produção já documentava como possível). Resultado:
+
+| Item | Valor |
+| --- | --- |
+| Deployment ID | `dpl_BYTLoYjrNWxcWkxXc96wkvYr9dhX` |
+| Estado | `READY`, `target=production` |
+| URL do deployment | `https://jiu-icd95h9zy-nunes-projects-e576e5bd.vercel.app` |
+| SHA publicado (código) | `aca7c44` (via árvore de `1ac1dcd`) |
+
+Confirmado por `vercel alias ls` (CLI, não MCP — ver §13.4) que os três domínios de produção —
+`jiu-three.vercel.app` (oficial), `jiu-navy.vercel.app` e `jiu-nunes-projects-e576e5bd.vercel.app`
+— apontam para esta nova deployment. `vercel ls jiu` confirma: nova deployment no topo (idade em
+minutos), antiga (`jiu-a2s9ycvv3`, `b0a32c7`) ainda `Ready`, preservada como rollback imediato.
+
+### 13.3 Smoke tests pós-deploy (não destrutivos, via `curl` contra `jiu-three.vercel.app`)
+
+| Superfície | Rota | Resultado |
+| --- | --- | --- |
+| Página inicial | `/` | 200 |
+| Listagem de eventos | `/eventos` | 200 |
+| Detalhe do evento publicado | `/eventos/{id}` | 200 — conteúdo confirmado (nome "TESTE", "Campeonato publicado", **endereço estruturado renderizado: "CEP 85506-522"** — valida de ponta a ponta a correção de `public-access.ts`/`venuePayload` desta branch) |
+| Chaves, checagem, lutas, participantes, programação, resultados do evento | `/eventos/{id}/...` (6 rotas) | 200 em todas |
+| Academias (organizações, público) | `/academias` | 200 |
+| Institucional | `/quem-somos`, `/noticias`, `/sistema` | 200 |
+| Login | `/login` | 200 (conteúdo renderiza só após hidratação client-side — ver divergência abaixo, pré-existente) |
+| Gate admin | `/admin/eventos` sem sessão | redireciona para `/admin/autenticacao?redirectTo=...` — confirma que a ordem de checagem de permissão revisada no §12.5 funciona corretamente em produção |
+| Gate dashboard | `/dashboard`, `/dashboard/inscricoes` | redirecionam para `/login?redirectTo=...` |
+| Gate platform admin | `/platform/organizacoes`, `/platform/destaques` | redirecionam para `/login?redirectTo=...` |
+| Webhook de pagamento | `GET /api/payments/webhook` | 405 (rota existe, só aceita POST — verificação não destrutiva, nenhuma cobrança ou processamento real acionado) |
+
+**Divergências encontradas, ambas pré-existentes (confirmadas idênticas comparando a deployment
+antiga e a nova diretamente, pelas URLs específicas de cada deployment — não são regressão deste
+deploy):**
+
+1. `/cadastro` responde `307` sem header `Location`, corpo com shell `__next_error__` — idêntico
+   byte a byte entre a deployment antiga e a nova. Não investigado a fundo (fora do escopo desta
+   missão: "não corrigir problemas em produção sem nova validação"); registrado para lote futuro.
+2. `/login`: a página faz `BAILOUT_TO_CLIENT_SIDE_RENDERING` (conteúdo visível só após hidratação
+   JS, não no HTML inicial) — idêntico (mesmos 7031 bytes) entre as duas deployments. Já era assim
+   antes desta missão; não é regressão.
+
+**Não verificado nesta rodada, por limitação explícita, não por falha:** os itens do smoke test
+que exigem sessão autenticada real — login com credenciais, interior do dashboard administrativo,
+formulário de criação de evento com campos de endereço, configuração de versão de categorias.
+Não há credenciais de produção disponíveis nesta sessão, e `CLAUDE.md` proíbe abrir `.env*`; a
+missão também restringe escrita real a dados de teste identificáveis com autorização específica,
+que não foi solicitada para este smoke test. Verificado como proxy válido: todas as rotas
+protegidas correspondentes redirecionam corretamente para o login com o `redirectTo` certo —
+confirma que o roteamento/autorização dessas telas está intacto, mas não substitui exercitar o
+conteúdo interno.
+
+### 13.4 Observabilidade e logs
+
+`vercel logs --deployment <url> --query 'level:error'`: **0 registros** na janela de 30 minutos
+pós-deploy — nenhum erro de runtime novo. `mcp__vercel__list_drains`/`list_deployments`/`get_alias`
+passaram a devolver `403` ("re-autenticar escopo nunes-projects-e576e5bd") no meio desta sessão,
+depois de terem funcionado antes do deploy — limitação pontual da ferramenta MCP, não relacionada a
+nenhuma ação desta missão; contornado usando a CLI (`vercel ls`, `vercel alias ls`, `vercel logs`),
+que permaneceu autenticada o tempo todo. Nenhum drain configurado e nenhuma lib de error-tracking
+(Sentry/Datadog) no `package.json` — gap pré-existente, não introduzido por este deploy,
+recomendado para tratamento futuro.
+
+### 13.5 Configurações financeiras
+
+Nenhuma ação financeira real executada. Confirmado por leitura: zero diff em `lib/payments/` ou
+rotas de pagamento desde `b0a32c7` (já registrado no §12.5) — portanto `PAYMENTS_MANUAL_ONLY`,
+split e webhook token permanecem exatamente como estavam antes deste deploy. Rota de webhook
+confirmada existente e respondendo ao método correto (405 em GET), sem invocar nenhum pagamento.
+
+### 13.6 Rollback
+
+Não foi necessário. Deployment anterior (`dpl_AMKofx7oNmQnQiPhr2xDTWSdUPaa`, `b0a32c7`) permanece
+`READY` e disponível como candidato de rollback imediato (`vercel rollback` ou re-alias manual) se
+algum problema for identificado depois desta rodada.
+
+### 13.7 Entregáveis
+
+| Item | Valor |
+| --- | --- |
+| SHA publicado | `aca7c44` |
+| Deployment ID | `dpl_BYTLoYjrNWxcWkxXc96wkvYr9dhX` |
+| URL de produção | https://jiu-three.vercel.app (oficial) · https://jiu-navy.vercel.app (alias) |
+| Resultado dos smoke tests | PASS nas superfícies públicas e nos gates de autenticação; 2 divergências pré-existentes documentadas (§13.3); itens autenticados não exercitados por falta de credencial |
+| Logs | 0 erros em 30 min pós-deploy |
+| Configurações financeiras | Confirmadas inalteradas, nenhuma ação real |
+
+**Status final: PASS WITH LIMITATIONS.** Deploy bem-sucedido, domínios de produção atualizados,
+todas as superfícies públicas e os gates de autenticação corretos, nenhum erro de runtime, nenhum
+diff financeiro. A limitação é escopo, não falha: os fluxos que exigem sessão autenticada real
+(login completo, interior do admin, criação de evento, configuração de categorias) não foram
+exercitados por falta de credencial de produção nesta sessão — recomenda-se um smoke test
+autenticado dedicado (com credencial de teste fornecida pelo proprietário) como próximo passo, não
+como bloqueador retroativo desta publicação.

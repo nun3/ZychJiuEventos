@@ -10,8 +10,9 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 | Worktree | `/home/nune/Meus Projetos/jiu-event-readiness` |
 | Branch | `integration/event-readiness-20261106` |
 | Candidato funcional validado | `a6dadbb` |
-| HEAD desta atualização | `bc69b91` (código em `aca7c44`) |
-| Release gate técnico | **GO** (6 nov 2026 — ver seção abaixo e `EVENT-READINESS.md` §12) |
+| HEAD desta atualização | `1ac1dcd` (código em `aca7c44`) |
+| Release gate técnico | GO (6 nov 2026 — `EVENT-READINESS.md` §12) |
+| **Publicado em produção** | **Sim, 6 nov 2026** — `dpl_BYTLoYjrNWxcWkxXc96wkvYr9dhX`, PASS WITH LIMITATIONS (`EVENT-READINESS.md` §13) |
 
 O working tree original de `jiu` não foi modificado neste lote.
 
@@ -742,6 +743,47 @@ autorizado desta missão.
 **Pendente, mas não bloqueador deste candidato:** linhagem financeira A/B/C; base Git dos próximos
 lotes; smoke test pós-deploy; regeneração cosmética de `database.types.ts`; confirmação de backup
 automático por ferramenta (sem tool disponível, mitigado por não haver escrita destrutiva planejada).
+
+## Rodada de 6 nov 2026 — deploy controlado e smoke tests: PASS WITH LIMITATIONS
+
+Missão sob autorização explícita e detalhada do proprietário: publicar `aca7c44` (decisão GO da
+rodada anterior) na Vercel e validar com smoke tests pós-deploy. Sem migration, sem alteração de
+variáveis de ambiente/financeiras, sem cobrança real. Detalhe completo em
+`docs/releases/EVENT-READINESS.md` §13.
+
+Pré-deploy: HEAD/branch confirmados, zero diff de código desde `aca7c44`, working tree limpo (3
+artefatos locais não rastreados movidos para fora antes do deploy e restaurados depois, porque a
+CLI da Vercel não respeita `.gitignore`). Projeto de destino confirmado (`jiu` /
+`prj_OWAnDfWWQp3i0YJtJkhAmAjocJ3n`); deployment anterior (`dpl_AMKofx7oNmQnQiPhr2xDTWSdUPaa`,
+`b0a32c7`) registrado como rollback. Worktree original de `jiu` não foi tocado nem promovido.
+
+**Deploy:** `vercel --prod --yes` deste worktree, sucesso na primeira tentativa. Nova deployment
+`dpl_BYTLoYjrNWxcWkxXc96wkvYr9dhX`, `READY`, `target=production`. Os três domínios de produção
+(`jiu-three.vercel.app`, `jiu-navy.vercel.app`, alias padrão) confirmados apontando para ela via
+`vercel alias ls`.
+
+**Smoke tests:** todas as superfícies públicas (home, eventos, chaves, checagem, lutas,
+participantes, programação, resultados, academias, institucional) **PASS** — 200 em todas.
+Confirmado que o endereço estruturado do evento "TESTE" renderiza corretamente em produção
+("CEP 85506-522" visível no HTML), validando de ponta a ponta a correção de schema drift desta
+branch. Gates de autenticação (`/admin/eventos`, `/dashboard`, `/platform/*`) redirecionam
+corretamente para login — confirma que a revisão do `middleware.ts` (§12.5) funciona em produção.
+Webhook de pagamento responde 405 a GET (rota intacta, nenhuma ação real). Duas divergências
+encontradas, **ambas pré-existentes** (confirmadas idênticas comparando a URL direta da deployment
+antiga com a nova): `/cadastro` devolve 307 sem `Location`; `/login` bail-out para renderização
+client-side. Nenhuma das duas é regressão deste deploy — não corrigidas, fora do escopo autorizado.
+Logs: 0 erros em 30 min pós-deploy.
+
+**Não verificado, por limitação explícita de credencial, não por falha:** login real, interior do
+dashboard administrativo, formulário de criação de evento, configuração de versão de categorias —
+sem credencial de produção disponível nesta sessão e proibido abrir `.env*`. Os gates de rota
+correspondentes foram confirmados corretos como proxy, mas isso não substitui exercitar o conteúdo
+autenticado.
+
+**Status final: PASS WITH LIMITATIONS.** Nenhum erro crítico, nenhum rollback necessário. Pendência
+para o proprietário: fornecer credencial de teste de produção (ou autorizar criação de uma) para um
+smoke test autenticado dedicado num lote futuro; investigar as duas divergências pré-existentes de
+`/cadastro` e `/login` (não bloqueiam nada, mas já existiam antes desta missão).
 
 ## Ambiente Claude Code (este lote)
 
