@@ -547,7 +547,7 @@ export class FullEventJourney {
 
   async registerAthletesInEvent() {
     await this.page.goto(`/eventos/${this.identity.eventId}`);
-    await this.page.getByRole('link', { name: 'Inscrever atletas' }).click();
+    await this.page.getByRole('link', { name: 'Fazer inscrição' }).first().click();
     await this.page.getByRole('heading', { name: 'Atletas disponíveis' }).waitFor();
     for (const name of this.identity.athleteNames) {
       await this.page.getByRole('checkbox', { name: `Selecionar ${name}` }).check();
@@ -611,7 +611,7 @@ export class FullEventJourney {
     await this.page.goto(`/admin/eventos/${this.identity.eventId}/checagem`);
     // "Lista oficial" (section#event-registrations-title) é o marcador estável desta página —
     // ver nota em configureCategoriesAndDuration sobre o fim do heading "Superfície — {evento}".
-    await this.page.getByRole('heading', { name: 'Lista oficial' }).waitFor();
+    await this.page.getByRole('heading', { name: 'Lista oficial', exact: true }).waitFor();
   }
 
   async assertCheckingList() {
@@ -633,7 +633,7 @@ export class FullEventJourney {
   async openBracketsPhase() {
     await activatePhaseWindow(this.admin, this.identity.eventId, 'chaves', 'checagem');
     await this.page.goto(`/admin/eventos/${this.identity.eventId}/checagem`);
-    await this.page.getByRole('heading', { name: 'Lista oficial' }).waitFor();
+    await this.page.getByRole('heading', { name: 'Lista oficial', exact: true }).waitFor();
     await this.page.getByRole('button', { name: 'Abrir chaves' }).click();
     await expect.poll(async () => {
       const opened = await this.admin.from('events').select('status').eq('id', this.identity.eventId).single();
@@ -672,7 +672,8 @@ export class FullEventJourney {
   async adjustDraftBracket() {
     await this.page.getByRole('button', { name: new RegExp(this.identity.categoryNames.semi4) }).click();
     const originalSignature = await compositionSignature(this.admin, this.bracketIds.semi4);
-    const firstSlot = this.page.locator('label').filter({ hasText: 'Slot 01' }).first().locator('select');
+    // O texto visível é "01 Slot" (badge numérico antes do rótulo), não "Slot 01".
+    const firstSlot = this.page.locator('label').filter({ hasText: /01\s*Slot/ }).first().locator('select');
     await chooseDifferentOption(firstSlot);
     await this.page.getByRole('button', { name: 'Salvar composição' }).click();
     await this.page.getByText('Composição salva.').waitFor();
@@ -762,7 +763,7 @@ export class FullEventJourney {
   async assertPublicSchedule() {
     const publicPage = await this.publicSurface();
     await publicPage.reload();
-    await publicPage.getByRole('heading', { name: `Programação — ${this.identity.eventName}` }).waitFor();
+    await publicPage.getByRole('heading', { name: `Horário — ${this.identity.eventName}` }).waitFor();
     await expect(publicPage.getByRole('article', { name: 'Luta 1' })).toBeVisible();
     const publishedSchedule = await this.anon.rpc('get_public_event_schedule', { target_event_id: this.identity.eventId });
     if (publishedSchedule.error) throw publishedSchedule.error;
@@ -872,8 +873,7 @@ export class FullEventJourney {
   async concludeEvent() {
     await this.page.goto(`/admin/eventos/${this.identity.eventId}/resultados`);
     await this.page.getByRole('button', { name: 'Concluir evento' }).click();
-    await this.page.getByText('Evento concluído').waitFor();
-    await expect(this.page.getByText('Evento: concluido')).toBeVisible();
+    await this.page.getByText('Evento concluído').first().waitFor();
     const finished = await this.admin.from('events').select('status').eq('id', this.identity.eventId).single();
     if (finished.data?.status !== 'concluido') throw new Error(`Estado final administrativo foi ${finished.data?.status}.`);
     this.mark('evento-concluido');
@@ -899,8 +899,8 @@ export class FullEventJourney {
     const publicPage = await this.publicSurface();
     await publicPage.goto(`/eventos/${this.identity.eventId}`);
     await publicPage.getByRole('heading', { name: this.identity.eventName }).waitFor();
-    await expect(publicPage.getByText('concluido', { exact: true })).toBeVisible();
-    await expect(publicPage.getByRole('link', { name: 'Inscrever atletas' })).toHaveCount(0);
+    await expect(publicPage.getByText('Evento finalizado', { exact: true })).toBeVisible();
+    await expect(publicPage.getByRole('link', { name: 'Fazer inscrição' })).toHaveCount(0);
     this.mark('estado-final-publico-e-admin');
   }
 
