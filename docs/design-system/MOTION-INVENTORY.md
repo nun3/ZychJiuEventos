@@ -1,12 +1,13 @@
 # Inventário preliminar de movimento
 
 Data: 8 nov 2026
-Base auditada: worktree `/home/nune/Meus Projetos/jiu-event-readiness`, branch `feature/cinematic-auth-v2`, HEAD `32addc0`.
+Base auditada: worktree `/home/nune/Meus Projetos/jiu-event-readiness`, branch `feature/cinematic-auth-v2`, HEAD de código `32addc0` (a gramática v1.2 não reexecuta a auditoria).
 Modo: somente leitura. Nenhum componente funcional foi alterado.
 Ferramenta: `.agents/skills/zero-jank-scroll/scripts/audit-scroll-source.mjs --json` em `app/` (132 arquivos) e `components/` (90 arquivos).
 Evidência bruta: `evidencias/motion-source-audit-20261108.json`.
+Gramática vigente: `MOTION-AND-SCROLLYTELLING.md` v1.2 (casca versus conteúdo; Nível 0 não é ausência de animação).
 
-A integração cinematográfica publicada (`jiu-motion-integration` @ `5ce3369`) não foi auditada neste checkout. Cover Flow, overlay fullscreen e Halftone não aparecem aqui.
+A integração cinematográfica (`jiu-motion-integration`, HEAD commit `5ce3369` em 8 nov 2026, working tree sujo) **não** foi auditada neste checkout. Cover Flow, overlay fullscreen e Halftone não aparecem nesta base; na integração eles são casca/palco Nível 3 e devem ser preservados. Reauditoria zero-jank só depois da incorporação documental, nessa outra base.
 
 ## Motores já existentes
 
@@ -22,12 +23,14 @@ A integração cinematográfica publicada (`jiu-motion-integration` @ `5ce3369`)
 
 ## Superfícies por intensidade (mapa, não redesign)
 
-| Superfície | Nível | Observação |
-| --- | --- | --- |
-| `/admin/*`, `/dashboard/*`, `/platform/*`, LIVE/placar | 0 | `SiteScrollChoreography` já recusa esses pathnames |
-| `/eventos`, detalhe, inscrição | 1 | Revelações opt-in; catálogo prevalece |
-| Home, institucionais | 2 | `CinematicStory` + data-attributes |
-| Cover Flow / overlay / Halftone | 3 | Fora desta base; não portar nesta missão |
+O nível abaixo descreve o **conteúdo**. A casca cinematográfica aprovada (navbar/overlay/Halftone) é Nível 3 na integração e não reclassifica o miolo.
+
+| Superfície | Conteúdo | Casca (integração) | Observação |
+| --- | --- | --- | --- |
+| `/admin/*`, `/dashboard/*`, `/platform/*`, LIVE/placar | 0 | 3 | `SiteScrollChoreography` já recusa esses pathnames. Motion de miolo: hover, foco, dialog, underline — imediato. |
+| Catálogo `/eventos`, detalhe, inscrição | 1 | 3 | Em `/eventos` o palco Cover Flow é Nível 3; o catálogo é Nível 1. |
+| Home, institucionais | 2 | 3 | `CinematicStory` + data-attributes. Scrollytelling opt-in, não global. |
+| Cover Flow / overlay / Halftone | 3 | 3 | Fora desta base; preservar na integração; não portar neste checkout. |
 
 ## Achados da auditoria de fonte
 

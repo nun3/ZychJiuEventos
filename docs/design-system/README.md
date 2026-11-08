@@ -115,7 +115,7 @@ As sombras legadas nao devem ser substituidas globalmente nesta fase.
 
 Os aliases Tailwind sao `duration-mc-fast`, `duration-mc-normal` e `duration-mc-slow`. O suporte a `prefers-reduced-motion: reduce` zera os tokens de movimento para consumidores futuros. Animacoes legadas nao devem ser refatoradas automaticamente.
 
-Gramatica permanente de intensidade, scrollytelling e React Bits: `MOTION-AND-SCROLLYTELLING.md` (v1.1). Inventario preliminar desta base: `MOTION-INVENTORY.md`. Operacao permanece no nivel 0; narrativa institucional no nivel 2; o cinematografico aprovado (Cover Flow, overlay, Halftone) nao se altera por este documento.
+Gramatica permanente de intensidade, scrollytelling e React Bits: `MOTION-AND-SCROLLYTELLING.md` (v1.2). Inventario preliminar desta base: `MOTION-INVENTORY.md`. Uma pagina pode combinar niveis: a casca compartilhada (navbar, overlay, Cover Flow, Halftone) e o conteudo funcional sao classificados em separado. Nivel 0 e movimento funcional, suave e interruptivel — nao ausencia de animacao. Scrollytelling nao e obrigatorio.
 
 ## Regras de componentes
 
