@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "skills": {
+    "scroll-craft": {
+      "source": "nateherkai/scroll-craft",
+      "sourceType": "github",
+      "skillPath": "plugins/nateherk-design/skills/scroll-craft/SKILL.md",
+      "computedHash": "b78387f42dd6ecc70b28c4623919bf3037e4e2dda1f021bdac7346d7b9b83bca",
+      "installMode": "copy"
+    },
+    "zero-jank-scroll": {
+      "source": "harshavarma02/zero-jank-scroll-agent-skill",
+      "sourceType": "github",
+      "skillPath": "skills/zero-jank-scroll/SKILL.md",
+      "computedHash": "fbceda3ea2adf35ef26c92b2db9f3aa52054acc793fed72c325ccb917f8bb892",
+      "installMode": "copy"
+    }
+  }
+}

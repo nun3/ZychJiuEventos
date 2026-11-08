@@ -1,0 +1,168 @@
+{
+  "date": "2026-11-08",
+  "tool": ".agents/skills/zero-jank-scroll/scripts/audit-scroll-source.mjs --json",
+  "mode": "read-only",
+  "scanned": {
+    "app": 132,
+    "components": 90
+  },
+  "signals": {
+    "app": {
+      "intersectionObserverDetected": false,
+      "reducedMotionDetected": true
+    },
+    "components": {
+      "intersectionObserverDetected": true,
+      "reducedMotionDetected": true
+    }
+  },
+  "findings": [
+    {
+      "rule": "backdrop-filter",
+      "severity": "review",
+      "file": "globals.css",
+      "line": 193,
+      "message": "Backdrop filtering found. Profile repaint/compositing cost, especially inside sticky or fixed regions."
+    },
+    {
+      "rule": "backdrop-filter",
+      "severity": "review",
+      "file": "globals.css",
+      "line": 194,
+      "message": "Backdrop filtering found. Profile repaint/compositing cost, especially inside sticky or fixed regions."
+    },
+    {
+      "rule": "global-scroll-listener",
+      "severity": "review",
+      "file": "ModernNavbar.tsx",
+      "line": 130,
+      "message": "Global scroll listener found. Confirm that work is rAF-coalesced, passive where valid, and cleaned up."
+    },
+    {
+      "rule": "layout-read",
+      "severity": "review",
+      "file": "AdminEventNav.tsx",
+      "line": 64,
+      "message": "Layout measurement found. Check whether it runs repeatedly during scroll after layout writes."
+    },
+    {
+      "rule": "layout-read",
+      "severity": "review",
+      "file": "AdminEventNav.tsx",
+      "line": 64,
+      "message": "Layout measurement found. Check whether it runs repeatedly during scroll after layout writes."
+    },
+    {
+      "rule": "layout-read",
+      "severity": "review",
+      "file": "InternalNavigation.tsx",
+      "line": 35,
+      "message": "Layout measurement found. Check whether it runs repeatedly during scroll after layout writes."
+    },
+    {
+      "rule": "layout-read",
+      "severity": "review",
+      "file": "InternalNavigation.tsx",
+      "line": 35,
+      "message": "Layout measurement found. Check whether it runs repeatedly during scroll after layout writes."
+    },
+    {
+      "rule": "layout-read",
+      "severity": "review",
+      "file": "ModernEventCard.tsx",
+      "line": 51,
+      "message": "Layout measurement found. Check whether it runs repeatedly during scroll after layout writes."
+    },
+    {
+      "rule": "layout-read",
+      "severity": "review",
+      "file": "ModernNavbar.tsx",
+      "line": 98,
+      "message": "Layout measurement found. Check whether it runs repeatedly during scroll after layout writes."
+    },
+    {
+      "rule": "layout-read",
+      "severity": "review",
+      "file": "ModernNavbar.tsx",
+      "line": 99,
+      "message": "Layout measurement found. Check whether it runs repeatedly during scroll after layout writes."
+    },
+    {
+      "rule": "layout-read",
+      "severity": "review",
+      "file": "events/public-event/EventPublicNavigation.tsx",
+      "line": 15,
+      "message": "Layout measurement found. Check whether it runs repeatedly during scroll after layout writes."
+    },
+    {
+      "rule": "layout-read",
+      "severity": "review",
+      "file": "events/public-event/EventPublicNavigation.tsx",
+      "line": 15,
+      "message": "Layout measurement found. Check whether it runs repeatedly during scroll after layout writes."
+    },
+    {
+      "rule": "layout-read",
+      "severity": "review",
+      "file": "motion/SiteScrollChoreography.tsx",
+      "line": 135,
+      "message": "Layout measurement found. Check whether it runs repeatedly during scroll after layout writes."
+    },
+    {
+      "rule": "layout-read",
+      "severity": "review",
+      "file": "onboarding/EventProgress.tsx",
+      "line": 31,
+      "message": "Layout measurement found. Check whether it runs repeatedly during scroll after layout writes."
+    },
+    {
+      "rule": "layout-read",
+      "severity": "review",
+      "file": "onboarding/EventProgress.tsx",
+      "line": 31,
+      "message": "Layout measurement found. Check whether it runs repeatedly during scroll after layout writes."
+    },
+    {
+      "rule": "smooth-scroll-css",
+      "severity": "review",
+      "file": "globals.css",
+      "line": 143,
+      "message": "Smooth scrolling found. Confirm a reduced-motion override sets it to auto."
+    },
+    {
+      "rule": "layout-property-transition",
+      "severity": "warning",
+      "file": "ModernNavbar.tsx",
+      "line": 307,
+      "message": "A layout-related property appears in a transition. Prefer transform/opacity where the visual design allows."
+    },
+    {
+      "rule": "react-scroll-state",
+      "severity": "warning",
+      "file": "ModernNavbar.tsx",
+      "line": 130,
+      "message": "A scroll handler appears to call a React-style state setter. Continuous progress should not rerender the tree per event."
+    },
+    {
+      "rule": "transition-all",
+      "severity": "warning",
+      "file": "globals.css",
+      "line": 153,
+      "message": "`transition: all` can animate layout or paint-heavy properties accidentally. Name the intended properties."
+    },
+    {
+      "rule": "transition-all",
+      "severity": "warning",
+      "file": "globals.css",
+      "line": 323,
+      "message": "`transition: all` can animate layout or paint-heavy properties accidentally. Name the intended properties."
+    },
+    {
+      "rule": "transition-all",
+      "severity": "warning",
+      "file": "globals.css",
+      "line": 329,
+      "message": "`transition: all` can animate layout or paint-heavy properties accidentally. Name the intended properties."
+    }
+  ]
+}

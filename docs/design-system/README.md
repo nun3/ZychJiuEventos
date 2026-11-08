@@ -115,6 +115,8 @@ As sombras legadas nao devem ser substituidas globalmente nesta fase.
 
 Os aliases Tailwind sao `duration-mc-fast`, `duration-mc-normal` e `duration-mc-slow`. O suporte a `prefers-reduced-motion: reduce` zera os tokens de movimento para consumidores futuros. Animacoes legadas nao devem ser refatoradas automaticamente.
 
+Gramatica permanente de intensidade, scrollytelling e React Bits: `MOTION-AND-SCROLLYTELLING.md` (v1.1). Inventario preliminar desta base: `MOTION-INVENTORY.md`. Operacao permanece no nivel 0; narrativa institucional no nivel 2; o cinematografico aprovado (Cover Flow, overlay, Halftone) nao se altera por este documento.
+
 ## Regras de componentes
 
 Estas regras orientam a Fase 2 e as migracoes seguintes:
@@ -156,6 +158,7 @@ Estas regras orientam a Fase 2 e as migracoes seguintes:
 - Tokens novos devem ser adicionados com prefixo `mc-`.
 - Alteracoes de identidade devem ser registradas em `docs/design-system/sprint-6.5.md`.
 - A gramatica visual do calendario, do detalhe publico, das chaves e da navegacao interna esta em `docs/design-system/PADRAO-TELAS.md`.
+- A gramatica de movimento, scrollytelling e niveis de intensidade esta em `docs/design-system/MOTION-AND-SCROLLYTELLING.md`.
 - Inventario e consolidacao 2026: `COMPONENT-INVENTORY.md`, `UI-CONSISTENCY-AUDIT.md`, `UI-MIGRATION-REPORT.md`, `UI-REGRESSION-RESULTS.md`.
 - Manifesto do release candidate (sem deploy): `docs/releases/UI-CONSOLIDATION-RC.md`.
 - Toda fase deve passar por build, TypeScript, lint e testes proporcionais ao risco.
