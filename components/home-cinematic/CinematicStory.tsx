@@ -8,7 +8,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import type { Event } from '@/components/ModernEventGrid'
-import { HeroEventShowcase } from '@/components/home-cinematic/OpeningEventStrip'
+import { HomeLanding } from '@/components/home-landing/HomeLanding'
 import {
   HISTORICAL_BIBLIOGRAPHY,
   HISTORICAL_METAPHOR_DISCLAIMER,
@@ -102,7 +102,6 @@ const STATEMENT_LINES = [
   { text: 'pergunta.', alt: true },
 ]
 
-const HERO_LINES = [['Toda', 'competição'], ['tem uma', 'história.']]
 const FINALE_LINES = [['Agora é', 'sua vez'], ['de organizar.']]
 
 const fgMix = (percent: number) => `color-mix(in srgb, var(--story-fg) ${percent}%, transparent)`
@@ -184,13 +183,9 @@ function ChapterText({ chapter, entry }: { chapter: Chapter; entry: MartialTradi
 export function CinematicStory({
   openingEvents = [],
   previewEvents = false,
-  search = '',
-  onSearchChange,
 }: {
   openingEvents?: Event[]
   previewEvents?: boolean
-  search?: string
-  onSearchChange?: (value: string) => void
 }) {
   const root = useRef<HTMLDivElement>(null)
 
@@ -247,17 +242,6 @@ export function CinematicStory({
         (context) => {
           const { isDesktop, motionOk } = context.conditions as { isDesktop: boolean; motionOk: boolean }
           if (!motionOk) return
-
-          const hero = q('[data-hero]')[0]
-          if (hero) {
-            gsap.from(q('[data-hero-showcase-img]'), { scale: 1.08, duration: 1.6, ease: 'expo.out' })
-            gsap
-              .timeline({ scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } })
-              .to(q('[data-hero-showcase]'), { yPercent: -10, scale: 0.96, ease: 'none', duration: 1 }, 0)
-              .to(q('[data-opening-card]'), { y: -28, ease: 'none', duration: 0.9 }, 0)
-              .to(q('[data-hero-line]'), { yPercent: 125, ease: 'none', stagger: 0.05, duration: 0.45 }, 0)
-              .to(q('[data-hero-fade]'), { opacity: 0, y: -20, ease: 'none', duration: 0.35 }, 0)
-          }
 
           q('[data-line-in]').forEach((el) => {
             gsap.from(el, {
@@ -374,50 +358,21 @@ export function CinematicStory({
       style={storyVars}
       className="relative overflow-x-clip bg-[var(--story-bg)] text-[var(--story-fg)]"
     >
-      {/* Hero: duas colunas com texto à esquerda e carrossel de eventos + busca à direita */}
+      {/* Hero: título em partículas (repulsão) e carrossel de campeonatos */}
       <section
         data-hero
-        aria-labelledby="home-hero-title"
-        className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-mc-nav-dark pb-8 pt-24 text-white lg:pb-10 lg:pt-24"
+        aria-label="Abertura"
+        className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-mc-nav-dark pb-10 pt-24 text-white"
       >
-        <div className="grid w-full items-center gap-10 px-4 sm:px-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-12 lg:px-12 xl:gap-16 xl:px-20">
-          <div>
-            <p data-hero-fade className="font-mc-interface text-mc-caption font-semibold uppercase tracking-[0.2em] text-white/70">
-              Plataforma para competições de artes marciais
-            </p>
-            <h1
-              id="home-hero-title"
-              className="mt-5 font-mc-display text-[12.5vw] font-bold leading-[0.94] tracking-[-0.045em] sm:text-6xl lg:text-[clamp(3.25rem,4.4vw,5.25rem)]"
-            >
-              <MaskedLines lines={HERO_LINES} lineAttr="data-hero-line" />
-            </h1>
-
-            <div data-hero-fade className="mt-6 max-w-lg">
-              <p className="font-mc-display text-xl font-semibold tracking-[-0.02em] sm:text-2xl">
-                A próxima pode ser sua.
-              </p>
-              <p className="mt-2 font-mc-interface text-base leading-6 text-white/70">
-                Organize competições de artes marciais em uma única plataforma.
-              </p>
-            </div>
-
-            <div data-hero-fade className="mt-8">
-              <Link
-                href="/eventos#experimentar-demo"
-                className="inline-flex min-h-12 items-center justify-center rounded-mc-small border border-white/40 px-6 font-mc-interface text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors duration-mc-normal hover:bg-white hover:text-mc-text-primary"
-              >
-                Experimentar sem cadastro
-              </Link>
-            </div>
-          </div>
-
-          <HeroEventShowcase
-            events={openingEvents}
-            preview={previewEvents}
-            search={search}
-            onSearchChange={onSearchChange}
-          />
-        </div>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 opacity-70 [background-image:radial-gradient(rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:24px_24px]"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[350px] w-[700px] max-w-full -translate-x-1/2 rounded-full bg-white/5 blur-[140px]"
+        />
+        <HomeLanding events={openingEvents} preview={previewEvents} />
       </section>
 
       {/* Declaração + portal circular (sticky circle grow) */}

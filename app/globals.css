@@ -504,3 +504,39 @@ iframe {
 [data-mc-admin-op] .rounded-mc-full {
   border-radius: 0;
 }
+
+/* Entrada discreta do /login: fade + leve deslocamento. Sem bloquear o formulário. */
+@keyframes mc-auth-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-mc-auth-enter] {
+  animation: mc-auth-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+[data-mc-auth-enter-delay] {
+  animation: mc-auth-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-mc-auth-enter],
+  [data-mc-auth-enter-delay] {
+    animation: none;
+  }
+}
+
+/* Transição fluida Home <-> Login via View Transitions API nativa (progressive enhancement). */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 320ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}

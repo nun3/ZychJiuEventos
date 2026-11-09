@@ -42,6 +42,22 @@ const modeContent: Record<AuthMode, { eyebrow: string; title: string; descriptio
   },
 }
 
+const roleOptions: ReadonlyArray<{ role: SignupRole; title: string; description: string; icon: typeof User }> = [
+  { role: 'atleta', title: 'Atleta', description: 'Para participar de eventos.', icon: User },
+  { role: 'professor', title: 'Professor', description: 'Para gerenciar equipe.', icon: GraduationCap },
+  { role: 'organizador', title: 'Organizador', description: 'Para criar eventos.', icon: Briefcase },
+  { role: 'responsavel', title: 'Responsável', description: 'Para inscrever menores.', icon: Users },
+]
+
+const registerRoleCopy: Record<SignupRole, string> = {
+  atleta: 'Para participar de eventos e competições.',
+  professor: 'Para gerenciar equipe e inscrever atletas vinculados, inclusive menores.',
+  organizador: 'Para criar e gerenciar eventos.',
+  responsavel: 'Para cadastrar e inscrever atletas menores de idade.',
+}
+
+const darkPanelTheme = "[&_.text-mc-text-secondary]:text-white/70 [&_.text-mc-text-primary]:text-white [&_.text-mc-action]:text-blue-300 [&_.text-mc-action:hover]:text-blue-200 [&_.border-mc-border]:border-white/15 [&_.divide-mc-border]:divide-white/15 [&_input]:border-white/20 [&_input]:bg-white/10 [&_input]:text-white [&_input::placeholder]:text-white/40 [&_input:hover]:border-white/40 [&_input:focus]:border-white [&_input:focus]:ring-white/20 [&_[role=status]]:!bg-white [&_[role=status]]:!text-mc-text-primary [&_[role=status]_*]:!text-mc-text-primary"
+
 function LoginPageContent() {
   const searchParams = useSearchParams()
   const requestedMode = searchParams.get('mode')
@@ -83,6 +99,7 @@ function LoginPageContent() {
   }
 
   const openRegistration = (registerType: SignupRole) => {
+    setMode('register')
     setSelectedRegisterType(registerType)
     setFeedback(null)
   }
@@ -90,23 +107,56 @@ function LoginPageContent() {
   const content = modeContent[mode]
 
   return (
-    <main className="min-h-screen bg-mc-background">
-      <ModernNavbar />
+    <main className="min-h-screen bg-mc-nav-dark">
+      <ModernNavbar overlayAtTop />
 
-      <section className="pt-28 sm:pt-32" aria-labelledby="auth-title">
-        <PageContainer className="pb-mc-48 sm:pb-mc-64">
-          <div className="mx-auto grid max-w-5xl overflow-hidden rounded-mc-large border border-mc-border bg-mc-surface shadow-mc-elevated lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
-            <header className="bg-mc-structure p-mc-24 text-white sm:p-mc-32 lg:p-mc-48">
-              <p className="font-mc-interface text-xs font-semibold uppercase tracking-[0.18em] text-blue-200">{content.eyebrow}</p>
-              <h1 id="auth-title" className="mt-mc-12 font-mc-display text-3xl font-semibold leading-tight text-white sm:text-mc-h1">{content.title}</h1>
-              <p className="mt-mc-16 max-w-md font-mc-interface leading-6 text-slate-200">{content.description}</p>
-              <div className="mt-mc-32 hidden border-t border-white/20 pt-mc-24 font-mc-interface text-sm text-slate-300 lg:flex lg:items-start lg:gap-mc-12">
-                <ShieldCheck aria-hidden="true" size={21} className="shrink-0 text-blue-200" />
-                <p>Use os dados cadastrados na plataforma para acessar sua conta com segurança.</p>
+      <section data-login-stage aria-labelledby="auth-title" className="relative isolate overflow-hidden pb-14 pt-28 sm:pt-32 lg:pb-24">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-0 bg-cover bg-[position:70%_center] bg-no-repeat [background-image:url('/images/cinematic/mc-hero-mobile.jpg')] md:bg-[position:center] md:[background-image:url('/images/cinematic/mc-hero.jpg')]"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-mc-nav-dark/80 via-mc-nav-dark/35 to-transparent lg:via-mc-nav-dark/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-mc-nav-dark/45 via-transparent to-transparent" />
+        </div>
+
+        <PageContainer fluid className="relative z-10">
+          <div className="glass-effect grid max-w-5xl overflow-hidden rounded-mc-large shadow-mc-elevated lg:grid-cols-2">
+            <div data-mc-auth-enter className="flex flex-col justify-between gap-mc-24 p-mc-24 text-white sm:p-mc-32 lg:gap-0 lg:p-mc-48">
+              <div>
+                <p className="font-mc-interface text-xs font-semibold uppercase tracking-[0.18em] text-blue-200">{content.eyebrow}</p>
+                <h1 id="auth-title" className="mt-mc-12 font-mc-display text-3xl font-semibold leading-tight text-white sm:text-mc-h1">{content.title}</h1>
+                <p className="mt-mc-16 max-w-md font-mc-interface leading-6 text-white/80">{content.description}</p>
               </div>
-            </header>
 
-            <div className="p-mc-24 sm:p-mc-32 lg:p-mc-48">
+              {mode === 'login' ? (
+                <nav aria-label="Atalhos de cadastro por perfil" className="mt-mc-24 divide-y divide-white/10 border-y border-white/10 lg:mt-mc-32">
+                  {roleOptions.map(({ role, title, description, icon: Icon }) => (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => openRegistration(role)}
+                      className="group flex min-h-16 w-full items-center gap-mc-16 rounded-mc-small py-mc-12 text-left transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                    >
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-mc-full bg-white/10 text-blue-200">
+                        <Icon aria-hidden="true" size={19} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <strong className="block font-mc-interface text-sm text-white">{title}</strong>
+                        <span className="mt-0.5 block font-mc-interface text-xs text-white/65">{description}</span>
+                      </span>
+                      <ArrowRight aria-hidden="true" size={16} className="shrink-0 text-white/50 transition-transform duration-mc-normal group-hover:translate-x-0.5 group-hover:text-white" />
+                    </button>
+                  ))}
+                </nav>
+              ) : (
+                <div className="mt-mc-32 hidden border-t border-white/20 pt-mc-24 font-mc-interface text-sm text-white/75 lg:flex lg:items-start lg:gap-mc-12">
+                  <ShieldCheck aria-hidden="true" size={21} className="shrink-0 text-blue-200" />
+                  <p>Use os dados cadastrados na plataforma para acessar sua conta com segurança.</p>
+                </div>
+              )}
+            </div>
+
+            <div data-mc-auth-enter-delay className={`flex flex-col justify-center border-t border-white/15 p-mc-24 text-white sm:p-mc-32 lg:border-l lg:border-t-0 lg:p-mc-48 ${darkPanelTheme}`}>
               <nav aria-label="Opções de acesso" className="grid grid-cols-3 border-b border-mc-border">
                 {loginTabs.map((tab) => (
                   <button
@@ -172,26 +222,13 @@ function LoginPageContent() {
                     <>
                       <p className="font-mc-interface text-sm leading-6 text-mc-text-secondary">Selecione o tipo de cadastro. Somente maiores de 18 anos criam login.</p>
                       <div className="mt-mc-16 divide-y divide-mc-border border-y border-mc-border">
-                        <button type="button" onClick={() => openRegistration('atleta')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
-                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><User aria-hidden="true" size={21} /></span>
-                          <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Atleta</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para participar de eventos e competições.</span></span>
-                          <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
-                        </button>
-                        <button type="button" onClick={() => openRegistration('professor')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
-                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><GraduationCap aria-hidden="true" size={21} /></span>
-                          <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Professor</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para gerenciar equipe e inscrever atletas vinculados, inclusive menores.</span></span>
-                          <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
-                        </button>
-                        <button type="button" onClick={() => openRegistration('organizador')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
-                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><Briefcase aria-hidden="true" size={21} /></span>
-                          <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Organizador</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para criar e gerenciar eventos.</span></span>
-                          <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
-                        </button>
-                        <button type="button" onClick={() => openRegistration('responsavel')} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
-                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><Users aria-hidden="true" size={21} /></span>
-                          <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">Responsável</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">Para cadastrar e inscrever atletas menores de idade.</span></span>
-                          <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
-                        </button>
+                        {roleOptions.map(({ role, title, icon: Icon }) => (
+                          <button key={role} type="button" onClick={() => openRegistration(role)} className="group flex min-h-20 w-full items-center gap-mc-16 py-mc-16 text-left">
+                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-mc-full bg-mc-action/10 text-mc-action"><Icon aria-hidden="true" size={21} /></span>
+                            <span className="min-w-0 flex-1"><strong className="block font-mc-interface text-mc-text-primary">{title}</strong><span className="mt-mc-4 block font-mc-interface text-sm text-mc-text-secondary">{registerRoleCopy[role]}</span></span>
+                            <ArrowRight aria-hidden="true" size={19} className="shrink-0 text-mc-text-secondary transition-transform duration-mc-normal group-hover:translate-x-0.5" />
+                          </button>
+                        ))}
                       </div>
                     </>
                   )}
@@ -218,14 +255,16 @@ function LoginPageContent() {
         </PageContainer>
       </section>
 
-      <ModernFooter />
+      <div data-no-scroll-choreography>
+        <ModernFooter />
+      </div>
     </main>
   )
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-mc-background" aria-busy="true" />}>
+    <Suspense fallback={<main className="min-h-screen bg-mc-nav-dark" aria-busy="true" />}>
       <LoginPageContent />
     </Suspense>
   )
