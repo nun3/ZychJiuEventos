@@ -339,9 +339,12 @@ export function ParticleTitle({ text, className, children }: { text: string; cla
 
     const family = getComputedStyle(wrap).fontFamily
     Promise.race([
-      document.fonts.load(`700 64px ${family}`).then(() => document.fonts.ready),
+      document.fonts
+        .load(`700 64px ${family}`)
+        .then(() => document.fonts.ready)
+        .catch(() => undefined),
       new Promise((resolve) => window.setTimeout(resolve, 2500)),
-    ]).then(() => { if (alive) sampleText() })
+    ]).then(() => { if (alive) sampleText() }).catch(() => undefined)
 
     return () => {
       alive = false

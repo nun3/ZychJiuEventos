@@ -957,3 +957,9 @@ Ajustes a registrar lá, quando o proprietário autorizar a edição:
 - Publicado: `dpl_Hv6wxhdABFQgUtY3RvYxMMpr8hzh` (production, CLI). Sem push, sem migration, sem escrita no banco.
 - Limitação: o preview é protegido; homologação em navegador foi local, não no preview. O step
   `home-cache.steps.ts` (heading/tab "Mostrar …") já estava desatualizado em relação ao hero anterior.
+
+**Atualização (8 nov, local, ainda não publicada):** removida toda a narrativa cinematográfica abaixo do hero
+(`CinematicStory.tsx` apagado; `HomeClient` renderiza só o hero). A Home agora é hero + `HomePlatformSection` + footer.
+Corrigido `catch` ausente em `document.fonts.load` no `ParticleTitle` (gerava `pageerror` "A network error occurred").
+Validação: tsc PASS; lint PASS; build PASS; `public-surfaces.spec.ts` 9/9 em 3 execuções contra `next start`.
+O deploy `dpl_Hv6wxhdABFQgUtY3RvYxMMpr8hzh` ainda contém a narrativa e o erro de fontes.
