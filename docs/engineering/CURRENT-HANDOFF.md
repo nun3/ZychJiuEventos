@@ -16,6 +16,124 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 
 O working tree original de `jiu` não foi modificado neste lote.
 
+## Rodada de 7 nov 2026 — Flow Motion Navigation (local, sem commit)
+
+Missão de refinamento da navegação global (`ModernNavbar.tsx`). Mesma branch
+`feature/cinematic-auth-v2`, mesmo worktree, sem commit, sem push, sem deploy.
+
+**O que mudou:**
+- `components/ModernNavbar.tsx` — o prop `overlayAtTop` era um no-op literal (`void overlayAtTop`,
+  nunca lido) passado por `app/page.tsx` e `components/InstitutionalPage.tsx` sem efeito algum.
+  Agora tem comportamento real: com `overlayAtTop`, o header nasce transparente/gradiente
+  navy com logo e texto brancos sobre o hero escuro, e transita para branco sólido/texto escuro
+  após 72px de scroll (listener `scroll` com throttle via `requestAnimationFrame`, cancelado
+  corretamente no cleanup). Páginas que não passam `overlayAtTop` (admin, dashboard, eventos,
+  recuperar-senha, atualizar-senha, PublicEventFrame — a maioria do app) mantêm o header idêntico
+  ao anterior (branco, sem transição), confirmado por revisão independente.
+- Menu hambúrguer mobile — reconstruído de um dropdown simples (sem animação) para um painel
+  full-height deslizando da direita, no mesmo padrão já usado pelo drawer da conta (`translate-x-full`
+  → `translate-x-0`, scrim, `inert`, bloqueio de scroll do body, focus trap, Escape). Cascata dos
+  itens via GSAP (`useGSAP` + `gsap.matchMedia('(prefers-reduced-motion: no-preference)')` +
+  `mm.revert()` no cleanup — mesmo idioma já usado em `CinematicStory.tsx`/`SiteScrollChoreography.tsx`;
+  este arquivo não tinha GSAP antes).
+- Avatar/conta: espaçamento do cluster direito do header unificado via `gap-3` (antes misturava
+  margin no avatar com padding nos links, causando o desalinhamento relatado); borda/fundo do avatar
+  ganham variante clara sobre o header transparente.
+- `app/login/page.tsx` — uma linha: `<ModernNavbar />` → `<ModernNavbar overlayAtTop />`. O Login
+  tinha o mesmo choque header-branco-sobre-fundo-escuro que a Home; agora compartilha a mesma
+  identidade visual, mantendo a transição Home↔Login já existente intacta.
+- Correção incidental: o header subiu de `z-50` para `z-[65]`, acima dos overlays do drawer/menu
+  (`z-[60]`) — isso também corrige, em toda página do app (não só nas com overlay), um bug
+  pré-existente onde o header ficava coberto pelo scrim do drawer da conta quando ele abria.
+- `components/HomePlatformSection.tsx` ("A competição conecta todo mundo.") — investigado conforme
+  pedido; espaçamento e conexão com o footer já estavam corretos visualmente, sem TODO documentado
+  em nenhum doc. Não alterado, para não expandir escopo sem problema real identificado.
+
+**Achados da revisão independente (`domain-risk-reviewer`) e correções aplicadas:**
+- Médio: `mobileOpen` sobrevivia a um resize para desktop com o menu aberto, travando o scroll do
+  body e o focus trap num painel invisível (`md:hidden`). Corrigido com um listener
+  `matchMedia('(min-width: 768px)')` que fecha o menu mobile ao cruzar o breakpoint, e o clique no
+  avatar agora fecha o menu mobile defensivamente antes de abrir o drawer. Confirmado via teste:
+  `body.style.overflow` volta a `""` corretamente após o resize.
+- Baixo: o `requestAnimationFrame` do listener de scroll não era cancelado no cleanup — corrigido
+  guardando o id do frame.
+- Observação → corrigida durante a validação visual: dois elementos com o mesmo
+  `aria-label="Fechar menu"` ficavam simultaneamente focáveis quando o menu mobile abria (o próprio
+  hambúrguer, agora clicável acima do overlay, e o scrim). Renomeado o scrim para
+  "Fechar menu de navegação"; verificado com Playwright que a ambiguidade de seletor desapareceu.
+- Observação: foco perdido ao restaurar para o avatar quando o drawer é aberto pelo caminho mobile
+  ("Minha conta") — corrigido com um helper (`focusAccountTrigger`) que cai para o próprio botão do
+  hambúrguer quando o avatar não está visível.
+- Observações de acessibilidade aplicadas: `role="dialog"`/`aria-modal` no painel mobile, anel de
+  foco visível em todos os itens do menu mobile e no logotipo (adaptado à cor do estado transparente).
+- Ajuste visual pós-fix de z-index: os painéis (drawer e menu mobile) agora começam em `top-16`
+  (abaixo do header) em vez de `inset-y-0`, evitando sobreposição visual entre o cabeçalho e a
+  linha de título do próprio painel.
+
+**Testes (local, `next dev`, depois revertido):**
+- TypeScript (`tsc --noEmit`): PASS
+- Lint (`next lint`, arquivos alterados): PASS, sem warnings novos
+- Build (`next build`): PASS
+- `automação/tests/auth-experience.spec.ts`: 13/13 PASS (inclui o fluxo de logout pelo drawer)
+- `automação/tests/features/login.feature`: 5/5 PASS
+- `automação/tests/features/authorization.feature`: 5/5 PASS (inclui `encerra a sessão pelo menu da
+  conta`, que exercita tanto o caminho desktop quanto hambúrguer→"Minha conta"→drawer→"Sair da conta")
+- Visual: screenshots Playwright em 1440/768/390px — Home no topo (overlay) e rolada (sólido),
+  Login no topo e rolado, Institucional (`/quem-somos`, outro consumidor de `overlayAtTop`) no topo,
+  menu mobile fechado/abrindo/aberto/fechado-de-novo, verificação específica de resize
+  mobile→desktop com o menu aberto.
+
+**Decisão:** GO WITH LIMITATIONS para avaliação visual do proprietário. Não autoriza commit, push,
+merge ou deploy. Limitação conhecida: o reviewer não tinha acesso a `git diff` e validou o arquivo
+atual contra a descrição fornecida, não contra o HEAD; recomendo que o proprietário rode
+`git diff -- components/ModernNavbar.tsx` antes de aceitar o lote. Estado autenticado do avatar
+(drawer aberto, avatar com usuário real) foi validado via os testes Playwright existentes
+(que usam credenciais de `.env.e2e` através do mecanismo já aprovado do próprio projeto), mas não
+capturado em screenshot isolado nesta rodada — o acesso a `.env.e2e` para scripts ad-hoc novos foi
+bloqueado pelo classificador de permissões do Claude Code, conforme a regra do `CLAUDE.md`.
+
+## Rodada de 7 nov 2026 — Login cinematográfico v2 (local, sem commit)
+
+Missão de redesign visual de `/login`. Worktree `jiu-event-readiness`, branch dedicada
+`feature/cinematic-auth-v2` (criada a partir de `32addc0`, que é a mesma base da branch
+`integration/event-readiness-20261106` descrita acima). **Implementação local apenas: sem
+commit, sem push, sem deploy, sem migration, sem alteração de dados.** O working tree original
+de `jiu` (login cinematográfico local, ~118 arquivos sujos) não foi tocado — usado só como
+referência de leitura (`components/auth/AuthSplitShell.tsx`, `app/login/page.tsx` de lá).
+
+**O que mudou:**
+- `app/login/page.tsx` — reestruturação visual completa: fundo fotográfico (`public/images/cinematic/mc-hero.jpg` / `mc-hero-mobile.jpg`, antes não usados em nenhuma página), painel único em glassmorphism (`.glass-effect`, já existente em `globals.css`) com dois blocos internos separados por divisor. Painel esquerdo: texto institucional + lista de perfis (Atleta/Professor/Organizador/Responsável) que, no modo Entrar, atuam como atalho para Criar conta com o perfil já selecionado (`openRegistration` passou a chamar `setMode('register')`, antes só setava o perfil). Painel direito: abas Entrar/Criar conta/Recuperar senha e formulários existentes, recolorido para o tema escuro via seletores Tailwind descendentes (`darkPanelTheme`), sem editar `Input`/`FormField`/`Alert`/`Button` compartilhados. `data-login-stage` no `<section>` (hook já reservado em `SiteScrollChoreography.tsx`) e `data-no-scroll-choreography` ao redor do `<ModernFooter />` desta página, para a página não herdar a animação genérica de scroll (ambos são opt-outs já previstos nos seletores daquele arquivo — nenhuma alteração nele).
+- `components/ModernNavbar.tsx` — link "Login" (desktop e mobile) e o logo ganharam `onClick` que envolve a navegação em `document.startViewTransition()` quando suportado e `prefers-reduced-motion: no-preference`; guard completo para modificadores/clique do meio, sem navegação SPA quebrada quando a API não existe. Nenhuma mudança visual ou de layout do header (já era branco, compacto, Eventos/Login/Criar evento — nada a ajustar ali).
+- `app/globals.css` — keyframe `mc-auth-enter` (entrada discreta, respeita `prefers-reduced-motion: reduce`) e `::view-transition-*` para a transição Home↔Login.
+- Google OAuth: não implementado (fora de escopo desta missão).
+- `AuthSplitShell` não existe neste worktree e não foi criado como componente compartilhado — o shell novo é local a `app/login/page.tsx` (menor impacto, nada mais consome essa composição ainda).
+
+**Contratos preservados (confirmado por revisão independente, ver abaixo):** `signInWithPassword`, `registerPublicAccount`, `SignupAccountForm`, `resolvePostLoginRedirect`/`isSafePostLoginPath`, gate de maioridade, `redirectTo`/`mode` na query string, ids/labels/roles usados pelos testes (`#login-email`, `#login-password`, "Entrar na conta", "Entre na sua conta").
+
+**Testes (local, `next dev` em `localhost:3000`, depois revertido):**
+- TypeScript (`tsc --noEmit`): PASS
+- Lint (`next lint`, arquivos alterados): PASS — sem warnings novos (1 warning pré-existente não relacionado em `components/EventDetails.tsx`)
+- Build (`next build`): PASS
+- `automação/tests/auth-experience.spec.ts`: 13/13 PASS
+- `automação/tests/features/login.feature` (BDD): 5/5 PASS
+- `automação/tests/post-login-redirect.test.ts`: 2/2 PASS
+- Visual: screenshots Playwright em 1440/768/390px, estados Entrar/Criar conta/Recuperar senha/erro — revisadas manualmente, sem overflow horizontal, campos legíveis, foco visível.
+
+**Revisão independente (`domain-risk-reviewer`, somente leitura):** PASS, sem achados críticos/altos/médios. Observações menores (UX, não segurança): `Alert` de sucesso/erro usa a mesma cor de texto em qualquer variante — já é o comportamento do componente compartilhado em todo o app, não uma regressão desta missão.
+
+**Decisão:** GO WITH LIMITATIONS para avaliação visual do proprietário. GO significa apto para avaliação de uma futura release — não autoriza commit, push, merge ou deploy. Limitação conhecida: a composição exata do fundo fotográfico (enquadramento dos praticantes atrás do painel) não foi comparada pixel a pixel com a imagem de referência anexada pelo proprietário — apenas validada visualmente como atendendo à composição descrita na missão (fundo fotográfico + painel translúcido + praticantes visíveis à direita/margens).
+
+## Rodada de 6 nov 2026 — Cartographer (plugin + mapa)
+
+Missão de configuração de agentes. Sem commit, sem push, sem deploy, sem SQL de escrita, sem alteração funcional.
+
+- Plugin Claude Code: `cartographer@cartographer-marketplace` **1.4.0**, escopo user, enabled. Marketplace oficial `kingbootoshi/cartographer` (nome do marketplace: `cartographer-marketplace`, não `kingbootoshi-cartographer`).
+- Skill `/cartographer` reconhecida (1 skill, 0 hooks, 0 MCP). Conflito: nenhum com `vercel-plugin@vercel`.
+- Mapa: `docs/CODEBASE_MAP.md`, verificado contra este worktree (`32addc0` / código `aca7c44`).
+- Graph-First: `AGENTS.md` §21.1; ponteiro em `CLAUDE.md`. Políticas de segurança preservadas.
+- CLI v2 **não** habilitada: exige Bun, ausente (o plugin Vercel já registra a mesma lacuna). Etapa separada.
+- Working tree original de `jiu` (login cinematográfico local) **não** foi alterado. Investigação somente leitura registrada no mapa e no relatório da missão.
+
 ## Estado técnico do candidato
 
 Candidato integrado dos lotes 2–6 e da correção de criação de evento / organização administrativa / categorias em escala real. Testado estaticamente e com Playwright de leitura. **Não publicado. Não homologado com escrita. Não operacionalmente liberado.**
@@ -793,6 +911,8 @@ smoke test autenticado dedicado num lote futuro; investigar as duas divergência
 - Explore nativo; sem explorador customizado
 - Skill: `.claude/skills/validacao-por-risco/SKILL.md`
 - Permissões de projeto em `.claude/settings.json`
+- Plugin Cartographer 1.4.0 (`cartographer@cartographer-marketplace`), skill `/cartographer`
+- Mapa: `docs/CODEBASE_MAP.md` (Graph-First em `AGENTS.md` §21.1)
 - MCP `supabase`: local, HTTP, `✔ Connected`, escopo `zigjiu`, `read_only=false`,
   `features=database,debugging`. Configuração efetiva conferida com `claude mcp get supabase`.
   Não alterada nesta missão (já estava correta). Sem `bypassPermissions` e sem `skip_elicitations`.
@@ -815,6 +935,7 @@ Ajustes a registrar lá, quando o proprietário autorizar a edição:
 
 ## Relatórios
 
+- `docs/CODEBASE_MAP.md`
 - `docs/releases/EVENT-READINESS.md`
 - `docs/repository/PRODUCTION-MANIFEST.md`
 - `docs/repository/RECONCILIATION-LOT-2.md`
@@ -824,3 +945,15 @@ Ajustes a registrar lá, quando o proprietário autorizar a edição:
 - `docs/repository/RECONCILIATION-LOT-6.md`
 - `PRODUCT.md`
 - `AGENTS.md`
+
+## Rodada de 8 nov 2026 — Nova abertura da Home (publicada)
+
+- Commit `2d3180d` (branch `feature/cinematic-auth-v2`). Hero da Home substituído: título MEU CAMP em
+  partículas com repulsão do ponteiro (`components/home-landing/ParticleTitle.tsx`), carrossel de cards
+  PixelCard com eventos reais (`HomeLanding.tsx`, `PixelCard.tsx`). `OpeningEventStrip.tsx` removido; a busca
+  do hero saiu (a busca fica em `/eventos`). Inclui a navegação Flow Motion da rodada de 7 nov.
+- Validação: `tsc` PASS; lint PASS; `next build` PASS; `public-surfaces.spec.ts` 9/9; `auth-experience.spec.ts` 13/13
+  (local); preview HTTP 200 em /, /eventos, /login, /quem-somos, /sistema.
+- Publicado: `dpl_Hv6wxhdABFQgUtY3RvYxMMpr8hzh` (production, CLI). Sem push, sem migration, sem escrita no banco.
+- Limitação: o preview é protegido; homologação em navegador foi local, não no preview. O step
+  `home-cache.steps.ts` (heading/tab "Mostrar …") já estava desatualizado em relação ao hero anterior.
