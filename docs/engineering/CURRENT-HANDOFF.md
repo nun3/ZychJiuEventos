@@ -16,6 +16,16 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 
 O working tree original de `jiu` não foi modificado neste lote.
 
+## Lote de 10 nov 2026 (4) — home coreografada em /experiencia, faixa no menu, grau (NO AR)
+
+Branch `feature/navegacao-fluida`, com push. Commits `1e87551` (abas mobile), `c336dce` (home/faixa/grau de atleta) e `6b26e39` (faixa no perfil). Deploys via CLI a partir do working tree, todos Ready em produção: `jiu-33bn26evy`, `jiu-5f8r85gmj`, `jiu-k3kus5iwd` (alias jiu-three/jiu-navy). Produção aplicada: tudo deste lote.
+- **Abas mobile:** barra de rolagem oculta e snap em `InternalNavigation` (swipe horizontal por toque entre as abas do painel, ignorado em inputs, tabelas e áreas com rolagem horizontal) e em `RegisteredAthletesContent`.
+- **Rotas:** `/` redireciona (307) para `/eventos` (mantém `?q=`). `/eventos` é a antiga Home Cover Flow + calendário (`app/eventos/page.tsx`); o redirect `/eventos`→`/` saiu de `next.config.js`. Logo MEU CAMP → `/eventos`. A experiência coreografada (restaurada de `b0a32c7`: `CinematicStory`, `HomePlatformSection`) vive em `/experiencia`; `OpeningEventStrip` e `HomeClient` não voltaram.
+- **Abertura:** a primeira seção virou `HeroParticleWordmark` (MEU CAMP em retícula, fundo branco); `halftone-wordmark-footer` ganhou as opções `align` e `widthFit` (padrão preserva o rodapé). CTA do final virou "Ver eventos".
+- **Faixa no menu** (`ModernNavbar`, no lugar de "Eventos", só logado): `BeltBadge` circular, cor da faixa e 0–4 barras de grau, abre `/experiencia`. Fonte: atleta da conta (`athletes.faixa/grau`); sem atleta, `profiles.faixa/grau`; senão branca sem graus (`hooks/useAthleteBelt`, `lib/athletes/belt.ts`). Campo de grau no cadastro esportivo e na edição de atleta; bloco "Minha faixa" em Meu perfil para contas sem atleta (`ProfileBeltForm`, `updateMyBelt`). Cadastro de atleta gerenciado por professor/responsável não tem o campo de grau (começa em 0).
+- **Migrations aplicadas em `zigjiu` via MCP (com autorização), aditivas:** `20261110195219 athletes_grau` e `20261110200145 profiles_faixa_grau` (arquivos `202611100001` e `202611100002`). Validadas por `information_schema`. Estado de backup NÃO verificado. A tabela `athletes` estava vazia na ocasião.
+- **Validação:** `tsc`/eslint PASS; capturas locais (desktop 1440, mobile 390) da abertura; redirects e rotas em produção (`/` 307, `/eventos` 200, `/experiencia` 200); usuário confirmou o funcionamento depois do deploy. NOT_RUN: Playwright (specs que abrem a Home podem esperar o conteúdo antigo), `domain-risk-reviewer`/`lot-verifier`.
+
 ## Lote de 10 nov 2026 — navegação fluida do painel (commitado, NÃO publicado)
 
 Branch `feature/navegacao-fluida` (derivada de `feature/gerador-eventos`), sem push, deploy, migration ou escrita em banco.

@@ -4,6 +4,9 @@
 **Veredito:** produção rastreada no Git a partir deste documento.  
 **Sem push. Sem deploy. Sem migrations.**
 
+> **Atualização de 10 de novembro de 2026.** O restante deste documento descreve o deploy de 5 de nov (`b0a32c7`) e está desatualizado. Em produção hoje: deployment `jiu-k3kus5iwd` (`dpl` não consultado), alvo production, Ready, origem CLI a partir do working tree da branch `feature/navegacao-fluida` (HEAD `6b26e39`, com push). `/` redireciona para `/eventos`; a experiência coreografada está em `/experiencia`; faixa circular no menu. Migrations novas aplicadas em `zigjiu` (MCP, 10 nov): `20261110195219 athletes_grau` e `20261110200145 profiles_faixa_grau`; entre elas e `20261102034621` consta também `20261106205820 category_rule_set_atomic_activation`. Detalhes em `docs/engineering/CURRENT-HANDOFF.md`. O deploy saiu de um working tree sujo; a prova de identidade por hash não foi refeita.
+
+
 Este manifesto descreve o que **já está publicado**, não o working tree sujo.
 
 ---
@@ -105,7 +108,7 @@ Não reexecutados aqui: homologação com escrita, cobranças Asaas, migrations.
 | `20261102023724` | `production_catchup_live` |
 | `20261102034621` | `production_catchup_auth_registration_fix` |
 
-Nenhuma migration nova desde `20261102034621`. Não reaplicar os patches em `supabase/patches/`.
+Migrations posteriores a `20261102034621` (aplicadas depois desta leitura): `20261106205820`, `20261110195219`, `20261110200145`. Não reaplicar os patches em `supabase/patches/`.
 
 ---
 
