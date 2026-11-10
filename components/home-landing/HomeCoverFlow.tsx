@@ -145,8 +145,8 @@ export function HomeCoverFlow({ events }: { events: Event[] }) {
                 className="group flex h-6 items-center px-0.5 focus-visible:outline-none"
               >
                 <span
-                  className={`block h-1 rounded-full transition-all duration-300 motion-reduce:transition-none group-focus-visible:ring-2 group-focus-visible:ring-white ${
-                    index === safeActive ? 'w-8 bg-mc-action' : 'w-4 bg-white/30 group-hover:bg-white/50'
+                  className={`block h-1 rounded-full transition-all duration-300 motion-reduce:transition-none group-focus-visible:ring-2 group-focus-visible:ring-mc-focus ${
+                    index === safeActive ? 'w-8 bg-mc-action' : 'w-4 bg-slate-300 group-hover:bg-slate-400'
                   }`}
                 />
               </button>

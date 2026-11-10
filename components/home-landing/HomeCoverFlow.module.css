@@ -23,6 +23,11 @@
   transform-style: preserve-3d;
 }
 
+.card.card {
+  /* Fundo da Home é branco: o vidro precisa de base escura própria para o texto claro ler. */
+  background: linear-gradient(160deg, #123a63, #0a2036 55%, #06111f);
+}
+
 .card {
   --card-w: min(320px, 80vw);
   position: absolute;

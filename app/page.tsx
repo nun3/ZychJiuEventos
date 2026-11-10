@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import ModernNavbar from '@/components/ModernNavbar'
 import { HomeCatalog } from '@/components/home-landing/HomeCatalog'
 import { HomeCoverFlow } from '@/components/home-landing/HomeCoverFlow'
@@ -28,22 +27,10 @@ export default async function Home({
     : events.filter((event) => !isPastCatalogEvent(event.dateObj)).slice(0, FEATURED_LIMIT)
 
   return (
-    // Sem fundo próprio no <main>: a arte fixa abaixo precisa aparecer através dos cards de vidro.
     <main id="conteudo-principal" className="relative min-h-screen overflow-x-clip text-white">
-      <div aria-hidden="true" className="fixed inset-0 -z-10 bg-mc-nav-dark">
-        <Image
-          src="/images/home/home-bg.jpeg"
-          alt=""
-          fill
-          priority
-          quality={90}
-          sizes="100vw"
-          className="object-cover object-bottom"
-        />
-        <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_40%,transparent_40%,rgba(4,6,14,0.55)_100%),linear-gradient(to_bottom,rgba(4,6,14,0.55),transparent_18%,transparent_62%,rgba(4,6,14,0.78))]" />
-      </div>
+      <div aria-hidden="true" className="fixed inset-0 -z-10 bg-white" />
 
-      <ModernNavbar overlayAtTop scrolledTone="glass" />
+      <ModernNavbar />
       <HomeCoverFlow events={featured} />
       <HomeCatalog events={events} initialSearch={initialSearch} />
       <SiteFooter />

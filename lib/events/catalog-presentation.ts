@@ -107,3 +107,37 @@ export function rowActions(event: CatalogEvent): [CatalogAction, CatalogAction] 
     { href: '#experimentar-demo', label: 'Experimentar sem cadastro' },
   ]
 }
+
+/** Agrupamento por estágio, para os filtros rápidos do calendário. */
+export type StatusGroup = 'abertas' | 'breve' | 'andamento'
+
+export const STATUS_GROUP_LABELS: Record<StatusGroup, string> = {
+  abertas: 'Inscrições abertas',
+  breve: 'Em breve',
+  andamento: 'Em andamento',
+}
+
+export function statusGroup(status?: string): StatusGroup | null {
+  if (status === 'inscricao') return 'abertas'
+  if (status === 'publicado') return 'breve'
+  if (status && BRACKET_STATUSES.has(status) && status !== 'concluido') return 'andamento'
+  return null
+}
+
+/** Tom do selo de status: sempre cor + texto (nunca só cor). */
+export function statusTone(status?: string): 'open' | 'soon' | 'live' | 'done' {
+  const group = statusGroup(status)
+  if (group === 'abertas') return 'open'
+  if (group === 'andamento') return 'live'
+  if (status === 'concluido' || status === 'cancelado') return 'done'
+  return 'soon'
+}
+
+/** CTA primário é sempre "Ver evento"; a ação contextual só existe quando o status a sustenta. */
+export function cardActions(event: CatalogEvent): { details: CatalogAction; contextual: CatalogAction | null } {
+  const details: CatalogAction = { href: `/eventos/${event.id}`, label: 'Ver evento' }
+  if (isPreviewCatalogEvent(event)) return { details, contextual: { href: '#experimentar-demo', label: 'Inscrever-se' } }
+  if (event.status === 'inscricao') return { details, contextual: { href: `/eventos/${event.id}/inscricao/cadastrar-atleta`, label: 'Inscrever-se' } }
+  if (event.status && BRACKET_STATUSES.has(event.status)) return { details, contextual: { href: `/eventos/${event.id}/chaves`, label: 'Chaves' } }
+  return { details, contextual: null }
+}

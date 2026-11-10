@@ -2,24 +2,22 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { CalendarDays, CalendarRange, Search, SlidersHorizontal, Trophy } from 'lucide-react'
+import { CalendarDays, CalendarRange, LayoutGrid, List, Search, SlidersHorizontal, X } from 'lucide-react'
 import { states } from '@/components/EventFilters'
 import { filterEvents, type Event } from '@/components/ModernEventGrid'
 import { GlassSelect } from '@/components/ui/GlassSelect'
+import { CatalogCard, CatalogListRow } from './CatalogCard'
 import {
-  catalogStatusLabel,
-  countdownLabel,
-  eventDateParts,
   isPastCatalogEvent,
-  rowActions,
+  STATUS_GROUP_LABELS,
+  statusGroup,
+  type StatusGroup,
 } from '@/lib/events/catalog-presentation'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { groupByMonth, monthLabel } from '@/lib/home/catalog-groups'
 
 /** Quantas linhas aparecem por vez. O resto entra com "Mostrar mais" (evita uma lista de centenas de linhas). */
-export const CATALOG_PAGE_SIZE = 8
+export const CATALOG_PAGE_SIZE = 9
 
 type Tab = 'proximos' | 'passados'
 
@@ -32,7 +30,11 @@ const periodOptions = [
 ]
 
 const fieldBase =
-  'mc-glass-field h-12 rounded-xl font-mc-interface text-sm text-white transition-[background-color,border-color,box-shadow] duration-200 hover:bg-white/10 focus-visible:outline-none focus-visible:border-blue-300/80 focus-visible:shadow-[0_0_0_3px_rgba(37,99,235,0.28)]'
+  'h-12 rounded-xl border border-slate-300 bg-white font-mc-interface text-sm text-slate-900 transition-[background-color,border-color,box-shadow] duration-mc-fast hover:bg-slate-50 focus-visible:outline-none focus-visible:border-mc-action focus-visible:shadow-[0_0_0_3px_rgba(37,99,235,0.18)]'
+
+type View = 'grade' | 'lista'
+const VIEW_KEY = 'mc-home-catalog-view'
+const STATUS_CHIPS: StatusGroup[] = ['abertas', 'breve', 'andamento']
 
 function emptyCopy(total: number, tab: Tab, filtered: boolean) {
   if (!total) return { title: 'Nenhum campeonato publicado', description: 'Os próximos campeonatos aparecerão aqui assim que forem publicados.' }
@@ -55,9 +57,23 @@ export function HomeCatalog({ events, initialSearch = '' }: { events: Event[]; i
   const [endDate, setEndDate] = useState('')
   const [toolsOpen, setToolsOpen] = useState(false)
   const [rangeOpen, setRangeOpen] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<StatusGroup | null>(null)
+  const [view, setView] = useState<View>('grade')
   const wide = useMediaQuery('(min-width: 768px)')
   const rangeRef = useRef<HTMLDivElement>(null)
   const focusRow = useRef<number | null>(null)
+
+  // A escolha Grade/Lista é conveniência por pessoa: lida depois da hidratação, com falha silenciosa.
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(VIEW_KEY)
+      if (saved === 'grade' || saved === 'lista') setView(saved)
+    } catch { /* storage indisponível */ }
+  }, [])
+  const chooseView = (next: View) => {
+    setView(next)
+    try { window.localStorage.setItem(VIEW_KEY, next) } catch { /* storage indisponível */ }
+  }
 
   const filtered = useMemo(
     () => filterEvents(events, { eventType: 'Todos', sport: 'Todas', state, search, period, startDate, endDate }),
@@ -71,10 +87,19 @@ export function HomeCatalog({ events, initialSearch = '' }: { events: Event[]; i
     () => filtered.filter((event) => isPastCatalogEvent(event.dateObj)).sort((a, b) => (b.dateObj || '').localeCompare(a.dateObj || '')),
     [filtered],
   )
-  const visible = tab === 'proximos' ? upcoming : past
+  // Chips de status só valem para os próximos; as contagens refletem os demais filtros.
+  const statusCounts = useMemo(() => {
+    const counts: Record<StatusGroup, number> = { abertas: 0, breve: 0, andamento: 0 }
+    for (const event of upcoming) { const group = statusGroup(event.status); if (group) counts[group] += 1 }
+    return counts
+  }, [upcoming])
+  const activeStatus = tab === 'proximos' ? statusFilter : null
+  const visible = tab === 'proximos'
+    ? (activeStatus ? upcoming.filter((event) => statusGroup(event.status) === activeStatus) : upcoming)
+    : past
 
   // O lote volta a 8 sempre que aba ou filtros mudam.
-  const signature = [tab, search, state, period, startDate, endDate].join('|')
+  const signature = [tab, search, state, period, startDate, endDate, activeStatus].join('|')
   const [pageState, setPageState] = useState({ signature, shown: CATALOG_PAGE_SIZE })
   const shown = pageState.signature === signature ? pageState.shown : CATALOG_PAGE_SIZE
   const slice = useMemo(() => visible.slice(0, shown), [visible, shown])
@@ -83,7 +108,7 @@ export function HomeCatalog({ events, initialSearch = '' }: { events: Event[]; i
   const monthTotals = useMemo(() => new Map(groupByMonth(visible).map((group) => [group.key, group.events.length])), [visible])
 
   const activeFilters = Number(state !== 'Todos') + Number(period !== 'todos') + Number(Boolean(startDate || endDate))
-  const hasFilter = Boolean(search || activeFilters)
+  const hasFilter = Boolean(search || activeFilters || activeStatus)
 
   const loadMore = () => {
     focusRow.current = slice.length
@@ -108,7 +133,7 @@ export function HomeCatalog({ events, initialSearch = '' }: { events: Event[]; i
   }, [rangeOpen])
 
   const clearAll = useCallback(() => {
-    setSearch(''); setState('Todos'); setPeriod('todos'); setStartDate(''); setEndDate('')
+    setSearch(''); setState('Todos'); setPeriod('todos'); setStartDate(''); setEndDate(''); setStatusFilter(null)
   }, [])
 
   const onTabKey = (event: KeyboardEvent<HTMLButtonElement>) => {
@@ -120,19 +145,31 @@ export function HomeCatalog({ events, initialSearch = '' }: { events: Event[]; i
   }
 
   const copy = emptyCopy(events.length, tab, hasFilter)
+  const stateLabel = states.find((option) => option.value === state)?.label ?? state
+  const periodLabel = periodOptions.find((option) => option.value === period)?.label ?? period
+  const removable = [
+    search ? { key: 'busca', label: `“${search}”`, clear: () => setSearch('') } : null,
+    state !== 'Todos' ? { key: 'estado', label: stateLabel, clear: () => setState('Todos') } : null,
+    period !== 'todos' ? { key: 'periodo', label: periodLabel, clear: () => setPeriod('todos') } : null,
+    startDate || endDate ? { key: 'intervalo', label: `${shortDate(startDate) || '…'} – ${shortDate(endDate) || '…'}`, clear: () => { setStartDate(''); setEndDate('') } } : null,
+    activeStatus ? { key: 'status', label: STATUS_GROUP_LABELS[activeStatus], clear: () => setStatusFilter(null) } : null,
+  ].filter((item): item is NonNullable<typeof item> => Boolean(item))
   const rangeLabel = startDate || endDate ? `${shortDate(startDate) || '…'} – ${shortDate(endDate) || '…'}` : 'Intervalo'
 
+  const chipBase = 'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 font-mc-interface text-xs font-bold transition-colors duration-mc-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2'
+
   return (
-    <section id="calendario" aria-labelledby="home-calendar-title" data-no-scroll-choreography className="relative scroll-mt-16 bg-[linear-gradient(to_bottom,rgba(4,8,18,0),rgba(4,8,18,0.8)_160px,rgba(4,8,18,0.88))] pb-16 pt-20 text-white">
+    <section id="calendario" aria-labelledby="home-calendar-title" data-no-scroll-choreography className="relative scroll-mt-16 border-t border-slate-200 bg-slate-50 pb-16 pt-16 text-mc-text-primary sm:pt-20">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-8 lg:px-12 xl:px-20">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-xl">
-            <p className="font-mc-interface text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55">Calendário oficial MEU CAMP</p>
-            <h2 id="home-calendar-title" className="mt-3 font-mc-display text-[clamp(2.25rem,4vw,3.5rem)] font-bold uppercase leading-[0.92] tracking-[-0.03em]">
+            <p className="font-mc-interface text-[11px] font-semibold uppercase tracking-[0.18em] text-mc-action">Calendário oficial MEU CAMP</p>
+            <h2 id="home-calendar-title" className="mt-3 font-mc-display text-[clamp(2rem,4vw,3.25rem)] font-bold uppercase leading-[0.95] tracking-[-0.03em]">
               Encontre seu próximo campeonato
             </h2>
+            <p className="mt-3 font-mc-interface text-sm leading-6 text-mc-text-secondary">Pesquise por nome, cidade ou data e compare os campeonatos publicados.</p>
           </div>
-          <div role="tablist" aria-label="Quando o campeonato acontece" className="flex w-full border-b border-white/15 lg:w-auto lg:gap-8">
+          <div role="tablist" aria-label="Quando o campeonato acontece" className="flex w-full border-b border-slate-300 lg:w-auto lg:gap-8">
             {([
               ['proximos', 'Próximos campeonatos', upcoming.length],
               ['passados', 'Eventos passados', past.length],
@@ -146,7 +183,7 @@ export function HomeCatalog({ events, initialSearch = '' }: { events: Event[]; i
                 tabIndex={tab === key ? 0 : -1}
                 onClick={() => setTab(key)}
                 onKeyDown={onTabKey}
-                className={`relative min-h-12 flex-1 pb-3 text-center font-mc-interface text-[11px] font-bold uppercase tracking-[0.1em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 sm:text-xs lg:flex-none lg:tracking-[0.12em] ${tab === key ? 'text-white' : 'text-white/50 hover:text-white/80'}`}
+                className={`relative min-h-12 flex-1 pb-3 text-center font-mc-interface text-[11px] font-bold uppercase tracking-[0.1em] transition-colors duration-mc-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus sm:text-xs lg:flex-none lg:tracking-[0.12em] ${tab === key ? 'text-mc-text-primary' : 'text-mc-text-secondary hover:text-mc-text-primary'}`}
               >
                 {label}
                 <span className="ml-2 font-semibold tabular-nums">({total})</span>
@@ -156,117 +193,162 @@ export function HomeCatalog({ events, initialSearch = '' }: { events: Event[]; i
           </div>
         </div>
 
-        <p className="mt-6 max-w-3xl font-mc-interface text-sm leading-6 text-white/70">Pesquise campeonatos publicados por nome, cidade ou data.</p>
-
         {events.length ? (
-          <div role="search" aria-label="Filtros de campeonatos" className="relative z-[5] mt-8 grid grid-cols-[minmax(0,1fr)_auto] gap-2.5 rounded-2xl border border-white/10 bg-white/[0.04] p-2.5 backdrop-blur-md md:grid-cols-[minmax(0,1fr)_14rem_12.5rem_auto] md:gap-3 md:p-3">
-            <label className={`${fieldBase} flex items-center gap-2.5 px-3.5 focus-within:border-blue-300/80 focus-within:shadow-[0_0_0_3px_rgba(37,99,235,0.28)]`}>
-              <Search aria-hidden="true" size={18} className="shrink-0 opacity-70" />
-              <input
-                id="home-event-search"
-                type="search"
-                aria-label="Nome do campeonato"
-                autoComplete="off"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder={wide ? 'Buscar campeonato, cidade ou local…' : 'Buscar evento'}
-                className="h-full min-w-0 flex-1 bg-transparent text-sm text-white caret-blue-300 outline-none placeholder:text-white/45"
-              />
-            </label>
+          <div role="search" aria-label="Filtros de campeonatos" className="relative z-[5] mt-7 space-y-3">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2.5 md:grid-cols-[minmax(0,1fr)_14rem_12.5rem_auto] md:gap-3">
+              <label className={`${fieldBase} flex items-center gap-2.5 px-3.5 focus-within:border-mc-action focus-within:shadow-[0_0_0_3px_rgba(37,99,235,0.18)]`}>
+                <Search aria-hidden="true" size={18} className="shrink-0 text-slate-500" />
+                <input
+                  id="home-event-search"
+                  type="search"
+                  aria-label="Nome do campeonato"
+                  autoComplete="off"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder={wide ? 'Buscar campeonato, cidade ou local…' : 'Buscar evento'}
+                  className="h-full min-w-0 flex-1 bg-transparent text-sm text-slate-900 caret-mc-action outline-none placeholder:text-slate-500"
+                />
+              </label>
 
-            <button
-              type="button"
-              aria-expanded={toolsOpen}
-              aria-controls="home-event-tools"
-              onClick={() => setToolsOpen((open) => !open)}
-              className={`${fieldBase} inline-flex items-center gap-2 px-4 font-semibold md:hidden ${toolsOpen ? 'border-blue-300/80 bg-white/10' : ''}`}
-            >
-              <SlidersHorizontal aria-hidden="true" size={18} className="opacity-80" />
-              Filtros
-              {activeFilters ? <span className="grid h-5 min-w-5 place-items-center rounded-full bg-mc-action px-1.5 text-[11px] font-bold">{activeFilters}</span> : null}
-            </button>
+              <button
+                type="button"
+                aria-expanded={toolsOpen}
+                aria-controls="home-event-tools"
+                onClick={() => setToolsOpen((open) => !open)}
+                className={`${fieldBase} inline-flex items-center gap-2 px-4 font-semibold md:hidden ${toolsOpen ? 'border-mc-action' : ''}`}
+              >
+                <SlidersHorizontal aria-hidden="true" size={18} className="text-slate-600" />
+                Filtros
+                {activeFilters ? <span className="grid h-5 min-w-5 place-items-center rounded-full bg-mc-action px-1.5 text-[11px] font-bold text-white">{activeFilters}</span> : null}
+              </button>
 
-            <div id="home-event-tools" className={`${toolsOpen ? 'grid' : 'hidden'} col-span-2 grid-cols-2 gap-2.5 md:contents`}>
-              <GlassSelect
-                label="Estado"
-                value={state}
-                onChange={setState}
-                onOpen={() => setRangeOpen(false)}
-                options={states}
-              />
-              <GlassSelect
-                label="Período"
-                value={period}
-                onChange={setPeriod}
-                onOpen={() => setRangeOpen(false)}
-                options={periodOptions}
-              />
-              <div ref={rangeRef} className="relative col-span-2 md:col-span-1">
-                <button
-                  type="button"
-                  aria-haspopup="dialog"
-                  aria-expanded={rangeOpen}
-                  aria-controls="home-event-range"
-                  onClick={() => setRangeOpen((open) => !open)}
-                  className={`${fieldBase} inline-flex w-full items-center justify-center gap-2 whitespace-nowrap px-4 font-semibold ${rangeOpen || startDate || endDate ? 'border-blue-300/60 bg-white/10' : ''}`}
-                >
-                  <CalendarRange aria-hidden="true" size={18} className="opacity-80" />
-                  <span>{rangeLabel}</span>
-                </button>
-                <div
-                  id="home-event-range"
-                  role="dialog"
-                  aria-label="Intervalo de datas"
-                  hidden={!rangeOpen}
-                  className="mc-glass-pop absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 rounded-2xl p-3.5 md:left-auto md:w-72"
-                >
-                  <label className="mb-3 block font-mc-interface text-[11px] font-semibold uppercase tracking-[0.12em] text-white/55">
-                    De
-                    <input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} className={`${fieldBase} mt-1.5 block h-11 w-full px-3`} />
-                  </label>
-                  <label className="mb-3 block font-mc-interface text-[11px] font-semibold uppercase tracking-[0.12em] text-white/55">
-                    Até
-                    <input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} className={`${fieldBase} mt-1.5 block h-11 w-full px-3`} />
-                  </label>
+              <div id="home-event-tools" className={`${toolsOpen ? 'grid' : 'hidden'} col-span-2 grid-cols-2 gap-2.5 md:contents`}>
+                <GlassSelect tone="light" label="Estado" value={state} onChange={setState} onOpen={() => setRangeOpen(false)} options={states} />
+                <GlassSelect tone="light" label="Período" value={period} onChange={setPeriod} onOpen={() => setRangeOpen(false)} options={periodOptions} />
+                <div ref={rangeRef} className="relative col-span-2 md:col-span-1">
                   <button
                     type="button"
-                    onClick={() => { setStartDate(''); setEndDate('') }}
-                    className="h-10 w-full rounded-lg border border-white/15 font-mc-interface text-xs font-semibold uppercase tracking-[0.1em] text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                    aria-haspopup="dialog"
+                    aria-expanded={rangeOpen}
+                    aria-controls="home-event-range"
+                    onClick={() => setRangeOpen((open) => !open)}
+                    className={`${fieldBase} inline-flex w-full items-center justify-center gap-2 whitespace-nowrap px-4 font-semibold ${rangeOpen || startDate || endDate ? 'border-mc-action' : ''}`}
                   >
-                    Limpar intervalo
+                    <CalendarRange aria-hidden="true" size={18} className="text-slate-600" />
+                    <span>{rangeLabel}</span>
                   </button>
+                  <div
+                    id="home-event-range"
+                    role="dialog"
+                    aria-label="Intervalo de datas"
+                    hidden={!rangeOpen}
+                    className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-mc-elevated md:left-auto md:w-72"
+                  >
+                    <label className="mb-3 block font-mc-interface text-[11px] font-semibold uppercase tracking-[0.12em] text-mc-text-secondary">
+                      De
+                      <input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} className={`${fieldBase} mt-1.5 block h-11 w-full px-3`} />
+                    </label>
+                    <label className="mb-3 block font-mc-interface text-[11px] font-semibold uppercase tracking-[0.12em] text-mc-text-secondary">
+                      Até
+                      <input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} className={`${fieldBase} mt-1.5 block h-11 w-full px-3`} />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => { setStartDate(''); setEndDate('') }}
+                      className="h-10 w-full rounded-lg border border-slate-300 font-mc-interface text-xs font-semibold uppercase tracking-[0.1em] text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus"
+                    >
+                      Limpar intervalo
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              {tab === 'proximos' ? (
+                <div role="group" aria-label="Filtrar por situação" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0 [scrollbar-width:none]">
+                  <button type="button" aria-pressed={!activeStatus} onClick={() => setStatusFilter(null)} className={`${chipBase} ${!activeStatus ? 'border-mc-structure bg-mc-structure text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'}`}>
+                    Todos <span className="tabular-nums opacity-70">{upcoming.length}</span>
+                  </button>
+                  {STATUS_CHIPS.map((group) => (
+                    <button
+                      key={group}
+                      type="button"
+                      aria-pressed={activeStatus === group}
+                      disabled={!statusCounts[group] && activeStatus !== group}
+                      onClick={() => setStatusFilter(activeStatus === group ? null : group)}
+                      className={`${chipBase} disabled:cursor-not-allowed disabled:opacity-45 ${activeStatus === group ? 'border-mc-structure bg-mc-structure text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'}`}
+                    >
+                      {STATUS_GROUP_LABELS[group]} <span className="tabular-nums opacity-70">{statusCounts[group]}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : <span />}
+              <div role="group" aria-label="Modo de exibição" className="inline-flex rounded-lg border border-slate-300 bg-white p-0.5">
+                {([['grade', 'Grade', LayoutGrid], ['lista', 'Lista', List]] as const).map(([key, label, Icon]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={view === key}
+                    onClick={() => chooseView(key)}
+                    className={`inline-flex min-h-10 items-center gap-1.5 rounded-md px-3 font-mc-interface text-xs font-bold transition-colors duration-mc-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus ${view === key ? 'bg-mc-structure text-white' : 'text-slate-700 hover:bg-slate-100'}`}
+                  >
+                    <Icon aria-hidden="true" size={16} />{label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {removable.length ? (
+              <div className="flex flex-wrap items-center gap-2">
+                {removable.map((item) => (
+                  <button key={item.key} type="button" onClick={item.clear} aria-label={`Remover filtro ${item.label}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 pl-3 pr-2 font-mc-interface text-xs font-semibold text-blue-900 hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
+                    {item.label}<X aria-hidden="true" size={14} />
+                  </button>
+                ))}
+                <button type="button" onClick={clearAll} className="min-h-9 px-2 font-mc-interface text-xs font-bold text-mc-action underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
+                  Limpar filtros
+                </button>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
-        <div role="tabpanel" aria-labelledby={`home-tab-${tab}`} className="mt-2">
+        <div role="tabpanel" aria-labelledby={`home-tab-${tab}`} className="mt-4">
           {visible.length ? (
             <>
+              <p aria-live="polite" className="font-mc-interface text-[13px] tabular-nums text-mc-text-secondary">
+                {visible.length} {visible.length === 1 ? 'campeonato' : 'campeonatos'}{hasFilter ? ' com os filtros aplicados' : ''}
+              </p>
               {groups.map((group) => (
                 <div key={group.key}>
-                  <h3 className="sticky top-16 z-[4] mt-5 flex items-baseline justify-between gap-3 border-b border-white/20 bg-[rgba(6,10,22,0.74)] py-3 font-mc-interface text-[11px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-md first:mt-3 sm:text-xs">
+                  <h3 className="sticky top-16 z-[4] mt-4 flex items-baseline justify-between gap-3 border-b border-slate-300 bg-slate-50/95 py-3 font-mc-interface text-[11px] font-bold uppercase tracking-[0.16em] text-mc-text-primary backdrop-blur-sm sm:text-xs">
                     {monthLabel(group.key)}
-                    <span className="font-semibold tabular-nums text-white/55">
+                    <span className="font-semibold tabular-nums text-mc-text-secondary">
                       {monthTotals.get(group.key)} {monthTotals.get(group.key) === 1 ? 'campeonato' : 'campeonatos'}
                     </span>
                   </h3>
-                  {group.events.map((event) => (
-                    <CatalogRow key={event.id} event={event} index={slice.indexOf(event)} />
-                  ))}
+                  {view === 'grade' ? (
+                    <div className="mt-4 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+                      {group.events.map((event) => <CatalogCard key={event.id} event={event} index={slice.indexOf(event)} />)}
+                    </div>
+                  ) : (
+                    <div>
+                      {group.events.map((event) => <CatalogListRow key={event.id} event={event} index={slice.indexOf(event)} />)}
+                    </div>
+                  )}
                 </div>
               ))}
               {visible.length > CATALOG_PAGE_SIZE ? (
                 <div className="mt-9 flex flex-col items-center gap-3.5">
-                  <p aria-live="polite" className="font-mc-interface text-[13px] tabular-nums text-white/55">
+                  <p aria-live="polite" className="font-mc-interface text-[13px] tabular-nums text-mc-text-secondary">
                     Mostrando {slice.length} de {visible.length} campeonatos
                   </p>
                   {remaining > 0 ? (
                     <button
                       type="button"
                       onClick={loadMore}
-                      className="min-h-12 rounded-full border border-white/20 bg-white/[0.07] px-7 font-mc-interface text-xs font-bold uppercase tracking-[0.14em] text-white backdrop-blur-md transition-colors hover:border-white/40 hover:bg-white/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                      className="min-h-12 rounded-full border border-slate-300 bg-white px-7 font-mc-interface text-xs font-bold uppercase tracking-[0.14em] text-mc-text-primary transition-colors duration-mc-fast hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2"
                     >
                       Mostrar mais {Math.min(CATALOG_PAGE_SIZE, remaining)}
                     </button>
@@ -275,19 +357,10 @@ export function HomeCatalog({ events, initialSearch = '' }: { events: Event[]; i
               ) : null}
             </>
           ) : (
-            <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-12 text-center">
-              <CalendarDays aria-hidden="true" size={32} className="mx-auto mb-3 text-white/45" />
+            <div className="mt-8 rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center">
+              <CalendarDays aria-hidden="true" size={32} className="mx-auto mb-3 text-slate-400" />
               <h3 className="font-mc-display text-lg font-bold">{copy.title}</h3>
-              <p className="mt-2 font-mc-interface text-sm text-white/70">{copy.description}</p>
-              {hasFilter ? (
-                <button
-                  type="button"
-                  onClick={clearAll}
-                  className="mt-5 min-h-11 rounded-full border border-white/20 px-5 font-mc-interface text-xs font-bold uppercase tracking-[0.12em] text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-                >
-                  Limpar filtros
-                </button>
-              ) : null}
+              <p className="mt-2 font-mc-interface text-sm text-mc-text-secondary">{copy.description}</p>
             </div>
           )}
         </div>
@@ -298,61 +371,4 @@ export function HomeCatalog({ events, initialSearch = '' }: { events: Event[]; i
 
 function shortDate(value: string) {
   return value ? value.split('-').reverse().slice(0, 2).join('/') : ''
-}
-
-function CatalogRow({ event, index }: { event: Event; index: number }) {
-  const date = eventDateParts(event.dateObj)
-  const actions = rowActions(event).filter((action) => !action.href.startsWith('#'))
-  const [primary, secondary] = actions
-
-  return (
-    <article
-      id={`home-catalog-row-${index}`}
-      tabIndex={-1}
-      className="grid grid-cols-[88px_minmax(0,1fr)] items-start gap-x-3.5 gap-y-1.5 border-b border-white/[0.12] py-[18px] outline-none [content-visibility:auto] [contain-intrinsic-size:auto_144px] [grid-template-areas:'thumb_date''thumb_info''act_act'] focus-visible:ring-2 focus-visible:ring-blue-300/70 md:grid-cols-[11rem_9rem_minmax(0,1fr)_11rem] md:items-center md:gap-6 md:py-6 md:[grid-template-areas:none]"
-    >
-      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 [grid-area:date] md:block md:border-l-4 md:border-mc-action md:pl-3 md:[grid-area:auto]">
-        <p className="flex items-baseline gap-2">
-          <span className="font-mc-display text-2xl font-bold leading-none tracking-[-0.04em] tabular-nums md:text-4xl">{date?.day || '—'}</span>
-          <span className="font-mc-display text-sm font-bold uppercase leading-none md:text-lg">{date?.month || event.date}</span>
-        </p>
-        <p className="font-mc-interface text-[10px] font-semibold uppercase leading-4 tracking-[0.08em] text-white/55 tabular-nums md:mt-2">
-          {date ? `${date.year} · ` : null}
-          {countdownLabel(event)}
-        </p>
-      </div>
-
-      <div className="relative grid h-[88px] w-[88px] place-items-center overflow-hidden rounded-[10px] border border-white/10 bg-[linear-gradient(160deg,#103a5e,#0a2036)] [grid-area:thumb] md:h-24 md:w-36 md:[grid-area:auto]">
-        {event.image ? (
-          <Image src={event.image} alt="" fill sizes="144px" className="object-cover" />
-        ) : (
-          <Trophy aria-hidden="true" size={30} strokeWidth={1.4} className="text-blue-200" />
-        )}
-      </div>
-
-      <div className="min-w-0 [grid-area:info] md:[grid-area:auto]">
-        <p className="font-mc-interface text-[11px] font-bold uppercase tracking-[0.14em] text-blue-300">
-          {catalogStatusLabel(event.status)}
-          <span aria-hidden="true"> · </span>
-          {event.sport || 'Jiu-Jitsu'}
-        </p>
-        <h4 className="mt-1 line-clamp-2 font-mc-display text-[17px] font-bold uppercase leading-tight tracking-[-0.02em] md:line-clamp-none md:text-2xl">{event.title}</h4>
-        <p className="mt-1 line-clamp-2 font-mc-interface text-[13px] leading-snug text-white/70 md:mt-2 md:line-clamp-none md:text-sm">{event.location}</p>
-        <p className="hidden font-mc-interface text-sm text-white/70 md:block">{date?.long || event.dateFull}</p>
-      </div>
-
-      <div className="mt-2 flex gap-2 [grid-area:act] md:mt-0 md:flex-col md:[grid-area:auto]">
-        {primary ? (
-          <Link href={primary.href} className="inline-flex min-h-[46px] flex-1 items-center justify-center whitespace-nowrap bg-white px-3.5 font-mc-interface text-[11px] font-bold uppercase tracking-[0.12em] text-mc-text-primary transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060a16] md:min-h-11 md:flex-none">
-            {primary.label}
-          </Link>
-        ) : null}
-        {secondary ? (
-          <Link href={secondary.href} className="inline-flex min-h-[46px] flex-1 items-center justify-center whitespace-nowrap border border-white/60 px-3.5 font-mc-interface text-[11px] font-bold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#060a16] md:min-h-11 md:flex-none">
-            {secondary.label}
-          </Link>
-        ) : null}
-      </div>
-    </article>
-  )
 }
