@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 // Posição do último indicador. A navbar remonta ao trocar de layout (ex.: Visão geral -> Eventos, em /admin);
@@ -32,6 +32,7 @@ export default function InternalNavigation({
   if (!remembered && isBrowser) lastFlags = flags
   const { canManageEvents, canManageOrganization, isPlatformAdmin } = flags
   const pathname = usePathname()
+  const router = useRouter()
   const scrollerRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
   const [pendingHref, setPendingHref] = useState<string | null>(null)
@@ -120,13 +121,53 @@ export default function InternalNavigation({
     scroller.scrollLeft = Math.max(0, left - (scroller.clientWidth - active.offsetWidth) / 2)
   }, [pathname])
 
+  // Swipe horizontal (só toque) entre as páginas do menu, na ordem das abas.
+  const swipeItemsRef = useRef({ items: [] as { href: string }[], activeHref: null as string | null })
+  swipeItemsRef.current = { items, activeHref }
+  useEffect(() => {
+    let start: { x: number; y: number } | null = null
+    const blocked = (el: EventTarget | null) => {
+      let node = el instanceof HTMLElement ? el : null
+      while (node && node !== document.body) {
+        if (node.matches('input,textarea,select,[contenteditable="true"],[role="dialog"],[role="slider"],table')) return true
+        if (node.scrollWidth > node.clientWidth + 1 && /(auto|scroll)/.test(getComputedStyle(node).overflowX)) return true
+        node = node.parentElement
+      }
+      return false
+    }
+    const onStart = (e: TouchEvent) => {
+      start = e.touches.length === 1 && !blocked(e.target) ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null
+    }
+    const onEnd = (e: TouchEvent) => {
+      const s0 = start
+      start = null
+      if (!s0) return
+      const dx = e.changedTouches[0].clientX - s0.x
+      const dy = e.changedTouches[0].clientY - s0.y
+      if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 2) return
+      const { items: list, activeHref: current } = swipeItemsRef.current
+      const index = list.findIndex((item) => item.href === current)
+      const next = list[index + (dx < 0 ? 1 : -1)]
+      if (index < 0 || !next) return
+      setFailedHref(null)
+      setPendingHref(next.href)
+      router.push(next.href)
+    }
+    document.addEventListener('touchstart', onStart, { passive: true })
+    document.addEventListener('touchend', onEnd, { passive: true })
+    return () => {
+      document.removeEventListener('touchstart', onStart)
+      document.removeEventListener('touchend', onEnd)
+    }
+  }, [router])
+
   const retry = failedHref ? items.find((item) => item.href === failedHref) : null
 
   return (
     <nav aria-label="Navegação da área interna" aria-busy={pendingHref ? true : undefined} className="sticky top-16 z-40 border-b border-mc-border bg-white">
       <div
         ref={scrollerRef}
-        className={fluid ? 'flex w-full overflow-x-auto px-4 sm:px-8 lg:px-12' : 'mx-auto flex max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8'}
+        className={fluid ? 'flex w-full snap-x snap-mandatory overflow-x-auto px-4 sm:px-8 lg:px-12 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden' : 'mx-auto flex max-w-7xl snap-x snap-mandatory overflow-x-auto px-4 sm:px-6 lg:px-8 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'}
       >
         <div ref={trackRef} className="relative flex shrink-0">
           {items.map((item) => {
@@ -144,7 +185,7 @@ export default function InternalNavigation({
                   // Feedback imediato; a rota atual só muda quando a navegação é confirmada.
                   if (!isActive) setPendingHref(item.href)
                 }}
-                className={`relative inline-flex h-12 shrink-0 items-center px-3 font-mc-interface text-[0.8125rem] font-semibold uppercase tracking-[0.14em] transition-colors duration-mc-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus ${
+                className={`relative inline-flex h-12 shrink-0 snap-start items-center px-3 font-mc-interface text-[0.8125rem] font-semibold uppercase tracking-[0.14em] transition-colors duration-mc-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mc-focus ${
                   highlighted ? 'text-mc-text-primary' : 'text-mc-text-secondary hover:text-mc-text-primary'
                 }`}
               >

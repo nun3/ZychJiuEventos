@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { 
   FiUsers, FiSearch, FiCheck, FiAlertTriangle, 
@@ -272,6 +272,28 @@ interface RegisteredAthletesContentProps {
 
 export default function RegisteredAthletesContent({ eventId }: RegisteredAthletesContentProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('geral')
+  const tabsRef = useRef<HTMLDivElement>(null)
+  const swipeStart = useRef<{ x: number; y: number } | null>(null)
+  const VIEW_ORDER: ViewMode[] = ['geral', 'categoria-peso', 'absoluto', 'equipe']
+
+  // Mantém a aba ativa visível quando a tela muda (inclusive por swipe)
+  useEffect(() => {
+    tabsRef.current?.querySelector<HTMLElement>('[aria-selected="true"]')
+      ?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+  }, [viewMode])
+
+  const handleSwipeEnd = (e: React.TouchEvent) => {
+    const start = swipeStart.current
+    swipeStart.current = null
+    if (!start) return
+    const dx = e.changedTouches[0].clientX - start.x
+    const dy = e.changedTouches[0].clientY - start.y
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return
+    const next = VIEW_ORDER.indexOf(viewMode) + (dx < 0 ? 1 : -1)
+    if (next < 0 || next >= VIEW_ORDER.length) return
+    setViewMode(VIEW_ORDER[next])
+    setCurrentPage(1)
+  }
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const athletesPerPage = 8
@@ -483,7 +505,11 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         
         {/* --- ABAS (Compactas) --- */}
-        <div className="flex overflow-x-auto border-b border-gray-200 bg-gray-50/50">
+        <div
+          ref={tabsRef}
+          role="tablist"
+          className="flex snap-x snap-mandatory overflow-x-auto border-b border-gray-200 bg-gray-50/50 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
           {[
             { id: 'geral', icon: FiUsers, label: 'Geral' },
             { id: 'categoria-peso', icon: FiActivity, label: 'Categoria' },
@@ -492,8 +518,10 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
           ].map((tab) => (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={viewMode === tab.id}
               onClick={() => { setViewMode(tab.id as ViewMode); setCurrentPage(1); }}
-              className={`px-5 py-3 text-base font-medium flex items-center gap-2 transition whitespace-nowrap ${
+              className={`snap-start shrink-0 px-5 py-3 text-base font-medium flex items-center gap-2 transition whitespace-nowrap ${
                 viewMode === tab.id
                   ? 'bg-white border-b-2 border-blue-600 text-blue-600'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
@@ -506,7 +534,12 @@ export default function RegisteredAthletesContent({ eventId }: RegisteredAthlete
         </div>
 
         {/* --- CONTEÚDO --- */}
-        <div className="p-4 md:p-6">
+        <div
+          className="p-4 md:p-6"
+          style={{ touchAction: 'pan-y' }}
+          onTouchStart={(e) => { swipeStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY } }}
+          onTouchEnd={handleSwipeEnd}
+        >
           
           {/* Busca e Filtros Compactos */}
           <div className="flex flex-col md:flex-row gap-3 mb-6">
