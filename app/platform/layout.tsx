@@ -19,7 +19,7 @@ export default async function PlatformLayout({ children }: { children: React.Rea
         canManageOrganization={Boolean(actor?.canManageOrganization)}
         isPlatformAdmin={Boolean(actor?.isPlatformAdmin)}
       />
-      <div>{children}</div>
+      <div className="min-h-[calc(100svh-7rem)]">{children}</div>
       <ModernFooter />
     </div>
   )

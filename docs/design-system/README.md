@@ -115,6 +115,18 @@ As sombras legadas nao devem ser substituidas globalmente nesta fase.
 
 Os aliases Tailwind sao `duration-mc-fast`, `duration-mc-normal` e `duration-mc-slow`. O suporte a `prefers-reduced-motion: reduce` zera os tokens de movimento para consumidores futuros. Animacoes legadas nao devem ser refatoradas automaticamente.
 
+### Navegacao interna (dashboard, platform, admin/eventos)
+
+| Elemento | Movimento | Token |
+| --- | --- | --- |
+| Indicador de aba | desliza horizontalmente (`transform`) | `--mc-motion-normal` (200ms) + `--mc-ease-standard` |
+| Conteudo novo | `.mc-content-enter`: fade + `--mc-content-offset` (6px), sem fade-out | `--mc-motion-fast` (150ms) |
+| Hover de link | cor | `duration-mc-fast` |
+| Clique | indicador vai ao alvo na hora (opacidade reduzida = pendente); `aria-current` so muda quando a rota e confirmada | sem atraso |
+| Carregamento | `loading.tsx` + `RouteSkeleton` (`.mc-skeleton`), so no conteudo | — |
+
+Sob `prefers-reduced-motion` os tokens vao a 0ms e `--mc-content-offset` a 0px. O conteudo usa 150ms (e nao 180ms) para ficar nos valores preferidos do `AGENTS.md` (150/200/250ms).
+
 Gramatica permanente de intensidade, scrollytelling e React Bits: `MOTION-AND-SCROLLYTELLING.md` (v1.2). Inventario preliminar desta base: `MOTION-INVENTORY.md`. Uma pagina pode combinar niveis: a casca compartilhada (navbar, overlay, Cover Flow, Halftone) e o conteudo funcional sao classificados em separado. Nivel 0 e movimento funcional, suave e interruptivel — nao ausencia de animacao. Scrollytelling nao e obrigatorio.
 
 ## Regras de componentes

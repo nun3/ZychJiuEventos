@@ -16,6 +16,13 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 
 O working tree original de `jiu` não foi modificado neste lote.
 
+## Lote de 10 nov 2026 — navegação fluida do painel (commitado, NÃO publicado)
+
+Branch `feature/navegacao-fluida` (derivada de `feature/gerador-eventos`), sem push, deploy, migration ou escrita em banco.
+Causas: (1) nenhum `loading.tsx` — clique sem feedback até o servidor responder (~tempo de render); (2) `getDashboardActor` (6 consultas) rodava no layout e de novo na página; (3) "Eventos" vive em `/admin` (layout diferente) e a navbar remonta lá.
+Entrega: indicador deslizante em `InternalNavigation` (posição lembrada entre remontagens, estado pendente + aviso/retry após 8s), `template.tsx` + `.mc-content-enter`, `loading.tsx` (dashboard, platform, admin/eventos), `cache()` no actor (só dentro da requisição), altura mínima no conteúdo (rodapé fora da dobra, CLS 0), tokens `--mc-ease-standard`/`--mc-content-offset`.
+Validação em ambiente de QA temporário (removido; 500ms de latência simulada, build de produção, antigo vs novo): feedback do clique ~490ms → ~50ms; CLS 0 nos dois; funcionais desktop+mobile, reduced-motion, back/forward, refresh, teclado, cliques rápidos, rede lenta e falha/retry PASS. NOT_RUN: telas reais autenticadas e specs que exigem `E2E_*`. Unit 257/258 (falha anterior em `registration-correction`). Limitação: o cache do roteador do Next 14 (30s para páginas dinâmicas) não foi alterado.
+
 ## Publicação de 10 nov 2026 — gerador de evento + menus/rodapé (NO AR)
 
 Deploy via CLI a partir do working tree (branch `feature/gerador-eventos`, HEAD `84c1282`): preview `jiu-q898vwqk8` Ready, depois produção `jiu-jxzgxlgcb` (alias jiu-three/jiu-navy). `tsc` sem erros; `/` e `/login` 200. Sem push, sem migration. Inclui tudo da rodada (2) abaixo, antes não publicado. Não verificado: telas autenticadas reais e E2E com credenciais.

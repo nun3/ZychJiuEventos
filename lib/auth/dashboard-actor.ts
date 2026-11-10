@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { isAdministrativeOrganizationRole, type AuthenticatedOrganizationContext } from '@/lib/auth/organization-context'
 import { getAuthenticatedOrganizationContext, getOwnedOrganizationContext } from '@/lib/auth/organization-context-server'
 import { parseSignupRole, type SignupRole } from '@/lib/auth/signup-role'
@@ -17,7 +18,8 @@ export type DashboardActor = {
   needsSportsProfile: boolean
 }
 
-export async function getDashboardActor(): Promise<DashboardActor | null> {
+// cache() do React memoiza só dentro da mesma requisição (layout + página): sem dado compartilhado entre usuários.
+export const getDashboardActor = cache(async (): Promise<DashboardActor | null> => {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
@@ -48,4 +50,4 @@ export async function getDashboardActor(): Promise<DashboardActor | null> {
     hasSelfAthlete,
     needsSportsProfile: tipoCadastro === 'atleta' && !hasSelfAthlete,
   }
-}
+})

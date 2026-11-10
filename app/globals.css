@@ -36,6 +36,8 @@
   --mc-motion-fast: 150ms;
   --mc-motion-normal: 200ms;
   --mc-motion-slow: 250ms;
+  --mc-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --mc-content-offset: 6px;
   --primary-dark: #0a0e1a;
   --primary-blue: #3b82f6;
   --primary-accent: #0ea5e9;
@@ -80,7 +82,29 @@ body {
     --mc-motion-fast: 0ms;
     --mc-motion-normal: 0ms;
     --mc-motion-slow: 0ms;
+    --mc-content-offset: 0px;
   }
+}
+
+/* Navegação interna: conteúdo novo entra com fade + deslocamento curto (sem fade-out da página). */
+@keyframes mc-content-enter {
+  from { opacity: 0; transform: translateY(var(--mc-content-offset)); }
+  to { opacity: 1; transform: none; }
+}
+
+.mc-content-enter {
+  animation: mc-content-enter var(--mc-motion-fast) var(--mc-ease-standard) both;
+}
+
+/* Skeleton localizado: pulso discreto, sem movimento sob reduced-motion. */
+.mc-skeleton {
+  background: rgb(var(--mc-border) / 0.6);
+  border-radius: var(--mc-radius-medium);
+  animation: mc-skeleton-pulse 1.2s ease-in-out infinite alternate;
+}
+@keyframes mc-skeleton-pulse { from { opacity: 0.55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .mc-skeleton { animation: none; }
 }
 
 /* Textura noise sutil */

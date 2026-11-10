@@ -70,7 +70,7 @@ export default async function OrganizerEventsPage({
         isPlatformAdmin={Boolean(actor?.isPlatformAdmin)}
         fluid
       />
-      <main>
+      <main className="mc-content-enter">
         <EventsHub cards={hub.cards} rows={hub.rows} error={hub.error} />
       </main>
     </div>

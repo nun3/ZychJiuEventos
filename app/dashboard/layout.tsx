@@ -20,7 +20,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         isPlatformAdmin={Boolean(actor?.isPlatformAdmin)}
         fluid
       />
-      <div>{children}</div>
+      <div className="min-h-[calc(100svh-7rem)]">{children}</div>
       <ModernFooter />
     </div>
   )
