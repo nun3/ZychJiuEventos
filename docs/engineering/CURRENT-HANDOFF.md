@@ -16,6 +16,36 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 
 O working tree original de `jiu` não foi modificado neste lote.
 
+## Rodada de 10 nov 2026 — Nova Home "spatial" (publicada; código em `0f4da32`)
+
+Branch `feature/cinematic-auth-v2`, mesmo worktree. Publicado em produção (https://jiu-three.vercel.app) a partir do working tree
+e commitado depois em `0f4da32`. O deploy usou também alterações não commitadas de `AGENTS.md`/`CLAUDE.md` e arquivos de `docs/` (inertes para o app).
+Sem migration, sem escrita em banco, sem push, sem mudança de pagamento.
+
+**O que mudou:**
+- `app/page.tsx` — nova Home: arte de fundo fixa (`public/images/home/home-bg.jpeg`, original sem recompressão), Cover Flow 3D de
+  destaques, calendário em vidro e o `ModernFooter` existente (nenhum rodapé novo). `?q=` agora pré-preenche a busca do calendário
+  (antes redirecionava para `/eventos`).
+- Novos: `components/home-landing/HomeCoverFlow.tsx` (+ `.module.css`), `HomeCatalog.tsx`, `components/ui/GlassSelect.tsx` (combobox ARIA),
+  `components/motion/RouteProgress.tsx`, `lib/home/cover-flow.ts`, `lib/home/catalog-groups.ts`.
+- Removidos: `app/HomeClient.tsx`, `components/home-landing/{HomeLanding,ParticleTitle,PixelCard}.tsx` (o histórico git os preserva).
+- `ModernNavbar.tsx`: logo e "Eventos" levam a `/` (com View Transition); "Eventos" fica ativo em `/`; prop `scrolledTone="glass"` (usada só na Home).
+  `ModernFooter.tsx`: link "Eventos" → `/`. `EventFilters.tsx`: apenas `export` da lista `states`.
+  `globals.css`: utilitários `.mc-glass*`, barra de progresso de rota, View Transition mais curta (240 ms). `layout.tsx`: `<RouteProgress />`.
+- `/eventos` e todas as rotas `/eventos/[id]/*` **permanecem** como estavam.
+- Enquanto não há eventos suficientes, o carrossel usa 5 frases de estratégia de luta (texto próprio, sem atribuição); cada evento real passa a ocupar o lugar de uma frase.
+
+**Validação:** build, `tsc` e lint OK (um aviso antigo em `EventDetails.tsx`); unit 249/250 (a falha em `registration-correction.test.ts`
+é anterior: alias `@/` sob ts-node); spec pública 11/11 (3 novos); validação de navegador desktop+mobile e teste com 300 eventos gerados
+(lotes de 8, filtros, combobox por teclado) OK; Preview e produção verificados por HTTP, HTML e navegador; zero erros de runtime.
+
+**Pendências / limites conhecidos:**
+- Sem push: `0f4da32` existe só localmente.
+- Alinhamento visual das demais áreas (admin, dashboard, login, institucionais, `/eventos`) NÃO foi feito além do nav, do rodapé e dos utilitários de vidro.
+- A paginação em lotes é só visual: `getPublicEvents` ainda traz todos os eventos de uma vez (sem `.limit`). Acima de ~100 eventos, paginar no servidor.
+- `docs/CODEBASE_MAP.md` não foi atualizado (rodar `/cartographer`).
+- A pasta não rastreada `test-pages/` (página de teste da referência) subiu junto no upload da CLI; é inerte para o app.
+
 ## Rodada de 7 nov 2026 — Flow Motion Navigation (local, sem commit)
 
 Missão de refinamento da navegação global (`ModernNavbar.tsx`). Mesma branch
