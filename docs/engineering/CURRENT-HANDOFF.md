@@ -16,6 +16,10 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 
 O working tree original de `jiu` não foi modificado neste lote.
 
+## Publicação de 10 nov 2026 — gerador de evento + menus/rodapé (NO AR)
+
+Deploy via CLI a partir do working tree (branch `feature/gerador-eventos`, HEAD `84c1282`): preview `jiu-q898vwqk8` Ready, depois produção `jiu-jxzgxlgcb` (alias jiu-three/jiu-navy). `tsc` sem erros; `/` e `/login` 200. Sem push, sem migration. Inclui tudo da rodada (2) abaixo, antes não publicado. Não verificado: telas autenticadas reais e E2E com credenciais.
+
 ## Rodada de 10 nov 2026 (2) — Menus, rodapé Halftone e fim do /eventos (commitado, NÃO publicado)
 
 Branch `feature/cinematic-auth-v2`, mesmo worktree. Três commits em cima de `471ec3c`, **sem push e sem deploy**.
