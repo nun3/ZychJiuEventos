@@ -29,7 +29,7 @@ Sem migration, sem escrita em banco, sem mudança de pagamento.
 | `a17452f` | `/eventos` aposentada (redirect para a Home) e spec pública atualizada |
 | `44de1ea` | Rodapé Halftone em todas as páginas (`ModernFooter` → `SiteFooter`; dashboard/platform ganharam rodapé), logo do painel interno → Home (`/`), avatar no botão do menu lateral |
 | `860aff7` | Avatar como único disparo do menu interno, cartão de perfil no painel, visualizador/editor da foto (`AvatarPhotoEditor`, recorte circular), `WhatsAppFloat` também na Home |
-| (este lote) | Menu interno: o avatar vira X ao abrir; gerador de datas das fases no novo evento (Manhã/Tarde/Noite, `lib/events/phase-generator.ts`, editável depois) |
+| (este lote) | Menu interno: o avatar vira X ao abrir; gerador de datas das fases no novo evento (Manhã/Tarde/Noite, `lib/events/phase-generator.ts`, editável depois) ; sem flash de "MENU +" no carregamento (círculo esqueleto até a sessão chegar) e sombra do painel só com o menu aberto |
 
 Nota: o WhatsApp flutuante (`WhatsAppFloat`) está em todas as páginas, exceto nas telas operacionais do evento. Verificado: build, tsc, lint, spec pública 13/13, rodapé+logo em 9 páginas públicas (desktop/mobile) e na casca interna via rota QA temporária (removida). Telas reais `/dashboard`, `/admin`, `/platform` autenticadas não foram exercitadas.
 

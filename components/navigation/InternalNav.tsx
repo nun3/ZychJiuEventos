@@ -39,7 +39,7 @@ function isCurrent(pathname: string, href: string) {
 export default function InternalNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const { currentUser } = useCurrentUser()
+  const { currentUser, checked } = useCurrentUser()
 
   const handleLogout = async () => {
     await createClient().auth.signOut()
@@ -100,7 +100,9 @@ export default function InternalNav() {
             ) : (
               <span>{currentUser.initial}</span>
             )
-          ) : null
+          ) : checked ? null : (
+            <span className="mc-menu-avatar-skeleton" />
+          )
         }
         displayItemNumbering
         colors={['#0b2742', '#2563eb']}

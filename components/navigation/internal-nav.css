@@ -29,6 +29,9 @@
 /* O painel branco precisa se separar da página clara atrás dele. */
 .mc-internal-menu .staggered-menu-panel {
   border-left: 1px solid rgb(226 232 240);
+}
+/* A sombra só existe com o menu aberto; fechado, o painel fica fora da tela e a sombra vazaria na borda direita. */
+.mc-internal-menu[data-open] .staggered-menu-panel {
   box-shadow: -24px 0 48px -24px rgb(15 23 42 / 0.28);
 }
 
@@ -101,4 +104,11 @@
 .mc-menu-profile-text small {
   font-size: 0.8rem;
   opacity: 0.8;
+}
+
+/* Enquanto a sessão carrega, o botão já nasce como círculo (sem piscar "MENU +"). */
+.mc-menu-avatar-skeleton {
+  width: 100%;
+  height: 100%;
+  background: #e2e8f0;
 }
