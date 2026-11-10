@@ -39,6 +39,9 @@ test.describe('superfícies públicas', () => {
     await expect(page.getByRole('heading', { name: /Encontre seu próximo campeonato/i })).toBeVisible();
     await expect(page.getByRole('tab', { name: /Próximos campeonatos/ })).toBeVisible();
     await expect(page.locator('footer').getByRole('link', { name: 'Academias e equipes' })).toBeVisible();
+    // Rodapé de retícula (Halftone): canvas da palavra + links reais; "Eventos" aponta para a própria Home.
+    await expect(page.locator('footer canvas')).toHaveCount(1);
+    await expect(page.locator('footer').getByRole('link', { name: 'Eventos', exact: true })).toHaveAttribute('href', '/');
     expect(errors).toEqual([]);
     await assertNoHorizontalOverflow(page);
   });
@@ -61,23 +64,56 @@ test.describe('superfícies públicas', () => {
   });
 
   test('logo, "Eventos" e rodapé levam à nova home e o histórico funciona', async ({ page }) => {
-    await openPublic(page, '/eventos');
+    await openPublic(page, '/noticias');
     await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('link', { name: 'Eventos' }).click();
     await expect(page).toHaveURL(/\/$/);
-    await page.goto('/eventos', { waitUntil: 'domcontentloaded' });
+    await page.goBack();
+    await expect(page).toHaveURL(/\/noticias$/);
     await page.getByRole('link', { name: /MEU CAMP, início/ }).click();
     await expect(page).toHaveURL(/\/$/);
     await page.goBack();
-    await expect(page).toHaveURL(/\/eventos$/);
+    await expect(page).toHaveURL(/\/noticias$/);
     // o link "Eventos" do rodapé padrão também aponta para a Home
-    await page.goto('/noticias', { waitUntil: 'domcontentloaded' });
     const footerEvents = page.locator('footer').getByRole('link', { name: 'Eventos', exact: true });
     await footerEvents.scrollIntoViewIfNeeded();
     await footerEvents.click();
     await expect(page).toHaveURL(/\/$/);
-    // /eventos continua existindo com o calendário completo
+  });
+
+  test('home no celular: o hambúrguer abre o menu cinematográfico e navega sem recarregar', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openPublic(page, '/');
+    await page.evaluate(() => { (window as unknown as { __vivo: boolean }).__vivo = true; });
+    await page.getByRole('button', { name: 'Abrir menu' }).click();
+    const menu = page.getByRole('navigation', { name: 'Menu principal' });
+    await expect(menu).toBeVisible();
+    await expect(menu.getByRole('link', { name: /Academias e equipes/ })).toBeVisible();
+    await expect(menu.getByRole('link', { name: /Criar evento/ })).toBeVisible();
+    // sem realce: o movimento é a própria opção que cresce perto do ponteiro (dock-magnify), sem elemento extra
+    await expect(page.locator('.ml-menu-glide')).toHaveCount(0);
+    await expect(menu.locator('.ml-menu-link-text').first()).toBeVisible();
+    await menu.getByRole('link', { name: /Notícias/ }).click();
+    await expect(page).toHaveURL(/\/noticias$/);
+    // navegação do app: a página não recarregou
+    expect(await page.evaluate(() => (window as unknown as { __vivo?: boolean }).__vivo)).toBe(true);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/$/);
+    await page.getByRole('button', { name: 'Abrir menu' }).click();
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+  });
+
+  test('/eventos foi aposentada: redireciona para a Home e preserva a busca; /eventos/[id] segue existindo', async ({ page }) => {
     await page.goto('/eventos', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('heading', { name: /Encontre seu próximo campeonato/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.locator('#calendario')).toBeVisible();
+    await page.goto('/eventos?q=teste', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/\/\?q=teste$/);
+    const search = page.locator('#home-event-search');
+    if (await search.count()) await expect(search).toHaveValue('teste');
+    const response = await page.goto('/eventos/00000000-0000-0000-0000-000000000000', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/\/eventos\/00000000-0000-0000-0000-000000000000$/);
+    expect(response?.status() === 404 || (await page.locator('main').count()) > 0).toBeTruthy();
   });
 
   test('academias usa o palco institucional e preserva o conteúdo', async ({ page }) => {
@@ -103,13 +139,15 @@ test.describe('superfícies públicas', () => {
     await expect(page.getByRole('heading', { name: 'A competição inteira, do cadastro ao fechamento.' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Para cada perfil' })).toBeVisible();
     await page.getByRole('link', { name: 'Ver calendário' }).click();
-    await expect(page).toHaveURL(/\/eventos$/);
+    // /eventos foi aposentada: o link antigo cai na Home, que traz o calendário.
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.locator('#calendario')).toBeVisible();
   });
 
-  test('calendário público e filtros continuam no ar', async ({ page }) => {
-    await openPublic(page, '/eventos');
+  test('calendário público e filtros continuam no ar (agora na Home)', async ({ page }) => {
+    await openPublic(page, '/');
     await expect(page.getByRole('heading', { name: /Encontre seu próximo campeonato/i })).toBeVisible();
-    const search = page.locator('#event-search');
+    const search = page.locator('#home-event-search');
     if (await search.count()) {
       await expect(search).toBeVisible();
       await search.fill('campeonato');
@@ -119,7 +157,7 @@ test.describe('superfícies públicas', () => {
   });
 
   test('detalhe público de evento ou 404 honesto', async ({ page }) => {
-    await page.goto('/eventos', { waitUntil: 'domcontentloaded' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     const detail = page.getByRole('link', { name: /Ver campeonato|Detalhes|Gerenciar evento/i }).first();
     if (await detail.count()) {
       await detail.click();
