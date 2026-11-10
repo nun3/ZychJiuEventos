@@ -13,6 +13,17 @@ export const SHIFTS: Record<EventShift, { label: string; startHour: number }> = 
   noite: { label: 'Noite', startHour: 18 },
 }
 
+/**
+ * Perfis de calendário (dias antes do evento D). `regerar` percorre os perfis em ordem.
+ * Inscrições de jiu-jitsu costumam ficar abertas de 2 a 5 semanas; perto do evento o prazo encurta.
+ */
+export const PHASE_VARIANTS = [
+  { name: 'Padrão', openDays: 30, openHour: 9, closeDays: 7, payOpenDays: 6, payCloseDays: 3 },
+  { name: 'Curta', openDays: 18, openHour: 10, closeDays: 5, payOpenDays: 4, payCloseDays: 3 },
+  { name: 'Longa', openDays: 45, openHour: 8, closeDays: 10, payOpenDays: 9, payCloseDays: 4 },
+  { name: 'Relâmpago', openDays: 12, openHour: 12, closeDays: 4, payOpenDays: 3, payCloseDays: 3 },
+] as const
+
 export type GeneratedPhases = Record<'inscricao' | 'pagamento' | 'checagem' | 'chaves', { inicio: string; fim: string }>
 export type PhaseGenerationResult = { ok: true; phases: GeneratedPhases } | { ok: false; message: string }
 
@@ -42,7 +53,7 @@ export function wallNow(timeZone: string, now = new Date()) {
 }
 
 /**
- * Linha do tempo (da data do evento D e da hora H de início do turno):
+ * Linha do tempo do perfil Padrão (da data do evento D e da hora H de início do turno):
  *  - Inscrição: de D-30 09:00 até D-7 23:59
  *  - Pagamento: de D-6 00:00 até D-3 23:59
  *  - Checagem:  de D-2 00:00 até D-1 12:00
@@ -50,7 +61,8 @@ export function wallNow(timeZone: string, now = new Date()) {
  * Se a data estiver próxima, o início de cada fase é empurrado para "agora" (arredondado para a próxima hora cheia)
  * e as fases seguintes são comprimidas; se não couber, devolve erro e o organizador preenche à mão.
  */
-export function generatePhases(eventDate: string, shift: EventShift, nowWall: number): PhaseGenerationResult {
+export function generatePhases(eventDate: string, shift: EventShift, nowWall: number, variant = 0): PhaseGenerationResult {
+  const profile = PHASE_VARIANTS[((variant % PHASE_VARIANTS.length) + PHASE_VARIANTS.length) % PHASE_VARIANTS.length]
   if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) return { ok: false, message: 'Informe a data do evento antes de gerar as fases.' }
   const dayStart = wall(eventDate)
   const chavesEnd = dayStart + (SHIFTS[shift].startHour - 2) * HOUR
@@ -60,8 +72,8 @@ export function generatePhases(eventDate: string, shift: EventShift, nowWall: nu
   }
 
   const ideal = {
-    inscricao: [dayStart - 30 * DAY + 9 * HOUR, dayStart - 7 * DAY + 23 * HOUR + 59 * MINUTE],
-    pagamento: [dayStart - 6 * DAY, dayStart - 3 * DAY + 23 * HOUR + 59 * MINUTE],
+    inscricao: [dayStart - profile.openDays * DAY + profile.openHour * HOUR, dayStart - profile.closeDays * DAY + 23 * HOUR + 59 * MINUTE],
+    pagamento: [dayStart - profile.payOpenDays * DAY, dayStart - profile.payCloseDays * DAY + 23 * HOUR + 59 * MINUTE],
     checagem: [dayStart - 2 * DAY, dayStart - DAY + 12 * HOUR],
     chaves: [dayStart - DAY + 12 * HOUR, chavesEnd],
   } as const
@@ -87,15 +99,21 @@ const pad2 = (value: number) => String(value).padStart(2, '0')
  * Escolhe o dia do evento dentro do mês/ano: o primeiro sábado em que as fases cabem (campeonatos de jiu-jitsu
  * costumam ser aos sábados). Sem sábado possível, tenta o primeiro domingo; sem nenhum, devolve erro.
  */
-export function pickEventDate(year: number, month: number, shift: EventShift, nowWall: number): { ok: true; date: string; phases: GeneratedPhases } | { ok: false; message: string } {
+export function pickEventDate(year: number, month: number, shift: EventShift, nowWall: number, variant = 0): { ok: true; date: string; phases: GeneratedPhases } | { ok: false; message: string } {
   const last = new Date(Date.UTC(year, month, 0)).getUTCDate()
   for (const weekday of [6, 0]) {
     for (let day = 1; day <= last; day += 1) {
       if (new Date(Date.UTC(year, month - 1, day)).getUTCDay() !== weekday) continue
       const date = `${year}-${pad2(month)}-${pad2(day)}`
-      const result = generatePhases(date, shift, nowWall)
+      const result = generatePhases(date, shift, nowWall, variant)
       if (result.ok) return { ok: true, date, phases: result.phases }
     }
   }
   return { ok: false, message: 'Nesse mês não há fim de semana com tempo suficiente para as fases. Escolha um mês mais à frente.' }
+}
+
+/** Duração da janela de inscrição em dias (arredondada), para mostrar ao organizador. */
+export function registrationDays(phases: GeneratedPhases) {
+  const diff = Date.parse(`${phases.inscricao.fim}:00Z`) - Date.parse(`${phases.inscricao.inicio}:00Z`)
+  return Math.max(1, Math.round(diff / DAY))
 }

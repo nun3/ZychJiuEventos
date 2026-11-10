@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { generatePhases, pickEventDate, wallNow } from '../../lib/events/phase-generator'
+import { PHASE_VARIANTS, generatePhases, pickEventDate, registrationDays, wallNow } from '../../lib/events/phase-generator'
 
 const now = Date.UTC(2026, 10, 10, 10, 30) // 10/11/2026 10:30
 
@@ -64,4 +64,21 @@ check('pickEventDate pula sábados próximos demais e falha no mês já passado'
   assert.ok(r.ok)
   if (r.ok) assert.ok(r.date >= '2026-11-14')
   assert.equal(pickEventDate(2026, 9, 'manha', now).ok, false)
+})
+
+check('perfis geram janelas de inscrição diferentes, sempre em ordem', () => {
+  const days: number[] = []
+  const order = ['inscricao', 'pagamento', 'checagem', 'chaves'] as const
+  for (let v = 0; v < PHASE_VARIANTS.length; v += 1) {
+    const r = generatePhases('2027-03-13', 'tarde', now, v)
+    assert.ok(r.ok)
+    if (!r.ok) return
+    days.push(registrationDays(r.phases))
+    for (let i = 0; i < order.length; i += 1) {
+      assert.ok(r.phases[order[i]].inicio < r.phases[order[i]].fim)
+      if (i) assert.ok(r.phases[order[i]].inicio >= r.phases[order[i - 1]].fim)
+    }
+  }
+  assert.deepEqual(days, [24, 14, 36, 8])
+  assert.equal(generatePhases('2027-03-13', 'tarde', now, PHASE_VARIANTS.length)?.ok, true) // dá a volta
 })
