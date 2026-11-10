@@ -16,13 +16,67 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 
 O working tree original de `jiu` não foi modificado neste lote.
 
-## Rodada de 10 nov 2026 — Nova Home "spatial" (publicada; código em `0f4da32`)
+## Rodada de 10 nov 2026 (2) — Menus, rodapé Halftone e fim do /eventos (commitado, NÃO publicado)
+
+Branch `feature/cinematic-auth-v2`, mesmo worktree. Três commits em cima de `471ec3c`, **sem push e sem deploy**.
+**Produção continua no estado de `0f4da32`** (a Home "spatial" da rodada abaixo): nada destes três commits está no ar.
+Sem migration, sem escrita em banco, sem mudança de pagamento.
+
+| Commit | O que entrega |
+| --- | --- |
+| `b7e38f8` | Sistema de menus: menu cinematográfico nas telas públicas e StaggeredMenu nas internas |
+| `69d88c2` | Rodapé Halftone (retícula) na Home, com paleta própria |
+| `a17452f` | `/eventos` aposentada (redirect para a Home) e spec pública atualizada |
+
+**Regras novas (valem daqui em diante):**
+- **Telas públicas** (Home, institucionais, login, recuperar/atualizar senha, `/eventos/[id]`): `ModernNavbar` abre o menu cinematográfico
+  (`components/navigation/CinematicMenu.tsx`). Gatilhos: avatar (desktop, logado) e hambúrguer (celular). O drawer da conta e o painel
+  mobile branco **não existem mais**; o GSAP saiu do nav (Home: 222 → 192 kB de First Load JS).
+- **Telas internas** (`/dashboard`, `/admin`, `/platform`): `components/navigation/InternalNav.tsx` com o `StaggeredMenu` (React Bits,
+  instalado em `components/react-bits/`, desvios e revisão de movimento no README da pasta). Painel pela direita; "Sair da conta" é botão.
+- `/admin/autenticacao` (login do admin) mantém o nav público (`OperatorLayoutBoundary` ganhou `publicNavigation`).
+  A mesa de operação (`/admin/eventos/[id]/operacao`) e o LIVE seguem com navegação própria.
+- **Movimento do menu público**: ampliação por proximidade do Dock (`dock-magnify.ts`), **sem realce** de item e sem repique; a mola do
+  Dock com os valores padrão é superamortecida. Desligada com `prefers-reduced-motion`; toque não amplia. O foco do teclado amplia a opção
+  focada (com o mouse parado, o teclado manda).
+- `/eventos` (só a URL exata) redireciona 307 para `/`, preservando `?q=`. `/eventos/[id]/*` permanece. 307 é temporário de propósito.
+- Rodapé da Home: `HomeFooter` (Halftone). Paleta: fundo `#050a14`, tinta `#dfe7f5`, vermelho da marca `#DC2626` ao "esquentar" (o preset
+  `night` destoava do azul da Home). Os links do rodapé são `<a>` comuns (recarregam a página; o componente não aceita `Link`).
+  O botão flutuante do WhatsApp **não aparece na Home** (vinha do `ModernFooter`); o contato é link na coluna "Contato".
+  As demais páginas continuam com o `ModernFooter`.
+
+**Validação (contra build de produção local):** `tsc` e lint sem erros novos; spec pública 13/13; unit 256/257 (a falha em
+`registration-correction.test.ts` é anterior: alias `@/` sob ts-node); menu cinematográfico 34/34 (navegador, 12 itens em 2 colunas e 7 em 1);
+varredura de 9 telas públicas no celular OK; menu interno 39/39 e rodapé 11/11. Um ambiente de teste sem GPU deixa as animações lentas:
+checagens de tempo/quadros oscilam ali sem indicar defeito (foram trocadas por verificações determinísticas quando possível).
+
+**NÃO verificado — fazer antes de publicar:**
+- `automação/tests/auth-experience.spec.ts` e `steps/authorization.steps.ts` (helpers de logout trocados para o botão único "Menu") exigem
+  credenciais reais em `.env.e2e` e **não foram executados**.
+- `/dashboard`, `/admin/eventos` e `/platform` **nunca foram vistos com sessão real**: o `InternalNav` foi validado em uma rota temporária
+  (já removida) com a sessão simulada no navegador. Olhar essas telas no Preview, no desktop e no celular, antes do deploy.
+- Aparelho de toque real (a ampliação do Dock ignora toque por desenho; não foi testada em celular de verdade).
+
+**Decisões em aberto / limites conhecidos:**
+- No desktop, o **visitante deslogado** não tem ícone de pessoa: só "Login" e "Criar evento". Por isso não abre o menu cinematográfico
+  (Academias, O sistema, Notícias, Quem somos ficam só no rodapé). Um ícone neutro que abra o menu muda o desenho do nav.
+- A barra das telas internas perdeu "Eventos" e "Criar evento" soltos: agora estão dentro do painel.
+- Sem uso, **não removidos**: `EventsCatalog`, `EventsFeaturedStage`, `InteractiveChampionshipDemo`, `EventFilters` (só a lista `states` é
+  reaproveitada) e os legados `components/Header.tsx`/`Footer.tsx`. Remoção é um commit à parte.
+- Redirect 307 → 308 (`permanent: true`) se a decisão de aposentar `/eventos` for definitiva.
+- A paginação do calendário em lotes continua só visual: `getPublicEvents` traz tudo de uma vez (ver a rodada abaixo).
+- `docs/CODEBASE_MAP.md` está desatualizado (rodar `/cartographer`). Itens do dono sem commit e fora deste lote: `AGENTS.md`, `CLAUDE.md`,
+  imagens removidas de `docs/`, `docs/CODEBASE_MAP.md`, `docs/efeitomenu.txt` (referência do Dock), `pageModel.txt/`, `skills-react/`,
+  `supabase/config.toml`, `test-pages/`.
+- Publicar exige autorização explícita (push, deploy). Ao publicar, conferir também o `.vercelignore` (`test-pages/` sobe no upload da CLI; é inerte).
+
+## Rodada de 10 nov 2026 (1) — Nova Home "spatial" (publicada; código em `0f4da32`; parcialmente superada pela rodada acima)
 
 Branch `feature/cinematic-auth-v2`, mesmo worktree. Publicado em produção (https://jiu-three.vercel.app) a partir do working tree
 e commitado depois em `0f4da32`. O deploy usou também alterações não commitadas de `AGENTS.md`/`CLAUDE.md` e arquivos de `docs/` (inertes para o app).
 Sem migration, sem escrita em banco, sem push, sem mudança de pagamento.
 
-**O que mudou:**
+**O que mudou (parte já superada: o rodapé da Home virou o Halftone e `/eventos` foi aposentada; ver a rodada acima):**
 - `app/page.tsx` — nova Home: arte de fundo fixa (`public/images/home/home-bg.jpeg`, original sem recompressão), Cover Flow 3D de
   destaques, calendário em vidro e o `ModernFooter` existente (nenhum rodapé novo). `?q=` agora pré-preenche a busca do calendário
   (antes redirecionava para `/eventos`).
