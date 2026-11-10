@@ -124,7 +124,7 @@ export default function EventDetails({ eventId }: { eventId: string }) {
         <div className="container mx-auto px-3 py-3">
           <div className="flex items-center justify-end">
             <Link
-              href="/"
+              href="/eventos"
               className="text-gray-600 hover:text-primary-blue flex items-center space-x-2 transition"
             >
               <FiArrowLeft />

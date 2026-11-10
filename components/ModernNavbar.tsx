@@ -1,5 +1,8 @@
 'use client'
 
+import { BeltBadge } from '@/components/BeltBadge'
+import { useAthleteBelt } from '@/hooks/useAthleteBelt'
+import { beltLabel } from '@/lib/athletes/belt'
 import { useCallback, useEffect, useRef, useState, type FocusEvent, type MouseEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -21,7 +24,7 @@ const accountLinks = [
   { href: '/admin/eventos', label: 'Meus eventos' },
 ]
 const publicMenuLinks = [
-  { href: '/', label: 'Eventos' },
+  { href: '/eventos', label: 'Eventos' },
   { href: '/academias', label: 'Academias e equipes' },
   { href: '/sistema', label: 'O sistema' },
   { href: '/noticias', label: 'Notícias' },
@@ -32,9 +35,7 @@ const MARK = 36
 const SCROLL_THRESHOLD = 72
 
 function currentNavKey(pathname: string) {
-  // A Home reúne o destaque e o calendário de campeonatos: "Eventos" é o item ativo nela também.
-  if (pathname === '/') return 'eventos'
-  if (pathname === '/eventos' || pathname.startsWith('/eventos/')) return 'eventos'
+  // A Home ("/") é a experiência da marca: nenhum item do menu fica ativo nela.
   if (pathname === '/login') return 'login'
   return null
 }
@@ -62,6 +63,7 @@ export default function ModernNavbar({
   const pathname = usePathname()
   const router = useRouter()
   const { currentUser, isLoggedIn } = useCurrentUser()
+  const belt = useAthleteBelt(isLoggedIn)
   const [menuOpen, setMenuOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const [scrolled, setScrolled] = useState(!overlayAtTop)
@@ -174,24 +176,25 @@ export default function ModernNavbar({
             onBlur={() => moveMark(restingKey)}
             className="relative grid h-16 grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-8 lg:px-12"
           >
-            <div className="hidden justify-self-start md:block">
-              <Link
-                href="/"
-                ref={bindItem('eventos')}
-                data-nav-key="eventos"
-                aria-current={restingKey === 'eventos' ? 'page' : undefined}
-                onClick={navigateWithTransition('/')}
-                className={`${itemBase} ${itemColor(useWhiteText)}`}
-              >
-                Eventos
-              </Link>
+            <div className="justify-self-start">
+              {belt ? (
+                <Link
+                  href="/experiencia"
+                  onClick={navigateWithTransition('/experiencia')}
+                  aria-label={`Experiência MEU CAMP (${beltLabel(belt)})`}
+                  title={beltLabel(belt)}
+                  className={`inline-flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 motion-reduce:transition-none ${useWhiteText ? 'focus-visible:ring-white' : 'focus-visible:ring-mc-focus'}`}
+                >
+                  <BeltBadge belt={belt.belt} grau={belt.grau} size={30} />
+                </Link>
+              ) : null}
             </div>
             <Link
-              href="/"
+              href="/eventos"
               ref={bindItem('home')}
               data-nav-key="home"
-              aria-label="MEU CAMP, início"
-              onClick={navigateWithTransition('/')}
+              aria-label="MEU CAMP, eventos"
+              onClick={navigateWithTransition('/eventos')}
               className={`col-start-2 flex h-16 items-center justify-self-center rounded-mc-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${useWhiteText ? 'focus-visible:ring-white' : 'focus-visible:ring-mc-focus'}`}
             >
               <span className="relative block h-7 w-36 sm:w-40">

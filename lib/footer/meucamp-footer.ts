@@ -25,7 +25,7 @@ export const MEUCAMP_FOOTER_COLUMNS: FooterColumn[] = [
   {
     title: 'Produto',
     links: [
-      { label: 'Eventos', href: '/' },
+      { label: 'Eventos', href: '/eventos' },
       { label: 'Notícias', href: '/noticias' },
       { label: 'Academias e equipes', href: '/academias' },
       { label: 'O sistema', href: '/sistema' },

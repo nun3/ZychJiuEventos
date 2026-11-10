@@ -74,6 +74,15 @@ export default function CompleteSportsProfileForm({
       <FormField id="self-athlete-belt" label="Faixa" required>
         <Input name="faixa" required placeholder="Ex.: Branca" />
       </FormField>
+      <FormField id="self-athlete-grau" label="Graus da faixa">
+        <Select name="grau" defaultValue="0">
+          <option value="0">Sem graus</option>
+          <option value="1">1 grau</option>
+          <option value="2">2 graus</option>
+          <option value="3">3 graus</option>
+          <option value="4">4 graus</option>
+        </Select>
+      </FormField>
       <FormField id="self-athlete-weight" label="Peso (kg)" required>
         <Input name="peso_kg" type="number" min="1" max="300" step="0.01" required />
       </FormField>

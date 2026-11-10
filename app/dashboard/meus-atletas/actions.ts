@@ -1,5 +1,6 @@
 'use server'
 
+import { clampGrau } from '@/lib/athletes/belt'
 import { revalidatePath } from 'next/cache'
 import { isAdministrativeOrganizationRole } from '@/lib/auth/organization-context'
 import { getAuthenticatedOrganizationContext } from '@/lib/auth/organization-context-server'
@@ -125,6 +126,9 @@ export async function updateManagedAthlete(formData: FormData): Promise<AthleteA
     special_needs: formData.get('possui_necessidade_especial') === 'on',
     change_reason: reason || undefined,
   })
+
+  // O grau vai à parte: a RPC não o conhece. Se a coluna ainda não existir, o resto da edição segue valendo.
+  if (!error) await supabase.from('athletes').update({ grau: clampGrau(formData.get('grau')) }).eq('id', athleteId)
 
   if (error?.message.includes('Motivo obrigatorio')) return failure('Informe o motivo da troca de equipe.')
   if (error?.code === '23505') return failure('Já existe um atleta com esse CPF.')

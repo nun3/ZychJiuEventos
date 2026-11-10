@@ -38,6 +38,7 @@ export default async function EditAthletePage({ params }: { params: { id: string
               nascimento: athlete.data_nascimento,
               genero: athlete.genero,
               faixa: athlete.faixa,
+              grau: athlete.grau ?? 0,
               peso: athlete.peso_kg,
               teamId: athlete.team_id,
               necessidades: athlete.possui_necessidade_especial,

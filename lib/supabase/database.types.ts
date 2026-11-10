@@ -56,6 +56,7 @@ export type Database = {
           created_at: string
           data_nascimento: string
           faixa: string
+          grau: number
           genero: string
           id: string
           nome_completo: string
@@ -71,6 +72,7 @@ export type Database = {
           created_at?: string
           data_nascimento: string
           faixa: string
+          grau?: number
           genero: string
           id?: string
           nome_completo: string
@@ -86,6 +88,7 @@ export type Database = {
           created_at?: string
           data_nascimento?: string
           faixa?: string
+          grau?: number
           genero?: string
           id?: string
           nome_completo?: string

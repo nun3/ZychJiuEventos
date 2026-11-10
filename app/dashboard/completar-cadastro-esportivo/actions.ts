@@ -1,5 +1,6 @@
 'use server'
 
+import { clampGrau } from '@/lib/athletes/belt'
 import { revalidatePath } from 'next/cache'
 import { adultBirthDateMessages, evaluateAdultBirthDate } from '@/lib/auth/adult-birth-date'
 import { getPublicOrganizationScope } from '@/lib/events/public-organization'
@@ -70,6 +71,10 @@ export async function completeSelfAthleteProfile(formData: FormData): Promise<Se
     }
     return { ok: false, message: mapped[error.message] || 'Não foi possível concluir o cadastro esportivo.' }
   }
+
+  // O grau vai à parte: a RPC não o conhece. Falha aqui (ex.: coluna ainda não criada) não desfaz o cadastro.
+  const grau = clampGrau(formData.get('grau'))
+  if (grau > 0) await supabase.from('athletes').update({ grau }).eq('user_id', user.id)
 
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/completar-cadastro-esportivo')

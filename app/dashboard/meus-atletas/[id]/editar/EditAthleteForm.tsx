@@ -17,6 +17,7 @@ type Athlete = {
   nascimento: string
   genero: string
   faixa: string
+  grau: number
   peso: number
   teamId: string
   necessidades: boolean
@@ -74,6 +75,15 @@ export default function EditAthleteForm({ athlete, teams, canSelfLink }: { athle
         </FormField>
         <FormField id="edit-athlete-belt" label="Faixa" required>
           <Input name="faixa" required defaultValue={athlete.faixa} />
+        </FormField>
+        <FormField id="edit-athlete-grau" label="Graus da faixa">
+          <Select name="grau" defaultValue={String(athlete.grau)}>
+            <option value="0">Sem graus</option>
+          <option value="1">1 grau</option>
+          <option value="2">2 graus</option>
+          <option value="3">3 graus</option>
+          <option value="4">4 graus</option>
+          </Select>
         </FormField>
         <FormField id="edit-athlete-weight" label="Peso (kg)" required>
           <Input name="peso_kg" type="number" min="1" max="300" step="0.01" required defaultValue={athlete.peso} />
