@@ -96,6 +96,16 @@ body {
   animation: mc-content-enter var(--mc-motion-fast) var(--mc-ease-standard) both;
 }
 
+/* Indicador Enso BJJ: o anel gira; o conjunto só aparece após 120ms, para navegações rápidas não piscarem. */
+.mc-enso-ring { transform-origin: 50% 50%; animation: mc-enso-spin 1.5s linear infinite; }
+.mc-enso-wrap { opacity: 0; animation: mc-enso-in var(--mc-motion-fast) var(--mc-ease-standard) 120ms forwards; }
+@keyframes mc-enso-spin { to { transform: rotate(360deg); } }
+@keyframes mc-enso-in { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .mc-enso-ring { animation: none; }
+  .mc-enso-wrap { opacity: 1; animation: none; }
+}
+
 /* Skeleton localizado: pulso discreto, sem movimento sob reduced-motion. */
 .mc-skeleton {
   background: rgb(var(--mc-border) / 0.6);
