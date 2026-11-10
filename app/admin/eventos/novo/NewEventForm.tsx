@@ -11,7 +11,7 @@ import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { createEvent } from '../actions'
-import { PHASE_VARIANTS, SHIFTS, pickEventDate, registrationDays, wallNow, type EventShift } from '@/lib/events/phase-generator'
+import { EventScheduleGenerator } from '@/components/events/EventScheduleGenerator'
 
 const phases = [
   ['inscricao', 'Inscrição'],
@@ -19,8 +19,6 @@ const phases = [
   ['checagem', 'Checagem'],
   ['chaves', 'Chaves'],
 ] as const
-
-const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
 
 const fieldClass = 'min-h-28 w-full rounded-mc-small border border-mc-border bg-mc-surface px-3 py-2 font-mc-interface text-base text-mc-text-primary transition-colors duration-mc-normal hover:border-mc-text-secondary focus:border-mc-focus focus:outline-none focus:ring-2 focus:ring-mc-focus/20'
 
@@ -84,47 +82,7 @@ export default function NewEventForm({
   const [message, setMessage] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [phasesOpen, setPhasesOpen] = useState(false)
-  const phasesRef = useRef<HTMLDivElement>(null)
-  const thisYear = new Date().getFullYear()
-  const [genMonth, setGenMonth] = useState(new Date().getMonth() + 1)
-  const [genYear, setGenYear] = useState(thisYear)
-  const [genVariant, setGenVariant] = useState(0)
-  const [hasGenerated, setHasGenerated] = useState(false)
-  const [genShift, setGenShift] = useState<EventShift>('manha')
-  const [generated, setGenerated] = useState<{ ok: boolean; text: string } | null>(null)
   const requiresOrganizationChoice = Boolean(organizationOptions && organizationOptions.length > 1)
-
-  function generate(regenerate = false) {
-    const form = phasesRef.current?.closest('form')
-    if (!form) return
-    const data = new FormData(form)
-    const timezone = textOf(data, 'timezone') || 'America/Sao_Paulo'
-    const nextVariant = regenerate ? (genVariant + 1) % PHASE_VARIANTS.length : 0
-    const result = pickEventDate(genYear, genMonth, genShift, wallNow(timezone), nextVariant)
-    if (!result.ok) {
-      setGenerated({ ok: false, text: result.message })
-      return
-    }
-    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
-    const fill = (name: string, value: string) => {
-      const input = form.elements.namedItem(name)
-      if (input instanceof HTMLInputElement) {
-        setter?.call(input, value)
-        input.dispatchEvent(new Event('input', { bubbles: true }))
-      }
-    }
-    fill('data_evento', result.date)
-    for (const [tipo] of phases) {
-      fill(`${tipo}_inicio`, result.phases[tipo].inicio)
-      fill(`${tipo}_fim`, result.phases[tipo].fim)
-    }
-    setErrors((current) => { const { phases: _p, data_evento: _d, ...rest } = current; return rest })
-    setPhasesOpen(true)
-    setGenVariant(nextVariant)
-    setHasGenerated(true)
-    const [y, m, d] = result.date.split('-')
-    setGenerated({ ok: true, text: `Evento em ${d}/${m}/${y} (${SHIFTS[genShift].label.toLowerCase()}) e fases geradas (perfil ${PHASE_VARIANTS[nextVariant].name.toLowerCase()}: inscrições abertas por ${registrationDays(result.phases)} dias). Revise e ajuste o que precisar.` })
-  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -293,35 +251,8 @@ export default function NewEventForm({
                   <ChevronDown aria-hidden="true" size={16} className={`ml-2 transition-transform ${phasesOpen ? 'rotate-180' : ''}`} />
                 </Button>
               </div>
-              <div className="mt-4 rounded-mc-medium bg-mc-surface-secondary p-4">
-                <p className="font-mc-interface text-sm font-semibold text-mc-text-primary">Gerar evento automaticamente</p>
-                <p className="mt-1 font-mc-interface text-sm text-mc-text-secondary">Escolha turno, mês e ano: sugerimos o primeiro sábado possível e preenchemos a data e as quatro fases. Se não gostar dos horários, gere outra sugestão (prazos de inscrição mais curtos ou mais longos). Depois você pode editar tudo.</p>
-                <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Turno do campeonato">
-                  {(Object.keys(SHIFTS) as EventShift[]).map((shift) => (
-                    <Button key={shift} type="button" variant={genShift === shift ? 'primary' : 'outline'} aria-pressed={genShift === shift} onClick={() => setGenShift(shift)}>
-                      {SHIFTS[shift].label}
-                    </Button>
-                  ))}
-                </div>
-                <div className="mt-3 flex flex-wrap items-end gap-3">
-                  <label className="block min-w-40 space-y-1.5 font-mc-interface text-sm font-semibold text-mc-text-primary">
-                    Mês
-                    <Select value={genMonth} onChange={(event) => setGenMonth(Number(event.target.value))}>
-                      {MONTHS.map((label, index) => <option key={label} value={index + 1}>{label}</option>)}
-                    </Select>
-                  </label>
-                  <label className="block w-32 space-y-1.5 font-mc-interface text-sm font-semibold text-mc-text-primary">
-                    Ano
-                    <Select value={genYear} onChange={(event) => setGenYear(Number(event.target.value))}>
-                      {[thisYear, thisYear + 1, thisYear + 2].map((year) => <option key={year} value={year}>{year}</option>)}
-                    </Select>
-                  </label>
-                  <Button type="button" onClick={() => generate(false)}>Gerar</Button>
-                  {hasGenerated ? <Button type="button" variant="outline" onClick={() => generate(true)}>Gerar outra sugestão</Button> : null}
-                </div>
-                {generated ? <p role="status" className={`mt-3 font-mc-interface text-sm ${generated.ok ? 'text-mc-success' : 'text-mc-error'}`}>{generated.text}</p> : null}
-              </div>
-              <div id="event-phases" ref={phasesRef} hidden={!phasesOpen} className="mt-4 space-y-3">
+              <EventScheduleGenerator onGenerated={() => { setPhasesOpen(true); setErrors((current) => { const { phases: _p, data_evento: _d, ...rest } = current; return rest }) }} />
+              <div id="event-phases" hidden={!phasesOpen} className="mt-4 space-y-3">
                 {errors.phases ? <Alert variant="error" role="alert">{errors.phases}</Alert> : null}
                 {phases.map(([value, label]) => (
                   <fieldset key={value} className="rounded-mc-medium border border-mc-border p-4">
