@@ -127,7 +127,9 @@ export async function geocodeAddress(
           Accept: 'application/json',
           'User-Agent': 'MEU-CAMP/1.0 (event-venue-geocode)',
         },
-        next: { revalidate: 0 },
+        // O endereço de um local quase não muda: cache de 1 dia e limite de espera (a página do evento não pode depender disso).
+        next: { revalidate: 86400 },
+        signal: AbortSignal.timeout(3500),
       } as RequestInit)
       if (!response.ok) return { ok: false, reason: 'unavailable' }
       const data = (await response.json()) as Array<{ lat?: string; lon?: string }>

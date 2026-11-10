@@ -18,6 +18,8 @@ export type PublicVenueMapProps = {
   longitude: number | null
   precision?: 'exact' | 'approximate' | null
   fallbackLocal: string | null
+  /** O mapa ainda está sendo resolvido (streaming): mostra um espaço reservado no lugar dele. */
+  mapPending?: boolean
 }
 
 export function PublicEventVenueMap({
@@ -33,6 +35,7 @@ export function PublicEventVenueMap({
   longitude,
   precision,
   fallbackLocal,
+  mapPending = false,
 }: PublicVenueMapProps) {
   const street = [logradouro, numero].filter(Boolean).join(', ')
   const cepLabel = sanitizeCep(cep || '').length === 8 ? formatCepMask(cep || '') : ''
@@ -58,6 +61,8 @@ export function PublicEventVenueMap({
           ))}
         </ul>
       ) : null}
+
+      {mapPending ? <div aria-hidden="true" className="mc-skeleton h-64 w-full sm:h-80" /> : null}
 
       {hasCoords ? (
         <div className="space-y-3">

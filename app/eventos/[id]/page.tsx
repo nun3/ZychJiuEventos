@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { unstable_noStore as noStore } from 'next/cache'
@@ -10,7 +11,8 @@ import EventContentSidebar from '@/components/events/public-event/EventContentSi
 import EventPublicNavigation from '@/components/events/public-event/EventPublicNavigation'
 import EventShareButton from '@/components/events/public-event/EventShareButton'
 import { PublicEventHero, PublicHeroLink } from '@/components/events/public-event/PublicEventHero'
-import { PublicEventVenueMap } from '@/components/events/public-event/PublicEventVenueMap'
+import { PublicEventVenueMap, type PublicVenueMapProps } from '@/components/events/public-event/PublicEventVenueMap'
+import { PublicEventVenueGeo } from '@/components/events/public-event/PublicEventVenueGeo'
 import type { Event } from '@/components/ModernEventGrid'
 import { findPublicReleaseEvent } from '@/lib/events/public-access'
 import { catalogStatusLabel, eventDateParts } from '@/lib/events/catalog-presentation'
@@ -137,32 +139,19 @@ export default async function EventPage({ params }: { params: { id: string } }) 
       event.local?.trim(),
   )
   const hasLocation = hasStructuredVenue
-  const storedLatitude = typeof event.local_latitude === 'number' ? event.local_latitude : null
-  const storedLongitude = typeof event.local_longitude === 'number' ? event.local_longitude : null
-  let mapLatitude = storedLatitude
-  let mapLongitude = storedLongitude
-  let mapPrecision: 'exact' | 'approximate' | null =
-    storedLatitude != null && storedLongitude != null ? 'exact' : null
-
-  if (
-    (mapLatitude == null || mapLongitude == null) &&
-    event.local_cidade?.trim() &&
-    event.local_uf?.trim()
-  ) {
-    const geocoded = await geocodeAddress({
-      logradouro: event.local_logradouro || '',
-      numero: event.local_numero || undefined,
-      bairro: event.local_bairro || undefined,
-      cidade: event.local_cidade,
-      uf: event.local_uf,
-      cep: event.local_cep || undefined,
-    })
-    if (geocoded.ok) {
-      mapLatitude = geocoded.latitude
-      mapLongitude = geocoded.longitude
-      mapPrecision = geocoded.precision
-    }
-  }
+  const venue = {
+    nome: event.local_nome,
+    logradouro: event.local_logradouro,
+    numero: event.local_numero,
+    complemento: event.local_complemento,
+    bairro: event.local_bairro,
+    cidade: event.local_cidade,
+    uf: event.local_uf,
+    cep: event.local_cep,
+    latitude: typeof event.local_latitude === 'number' ? event.local_latitude : null,
+    longitude: typeof event.local_longitude === 'number' ? event.local_longitude : null,
+    fallbackLocal: event.local,
+  } satisfies Omit<PublicVenueMapProps, 'precision'>
 
   const sections = buildPublicEventSections({
     hasOverview: Boolean(presentation.overviewText),
@@ -225,20 +214,10 @@ export default async function EventPage({ params }: { params: { id: string } }) 
             {hasLocation ? (
               <section id="local" className="scroll-mt-36 border-b border-mc-border py-8">
                 <h2 className={sectionTitle}>Local do evento</h2>
-                <PublicEventVenueMap
-                  nome={event.local_nome}
-                  logradouro={event.local_logradouro}
-                  numero={event.local_numero}
-                  complemento={event.local_complemento}
-                  bairro={event.local_bairro}
-                  cidade={event.local_cidade}
-                  uf={event.local_uf}
-                  cep={event.local_cep}
-                  latitude={mapLatitude}
-                  longitude={mapLongitude}
-                  precision={mapPrecision}
-                  fallbackLocal={event.local}
-                />
+                {/* O geocoding externo (Nominatim) não bloqueia a página: o endereço aparece já e o mapa chega por streaming. */}
+                <Suspense fallback={<PublicEventVenueMap {...venue} latitude={null} longitude={null} precision={null} mapPending />}>
+                  <PublicEventVenueGeo venue={venue} />
+                </Suspense>
               </section>
             ) : null}
 
