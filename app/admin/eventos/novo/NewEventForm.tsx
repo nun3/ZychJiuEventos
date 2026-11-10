@@ -83,6 +83,7 @@ export default function NewEventForm({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [phasesOpen, setPhasesOpen] = useState(false)
   const phasesRef = useRef<HTMLDivElement>(null)
+  const genDateRef = useRef<HTMLInputElement>(null)
   const [generated, setGenerated] = useState<{ ok: boolean; text: string } | null>(null)
   const requiresOrganizationChoice = Boolean(organizationOptions && organizationOptions.length > 1)
 
@@ -91,7 +92,16 @@ export default function NewEventForm({
     if (!form) return
     const data = new FormData(form)
     const timezone = textOf(data, 'timezone') || 'America/Sao_Paulo'
-    const result = generatePhases(textOf(data, 'data_evento'), shift, wallNow(timezone))
+    const setter0 = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    const mainDate = form.elements.namedItem('data_evento')
+    // A data pode ser informada aqui mesmo; ela também preenche o campo "Data do evento" do formulário.
+    const eventDate = textOf(data, 'data_evento') || genDateRef.current?.value || ''
+    if (!textOf(data, 'data_evento') && eventDate && mainDate instanceof HTMLInputElement) {
+      setter0?.call(mainDate, eventDate)
+      mainDate.dispatchEvent(new Event('input', { bubbles: true }))
+    }
+    if (!eventDate) genDateRef.current?.focus()
+    const result = generatePhases(eventDate, shift, wallNow(timezone))
     if (!result.ok) {
       setGenerated({ ok: false, text: result.message })
       return
@@ -282,6 +292,13 @@ export default function NewEventForm({
               <div className="mt-4 rounded-mc-medium bg-mc-surface-secondary p-4">
                 <p className="font-mc-interface text-sm font-semibold text-mc-text-primary">Gerar datas automaticamente</p>
                 <p className="mt-1 font-mc-interface text-sm text-mc-text-secondary">Escolha o turno do campeonato: preenchemos as quatro fases a partir da data do evento. Depois você pode editar.</p>
+                <label className="mt-3 block max-w-xs space-y-1.5 font-mc-interface text-sm font-semibold text-mc-text-primary">
+                  Data do evento
+                  <Input ref={genDateRef} type="date" onChange={(event) => {
+                    const main = event.currentTarget.form?.elements.namedItem('data_evento')
+                    if (main instanceof HTMLInputElement && !main.value) main.value = event.currentTarget.value
+                  }} />
+                </label>
                 <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Turno do campeonato">
                   {(Object.keys(SHIFTS) as EventShift[]).map((shift) => (
                     <Button key={shift} type="button" variant="outline" onClick={() => generate(shift)}>
