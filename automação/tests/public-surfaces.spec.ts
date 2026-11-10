@@ -25,12 +25,59 @@ async function assertNoHorizontalOverflow(page: Page) {
 }
 
 test.describe('superfícies públicas', () => {
-  test('home cinematográfica permanece utilizável', async ({ page }) => {
+  test('home: carrossel 3D, calendário e rodapé padrão', async ({ page }) => {
     const { errors } = await openPublic(page, '/');
-    await expect(page.locator('#home-hero-title')).toBeVisible();
+    await expect(page.locator('#home-hero-title')).toHaveCount(1);
     await expect(page.getByRole('navigation', { name: 'Navegação principal' })).toBeVisible();
+    const carousel = page.getByRole('region', { name: 'Campeonatos em destaque' });
+    await expect(carousel).toBeVisible();
+    await expect(page.locator('article[data-pos="0"]')).toHaveCount(1);
+    const first = await page.locator('article[data-pos="0"]').getAttribute('aria-label');
+    await page.getByRole('button', { name: 'Próximo campeonato' }).click();
+    await expect.poll(() => page.locator('article[data-pos="0"]').getAttribute('aria-label')).not.toBe(first);
+    await expect(page.locator('#calendario')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Encontre seu próximo campeonato/i })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Próximos campeonatos/ })).toBeVisible();
+    await expect(page.locator('footer').getByRole('link', { name: 'Academias e equipes' })).toBeVisible();
     expect(errors).toEqual([]);
     await assertNoHorizontalOverflow(page);
+  });
+
+  test('home: filtros do calendário em combobox de vidro', async ({ page }) => {
+    await openPublic(page, '/');
+    const search = page.locator('#home-event-search');
+    if (!(await search.count())) return; // sem eventos publicados não há barra de filtros
+    await page.locator('#calendario').scrollIntoViewIfNeeded();
+    await search.fill('zzz-sem-resultado');
+    await expect(page.getByText('Nenhum campeonato encontrado')).toBeVisible();
+    await page.getByRole('button', { name: 'Limpar filtros' }).click();
+    await expect(search).toHaveValue('');
+    const state = page.getByRole('combobox', { name: 'Estado' });
+    await state.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('listbox', { name: 'Estado' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('listbox', { name: 'Estado' })).toBeHidden();
+  });
+
+  test('logo, "Eventos" e rodapé levam à nova home e o histórico funciona', async ({ page }) => {
+    await openPublic(page, '/eventos');
+    await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('link', { name: 'Eventos' }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await page.goto('/eventos', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('link', { name: /MEU CAMP, início/ }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/eventos$/);
+    // o link "Eventos" do rodapé padrão também aponta para a Home
+    await page.goto('/noticias', { waitUntil: 'domcontentloaded' });
+    const footerEvents = page.locator('footer').getByRole('link', { name: 'Eventos', exact: true });
+    await footerEvents.scrollIntoViewIfNeeded();
+    await footerEvents.click();
+    await expect(page).toHaveURL(/\/$/);
+    // /eventos continua existindo com o calendário completo
+    await page.goto('/eventos', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { name: /Encontre seu próximo campeonato/i })).toBeVisible();
   });
 
   test('academias usa o palco institucional e preserva o conteúdo', async ({ page }) => {

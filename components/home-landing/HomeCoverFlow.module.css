@@ -1,0 +1,134 @@
+/* Cover Flow 3D da Home. Poses por [data-pos]; reduced-motion remove rotação, desfoque e transição. */
+
+.stage {
+  position: relative;
+  display: flex;
+  min-height: 100svh;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding-top: 4rem;
+  perspective: 1000px;
+}
+
+.flow {
+  position: relative;
+  display: flex;
+  height: 70vh;
+  min-height: 500px;
+  width: 100%;
+  max-width: 1400px;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+}
+
+.card {
+  --card-w: min(320px, 80vw);
+  position: absolute;
+  left: 50%;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  max-width: var(--card-w);
+  overflow: hidden;
+  border-radius: 1rem;
+  transform-origin: center;
+  transition:
+    transform 700ms cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 700ms cubic-bezier(0.25, 1, 0.5, 1),
+    filter 700ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@media (min-width: 640px) {
+  .card { --card-w: 600px; }
+}
+
+@media (min-width: 1024px) {
+  .card { --card-w: 900px; }
+}
+
+/* Os vizinhos ficam um pouco atrás no eixo Z: sem isso a borda girada invade o card central. */
+.card[data-pos='0'] {
+  z-index: 30;
+  opacity: 1;
+  filter: none;
+  transform: translate3d(-50%, 0, 0) scale(1) rotateY(0deg);
+}
+
+.card[data-pos='-1'] {
+  z-index: 20;
+  opacity: 0.4;
+  filter: blur(4px);
+  transform: translate3d(-90%, 0, -120px) scale(0.85) rotateY(32deg);
+}
+
+.card[data-pos='1'] {
+  z-index: 20;
+  opacity: 0.4;
+  filter: blur(4px);
+  transform: translate3d(-10%, 0, -120px) scale(0.85) rotateY(-32deg);
+}
+
+.card[data-pos='far-left'] {
+  z-index: 10;
+  opacity: 0;
+  filter: blur(8px);
+  pointer-events: none;
+  transform: translate3d(-150%, 0, -200px) scale(0.7) rotateY(40deg);
+}
+
+.card[data-pos='far-right'] {
+  z-index: 10;
+  opacity: 0;
+  filter: blur(8px);
+  pointer-events: none;
+  transform: translate3d(50%, 0, -200px) scale(0.7) rotateY(-40deg);
+}
+
+@media (min-width: 640px) {
+  .card[data-pos='-1'] { transform: translate3d(-110%, 0, -120px) scale(0.85) rotateY(32deg); }
+  .card[data-pos='1'] { transform: translate3d(10%, 0, -120px) scale(0.85) rotateY(-32deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+  .card[data-pos='-1'],
+  .card[data-pos='1'],
+  .card[data-pos='far-left'],
+  .card[data-pos='far-right'] { filter: none; }
+  .card[data-pos='-1'] { transform: translateX(-90%) scale(0.85); }
+  .card[data-pos='1'] { transform: translateX(-10%) scale(0.85); }
+  .card[data-pos='far-left'] { transform: translateX(-150%) scale(0.7); }
+  .card[data-pos='far-right'] { transform: translateX(50%) scale(0.7); }
+}
+
+@media (prefers-reduced-motion: reduce) and (min-width: 640px) {
+  .card[data-pos='-1'] { transform: translateX(-110%) scale(0.85); }
+  .card[data-pos='1'] { transform: translateX(10%) scale(0.85); }
+}
+
+/* A foto do evento domina a metade de cima e se dissolve no vidro para a de baixo. */
+.photo {
+  opacity: 0.9;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 42%, rgba(0, 0, 0, 0.5) 58%, transparent 82%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 42%, rgba(0, 0, 0, 0.5) 58%, transparent 82%);
+}
+
+.actions {
+  display: none;
+}
+
+.card[data-pos='0'] .actions {
+  display: flex;
+  animation: actions-in 500ms ease 200ms both;
+}
+
+@keyframes actions-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card[data-pos='0'] .actions { animation: none; }
+}

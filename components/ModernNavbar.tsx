@@ -24,7 +24,8 @@ const MARK = 36
 const SCROLL_THRESHOLD = 72
 
 function currentNavKey(pathname: string) {
-  if (pathname === '/') return 'home'
+  // A Home reúne o destaque e o calendário de campeonatos: "Eventos" é o item ativo nela também.
+  if (pathname === '/') return 'eventos'
   if (pathname === '/eventos' || pathname.startsWith('/eventos/')) return 'eventos'
   if (pathname === '/login') return 'login'
   return null
@@ -36,7 +37,11 @@ const itemColor = (white: boolean) =>
 const accentColor = (white: boolean) =>
   white ? 'text-blue-300 hover:text-blue-200 focus-visible:ring-white' : 'text-mc-action hover:text-mc-action/80 focus-visible:ring-mc-focus'
 
-export default function ModernNavbar({ overlayAtTop = false }: { overlayAtTop?: boolean }) {
+/**
+ * overlayAtTop: nasce transparente sobre um hero escuro.
+ * scrolledTone: como fica depois de rolar — 'solid' (branco, padrão) ou 'glass' (vidro translúcido, texto claro; usado na Home).
+ */
+export default function ModernNavbar({ overlayAtTop = false, scrolledTone = 'solid' }: { overlayAtTop?: boolean; scrolledTone?: 'solid' | 'glass' }) {
   const pathname = usePathname()
   const router = useRouter()
   const [currentUser, setCurrentUser] = useState<CurrentUser>(null)
@@ -54,7 +59,8 @@ export default function ModernNavbar({ overlayAtTop = false }: { overlayAtTop?: 
   const mobileLayerRef = useRef<HTMLDivElement>(null)
   const mobilePanelRef = useRef<HTMLElement>(null)
   const isLoggedIn = currentUser !== null
-  const useWhiteText = overlayAtTop && !scrolled
+  const glassWhenScrolled = overlayAtTop && scrolledTone === 'glass'
+  const useWhiteText = overlayAtTop && (glassWhenScrolled || !scrolled)
   const createEventHref = isLoggedIn ? CREATE_EVENT_HREF : CREATE_EVENT_REGISTER
 
   const closeMenus = useCallback(() => { setDrawerOpen(false); setMobileOpen(false) }, [])
@@ -215,9 +221,11 @@ export default function ModernNavbar({ overlayAtTop = false }: { overlayAtTop?: 
   // z-[65]: acima dos overlays do drawer/menu (z-[60]) para o botão hambúrguer permanecer clicável com o menu aberto.
   const headerClass = overlayAtTop
     ? `fixed inset-x-0 top-0 z-[65] transition-all duration-300 ease-out motion-reduce:transition-none ${
-        useWhiteText
-          ? 'border-b border-transparent bg-gradient-to-b from-mc-nav-dark/70 via-mc-nav-dark/30 to-transparent'
-          : 'border-b border-mc-border bg-white shadow-mc-elevated'
+        glassWhenScrolled && scrolled
+          ? 'mc-glass-bar'
+          : useWhiteText
+            ? 'border-b border-transparent bg-gradient-to-b from-mc-nav-dark/70 via-mc-nav-dark/30 to-transparent'
+            : 'border-b border-mc-border bg-white shadow-mc-elevated'
       }`
     : 'fixed inset-x-0 top-0 z-[65] border-b border-mc-border bg-white'
 
@@ -237,10 +245,11 @@ export default function ModernNavbar({ overlayAtTop = false }: { overlayAtTop?: 
           >
             <div className="hidden justify-self-start md:block">
               <Link
-                href="/eventos"
+                href="/"
                 ref={bindItem('eventos')}
                 data-nav-key="eventos"
                 aria-current={restingKey === 'eventos' ? 'page' : undefined}
+                onClick={navigateWithTransition('/')}
                 className={`${itemBase} ${itemColor(useWhiteText)}`}
               >
                 Eventos
@@ -251,7 +260,6 @@ export default function ModernNavbar({ overlayAtTop = false }: { overlayAtTop?: 
               ref={bindItem('home')}
               data-nav-key="home"
               aria-label="MEU CAMP, início"
-              aria-current={restingKey === 'home' ? 'page' : undefined}
               onClick={navigateWithTransition('/')}
               className={`col-start-2 flex h-16 items-center justify-self-center rounded-mc-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${useWhiteText ? 'focus-visible:ring-white' : 'focus-visible:ring-mc-focus'}`}
             >
@@ -336,7 +344,7 @@ export default function ModernNavbar({ overlayAtTop = false }: { overlayAtTop?: 
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-mc-action">Menu</p>
           </div>
           <div className="flex flex-1 flex-col gap-1 overflow-y-auto px-5 py-4">
-            <Link data-mobile-nav-item href="/eventos" aria-current={restingKey === 'eventos' ? 'page' : undefined} onClick={closeMenus} className="flex min-h-12 items-center border-b border-mc-border text-sm font-bold uppercase tracking-[0.16em] text-mc-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
+            <Link data-mobile-nav-item href="/" aria-current={restingKey === 'eventos' ? 'page' : undefined} onClick={(event) => { closeMenus(); navigateWithTransition('/')(event) }} className="flex min-h-12 items-center border-b border-mc-border text-sm font-bold uppercase tracking-[0.16em] text-mc-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus">
               Eventos
               {restingKey === 'eventos' ? <span aria-hidden="true" className="ml-3 h-0.5 w-9 bg-mc-action" /> : null}
             </Link>

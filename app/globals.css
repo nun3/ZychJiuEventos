@@ -536,7 +536,64 @@ iframe {
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation-duration: 320ms;
+    animation-duration: 240ms;
     animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+/* Vidro (Home "spatial"): receita única para cards, nav ao rolar, filtros e painéis flutuantes.
+   Mantém o fundo visível: translúcido + desfoque leve + borda clara + brilho superior. */
+.mc-glass {
+  background: linear-gradient(160deg, rgba(40, 90, 150, 0.3), rgba(8, 24, 44, 0.34) 55%, rgba(4, 12, 24, 0.42));
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  backdrop-filter: blur(8px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 0 60px rgba(255, 255, 255, 0.03);
+}
+
+.mc-glass-bar {
+  background: linear-gradient(160deg, rgba(40, 90, 150, 0.3), rgba(8, 24, 44, 0.34) 55%, rgba(4, 12, 24, 0.42));
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  backdrop-filter: blur(8px) saturate(150%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 20px 40px -24px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.mc-glass-field {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color-scheme: dark;
+}
+
+/* Painéis flutuantes (listbox, intervalo): mais opacos para o texto ler bem sobre qualquer fundo. */
+.mc-glass-pop {
+  background: rgba(10, 16, 32, 0.93);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.mc-glass-pop[hidden] {
+  display: none;
+}
+
+/* Barra fina de progresso de rota: aparece só enquanto a navegação demora. */
+@keyframes mc-route-progress {
+  0% { transform: scaleX(0.04); }
+  40% { transform: scaleX(0.55); }
+  100% { transform: scaleX(0.92); }
+}
+
+.mc-route-progress {
+  transform-origin: left center;
+  animation: mc-route-progress 8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-route-progress {
+    animation: none;
+    transform: scaleX(1);
+    opacity: 0.7;
   }
 }

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 
-const states = [
+export const states = [
   { value: 'Todos', label: 'Todos os estados' },
   { value: 'AC', label: 'AC — Acre' },
   { value: 'AL', label: 'AL — Alagoas' },

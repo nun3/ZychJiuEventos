@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Space_Grotesk } from 'next/font/google'
+import { RouteProgress } from '@/components/motion/RouteProgress'
 import { SiteScrollChoreography } from '@/components/motion/SiteScrollChoreography'
 import './globals.css'
 
@@ -20,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <body>
+        <RouteProgress />
         <SiteScrollChoreography>{children}</SiteScrollChoreography>
       </body>
     </html>
