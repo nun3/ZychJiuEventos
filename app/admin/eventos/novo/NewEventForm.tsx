@@ -11,6 +11,7 @@ import { FormField } from '@/components/ui/FormField'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { createEvent } from '../actions'
+import { SHIFTS, generatePhases, wallNow, type EventShift } from '@/lib/events/phase-generator'
 
 const phases = [
   ['inscricao', 'Inscrição'],
@@ -81,7 +82,35 @@ export default function NewEventForm({
   const [message, setMessage] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [phasesOpen, setPhasesOpen] = useState(false)
+  const phasesRef = useRef<HTMLDivElement>(null)
+  const [generated, setGenerated] = useState<{ ok: boolean; text: string } | null>(null)
   const requiresOrganizationChoice = Boolean(organizationOptions && organizationOptions.length > 1)
+
+  function generate(shift: EventShift) {
+    const form = phasesRef.current?.closest('form')
+    if (!form) return
+    const data = new FormData(form)
+    const timezone = textOf(data, 'timezone') || 'America/Sao_Paulo'
+    const result = generatePhases(textOf(data, 'data_evento'), shift, wallNow(timezone))
+    if (!result.ok) {
+      setGenerated({ ok: false, text: result.message })
+      return
+    }
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    for (const [tipo] of phases) {
+      const range = result.phases[tipo]
+      for (const [suffix, value] of [['inicio', range.inicio], ['fim', range.fim]] as const) {
+        const input = form.elements.namedItem(`${tipo}_${suffix}`)
+        if (input instanceof HTMLInputElement) {
+          setter?.call(input, value)
+          input.dispatchEvent(new Event('input', { bubbles: true }))
+        }
+      }
+    }
+    setErrors((current) => { const { phases: _removed, ...rest } = current; return rest })
+    setPhasesOpen(true)
+    setGenerated({ ok: true, text: `Datas geradas para o turno da ${SHIFTS[shift].label.toLowerCase()}. Revise e ajuste o que precisar.` })
+  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -250,7 +279,19 @@ export default function NewEventForm({
                   <ChevronDown aria-hidden="true" size={16} className={`ml-2 transition-transform ${phasesOpen ? 'rotate-180' : ''}`} />
                 </Button>
               </div>
-              <div id="event-phases" hidden={!phasesOpen} className="mt-4 space-y-3">
+              <div className="mt-4 rounded-mc-medium bg-mc-surface-secondary p-4">
+                <p className="font-mc-interface text-sm font-semibold text-mc-text-primary">Gerar datas automaticamente</p>
+                <p className="mt-1 font-mc-interface text-sm text-mc-text-secondary">Escolha o turno do campeonato: preenchemos as quatro fases a partir da data do evento. Depois você pode editar.</p>
+                <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Turno do campeonato">
+                  {(Object.keys(SHIFTS) as EventShift[]).map((shift) => (
+                    <Button key={shift} type="button" variant="outline" onClick={() => generate(shift)}>
+                      {SHIFTS[shift].label}
+                    </Button>
+                  ))}
+                </div>
+                {generated ? <p role="status" className={`mt-3 font-mc-interface text-sm ${generated.ok ? 'text-mc-success' : 'text-mc-error'}`}>{generated.text}</p> : null}
+              </div>
+              <div id="event-phases" ref={phasesRef} hidden={!phasesOpen} className="mt-4 space-y-3">
                 {errors.phases ? <Alert variant="error" role="alert">{errors.phases}</Alert> : null}
                 {phases.map(([value, label]) => (
                   <fieldset key={value} className="rounded-mc-medium border border-mc-border p-4">

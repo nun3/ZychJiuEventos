@@ -27,9 +27,11 @@ Sem migration, sem escrita em banco, sem mudança de pagamento.
 | `b7e38f8` | Sistema de menus: menu cinematográfico nas telas públicas e StaggeredMenu nas internas |
 | `69d88c2` | Rodapé Halftone (retícula) na Home, com paleta própria |
 | `a17452f` | `/eventos` aposentada (redirect para a Home) e spec pública atualizada |
-| (próximo) | Rodapé Halftone em todas as páginas (`ModernFooter` → `SiteFooter`; dashboard/platform ganharam rodapé), logo do painel interno → Home (`/`), avatar da pessoa logada no botão do menu lateral (`toggleAvatar`) |
+| `44de1ea` | Rodapé Halftone em todas as páginas (`ModernFooter` → `SiteFooter`; dashboard/platform ganharam rodapé), logo do painel interno → Home (`/`), avatar no botão do menu lateral |
+| `860aff7` | Avatar como único disparo do menu interno, cartão de perfil no painel, visualizador/editor da foto (`AvatarPhotoEditor`, recorte circular), `WhatsAppFloat` também na Home |
+| (este lote) | Menu interno: o avatar vira X ao abrir; gerador de datas das fases no novo evento (Manhã/Tarde/Noite, `lib/events/phase-generator.ts`, editável depois) |
 
-Nota: a Home não tem o botão flutuante do WhatsApp; as demais páginas (via `ModernFooter`) têm. Verificado: build, tsc, lint, spec pública 13/13, rodapé+logo em 9 páginas públicas (desktop/mobile) e na casca interna via rota QA temporária (removida). Telas reais `/dashboard`, `/admin`, `/platform` autenticadas não foram exercitadas.
+Nota: o WhatsApp flutuante (`WhatsAppFloat`) está em todas as páginas, exceto nas telas operacionais do evento. Verificado: build, tsc, lint, spec pública 13/13, rodapé+logo em 9 páginas públicas (desktop/mobile) e na casca interna via rota QA temporária (removida). Telas reais `/dashboard`, `/admin`, `/platform` autenticadas não foram exercitadas.
 
 **Regras novas (valem daqui em diante):**
 - **Telas públicas** (Home, institucionais, login, recuperar/atualizar senha, `/eventos/[id]`): `ModernNavbar` abre o menu cinematográfico

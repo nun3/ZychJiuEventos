@@ -481,7 +481,15 @@ export const StaggeredMenu = ({
           onClick={toggleMenu}
           type="button"
         >
-          {toggleAvatar ? <span className="sm-toggle-avatar" aria-hidden="true">{toggleAvatar}</span> : null}
+          {toggleAvatar ? (
+            <span className="sm-toggle-avatar" aria-hidden="true">
+              {open ? (
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              ) : toggleAvatar}
+            </span>
+          ) : null}
           <span ref={textWrapRef} className="sm-toggle-textWrap" aria-hidden="true">
             <span ref={textInnerRef} className="sm-toggle-textInner">
               {textLines.map((l, i) => (
