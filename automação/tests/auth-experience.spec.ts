@@ -22,13 +22,8 @@ async function loginAsOwner(page: Page, redirectTo = '/dashboard') {
 }
 
 async function openAccountMenu(page: Page) {
-  const width = page.viewportSize()?.width ?? 1440;
-  if (width < 768) {
-    await page.getByRole('button', { name: 'Abrir menu' }).click();
-    await page.getByRole('button', { name: 'Minha conta', exact: true }).click();
-    return;
-  }
-  await page.getByRole('button', { name: /Abrir menu de / }).click();
+  // Telas internas (dashboard, admin, platform): um único botão "Menu" abre o painel lateral em qualquer largura.
+  await page.getByRole('button', { name: /^Abrir menu/ }).click();
 }
 
 test.describe('experiência de autenticação', () => {

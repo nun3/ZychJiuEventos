@@ -1,0 +1,54 @@
+/*
+ * Menu das telas internas (dashboard, admin, platform): StaggeredMenu (React Bits) sobre uma barra branca de 64px.
+ * Só tipografia e medidas do projeto; a mecânica e a animação são do bit (components/react-bits/StaggeredMenu).
+ */
+.mc-internal-menu.staggered-menu-wrapper.fixed-wrapper {
+  /* Acima do botão flutuante do WhatsApp (z-40) e abaixo de modais do app. */
+  z-index: 66;
+  --sm-header-h: 64px;
+  --sm-header-pad: 0 clamp(16px, 3vw, 48px);
+  --sm-focus: #2563eb;
+  font-family: var(--font-inter), Inter, sans-serif;
+}
+
+.mc-internal-menu .sm-toggle {
+  font-family: var(--font-inter), Inter, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+/* Lista de 8 itens: o tamanho acompanha a altura e a largura da tela (sem quebrar em duas linhas no celular). */
+.mc-internal-menu .sm-panel-item {
+  font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
+  font-size: clamp(1.5rem, min(5.2vh, 7.4vw), 3.25rem);
+  letter-spacing: -0.04em;
+}
+
+/* O painel branco precisa se separar da página clara atrás dele. */
+.mc-internal-menu .staggered-menu-panel {
+  border-left: 1px solid rgb(226 232 240);
+  box-shadow: -24px 0 48px -24px rgb(15 23 42 / 0.28);
+}
+
+.mc-internal-menu .sm-panel-list {
+  gap: 0.35rem;
+}
+
+.mc-internal-menu .sm-panel-list[data-numbering] .sm-panel-item::after {
+  font-family: var(--font-inter), Inter, sans-serif;
+  font-size: 12px;
+  top: 0.25em;
+}
+
+.mc-internal-menu .sm-socials-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.mc-internal-menu .sm-socials-link {
+  font-size: 1rem;
+}

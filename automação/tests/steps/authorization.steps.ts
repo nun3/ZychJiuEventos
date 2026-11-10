@@ -77,13 +77,8 @@ Then('deve retornar ao dashboard com negação de permissão', async ({ page }) 
 });
 
 When('encerra a sessão pelo menu da conta', async ({ page }) => {
-  const width = page.viewportSize()?.width ?? 1440;
-  if (width < 768) {
-    await page.getByRole('button', { name: 'Abrir menu' }).click();
-    await page.getByRole('button', { name: 'Minha conta', exact: true }).click();
-  } else {
-    await page.getByRole('button', { name: /Abrir menu de / }).click();
-  }
+  // Telas internas: um único botão "Menu" abre o painel lateral; "Sair da conta" é um botão dentro dele.
+  await page.getByRole('button', { name: /^Abrir menu/ }).click();
   await page.getByRole('button', { name: 'Sair da conta' }).click();
 });
 

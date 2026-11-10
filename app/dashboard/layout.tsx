@@ -1,6 +1,6 @@
 import '../globals.css'
 import type { Metadata } from 'next'
-import ModernNavbar from '@/components/ModernNavbar'
+import InternalNav from '@/components/navigation/InternalNav'
 import InternalNavigation from '@/components/InternalNavigation'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 
@@ -12,7 +12,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const actor = await getDashboardActor()
   return (
     <div className="min-h-screen bg-mc-background pt-16">
-      <ModernNavbar />
+      <InternalNav />
       <InternalNavigation
         canManageEvents={Boolean(actor?.canManageEvents)}
         canManageOrganization={Boolean(actor?.canManageOrganization)}

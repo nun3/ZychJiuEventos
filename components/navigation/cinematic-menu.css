@@ -1,0 +1,266 @@
+/*
+ * Menu cinematográfico: overlay em tela cheia aprovado no Motion Lab (experiment/meucamp-motion-design, 72a88a5)
+ * e integrado em integration/motion-lab-eventos-20261107 (components/events/cinematic-account-nav.css).
+ * Mesma geometria, easings e atrasos do original. Adaptações: variáveis presas ao próprio menu (sem o nav branco),
+ * atrasos por variável CSS (--i) para listas além de 7 itens, lista longa em duas colunas e camada acima do WhatsApp.
+ */
+
+.ml-cinematic-menu {
+  --ml-header-h: 64px;
+  --ml-gutter: clamp(20px, 5vw, 80px);
+  --ml-max: 1320px;
+  --ml-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ml-muted: #94a3b8;
+  --ml-accent: #2563eb;
+  --ml-ink: #ffffff;
+
+  position: fixed;
+  inset: 0;
+  /* Acima do botão flutuante do WhatsApp (z-40) e dos drawers (z-60); abaixo do header (z-65), que guarda o botão de fechar. */
+  z-index: 61;
+  visibility: hidden;
+  pointer-events: none;
+  overflow: hidden;
+  background: rgb(7 19 28 / 0.22);
+  backdrop-filter: blur(0) saturate(0.8);
+  transition:
+    visibility 0s linear 0.75s,
+    backdrop-filter 0.75s var(--ml-ease),
+    background 0.75s var(--ml-ease);
+}
+
+.ml-cinematic-menu a:focus-visible,
+.ml-cinematic-menu button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+body.ml-menu-open {
+  overflow: hidden;
+}
+
+.ml-menu-haze {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 74% 16%, rgb(37 99 235 / 0.16), transparent 28%),
+    linear-gradient(120deg, rgb(7 19 28 / 0.92), rgb(7 19 28 / 0.62) 58%, rgb(7 19 28 / 0.82));
+  opacity: 0;
+  transform: scale(1.08);
+  transition: opacity 0.65s var(--ml-ease), transform 1.1s var(--ml-ease);
+}
+
+.ml-menu-inner {
+  position: relative;
+  height: 100%;
+  padding: calc(var(--ml-header-h) + clamp(40px, 9vh, 140px)) var(--ml-gutter) 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: var(--ml-max);
+  margin: auto;
+  overflow-y: auto;
+  /* Só os links capturam o clique; o vazio deixa passar para a névoa, que fecha o menu (no original, no celular, nada fechava). */
+  pointer-events: none;
+  transform: translateY(26px);
+  opacity: 0;
+  transition: transform 0.8s var(--ml-ease) 0.08s, opacity 0.55s var(--ml-ease) 0.08s;
+}
+
+.ml-menu-topline,
+.ml-menu-bottomline {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  color: var(--ml-muted);
+  font-family: var(--font-inter), Inter, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+}
+
+.ml-menu-links {
+  display: grid;
+  width: min(900px, 100%);
+  margin-left: auto;
+}
+
+/* Lista longa (conta logada): duas colunas em telas largas, para caber sem rolar. */
+@media (min-width: 900px) {
+  .ml-menu-links[data-dense] {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 56px;
+    width: min(1100px, 100%);
+  }
+  .ml-menu-links[data-dense] [data-menu-link]:nth-of-type(2) {
+    border-top: 1px solid rgb(255 255 255 / 0.18);
+  }
+}
+
+.ml-menu-links a,
+.ml-menu-links button {
+  display: grid;
+  grid-template-columns: 72px 1fr 42px;
+  align-items: baseline;
+  gap: 14px;
+  padding: 12px 0 14px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.18);
+  color: var(--ml-ink);
+  text-align: left;
+  text-decoration: none;
+  transform: translateY(32px);
+  opacity: 0;
+  transition:
+    color 0.3s var(--ml-ease),
+    border-color 0.3s var(--ml-ease),
+    transform 0.75s var(--ml-ease),
+    opacity 0.5s var(--ml-ease);
+}
+
+.ml-menu-links a,
+.ml-menu-links button {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.ml-menu-links > [data-menu-link]:first-of-type {
+  border-top: 1px solid rgb(255 255 255 / 0.18);
+}
+
+.ml-menu-link-index,
+.ml-menu-link-arrow {
+  color: var(--ml-accent);
+  font-family: var(--font-inter), Inter, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.ml-menu-link-arrow {
+  text-align: right;
+  font-size: 18px;
+  transition: transform 0.3s var(--ml-ease);
+}
+
+.ml-menu-link-text {
+  font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
+  /* O limite pela altura (vh) evita que 7+ itens estourem a tela em notebooks baixos. */
+  font-size: clamp(24px, min(4.2vw, 6.2vh), 58px);
+  line-height: 0.92;
+  letter-spacing: -0.06em;
+  font-weight: 500;
+}
+
+.ml-menu-links[data-dense] .ml-menu-link-text {
+  font-size: clamp(22px, min(3vw, 5vh), 40px);
+}
+
+.ml-menu-links > [data-menu-link] {
+  position: relative;
+  z-index: 1;
+}
+
+.ml-menu-links {
+  position: relative;
+}
+
+/*
+ * Ampliação por proximidade (dock-magnify.ts, do Dock do React Bits): a própria opção cresce perto do ponteiro.
+ * A escala é aplicada pelo JS na propriedade `scale` do rótulo; aqui só a origem, para ele crescer para a direita
+ * sem sair da linha. Não altera o layout (as linhas não se mexem).
+ */
+.ml-menu-link-text {
+  transform-origin: left center;
+  will-change: scale;
+}
+
+/*
+ * Sem realce no hover/foco: quem avisa é a própria opção, que cresce (dock-magnify.ts).
+ * Página atual: sem azul, só um realce leve — o número em branco e a linha de baixo um pouco mais clara.
+ */
+.ml-menu-links a[aria-current='page'] {
+  border-bottom-color: rgb(255 255 255 / 0.5);
+}
+
+.ml-menu-links a[aria-current='page'] .ml-menu-link-index {
+  color: var(--ml-ink);
+}
+
+.ml-menu-links a:hover .ml-menu-link-arrow,
+.ml-menu-links a:focus-visible .ml-menu-link-arrow,
+.ml-menu-links button:hover .ml-menu-link-arrow,
+.ml-menu-links button:focus-visible .ml-menu-link-arrow {
+  transform: translate(5px, -5px);
+}
+
+.ml-menu-orbit {
+  position: absolute;
+  border: 1px solid rgb(255 255 255 / 0.09);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.7) rotate(-18deg);
+  transition: opacity 0.9s var(--ml-ease) 0.18s, transform 1.2s var(--ml-ease) 0.18s;
+  pointer-events: none;
+}
+
+.ml-menu-orbit-a {
+  width: 54vw;
+  aspect-ratio: 1;
+  right: -19vw;
+  top: 8vh;
+}
+
+.ml-menu-orbit-b {
+  width: 25vw;
+  aspect-ratio: 1;
+  right: 12vw;
+  bottom: -11vw;
+  border-color: rgb(37 99 235 / 0.28);
+  transition-delay: 0.28s;
+}
+
+body.ml-menu-open .ml-cinematic-menu {
+  visibility: visible;
+  pointer-events: auto;
+  background: rgb(7 19 28 / 0.55);
+  backdrop-filter: blur(18px) saturate(0.82);
+  transition-delay: 0s;
+}
+
+body.ml-menu-open .ml-menu-haze {
+  opacity: 1;
+  transform: scale(1);
+}
+
+body.ml-menu-open .ml-menu-inner {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+body.ml-menu-open .ml-menu-orbit {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+body.ml-menu-open .ml-menu-links a,
+body.ml-menu-open .ml-menu-links button {
+  opacity: 1;
+  transform: translateY(0);
+  /* Mesma cascata do original (0,18 s + 0,09 s por item), com teto para listas longas. */
+  transition-delay: 0s, 0s, min(calc(0.18s + var(--i, 0) * 0.09s), 0.9s), min(calc(0.18s + var(--i, 0) * 0.09s), 0.9s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ml-cinematic-menu,
+  .ml-menu-haze,
+  .ml-menu-inner,
+  .ml-menu-orbit,
+  .ml-menu-links a,
+  .ml-menu-links button {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}
