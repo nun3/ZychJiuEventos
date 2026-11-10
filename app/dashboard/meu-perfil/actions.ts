@@ -12,6 +12,8 @@ import {
 } from '@/lib/identity/paths'
 import { isFunAvatarPresetUrl } from '@/lib/profile/fun-avatar-presets'
 import { createClient } from '@/lib/supabase/server'
+import { clampGrau } from '@/lib/athletes/belt'
+import { RECOGNIZED_BELT_NAMES } from '@/lib/categorization'
 
 export type ProfileActionResult = { ok: boolean; message: string }
 
@@ -82,6 +84,27 @@ export async function updateMyProfile(formData: FormData): Promise<ProfileAction
   await supabase.auth.updateUser({ data: { nome_completo: nome } })
   revalidateProfile()
   return { ok: true, message: 'Dados pessoais atualizados.' }
+}
+
+export async function updateMyBelt(formData: FormData): Promise<ProfileActionResult> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, message: 'Sessão expirada. Entre novamente.' }
+
+  const faixa = String(formData.get('faixa') || '').trim().toLowerCase()
+  if (!(RECOGNIZED_BELT_NAMES as readonly string[]).includes(faixa)) return { ok: false, message: 'Escolha uma faixa válida.' }
+  const { data: athlete } = await supabase.from('athletes').select('id').eq('user_id', user.id).maybeSingle()
+  if (athlete) return { ok: false, message: 'Sua faixa vem do cadastro de atleta. Edite por Meus atletas.' }
+
+  const { error } = await supabase.from('profiles').update({
+    faixa,
+    grau: clampGrau(formData.get('grau')),
+    updated_at: new Date().toISOString(),
+  }).eq('id', user.id)
+  if (error) return { ok: false, message: 'Não foi possível salvar a faixa. Tente novamente.' }
+
+  revalidateProfile()
+  return { ok: true, message: 'Faixa atualizada.' }
 }
 
 export async function setMyAvatarUrl(publicUrl: string): Promise<ProfileActionResult> {

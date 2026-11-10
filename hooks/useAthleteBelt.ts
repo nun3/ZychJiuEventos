@@ -11,6 +11,13 @@ import { DEFAULT_BELT, normalizeBelt, type BeltInfo } from '@/lib/athletes/belt'
 export function useAthleteBelt(enabled: boolean): BeltInfo | null {
   const [belt, setBelt] = useState<BeltInfo | null>(null)
 
+  const [version, setVersion] = useState(0)
+  useEffect(() => {
+    const refresh = () => setVersion((v) => v + 1)
+    window.addEventListener('meucamp:belt-updated', refresh)
+    return () => window.removeEventListener('meucamp:belt-updated', refresh)
+  }, [])
+
   useEffect(() => {
     if (!enabled) { setBelt(null); return }
     let active = true
@@ -25,10 +32,14 @@ export function useAthleteBelt(enabled: boolean): BeltInfo | null {
         result = { ...fallback, data: fallback.data ? { ...fallback.data, grau: 0 } : null } as typeof result
       }
       if (!active) return
-      setBelt(result.data ? normalizeBelt(result.data.faixa, result.data.grau) : DEFAULT_BELT)
+      if (result.data) { setBelt(normalizeBelt(result.data.faixa, result.data.grau)); return }
+      // Sem atleta vinculado: vale a faixa declarada no perfil.
+      const { data: profile } = await supabase.from('profiles').select('faixa, grau').eq('id', auth.user.id).maybeSingle()
+      if (!active) return
+      setBelt(profile?.faixa ? normalizeBelt(profile.faixa, profile.grau) : DEFAULT_BELT)
     })()
     return () => { active = false }
-  }, [enabled])
+  }, [enabled, version])
 
   return belt
 }

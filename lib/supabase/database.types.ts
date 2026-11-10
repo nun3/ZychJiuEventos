@@ -1909,6 +1909,8 @@ export type Database = {
           avatar_url: string | null
           banner_url: string | null
           cpf: string | null
+          faixa: string | null
+          grau: number
           created_at: string
           data_nascimento: string | null
           id: string
@@ -1920,6 +1922,8 @@ export type Database = {
           avatar_url?: string | null
           banner_url?: string | null
           cpf?: string | null
+          faixa?: string | null
+          grau?: number
           created_at?: string
           data_nascimento?: string | null
           id: string
@@ -1931,6 +1935,8 @@ export type Database = {
           avatar_url?: string | null
           banner_url?: string | null
           cpf?: string | null
+          faixa?: string | null
+          grau?: number
           created_at?: string
           data_nascimento?: string | null
           id?: string

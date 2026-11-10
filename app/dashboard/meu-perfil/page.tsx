@@ -23,6 +23,7 @@ import ProfileForm from './ProfileForm'
 import ProfileIdentityMedia from './ProfileIdentityMedia'
 import ProfileJourneySection from './ProfileJourneySection'
 import ProfileSportsSection from './ProfileSportsSection'
+import ProfileBeltForm from './ProfileBeltForm'
 
 const roleLabels = {
   atleta: 'Atleta',
@@ -82,7 +83,7 @@ export default async function MeuPerfilPage() {
   ] = await Promise.all([
     supabase
       .from('profiles')
-      .select('nome_completo, cpf, telefone, data_nascimento, created_at, updated_at, avatar_url, banner_url')
+      .select('nome_completo, cpf, telefone, data_nascimento, created_at, updated_at, avatar_url, banner_url, faixa, grau')
       .eq('id', user.id)
       .maybeSingle(),
     teamsQuery,
@@ -215,6 +216,8 @@ export default async function MeuPerfilPage() {
             teamName={primaryTeam?.nome ?? selfTeam?.nome ?? null}
             professorName={teamProfessorName}
           />
+
+          {!selfAthlete ? <ProfileBeltForm faixa={profile?.faixa ?? null} grau={profile?.grau ?? 0} /> : null}
 
           <ProfileJourneySection journey={journey} />
         </div>
