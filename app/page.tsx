@@ -1,8 +1,8 @@
 import Image from 'next/image'
 import ModernNavbar from '@/components/ModernNavbar'
-import ModernFooter from '@/components/ModernFooter'
 import { HomeCatalog } from '@/components/home-landing/HomeCatalog'
 import { HomeCoverFlow } from '@/components/home-landing/HomeCoverFlow'
+import { HomeFooter } from '@/components/home-landing/HomeFooter'
 import { isPastCatalogEvent } from '@/lib/events/catalog-presentation'
 import { getPublicEvents } from '@/lib/events/public-events'
 import { getHomeHighlightRules, getHomeHighlights } from '@/lib/home/highlights'
@@ -45,7 +45,7 @@ export default async function Home({
       <ModernNavbar overlayAtTop scrolledTone="glass" />
       <HomeCoverFlow events={featured} />
       <HomeCatalog events={events} initialSearch={initialSearch} />
-      <ModernFooter />
+      <HomeFooter />
     </main>
   )
 }
