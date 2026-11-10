@@ -8,6 +8,10 @@ export interface StaggeredMenuItem {
   onClick?: (event: MouseEvent) => void
   /** Marca a página atual (aria-current). */
   current?: boolean
+  /** Ícone no início da linha (decorativo). */
+  icon?: ReactNode
+  /** Título de grupo exibido antes deste item. */
+  section?: string
 }
 
 export interface StaggeredMenuSocialItem {

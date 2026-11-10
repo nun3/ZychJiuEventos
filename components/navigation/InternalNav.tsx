@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { Calendar, Files, LayoutGrid, LogOut, Plus, Trophy, User, Users } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import StaggeredMenu, { type StaggeredMenuItem } from '@/components/react-bits/StaggeredMenu'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
@@ -12,14 +13,16 @@ import './internal-nav.css'
 const CREATE_EVENT_HREF = '/admin/eventos/novo'
 const WHATSAPP = 'https://wa.me/5541991526177?text=' + encodeURIComponent('Olá! Gostaria de mais informações sobre o MEU CAMP.')
 
+const ICON = { size: 18, strokeWidth: 1.75 } as const
+
 const links = [
-  { link: '/dashboard', label: 'Meu painel' },
-  { link: '/dashboard/meu-perfil', label: 'Meu perfil' },
-  { link: '/dashboard/inscricoes', label: 'Minhas inscrições' },
-  { link: '/dashboard/meus-atletas', label: 'Minhas equipes' },
-  { link: '/admin/eventos', label: 'Meus eventos' },
-  { link: '/', label: 'Eventos' },
-  { link: CREATE_EVENT_HREF, label: 'Criar evento' },
+  { link: '/dashboard', label: 'Meu painel', icon: <LayoutGrid {...ICON} />, section: 'Minha conta' },
+  { link: '/dashboard/meu-perfil', label: 'Meu perfil', icon: <User {...ICON} /> },
+  { link: '/dashboard/inscricoes', label: 'Minhas inscrições', icon: <Files {...ICON} /> },
+  { link: '/dashboard/meus-atletas', label: 'Minhas equipes', icon: <Users {...ICON} /> },
+  { link: '/admin/eventos', label: 'Meus eventos', icon: <Trophy {...ICON} />, section: 'Torneios & lutas' },
+  { link: '/', label: 'Eventos', icon: <Calendar {...ICON} /> },
+  { link: CREATE_EVENT_HREF, label: 'Criar evento', icon: <Plus {...ICON} /> },
 ]
 
 const socialItems = [
@@ -53,7 +56,7 @@ export default function InternalNav() {
 
   const items: StaggeredMenuItem[] = [
     ...links.map((item) => ({ ...item, current: item.link === currentLink })),
-    { label: 'Sair da conta', ariaLabel: 'Sair da conta', onClick: () => { void handleLogout() } },
+    { label: 'Sair da conta', icon: <LogOut {...ICON} />, section: 'Sessão', ariaLabel: 'Sair da conta', onClick: () => { void handleLogout() } },
   ]
 
   return (

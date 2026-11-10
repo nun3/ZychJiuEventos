@@ -445,6 +445,7 @@ export const StaggeredMenu = ({
       data-position={position}
       data-open={open || undefined}
     >
+      <div className="sm-backdrop" aria-hidden="true" onClick={closeMenu} />
       <div ref={preLayersRef} className="sm-prelayers" aria-hidden="true">
         {(() => {
           const raw = colors && colors.length ? colors.slice(0, 4) : ['#1e1e22', '#35353c'];
@@ -519,7 +520,9 @@ export const StaggeredMenu = ({
           <ul className="sm-panel-list" role="list" data-numbering={displayItemNumbering || undefined}>
             {items && items.length ? (
               items.map((it, idx) => (
-                <li className="sm-panel-itemWrap" key={it.label + idx}>
+                <React.Fragment key={it.label + idx}>
+                {it.section ? <li className="sm-panel-section">{it.section}</li> : null}
+                <li className="sm-panel-itemWrap">
                   {it.link ? (
                     <a
                       className="sm-panel-item"
@@ -529,7 +532,10 @@ export const StaggeredMenu = ({
                       data-index={idx + 1}
                       onClick={event => pickItem(it, event)}
                     >
-                      <span className="sm-panel-itemLabel">{it.label}</span>
+                      <span className="sm-panel-itemLabel">
+                        {it.icon ? <span className="sm-panel-itemIcon" aria-hidden="true">{it.icon}</span> : null}
+                        <span className="sm-panel-itemText">{it.label}</span>
+                      </span>
                     </a>
                   ) : (
                     <button
@@ -539,10 +545,14 @@ export const StaggeredMenu = ({
                       data-index={idx + 1}
                       onClick={event => pickItem(it, event)}
                     >
-                      <span className="sm-panel-itemLabel">{it.label}</span>
+                      <span className="sm-panel-itemLabel">
+                        {it.icon ? <span className="sm-panel-itemIcon" aria-hidden="true">{it.icon}</span> : null}
+                        <span className="sm-panel-itemText">{it.label}</span>
+                      </span>
                     </button>
                   )}
                 </li>
+                </React.Fragment>
               ))
             ) : (
               <li className="sm-panel-itemWrap" aria-hidden="true">

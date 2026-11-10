@@ -409,3 +409,50 @@
 .sm-panel-header {
   margin-bottom: 0.5rem;
 }
+
+/* Fundo atrás do painel: escurece e desfoca a página; só a opacidade anima (compositor). Clique fecha o menu. */
+.sm-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgb(0 0 0 / 0.4);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+[data-open] > .sm-backdrop {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
+/* Painel em tela cheia: o fundo não aparece, então nem é pintado. */
+@media (max-width: 1024px) {
+  .sm-backdrop {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sm-backdrop,
+  [data-open] > .sm-backdrop {
+    transition: none;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .sm-backdrop {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgb(0 0 0 / 0.55);
+  }
+}
+
+.sm-panel-section {
+  list-style: none;
+}
+.sm-panel-itemIcon {
+  display: inline-flex;
+  flex: none;
+}
