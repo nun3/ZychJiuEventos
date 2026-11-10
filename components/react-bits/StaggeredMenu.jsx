@@ -25,6 +25,7 @@ export const StaggeredMenu = ({
   socialItems = [],
   displaySocials = true,
   displayItemNumbering = true,
+  toggleAvatar = null,
   className,
   logoUrl = '/src/assets/logos/reactbits-gh-white.svg',
   logo,
@@ -479,6 +480,7 @@ export const StaggeredMenu = ({
           onClick={toggleMenu}
           type="button"
         >
+          {toggleAvatar ? <span className="sm-toggle-avatar" aria-hidden="true">{toggleAvatar}</span> : null}
           <span ref={textWrapRef} className="sm-toggle-textWrap" aria-hidden="true">
             <span ref={textInnerRef} className="sm-toggle-textInner">
               {textLines.map((l, i) => (

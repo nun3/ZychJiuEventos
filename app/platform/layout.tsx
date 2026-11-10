@@ -1,6 +1,7 @@
 import '../globals.css'
 import type { Metadata } from 'next'
 import InternalNavigation from '@/components/InternalNavigation'
+import ModernFooter from '@/components/ModernFooter'
 import InternalNav from '@/components/navigation/InternalNav'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
 
@@ -19,6 +20,7 @@ export default async function PlatformLayout({ children }: { children: React.Rea
         isPlatformAdmin={Boolean(actor?.isPlatformAdmin)}
       />
       <div>{children}</div>
+      <ModernFooter />
     </div>
   )
 }

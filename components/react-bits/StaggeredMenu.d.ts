@@ -26,6 +26,8 @@ export interface StaggeredMenuProps {
   logoUrl?: string
   /** Elemento no lugar da logo por URL (ex.: <Link><Image/></Link>). */
   logo?: ReactNode
+  /** Avatar exibido no botão do menu, antes do texto (ex.: foto ou inicial da pessoa logada). */
+  toggleAvatar?: ReactNode
   menuButtonColor?: string
   openMenuButtonColor?: string
   accentColor?: string

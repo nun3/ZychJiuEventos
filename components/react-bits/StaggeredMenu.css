@@ -373,3 +373,21 @@
     right: 0;
   }
 }
+
+.sm-toggle-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-right: 4px;
+  overflow: hidden;
+  border-radius: 9999px;
+  border: 1px solid rgb(15 23 42 / 0.15);
+  background: rgb(37 99 235 / 0.1);
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1;
+}

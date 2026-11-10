@@ -72,6 +72,15 @@ export default function InternalNav() {
         items={items}
         socialItems={socialItems}
         displaySocials
+        toggleAvatar={
+          currentUser ? (
+            currentUser.avatarUrl ? (
+              <Image src={currentUser.avatarUrl} alt="" fill sizes="32px" className="object-cover" />
+            ) : (
+              <span>{currentUser.initial}</span>
+            )
+          ) : null
+        }
         displayItemNumbering
         colors={['#0b2742', '#2563eb']}
         accentColor="#2563eb"
@@ -83,7 +92,7 @@ export default function InternalNav() {
         panelLabel="Menu principal"
         onItemClick={(item) => item.link && pushWithViewTransition(router.push, item.link)}
         logo={
-          <Link href="/dashboard" aria-label="MEU CAMP, meu painel" className="relative block h-7 w-36 sm:w-40">
+          <Link href="/" aria-label="MEU CAMP, início" className="relative block h-7 w-36 sm:w-40">
             <Image src="/images/meucamp-wordmark.png" alt="" fill priority sizes="160px" className="object-contain" />
           </Link>
         }

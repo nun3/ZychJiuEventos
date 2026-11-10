@@ -1,5 +1,6 @@
 import '../globals.css'
 import type { Metadata } from 'next'
+import ModernFooter from '@/components/ModernFooter'
 import InternalNav from '@/components/navigation/InternalNav'
 import InternalNavigation from '@/components/InternalNavigation'
 import { getDashboardActor } from '@/lib/auth/dashboard-actor'
@@ -20,6 +21,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         fluid
       />
       <div>{children}</div>
+      <ModernFooter />
     </div>
   )
 }

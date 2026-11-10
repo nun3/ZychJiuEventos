@@ -13,10 +13,10 @@ import {
 } from '@/lib/footer/meucamp-footer'
 
 /**
- * Rodapé Halftone da Home. O canvas não enxerga variáveis CSS, e o next/font dá à Space Grotesk um nome gerado:
+ * Rodapé Halftone da plataforma (Home e demais páginas, via ModernFooter). O canvas não enxerga variáveis CSS, e o next/font dá à Space Grotesk um nome gerado:
  * lemos a lista de famílias real em `--font-space-grotesk` e a passamos ao componente, que refaz a palavra nessa fonte.
  */
-export function HomeFooter({ preset, height }: { preset?: HalftonePreset; height?: string }) {
+export function SiteFooter({ preset, height }: { preset?: HalftonePreset; height?: string }) {
   const [fontFamily, setFontFamily] = useState(MEUCAMP_FOOTER_FONT_FAMILY)
 
   useEffect(() => {
