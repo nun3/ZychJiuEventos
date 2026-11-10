@@ -80,3 +80,22 @@ export function generatePhases(eventDate: string, shift: EventShift, nowWall: nu
   }
   return { ok: true, phases }
 }
+
+const pad2 = (value: number) => String(value).padStart(2, '0')
+
+/**
+ * Escolhe o dia do evento dentro do mês/ano: o primeiro sábado em que as fases cabem (campeonatos de jiu-jitsu
+ * costumam ser aos sábados). Sem sábado possível, tenta o primeiro domingo; sem nenhum, devolve erro.
+ */
+export function pickEventDate(year: number, month: number, shift: EventShift, nowWall: number): { ok: true; date: string; phases: GeneratedPhases } | { ok: false; message: string } {
+  const last = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  for (const weekday of [6, 0]) {
+    for (let day = 1; day <= last; day += 1) {
+      if (new Date(Date.UTC(year, month - 1, day)).getUTCDay() !== weekday) continue
+      const date = `${year}-${pad2(month)}-${pad2(day)}`
+      const result = generatePhases(date, shift, nowWall)
+      if (result.ok) return { ok: true, date, phases: result.phases }
+    }
+  }
+  return { ok: false, message: 'Nesse mês não há fim de semana com tempo suficiente para as fases. Escolha um mês mais à frente.' }
+}

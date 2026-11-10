@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { generatePhases, wallNow } from '../../lib/events/phase-generator'
+import { generatePhases, pickEventDate, wallNow } from '../../lib/events/phase-generator'
 
 const now = Date.UTC(2026, 10, 10, 10, 30) // 10/11/2026 10:30
 
@@ -47,4 +47,21 @@ check('data muito próxima ou inválida devolve erro', () => {
 check('wallNow devolve o relógio de parede do fuso', () => {
   const ms = wallNow('America/Sao_Paulo', new Date('2026-11-10T15:00:00Z'))
   assert.equal(new Date(ms).getUTCHours(), 12)
+})
+
+check('pickEventDate escolhe o primeiro sábado em que cabe e respeita o turno', () => {
+  const r = pickEventDate(2027, 1, 'tarde', now)
+  assert.ok(r.ok)
+  if (r.ok) {
+    assert.equal(r.date, '2027-01-02')
+    assert.equal(new Date(`${r.date}T00:00:00Z`).getUTCDay(), 6)
+    assert.equal(r.phases.chaves.fim, '2027-01-02T11:00')
+  }
+})
+
+check('pickEventDate pula sábados próximos demais e falha no mês já passado', () => {
+  const r = pickEventDate(2026, 11, 'manha', now)
+  assert.ok(r.ok)
+  if (r.ok) assert.ok(r.date >= '2026-11-14')
+  assert.equal(pickEventDate(2026, 9, 'manha', now).ok, false)
 })
