@@ -26,6 +26,7 @@ export const StaggeredMenu = ({
   displaySocials = true,
   displayItemNumbering = true,
   toggleAvatar = null,
+  panelHeader = null,
   className,
   logoUrl = '/src/assets/logos/reactbits-gh-white.svg',
   logo,
@@ -473,7 +474,7 @@ export const StaggeredMenu = ({
         </div>
         <button
           ref={toggleBtnRef}
-          className="sm-toggle"
+          className={toggleAvatar ? 'sm-toggle sm-toggle--avatar' : 'sm-toggle'}
           aria-label={open ? text.closeAria : text.openAria}
           aria-expanded={open}
           aria-controls="staggered-menu-panel"
@@ -506,6 +507,7 @@ export const StaggeredMenu = ({
         inert={open ? undefined : ''}
       >
         <div className="sm-panel-inner">
+          {panelHeader ? <div className="sm-panel-header">{panelHeader}</div> : null}
           <ul className="sm-panel-list" role="list" data-numbering={displayItemNumbering || undefined}>
             {items && items.length ? (
               items.map((it, idx) => (

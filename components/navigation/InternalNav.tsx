@@ -72,6 +72,27 @@ export default function InternalNav() {
         items={items}
         socialItems={socialItems}
         displaySocials
+        panelHeader={
+          currentUser ? (
+            <Link
+              href="/dashboard/meu-perfil"
+              onClick={(event) => {
+                if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+                event.preventDefault()
+                pushWithViewTransition(router.push, '/dashboard/meu-perfil')
+              }}
+              className="mc-menu-profile"
+            >
+              <span className="mc-menu-profile-photo" aria-hidden="true">
+                {currentUser.avatarUrl ? <Image src={currentUser.avatarUrl} alt="" fill sizes="56px" className="object-cover" /> : <span>{currentUser.initial}</span>}
+              </span>
+              <span className="mc-menu-profile-text">
+                <strong>{currentUser.name}</strong>
+                <small>Ver e editar perfil</small>
+              </span>
+            </Link>
+          ) : null
+        }
         toggleAvatar={
           currentUser ? (
             currentUser.avatarUrl ? (

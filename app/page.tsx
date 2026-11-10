@@ -3,6 +3,7 @@ import ModernNavbar from '@/components/ModernNavbar'
 import { HomeCatalog } from '@/components/home-landing/HomeCatalog'
 import { HomeCoverFlow } from '@/components/home-landing/HomeCoverFlow'
 import { SiteFooter } from '@/components/SiteFooter'
+import { WhatsAppFloat } from '@/components/WhatsAppFloat'
 import { isPastCatalogEvent } from '@/lib/events/catalog-presentation'
 import { getPublicEvents } from '@/lib/events/public-events'
 import { getHomeHighlightRules, getHomeHighlights } from '@/lib/home/highlights'
@@ -46,6 +47,7 @@ export default async function Home({
       <HomeCoverFlow events={featured} />
       <HomeCatalog events={events} initialSearch={initialSearch} />
       <SiteFooter />
+      <WhatsAppFloat />
     </main>
   )
 }

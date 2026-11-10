@@ -3,7 +3,8 @@
 import { useRef, useState, useTransition } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Camera, ImagePlus, Sparkles, Trash2 } from 'lucide-react'
+import { Camera, ImagePlus, Pencil, Sparkles, Trash2 } from 'lucide-react'
+import { AvatarPhotoEditor } from './AvatarPhotoEditor'
 import { Alert } from '@/components/ui/Alert'
 import { Dialog } from '@/components/ui/Dialog'
 import {
@@ -124,6 +125,9 @@ export default function ProfileIdentityMedia({
   const [isPending, startTransition] = useTransition()
   const [busyKind, setBusyKind] = useState<MediaKind | null>(null)
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false)
+  const [avatarViewerOpen, setAvatarViewerOpen] = useState(false)
+  const [avatarEditorOpen, setAvatarEditorOpen] = useState(false)
+  const viewerInputRef = useRef<HTMLInputElement>(null)
 
   const run = (kind: MediaKind, work: () => Promise<ProfileActionResult>, onSuccess?: () => void) => {
     setFeedback(null)
@@ -202,23 +206,30 @@ export default function ProfileIdentityMedia({
         <div className="relative px-mc-16 pb-mc-24 pt-mc-16 sm:px-mc-24 sm:pb-mc-32 sm:pt-mc-20">
           <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:gap-mc-24 sm:text-left">
             <div className="relative z-10 -mt-8 flex shrink-0 flex-col items-center gap-mc-8">
-              {avatarUrl ? (
-                <Image
-                  src={avatarUrl}
-                  alt={`Foto de ${name}`}
-                  width={80}
-                  height={80}
-                  sizes="80px"
-                  className="h-20 w-20 rounded-full border-4 border-mc-surface bg-mc-surface object-contain shadow-mc-subtle"
-                />
-              ) : (
-                <span
-                  className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-mc-surface bg-mc-action font-mc-display text-2xl font-semibold text-white shadow-mc-subtle"
-                  aria-hidden="true"
-                >
-                  {initials}
-                </span>
-              )}
+              <button
+                type="button"
+                onClick={() => setAvatarViewerOpen(true)}
+                aria-label="Ver foto do perfil"
+                className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2"
+              >
+                {avatarUrl ? (
+                  <Image
+                    src={avatarUrl}
+                    alt={`Foto de ${name}`}
+                    width={80}
+                    height={80}
+                    sizes="80px"
+                    className="h-20 w-20 rounded-full border-4 border-mc-surface bg-mc-surface object-contain shadow-mc-subtle transition-transform hover:scale-[1.03]"
+                  />
+                ) : (
+                  <span
+                    className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-mc-surface bg-mc-action font-mc-display text-2xl font-semibold text-white shadow-mc-subtle"
+                    aria-hidden="true"
+                  >
+                    {initials}
+                  </span>
+                )}
+              </button>
               <div className="sm:hidden">
                 {avatarControls}
               </div>
@@ -318,6 +329,60 @@ export default function ProfileIdentityMedia({
           </div>
         </section>
       ) : null}
+
+      <input
+        ref={viewerInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+        onChange={(event) => {
+          const file = event.target.files?.[0]
+          event.target.value = ''
+          if (file) { setAvatarViewerOpen(false); uploadThenPersist('avatar', userId, file, setMyAvatarUrl) }
+        }}
+      />
+      <Dialog open={avatarViewerOpen} onClose={() => setAvatarViewerOpen(false)} title="Foto do perfil" className="max-w-xl">
+        <div className="flex flex-col items-center gap-6">
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatarUrl} alt={`Foto de ${name}`} className="h-64 w-64 rounded-full bg-mc-surface-secondary object-cover sm:h-72 sm:w-72" />
+          ) : (
+            <span className="flex h-64 w-64 items-center justify-center rounded-full bg-mc-action font-mc-display text-7xl font-semibold text-white sm:h-72 sm:w-72" aria-hidden="true">{initials}</span>
+          )}
+          <div className="flex w-full flex-wrap items-center justify-between gap-2 font-mc-interface text-sm font-semibold text-mc-text-primary">
+            <div className="flex gap-2">
+              {avatarUrl ? (
+                <button type="button" disabled={disabled} onClick={() => { setAvatarViewerOpen(false); setAvatarEditorOpen(true) }} className="inline-flex items-center gap-2 rounded-mc-full px-4 py-2 hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus disabled:opacity-50">
+                  <Pencil aria-hidden="true" size={16} /> Editar
+                </button>
+              ) : null}
+              <button type="button" disabled={disabled} onClick={() => viewerInputRef.current?.click()} className="inline-flex items-center gap-2 rounded-mc-full px-4 py-2 hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus disabled:opacity-50">
+                <Camera aria-hidden="true" size={16} /> Atualizar
+              </button>
+              <button type="button" disabled={disabled} onClick={() => { setAvatarViewerOpen(false); setAvatarPickerOpen(true) }} className="inline-flex items-center gap-2 rounded-mc-full px-4 py-2 hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus disabled:opacity-50">
+                <Sparkles aria-hidden="true" size={16} /> Avatar divertido
+              </button>
+            </div>
+            {avatarUrl ? (
+              <button type="button" disabled={disabled} onClick={() => { setAvatarViewerOpen(false); run('avatar', clearMyAvatar) }} className="inline-flex items-center gap-2 rounded-mc-full px-4 py-2 text-mc-error hover:bg-mc-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus disabled:opacity-50">
+                <Trash2 aria-hidden="true" size={16} /> Excluir
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </Dialog>
+      <AvatarPhotoEditor
+        open={avatarEditorOpen}
+        src={avatarUrl}
+        busy={disabled}
+        onClose={() => setAvatarEditorOpen(false)}
+        onSave={(file) => {
+          setAvatarEditorOpen(false)
+          uploadThenPersist('avatar', userId, file, setMyAvatarUrl)
+        }}
+      />
 
       <Dialog
         open={avatarPickerOpen}

@@ -28,6 +28,8 @@ export interface StaggeredMenuProps {
   logo?: ReactNode
   /** Avatar exibido no botão do menu, antes do texto (ex.: foto ou inicial da pessoa logada). */
   toggleAvatar?: ReactNode
+  /** Cartão no topo do painel (ex.: foto e nome que levam ao perfil). Com `toggleAvatar`, o botão mostra só o avatar. */
+  panelHeader?: ReactNode
   menuButtonColor?: string
   openMenuButtonColor?: string
   accentColor?: string

@@ -52,3 +52,53 @@
 .mc-internal-menu .sm-socials-link {
   font-size: 1rem;
 }
+
+.mc-menu-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  color: #0f172a;
+  text-decoration: none;
+}
+.mc-menu-profile:hover,
+.mc-menu-profile:focus-visible {
+  background: #f1f5f9;
+  outline: none;
+}
+.mc-menu-profile:focus-visible {
+  box-shadow: 0 0 0 2px #2563eb;
+}
+.mc-menu-profile-photo {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: rgb(37 99 235 / 0.12);
+  color: #2563eb;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.mc-menu-profile-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.mc-menu-profile-text strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1rem;
+}
+.mc-menu-profile-text small {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}

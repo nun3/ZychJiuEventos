@@ -379,9 +379,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  margin-right: 4px;
+  width: 40px;
+  height: 40px;
   overflow: hidden;
   border-radius: 9999px;
   border: 1px solid rgb(15 23 42 / 0.15);
@@ -390,4 +389,23 @@
   font-weight: 700;
   font-size: 0.875rem;
   line-height: 1;
+}
+
+/* Com avatar, o botão é só a foto; texto e "+" seguem no DOM (animação), mas ocultos. */
+.sm-toggle--avatar .sm-toggle-textWrap,
+.sm-toggle--avatar .sm-icon {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  opacity: 0;
+  pointer-events: none;
+}
+.sm-toggle--avatar:focus-visible .sm-toggle-avatar,
+.sm-toggle--avatar[aria-expanded='true'] .sm-toggle-avatar {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb;
+}
+.sm-panel-header {
+  margin-bottom: 0.5rem;
 }
