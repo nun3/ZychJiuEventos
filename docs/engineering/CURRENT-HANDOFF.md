@@ -16,6 +16,22 @@ Sem credenciais, tokens, dados pessoais ou identificadores de infraestrutura.
 
 O working tree original de `jiu` não foi modificado neste lote.
 
+## Release visual publicada — torii, navbar, avatar com graduação, /experiencia, Dialog (11 nov 2026, NO AR)
+
+Branch `release/visual-torii-experiencia-20261111` (worktree `jiu-release-visual`), base `6b26e39` (o que estava em produção). Cherry-pick controlado de `25ab2de`, `cac85bd`, `0f7b275`, `a7c3f5f` (commits visuais de `feat/organizer-compliance-approval`) + `25bf4fe` (remove o link `/demonstracao` do menu, rota fora desta release). Sem compliance, demo, LIVE, migrations, RPCs, seeds ou pagamentos; 24 arquivos, nenhum em `supabase/`, `lib/compliance` ou pagamentos. Conflitos: só `CURRENT-HANDOFF.md` (base mantida) e `ModernNavbar.tsx` (link de demo; resolvido adotando a versão visual).
+
+| Item | Valor |
+| --- | --- |
+| SHA publicado | `25bf4fe537a2dc7dc162d054f33e3ddfddbe3153` |
+| Deployment de produção | `dpl_6etGr8HWWk12cgM2VqnWdX9Sar89` (`jiu-7as0fb50k`), criado com `--skip-domain`, validado e promovido |
+| Preview de validação | `dpl_96BzS2kw7S76ViioR1PBj3aAdmf9` (`jiu-h91q7c7e8`, protegido por SSO; smoke via `vercel curl`) |
+| Domínio | `jiu-three.vercel.app` (+ `jiu-navy`) |
+| **Rollback** | `dpl_6FUZCW3ueLtsNYcDKmkqkahDCDt7` (`jiu-k3kus5iwd`, SHA `6b26e39`) via `vercel rollback`/`promote`; nada tocou o banco, sem rollback de banco |
+
+Validação: tsc e `next build` PASS; eslint sem erros (1 warning `no-img-element` preexistente); unit 260/261 (falha preexistente `registration-correction`, alias do ts-node, sem relação com a release). Playwright isolado (build real sem `.env*`, Supabase simulado por interceptação, sem escrita): 50/50 — torii→`/experiencia`, avatar e menu lateral, graus 0/2/4, Esc com foco, X, trava de rolagem, logout, mobile/tablet/laptop baixo/reduced-motion/zoom 125 e 200%, CPU 4x (p95 16,8 ms), Dialog desktop/mobile (portal no body, centralizado sob ancestral com transform, foco, Esc, fundo, scroll). Pós-publicação: rotas públicas 200, `/` e `/dashboard` redirecionam como antes, `/demonstracao` 404, sem erro de console nem de runtime.
+NOT_RUN: fluxos autenticados reais no deploy (dashboard, perfil, foto ampliada) por falta de credencial; Dialog testado em página descartável, não nos consumidores reais (`ProfileIdentityMedia`, `AvatarPhotoEditor`, `EventModal`); `public-surfaces.spec.ts` contra o stack E2E. O Dialog segue abaixo (z-50) da barra interna (z-60/66), como antes.
+Esta release NÃO contém compliance/demo/LIVE (NO-GO). Ao integrar essa branch, os commits visuais virão duplicados (cherry-pick `-x`).
+
 ## Lote de 10 nov 2026 — navegação fluida do painel (commitado, NÃO publicado)
 
 Branch `feature/navegacao-fluida` (derivada de `feature/gerador-eventos`), sem push, deploy, migration ou escrita em banco.
