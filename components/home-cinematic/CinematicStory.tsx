@@ -8,6 +8,9 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { HeroParticleWordmark } from '@/components/home-cinematic/HeroParticleWordmark'
+import ToriiMark from '@/components/brand/ToriiMark'
+import { MartialPathTimeline } from '@/components/home-cinematic/MartialPathTimeline'
+import { PATH_MILESTONES } from '@/lib/martial-arts/path-timeline'
 import {
   HISTORICAL_BIBLIOGRAPHY,
   HISTORICAL_METAPHOR_DISCLAIMER,
@@ -103,6 +106,17 @@ const STATEMENT_LINES = [
 
 const FINALE_LINES = [['Agora é', 'sua vez'], ['de organizar.']]
 
+// Números do caminho. Os dois primeiros vêm dos próprios dados; os ~4.000 anos vão de c. 2000 a.C. (Beni Hasan) a 2000 (Sydney).
+const formatCount = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+const STATS = [
+  { value: PATH_MILESTONES.length, label: 'marcos documentados' },
+  { value: CHAPTERS.length, label: 'tradições no caminho' },
+  { value: 4000, label: 'anos de história de luta' },
+]
+
+// Frase do manifesto (revelada palavra a palavra na rolagem). Resume a transformação descrita no dossiê: espaço delimitado, árbitro e regras.
+const MANIFESTO_WORDS = 'Todo combate precisa de um lugar, de um juiz e de uma regra. Foi assim que o treino, aos poucos, virou competição.'.split(' ')
+
 const fgMix = (percent: number) => `color-mix(in srgb, var(--story-fg) ${percent}%, transparent)`
 
 function MaskedLines({ lines, lineAttr }: { lines: string[][]; lineAttr: string }) {
@@ -143,6 +157,8 @@ function ChapterFigure({
         <div data-parallax-inner className="absolute inset-x-0 -inset-y-[8%]">
           <Image src={image.src} alt={image.alt} fill sizes="(min-width: 768px) 32vw, 62vw" className="object-cover" />
         </div>
+        {/* Cortina: cobre a foto e sobe conforme ela entra na tela (só transform). Sem movimento fica recolhida. */}
+        <div aria-hidden="true" data-curtain className="absolute inset-0 origin-top scale-y-0 bg-[var(--story-bg)]" />
       </div>
       <figcaption className="mt-2 font-mc-interface text-mc-caption font-semibold uppercase tracking-[0.16em] opacity-70">
         {image.caption}
@@ -153,7 +169,7 @@ function ChapterFigure({
 
 function ChapterText({ chapter, entry }: { chapter: Chapter; entry: MartialTraditionEntry }) {
   return (
-    <div className="bg-[var(--story-bg)] px-1 py-6 md:p-6">
+    <div data-chapter-text className="bg-[var(--story-bg)] px-1 py-6 md:p-6">
       <p className="font-mc-interface text-mc-caption font-semibold uppercase tracking-[0.18em] opacity-70">
         {entry.period}
       </p>
@@ -309,6 +325,87 @@ export function CinematicStory() {
             )
           })
 
+          q('[data-curtain]').forEach((el) => {
+            gsap.fromTo(
+              el,
+              { scaleY: 1 },
+              { scaleY: 0, transformOrigin: 'top', ease: 'none', scrollTrigger: { trigger: el.parentElement, start: 'top 92%', end: 'top 50%', scrub: true } },
+            )
+          })
+
+          const manifestoWords = q('[data-word]')
+          if (manifestoWords.length) {
+            gsap.fromTo(
+              manifestoWords,
+              { opacity: 0.14 },
+              {
+                opacity: 1,
+                ease: 'none',
+                stagger: 0.12,
+                scrollTrigger: { trigger: manifestoWords[0].parentElement, start: 'top 78%', end: 'bottom 48%', scrub: true },
+              },
+            )
+          }
+
+          // Títulos gigantes dos capítulos: deslizam na lateral enquanto o capítulo passa.
+          const chapterTitles = q('[data-chapter-title]')
+          q('[data-chapter]').forEach((article, index) => {
+            const title = chapterTitles[index]
+            if (!title) return
+            gsap.fromTo(
+              title,
+              { x: isDesktop ? '9vw' : '5vw' },
+              { x: isDesktop ? '-5vw' : '-3vw', ease: 'none', scrollTrigger: { trigger: article, start: 'top bottom', end: 'bottom top', scrub: true } },
+            )
+          })
+
+          // Texto de cada capítulo: entra em cascata (uma vez por entrada, reversível).
+          q('[data-chapter-text]').forEach((block) => {
+            gsap.from(Array.from(block.children), {
+              y: 36,
+              opacity: 0,
+              stagger: 0.09,
+              duration: 0.7,
+              ease: 'power3.out',
+              scrollTrigger: { trigger: block, start: 'top 82%', toggleActions: 'play none none reverse' },
+            })
+          })
+
+          // Faixa lateral: duas linhas em sentidos opostos, ligadas à rolagem.
+          const marqueeSection = q('[data-marquee]')[0]
+          if (marqueeSection) {
+            q('[data-marquee-row]').forEach((row) => {
+              const direction = Number((row as HTMLElement).dataset.marqueeRow)
+              gsap.fromTo(
+                row,
+                { xPercent: direction > 0 ? -45 : 0 },
+                { xPercent: direction > 0 ? 0 : -45, ease: 'none', scrollTrigger: { trigger: marqueeSection, start: 'top bottom', end: 'bottom top', scrub: 0.6 } },
+              )
+            })
+          }
+
+          // Números do caminho: contagem a partir de zero ao entrar na tela.
+          const counters = q('[data-count]') as HTMLElement[]
+          counters.forEach((el) => {
+            const end = Number(el.dataset.count)
+            const tally = { value: 0 }
+            el.textContent = formatCount(0)
+            ScrollTrigger.create({
+              trigger: el,
+              start: 'top 88%',
+              once: true,
+              onEnter: () => {
+                gsap.to(tally, { value: end, duration: 1.8, ease: 'power2.out', onUpdate: () => { el.textContent = formatCount(Math.round(tally.value)) } })
+              },
+            })
+          })
+
+          // Barra de progresso da jornada (escala em X, só transform).
+          const bar = q('[data-journey-bar]')[0]
+          if (bar) {
+            gsap.to(bar, { scaleX: 1, ease: 'none', scrollTrigger: { trigger: rootEl, start: 'top top', end: 'bottom bottom', scrub: true } })
+          }
+
           const finale = q('[data-finale]')[0]
           const finaleMask = q('[data-finale-mask]')[0]
           if (finale && finaleMask) {
@@ -331,6 +428,65 @@ export function CinematicStory() {
                 0.5,
               )
               .fromTo(q('[data-finale-fade]'), { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.25 }, 0.7)
+              .fromTo(q('[data-finale-torii]'), { opacity: 0, scale: 0.82 }, { opacity: 0.14, scale: 1.04, ease: 'none', duration: 0.7 }, 0.3)
+          }
+
+          // Se a preferência de movimento mudar, os números voltam ao valor final.
+          return () => {
+            counters.forEach((el) => { el.textContent = formatCount(Number(el.dataset.count)) })
+          }
+        },
+      )
+
+      // O caminho: em telas amplas e com movimento permitido, a seção fixa e os cartões atravessam na horizontal.
+      // Fora disso (celular, tela baixa, movimento reduzido) permanece a lista vertical do HTML.
+      mm.add(
+        { wide: '(min-width: 768px) and (min-height: 560px)', motionOk: '(prefers-reduced-motion: no-preference)' },
+        (context) => {
+          const { wide, motionOk } = context.conditions as { wide: boolean; motionOk: boolean }
+          if (!wide || !motionOk) return
+          const section = q('[data-path]')[0] as HTMLElement | undefined
+          const track = q('[data-path-track]')[0] as HTMLElement | undefined
+          const line = q('[data-path-line]')[0]
+          const yearEl = q('[data-path-year]')[0]
+          const cards = q('[data-path-card]') as HTMLElement[]
+          if (!section || !track || !line || !cards.length) return
+
+          section.dataset.mode = 'h'
+          const distance = () => Math.max(0, track.scrollWidth - window.innerWidth)
+          let current = -1
+          // Só escreve no DOM quando o marco ativo muda (identidade), nunca a cada quadro.
+          const setActive = (index: number) => {
+            if (index === current) return
+            current = index
+            cards.forEach((card, i) => { card.dataset.active = String(i === index) })
+            if (yearEl) yearEl.textContent = PATH_MILESTONES[index].year
+          }
+          gsap
+            .timeline({
+              defaults: { ease: 'none' },
+              scrollTrigger: {
+                trigger: section,
+                start: 'top top',
+                end: () => `+=${distance()}`,
+                pin: true,
+                scrub: 1,
+                anticipatePin: 1,
+                invalidateOnRefresh: true,
+                // O pin muda a altura da página: ele atualiza antes dos gatilhos de tema dos capítulos (criados primeiro, mas abaixo no documento).
+                refreshPriority: 1,
+                onUpdate: (self) => setActive(Math.min(cards.length - 1, Math.round(self.progress * (cards.length - 1)))),
+              },
+            })
+            .to(track, { x: () => -distance() }, 0)
+            .to(line, { scaleX: 1 }, 0)
+          // A seção mudou de altura ao virar horizontal: reposiciona os demais gatilhos.
+          const frame = requestAnimationFrame(() => ScrollTrigger.refresh())
+          return () => {
+            cancelAnimationFrame(frame)
+            delete section.dataset.mode
+            cards.forEach((card, i) => { card.dataset.active = String(i === 0) })
+            if (yearEl) yearEl.textContent = PATH_MILESTONES[0].year
           }
         },
       )
@@ -351,6 +507,11 @@ export function CinematicStory() {
       style={storyVars}
       className="relative overflow-x-clip bg-[var(--story-bg)] text-[var(--story-fg)]"
     >
+      {/* Progresso da jornada: linha fina sob a navbar, escala em X com a rolagem da página */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-16 z-[64] h-[3px] bg-transparent">
+        <div data-journey-bar className="h-full origin-left scale-x-0 bg-mc-action" />
+      </div>
+
       {/* Abertura: MEU CAMP em retícula de partículas */}
       <HeroParticleWordmark />
 
@@ -397,6 +558,22 @@ export function CinematicStory() {
         </div>
       </section>
 
+      {/* Faixa lateral: os nomes das tradições deslizam em sentidos opostos conforme a rolagem (decorativa) */}
+      <section aria-hidden="true" data-marquee className="relative select-none overflow-hidden py-10 md:py-16">
+        {([-1, 1] as const).map((direction) => (
+          <div
+            key={direction}
+            data-marquee-row={direction}
+            className="flex w-max gap-[4vw] whitespace-nowrap py-1 font-mc-display text-[16vw] font-bold leading-[0.95] tracking-[-0.05em] text-transparent md:text-[9vw]"
+            style={{ WebkitTextStroke: '1.5px color-mix(in srgb, var(--story-fg) 45%, transparent)' }}
+          >
+            {[...CHAPTERS, ...CHAPTERS, ...CHAPTERS].map((chapter, index) => (
+              <span key={`${chapter.anchor}-${index}`}>{chapter.name}</span>
+            ))}
+          </div>
+        ))}
+      </section>
+
       {/* Tradições */}
       <section
         data-traditions
@@ -441,6 +618,34 @@ export function CinematicStory() {
             </a>
           ))}
         </nav>
+      </section>
+
+      {/* Manifesto: a frase se acende palavra a palavra com a rolagem */}
+      <section aria-label="Manifesto" className="relative px-5 py-24 sm:px-8 md:py-40 lg:px-12 xl:px-20">
+        <p className="mx-auto max-w-5xl font-mc-display text-[1.875rem] font-semibold leading-[1.12] tracking-[-0.035em] sm:text-5xl md:text-6xl lg:text-7xl">
+          {MANIFESTO_WORDS.map((word, index) => (
+            <Fragment key={`${word}-${index}`}>
+              <span data-word>{word}</span>
+              {index < MANIFESTO_WORDS.length - 1 ? ' ' : null}
+            </Fragment>
+          ))}
+        </p>
+      </section>
+
+      <MartialPathTimeline />
+
+      {/* Números do caminho: sobem de zero quando entram na tela (uma vez) */}
+      <section aria-label="O caminho em números" className="relative px-5 py-20 sm:px-8 md:py-32 lg:px-12 xl:px-20">
+        <dl className="mx-auto grid max-w-6xl gap-10 md:grid-cols-3 md:gap-8">
+          {STATS.map((stat) => (
+            <div key={stat.label} className="border-t pt-5" style={{ borderColor: fgMix(30) }}>
+              <dt className="order-2 mt-3 font-mc-interface text-mc-caption font-semibold uppercase tracking-[0.18em] opacity-70">{stat.label}</dt>
+              <dd data-count={stat.value} className="font-mc-display text-[22vw] font-bold leading-none tracking-[-0.05em] md:text-[9vw]">
+                {formatCount(stat.value)}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
       {/* Capítulos: grade em parallax + título gigante sticky */}
@@ -586,6 +791,10 @@ export function CinematicStory() {
             </div>
             <div data-finale-shade aria-hidden="true" className="absolute inset-0 bg-mc-nav-dark/65" />
           </div>
+          {/* Torii-fantasma da marca atrás do convite: surge e cresce de leve com a rolagem */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <ToriiMark variant="solid" data-finale-torii className="h-[74svh] w-auto text-white opacity-0" />
+          </div>
           <div className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center text-white">
             <p data-finale-fade className="font-mc-interface text-mc-caption font-semibold uppercase tracking-[0.2em] text-white/80">
               Campeonatos abertos
@@ -608,7 +817,7 @@ export function CinematicStory() {
                 href={CREATE_EVENT_HREF}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-mc-small border border-white/60 px-6 font-mc-interface text-sm font-bold uppercase tracking-[0.12em] text-white transition-colors duration-mc-normal hover:bg-white hover:text-mc-text-primary"
               >
-                Criar evento real
+                Criar evento
               </Link>
             </div>
           </div>
