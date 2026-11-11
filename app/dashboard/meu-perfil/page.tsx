@@ -217,7 +217,7 @@ export default async function MeuPerfilPage() {
             professorName={teamProfessorName}
           />
 
-          {!selfAthlete ? <ProfileBeltForm faixa={profile?.faixa ?? null} grau={profile?.grau ?? 0} /> : null}
+          {!selfAthlete ? <ProfileBeltForm faixa={profile?.faixa ?? null} grau={profile?.grau ?? 0} avatarUrl={avatarUrl} initials={initials} /> : null}
 
           <ProfileJourneySection journey={journey} />
         </div>

@@ -1,8 +1,8 @@
 import { useId } from 'react'
+import ToriiMark, { TORII_ASPECT } from '@/components/brand/ToriiMark'
 
-// Contorno do ideograma 柔 (ju, "suave", de Jiu-Jitsu) embutido como caminho SVG: não depende de fonte CJK no aparelho.
-const JU_PATH =
-  'M16 -59H118V-79H139V-59H239V-42H155Q189 -13 243 2L233 22Q175 2 139 -37V24H118V-39Q83 0 26 22L12 4Q65 -13 99 -42H16ZM39 -201H208V-184Q180 -168 140 -155H232V-138Q218 -116 199 -97L183 -109L208 -138H149V-105Q148 -84 120 -84L99 -86L96 -105L120 -102Q128 -102 128 -111V-138H127Q89 -104 26 -83L13 -100Q68 -115 102 -138H18V-155H107L80 -168L96 -179L122 -164L174 -184H39Z'
+const TORII_H = 50 // altura da torii no viewBox 100x100 do indicador; a largura segue a proporção original
+const TORII_W = TORII_H * TORII_ASPECT
 
 const R = 34
 const point = (deg: number) => {
@@ -21,10 +21,11 @@ const STROKES = Array.from({ length: STROKE_COUNT }, (_, i) => {
 })
 
 /**
- * Indicador de espera "Enso BJJ": círculo zen (ensō) em pincelada sumi-e girando em torno do ideograma 柔.
- * A cor vem de `currentColor`. Com prefers-reduced-motion o anel fica parado (o ideograma já comunica a espera).
+ * Indicador de espera "Enso BJJ": círculo zen (ensō) em pincelada sumi-e girando em torno da torii da marca.
+ * A torii vem de `ToriiMark` e reutiliza `TORII_SHAPE` (a mesma geometria do hero de /experiencia). A cor vem de `currentColor`.
+ * Com prefers-reduced-motion o anel fica parado (a torii já comunica a espera).
  */
-export default function EnsoSpinner({ size = 72, className = '' }: { size?: number; className?: string }) {
+export default function EnsoSpinner({ size = 72, className = '', variant = 'lattice', dotGapPx }: { size?: number; className?: string; variant?: 'lattice' | 'solid'; dotGapPx?: number }) {
   const filterId = `enso-brush-${useId().replace(/:/g, '')}`
   return (
     <svg viewBox="0 0 100 100" width={size} height={size} aria-hidden="true" focusable="false" className={className} fill="none">
@@ -41,12 +42,17 @@ export default function EnsoSpinner({ size = 72, className = '' }: { size?: numb
         ))}
         <path d={arc(214, 296)} strokeWidth={1.2} opacity={0.45} transform="translate(0 0) scale(0.92) translate(4.3 4.3)" />
       </g>
-      <path
-        d={JU_PATH}
-        fill="currentColor"
-        fillOpacity={0.92}
-        transform="translate(50 50) scale(0.17) translate(-127.5 88.5)"
-        filter={`url(#${filterId})`}
+      {/* Torii da marca (mesma geometria do hero), centrada no anel. */}
+      <ToriiMark
+        x={50 - TORII_W / 2}
+        y={50 - TORII_H / 2}
+        width={TORII_W}
+        height={TORII_H}
+        pixelWidth={(TORII_W / 100) * size}
+        variant={variant}
+        dotGapPx={dotGapPx}
+        color="currentColor"
+        opacity={0.92}
       />
     </svg>
   )

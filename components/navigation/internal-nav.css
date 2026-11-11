@@ -157,8 +157,8 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   border-radius: 9999px;
   background: rgb(37 99 235 / 0.12);
@@ -188,4 +188,16 @@
   width: 100%;
   height: 100%;
   background: #e2e8f0;
+}
+
+/* Navbar pública: o painel é o mesmo, mas fica sob a barra de 64px (z 65), que guarda o avatar/gatilho. */
+.mc-internal-menu.mc-menu-under-bar.staggered-menu-wrapper.fixed-wrapper {
+  z-index: 64;
+}
+
+/* O avatar do botão carrega o aro de graduação: o invólucro do bit não recorta nem desenha borda própria. */
+.mc-internal-menu .sm-toggle-avatar {
+  overflow: visible;
+  border: 0;
+  background: transparent;
 }

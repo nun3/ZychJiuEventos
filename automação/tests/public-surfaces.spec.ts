@@ -80,18 +80,17 @@ test.describe('superfícies públicas', () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
-  test('home no celular: o hambúrguer abre o menu cinematográfico e navega sem recarregar', async ({ page }) => {
+  test('home no celular: o hambúrguer abre o menu lateral e navega sem recarregar', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openPublic(page, '/');
     await page.evaluate(() => { (window as unknown as { __vivo: boolean }).__vivo = true; });
     await page.getByRole('button', { name: 'Abrir menu' }).click();
-    const menu = page.getByRole('navigation', { name: 'Menu principal' });
+    const menu = page.getByRole('complementary', { name: 'Menu principal' });
     await expect(menu).toBeVisible();
     await expect(menu.getByRole('link', { name: /Academias e equipes/ })).toBeVisible();
     await expect(menu.getByRole('link', { name: /Criar evento/ })).toBeVisible();
-    // sem realce: o movimento é a própria opção que cresce perto do ponteiro (dock-magnify), sem elemento extra
-    await expect(page.locator('.ml-menu-glide')).toHaveCount(0);
-    await expect(menu.locator('.ml-menu-link-text').first()).toBeVisible();
+    // o menu cinematográfico deixou de ser o menu principal: não existe mais na página
+    await expect(page.locator('.ml-cinematic-menu')).toHaveCount(0);
     await menu.getByRole('link', { name: /Notícias/ }).click();
     await expect(page).toHaveURL(/\/noticias$/);
     // navegação do app: a página não recarregou

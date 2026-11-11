@@ -8,6 +8,9 @@
  *  3. Itens aceitam `onClick` (viram <button>, ex.: sair da conta) e `current` (aria-current); links chamam
  *     `onItemClick` para o app navegar sem recarregar (clique com modificador segue o navegador).
  *  4. Textos em props (labels, socialsTitle, panelLabel) em vez de fixos em inglês; `logo` aceita um elemento.
+ *  5. Tab/Shift+Tab ficam no painel e no gatilho (o original só isolava o fundo).
+ *  6. Uso com gatilho externo (navbar das telas públicas): `hideHeader` não desenha a barra/botão do bit; `open` (controlado)
+ *     abre/fecha o painel; `triggerRef` é o gatilho de fora (clique nele não conta como "fora" e recebe o foco ao fechar).
  */
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
@@ -26,6 +29,7 @@ export const StaggeredMenu = ({
   displaySocials = true,
   displayItemNumbering = true,
   toggleAvatar = null,
+  toggleAvatarOpen = null,
   panelHeader = null,
   className,
   logoUrl = '/src/assets/logos/reactbits-gh-white.svg',
@@ -41,7 +45,10 @@ export const StaggeredMenu = ({
   panelLabel = 'Menu principal',
   onItemClick,
   onMenuOpen,
-  onMenuClose
+  onMenuClose,
+  hideHeader = false,
+  open: controlledOpen,
+  triggerRef = null
 }) => {
   const text = { ...DEFAULT_LABELS, ...labels };
   const [open, setOpen] = useState(false);
@@ -74,7 +81,7 @@ export const StaggeredMenu = ({
       const plusV = plusVRef.current;
       const icon = iconRef.current;
       const textInner = textInnerRef.current;
-      if (!panel || !plusH || !plusV || !icon || !textInner) return;
+      if (!panel) return;
 
       let preLayers = [];
       if (preContainer) {
@@ -87,10 +94,10 @@ export const StaggeredMenu = ({
       if (preContainer) {
         gsap.set(preContainer, { xPercent: 0, opacity: 1 });
       }
-      gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 });
-      gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 });
-      gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
-      gsap.set(textInner, { yPercent: 0 });
+      if (plusH) gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 });
+      if (plusV) gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 });
+      if (icon) gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
+      if (textInner) gsap.set(textInner, { yPercent: 0 });
       if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: menuButtonColor });
     });
     return () => ctx.revert();
@@ -385,11 +392,11 @@ export const StaggeredMenu = ({
     if (!closeOnClickAway || !open) return;
 
     const handleClickOutside = event => {
+      const trigger = toggleBtnRef.current || triggerRef?.current;
       if (
         panelRef.current &&
         !panelRef.current.contains(event.target) &&
-        toggleBtnRef.current &&
-        !toggleBtnRef.current.contains(event.target)
+        !(trigger && trigger.contains(event.target))
       ) {
         closeMenu();
       }
@@ -399,7 +406,7 @@ export const StaggeredMenu = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [closeOnClickAway, open, closeMenu]);
+  }, [closeOnClickAway, open, closeMenu, triggerRef]);
 
   // Acessibilidade: fundo inert + sem rolagem enquanto aberto, foco no 1º item, Esc fecha e devolve o foco ao botão.
   React.useEffect(() => {
@@ -411,11 +418,23 @@ export const StaggeredMenu = ({
     document.body.style.overflow = 'hidden';
     const focusFirst = () => panel.querySelector('a[href], button:not([disabled])')?.focus({ preventScroll: true });
     const timer = window.setTimeout(focusFirst, 60);
+    // Tab/Shift+Tab ficam entre o gatilho (que também fecha) e os itens do painel, dando a volta nas pontas.
+    const trapTab = event => {
+      const trigger = toggleBtnRef.current || triggerRef?.current;
+      const nodes = Array.from(panel.querySelectorAll('a[href], button:not([disabled])'));
+      if (!nodes.length) return;
+      const ring = trigger ? [trigger, ...nodes] : nodes;
+      const index = ring.indexOf(document.activeElement);
+      const next = event.shiftKey ? (index <= 0 ? ring.length - 1 : index - 1) : (index === -1 || index === ring.length - 1 ? 0 : index + 1);
+      event.preventDefault();
+      ring[next].focus();
+    };
     const onKeyDown = event => {
+      if (event.key === 'Tab') { trapTab(event); return; }
       if (event.key !== 'Escape') return;
       event.preventDefault();
       closeMenu();
-      toggleBtnRef.current?.focus();
+      (toggleBtnRef.current || triggerRef?.current)?.focus();
     };
     document.addEventListener('keydown', onKeyDown);
     return () => {
@@ -424,7 +443,19 @@ export const StaggeredMenu = ({
       document.body.style.overflow = previousOverflow;
       inerted.forEach(node => node.removeAttribute('inert'));
     };
-  }, [open, closeMenu]);
+  }, [open, closeMenu, triggerRef]);
+
+  // Modo controlado (gatilho externo): o pai manda abrir/fechar; fechar por dentro (Esc, fundo, item) avisa por onMenuClose.
+  React.useEffect(() => {
+    if (controlledOpen === undefined || controlledOpen === openRef.current) return;
+    if (controlledOpen) {
+      openRef.current = true;
+      setOpen(true);
+      playOpen();
+    } else {
+      closeMenu();
+    }
+  }, [controlledOpen, playOpen, closeMenu]);
 
   const pickItem = (item, event) => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
@@ -457,6 +488,7 @@ export const StaggeredMenu = ({
           return arr.map((c, i) => <div key={i} className="sm-prelayer" style={{ background: c }} />);
         })()}
       </div>
+      {hideHeader ? null : (
       <header className="staggered-menu-header">
         <div className="sm-logo">
           {logo ? (
@@ -485,9 +517,11 @@ export const StaggeredMenu = ({
           {toggleAvatar ? (
             <span className="sm-toggle-avatar" aria-hidden="true">
               {open ? (
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round">
-                  <path d="M6 6l12 12M18 6L6 18" />
-                </svg>
+                toggleAvatarOpen || (
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round">
+                    <path d="M6 6l12 12M18 6L6 18" />
+                  </svg>
+                )
               ) : toggleAvatar}
             </span>
           ) : null}
@@ -506,6 +540,7 @@ export const StaggeredMenu = ({
           </span>
         </button>
       </header>
+      )}
 
       <aside
         id="staggered-menu-panel"

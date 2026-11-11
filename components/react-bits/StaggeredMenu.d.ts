@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactNode } from 'react'
+import type { MouseEvent, ReactNode, RefObject } from 'react'
 
 export interface StaggeredMenuItem {
   label: string
@@ -32,6 +32,8 @@ export interface StaggeredMenuProps {
   logo?: ReactNode
   /** Avatar exibido no botão do menu, antes do texto (ex.: foto ou inicial da pessoa logada). */
   toggleAvatar?: ReactNode
+  /** Avatar do botão com o menu aberto (padrão: um X). Útil para manter um aro ao redor do X. */
+  toggleAvatarOpen?: ReactNode
   /** Cartão no topo do painel (ex.: foto e nome que levam ao perfil). Com `toggleAvatar`, o botão mostra só o avatar. */
   panelHeader?: ReactNode
   menuButtonColor?: string
@@ -47,6 +49,12 @@ export interface StaggeredMenuProps {
   onItemClick?: (item: StaggeredMenuItem, event: MouseEvent) => void
   onMenuOpen?: () => void
   onMenuClose?: () => void
+  /** Não desenha a barra com logo e botão: o gatilho vive fora (ex.: avatar da navbar). */
+  hideHeader?: boolean
+  /** Controla a abertura por fora. Fechar por dentro (Esc, fundo, item) chama `onMenuClose`. */
+  open?: boolean
+  /** Gatilho externo: clique nele não conta como "fora" e ele recebe o foco ao fechar com Esc. */
+  triggerRef?: RefObject<HTMLElement | null>
 }
 
 export declare const StaggeredMenu: (props: StaggeredMenuProps) => JSX.Element

@@ -1,37 +1,27 @@
 'use client'
 
-import { BeltBadge } from '@/components/BeltBadge'
+import GraduationAvatar from '@/components/GraduationAvatar'
+import StaggeredMenu from '@/components/react-bits/StaggeredMenu'
+import { AccountPanelHeader, SOCIAL_ITEMS, publicMenuItems } from '@/components/navigation/account-menu'
 import { useAthleteBelt } from '@/hooks/useAthleteBelt'
+import ToriiMark, { TORII_ASPECT } from '@/components/brand/ToriiMark'
 import { beltLabel } from '@/lib/athletes/belt'
 import { useCallback, useEffect, useRef, useState, type FocusEvent, type MouseEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ArrowRight, Menu, X } from 'lucide-react'
-import { CinematicMenu, type CinematicMenuItem } from '@/components/navigation/CinematicMenu'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { pushWithViewTransition } from '@/lib/navigation/view-transition'
 import { createClient } from '@/lib/supabase/client'
 
 const CREATE_EVENT_HREF = '/admin/eventos/novo'
 const CREATE_EVENT_REGISTER = `/login?mode=register&redirectTo=${encodeURIComponent(CREATE_EVENT_HREF)}`
-const MENU_ID = 'site-menu'
-const accountLinks = [
-  { href: '/dashboard', label: 'Meu painel' },
-  { href: '/dashboard/meu-perfil', label: 'Meu perfil' },
-  { href: '/dashboard/inscricoes', label: 'Minhas inscrições' },
-  { href: '/dashboard/meus-atletas', label: 'Minhas equipes' },
-  { href: '/admin/eventos', label: 'Meus eventos' },
-]
-const publicMenuLinks = [
-  { href: '/eventos', label: 'Eventos' },
-  { href: '/academias', label: 'Academias e equipes' },
-  { href: '/sistema', label: 'O sistema' },
-  { href: '/noticias', label: 'Notícias' },
-  { href: '/quem-somos', label: 'Quem somos' },
-]
+const MENU_ID = 'staggered-menu-panel'
 
 const MARK = 36
+const AVATAR = 40 // diâmetro do avatar com o aro de graduação; cabe na barra de 64px
+const TORII_HEIGHT = 38 // cabe na barra de 64px sem aumentá-la; a largura segue a proporção da torii
 const SCROLL_THRESHOLD = 72
 
 function currentNavKey(pathname: string) {
@@ -153,16 +143,12 @@ export default function ModernNavbar({
       }`
     : 'fixed inset-x-0 top-0 z-[65] border-b border-mc-border bg-white'
 
-  const here = (href: string) => (href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`))
-  const menuItems: CinematicMenuItem[] = [
-    ...publicMenuLinks.map((link) => ({ ...link, current: here(link.href) })),
-    ...(isLoggedIn ? accountLinks.map(({ href, label }) => ({ href, label, current: here(href) })) : [{ href: '/login', label: 'Entrar', current: here('/login') }]),
-    { href: createEventHref, label: 'Criar evento' },
-    ...(isLoggedIn ? [{ label: 'Sair da conta', onAction: () => { void handleLogout() } }] : []),
-  ].map((item, i) => ({ ...item, index: String(i + 1).padStart(2, '0') })) as CinematicMenuItem[]
+  const menuItems = publicMenuItems({ loggedIn: isLoggedIn, pathname, createEventHref, onLogout: () => { void handleLogout() } })
+  const ringBelt = belt?.declared ? belt : null
+  const avatarLabel = `${menuOpen ? 'Fechar menu' : `Abrir menu de ${currentUser?.name ?? 'Conta'}`}${ringBelt ? `, ${beltLabel(ringBelt)}` : ''}`
 
   return (
-    // O menu e o gatilho precisam estar no mesmo escopo: o CinematicMenu isola (inert) tudo que está fora dele.
+    // O menu e o gatilho precisam estar no mesmo escopo: o StaggeredMenu isola (inert) o que está fora deste bloco.
     <div>
       <header className={headerClass}>
         <a href="#conteudo-principal" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[70] focus:rounded-mc-small focus:bg-mc-action focus:px-4 focus:py-2 focus:text-white">Pular para o conteúdo principal</a>
@@ -177,17 +163,17 @@ export default function ModernNavbar({
             className="relative grid h-16 grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-8 lg:px-12"
           >
             <div className="justify-self-start">
-              {belt ? (
-                <Link
-                  href="/experiencia"
-                  onClick={navigateWithTransition('/experiencia')}
-                  aria-label={`Experiência MEU CAMP (${beltLabel(belt)})`}
-                  title={beltLabel(belt)}
-                  className={`inline-flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 motion-reduce:transition-none ${useWhiteText ? 'focus-visible:ring-white' : 'focus-visible:ring-mc-focus'}`}
-                >
-                  <BeltBadge belt={belt.belt} grau={belt.grau} size={30} />
-                </Link>
-              ) : null}
+              <Link
+                href="/experiencia"
+                onClick={navigateWithTransition('/experiencia')}
+                aria-label="Explorar experiência Meu Camp"
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-mc-small transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 motion-reduce:transition-none ${
+                  useWhiteText ? 'text-white hover:text-blue-200 focus-visible:ring-white' : 'text-mc-text-primary hover:text-mc-action focus-visible:ring-mc-focus'
+                }`}
+              >
+                {/* `solid`: a 38 px a retícula fica abaixo de 1 px por ponto e lava em telas 1×; a geometria é a mesma da torii em retícula. */}
+                <ToriiMark variant="solid" width={TORII_HEIGHT * TORII_ASPECT} height={TORII_HEIGHT} />
+              </Link>
             </div>
             <Link
               href="/eventos"
@@ -204,45 +190,50 @@ export default function ModernNavbar({
                 ) : null}
               </span>
             </Link>
-            <div className="col-start-3 hidden w-max items-center justify-self-end gap-3 md:flex">
+            <div className="col-start-3 flex w-max items-center justify-self-end gap-3">
               {isLoggedIn ? (
                 <button
-                  ref={(el) => { bindItem('conta')(el); if (el) triggerRef.current = el }}
+                  ref={(el) => { bindItem('conta')(el); triggerRef.current = el }}
                   data-nav-key="conta"
                   type="button"
-                  aria-label={menuOpen ? 'Fechar menu' : `Abrir menu de ${currentUser?.name ?? 'Conta'}`}
+                  aria-label={avatarLabel}
+                  title={ringBelt ? beltLabel(ringBelt) : undefined}
                   aria-expanded={menuOpen}
                   aria-controls={MENU_ID}
                   onClick={() => setMenuOpen((open) => !open)}
-                  className={`relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 ${
-                    useWhiteText ? 'border-white/40 bg-white/15 text-white focus-visible:ring-white' : 'border-mc-border bg-mc-action/10 text-mc-action focus-visible:ring-mc-focus'
-                  }`}
+                  className={`inline-flex rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${useWhiteText ? 'focus-visible:ring-white' : 'focus-visible:ring-mc-focus'}`}
                 >
-                  {menuOpen ? <X aria-hidden="true" size={18} /> : currentUser?.avatarUrl ? <Image src={currentUser.avatarUrl} alt="" fill sizes="40px" className="object-cover" /> : <span className="font-mc-display text-sm font-bold">{currentUser?.initial}</span>}
+                  <GraduationAvatar belt={ringBelt} size={AVATAR}>
+                    <span className={`relative flex h-full w-full items-center justify-center ${useWhiteText ? 'bg-white/15 text-white' : 'bg-mc-action/10 text-mc-action'}`}>
+                      {menuOpen ? <X aria-hidden="true" size={16} /> : currentUser?.avatarUrl ? <Image src={currentUser.avatarUrl} alt="" fill sizes="40px" className="object-cover" /> : <span className="font-mc-display text-sm font-bold">{currentUser?.initial}</span>}
+                    </span>
+                  </GraduationAvatar>
                 </button>
               ) : (
-                <Link href="/login" ref={bindItem('login')} data-nav-key="login" aria-current={restingKey === 'login' ? 'page' : undefined} onClick={navigateWithTransition('/login')} className={`${itemBase} ${itemColor(useWhiteText)}`}>
+                <Link href="/login" ref={bindItem('login')} data-nav-key="login" aria-current={restingKey === 'login' ? 'page' : undefined} onClick={navigateWithTransition('/login')} className={`${itemBase} ${itemColor(useWhiteText)} hidden md:inline-flex`}>
                   Login
                 </Link>
               )}
-              <Link href={createEventHref} ref={bindItem('criar')} data-nav-key="criar" className={`${itemBase} gap-1.5 ${accentColor(useWhiteText)}`}>
+              <Link href={createEventHref} ref={bindItem('criar')} data-nav-key="criar" className={`${itemBase} gap-1.5 ${accentColor(useWhiteText)} hidden md:inline-flex`}>
                 Criar evento
                 <ArrowRight aria-hidden="true" size={15} />
               </Link>
+              {!isLoggedIn ? (
+                <button
+                  ref={(el) => { triggerRef.current = el }}
+                  type="button"
+                  aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+                  aria-expanded={menuOpen}
+                  aria-controls={MENU_ID}
+                  onClick={() => setMenuOpen((open) => !open)}
+                  className={`inline-flex h-11 w-11 items-center justify-center rounded-mc-small focus-visible:outline-none focus-visible:ring-2 md:hidden ${
+                    useWhiteText ? 'text-white focus-visible:ring-white' : 'text-mc-text-primary focus-visible:ring-mc-focus'
+                  }`}
+                >
+                  {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+                </button>
+              ) : null}
             </div>
-            <button
-              ref={(el) => { if (el) triggerRef.current = el }}
-              type="button"
-              aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
-              aria-expanded={menuOpen}
-              aria-controls={MENU_ID}
-              onClick={() => setMenuOpen((open) => !open)}
-              className={`col-start-3 inline-flex h-11 w-11 justify-self-end items-center justify-center rounded-mc-small focus-visible:outline-none focus-visible:ring-2 md:hidden ${
-                useWhiteText ? 'text-white focus-visible:ring-white' : 'text-mc-text-primary focus-visible:ring-mc-focus'
-              }`}
-            >
-              {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-            </button>
             <span
               aria-hidden="true"
               className={`pointer-events-none absolute bottom-0 left-0 hidden h-0.5 w-9 bg-mc-action motion-reduce:transition-none md:block ${mark.visible ? 'opacity-100' : 'opacity-0'}`}
@@ -252,14 +243,25 @@ export default function ModernNavbar({
         </div>
       </header>
 
-      <CinematicMenu
-        id={MENU_ID}
+      {/* O mesmo menu lateral branco das telas internas (StaggeredMenu), aberto pelo avatar/hambúrguer; fica sob a barra. */}
+      <StaggeredMenu
+        className="mc-internal-menu mc-menu-under-bar"
+        isFixed
+        hideHeader
         open={menuOpen}
+        triggerRef={triggerRef}
+        onMenuClose={() => setMenuOpen(false)}
+        position="right"
         items={menuItems}
-        onClose={() => setMenuOpen(false)}
-        triggerRef={triggerRef as React.RefObject<HTMLButtonElement>}
-        onNavigate={push}
-        topLabel={isLoggedIn && currentUser ? currentUser.name : 'menu'}
+        socialItems={SOCIAL_ITEMS}
+        displaySocials
+        panelHeader={isLoggedIn && currentUser ? <AccountPanelHeader user={currentUser} belt={belt} onNavigate={push} /> : null}
+        displayItemNumbering
+        colors={['#0b2742', '#2563eb']}
+        accentColor="#2563eb"
+        socialsTitle="Contato"
+        panelLabel="Menu principal"
+        onItemClick={(item) => item.link && push(item.link)}
       />
     </div>
   )

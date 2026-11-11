@@ -2,37 +2,16 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Calendar, Files, LayoutGrid, LogOut, Plus, Trophy, User, Users } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
+import { X } from 'lucide-react'
+import GraduationAvatar from '@/components/GraduationAvatar'
 import StaggeredMenu, { type StaggeredMenuItem } from '@/components/react-bits/StaggeredMenu'
+import { AccountPanelHeader, INTERNAL_LINKS, SOCIAL_ITEMS, logoutItem, markCurrent } from '@/components/navigation/account-menu'
+import { useAthleteBelt } from '@/hooks/useAthleteBelt'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { pushWithViewTransition } from '@/lib/navigation/view-transition'
 import { createClient } from '@/lib/supabase/client'
 import './internal-nav.css'
-
-const CREATE_EVENT_HREF = '/admin/eventos/novo'
-const WHATSAPP = 'https://wa.me/5541991526177?text=' + encodeURIComponent('Olá! Gostaria de mais informações sobre o MEU CAMP.')
-
-const ICON = { size: 18, strokeWidth: 1.75 } as const
-
-const links = [
-  { link: '/dashboard', label: 'Meu painel', icon: <LayoutGrid {...ICON} />, section: 'Minha conta' },
-  { link: '/dashboard/meu-perfil', label: 'Meu perfil', icon: <User {...ICON} /> },
-  { link: '/dashboard/inscricoes', label: 'Minhas inscrições', icon: <Files {...ICON} /> },
-  { link: '/dashboard/meus-atletas', label: 'Minhas equipes', icon: <Users {...ICON} /> },
-  { link: '/admin/eventos', label: 'Meus eventos', icon: <Trophy {...ICON} />, section: 'Torneios & lutas' },
-  { link: '/', label: 'Eventos', icon: <Calendar {...ICON} /> },
-  { link: CREATE_EVENT_HREF, label: 'Criar evento', icon: <Plus {...ICON} /> },
-]
-
-const socialItems = [
-  { label: 'E-mail', link: 'mailto:contato@meucamp.com.br' },
-  { label: 'WhatsApp', link: WHATSAPP },
-]
-
-function isCurrent(pathname: string, href: string) {
-  return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
-}
 
 /**
  * Navegação das telas internas (dashboard, admin, platform): barra branca com a logo e o menu lateral StaggeredMenu
@@ -42,22 +21,16 @@ function isCurrent(pathname: string, href: string) {
 export default function InternalNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const { currentUser, checked } = useCurrentUser()
+  const { currentUser, checked, isLoggedIn } = useCurrentUser()
+  const belt = useAthleteBelt(isLoggedIn)
+  const ringBelt = belt?.declared ? belt : null
 
   const handleLogout = async () => {
     await createClient().auth.signOut()
     window.location.assign('/login')
   }
 
-  // O destino mais específico vence (ex.: /dashboard/meu-perfil sobre /dashboard).
-  const currentLink = links
-    .filter((item) => isCurrent(pathname, item.link))
-    .sort((a, b) => b.link.length - a.link.length)[0]?.link
-
-  const items: StaggeredMenuItem[] = [
-    ...links.map((item) => ({ ...item, current: item.link === currentLink })),
-    { label: 'Sair da conta', icon: <LogOut {...ICON} />, section: 'Sessão', ariaLabel: 'Sair da conta', onClick: () => { void handleLogout() } },
-  ]
+  const items: StaggeredMenuItem[] = [...markCurrent(INTERNAL_LINKS, pathname), logoutItem(() => { void handleLogout() })]
 
   return (
     <div>
@@ -73,39 +46,26 @@ export default function InternalNav() {
         isFixed
         position="right"
         items={items}
-        socialItems={socialItems}
+        socialItems={SOCIAL_ITEMS}
         displaySocials
-        panelHeader={
-          currentUser ? (
-            <Link
-              href="/dashboard/meu-perfil"
-              onClick={(event) => {
-                if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
-                event.preventDefault()
-                pushWithViewTransition(router.push, '/dashboard/meu-perfil')
-              }}
-              className="mc-menu-profile"
-            >
-              <span className="mc-menu-profile-photo" aria-hidden="true">
-                {currentUser.avatarUrl ? <Image src={currentUser.avatarUrl} alt="" fill sizes="56px" className="object-cover" /> : <span>{currentUser.initial}</span>}
-              </span>
-              <span className="mc-menu-profile-text">
-                <strong>{currentUser.name}</strong>
-                <small>Ver e editar perfil</small>
-              </span>
-            </Link>
-          ) : null
-        }
+        panelHeader={currentUser ? <AccountPanelHeader user={currentUser} belt={belt} onNavigate={(href) => pushWithViewTransition(router.push, href)} /> : null}
         toggleAvatar={
           currentUser ? (
-            currentUser.avatarUrl ? (
-              <Image src={currentUser.avatarUrl} alt="" fill sizes="32px" className="object-cover" />
-            ) : (
-              <span>{currentUser.initial}</span>
-            )
+            <GraduationAvatar belt={ringBelt} size={40}>
+              <span className="relative flex h-full w-full items-center justify-center bg-mc-action/10 text-sm font-bold text-mc-action">
+                {currentUser.avatarUrl ? <Image src={currentUser.avatarUrl} alt="" fill sizes="40px" className="object-cover" /> : <span>{currentUser.initial}</span>}
+              </span>
+            </GraduationAvatar>
           ) : checked ? null : (
             <span className="mc-menu-avatar-skeleton" />
           )
+        }
+        toggleAvatarOpen={
+          <GraduationAvatar belt={ringBelt} size={40}>
+            <span className="flex h-full w-full items-center justify-center bg-mc-action/10 text-mc-action">
+              <X aria-hidden="true" size={16} strokeWidth={2.25} />
+            </span>
+          </GraduationAvatar>
         }
         displayItemNumbering
         colors={['#0b2742', '#2563eb']}

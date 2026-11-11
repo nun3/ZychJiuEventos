@@ -3,7 +3,8 @@
 import { type FormEvent, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Alert } from '@/components/ui/Alert'
-import { BeltBadge } from '@/components/BeltBadge'
+import Image from 'next/image'
+import GraduationAvatar from '@/components/GraduationAvatar'
 import { Button } from '@/components/ui/Button'
 import { FormField } from '@/components/ui/FormField'
 import { Select } from '@/components/ui/Select'
@@ -13,8 +14,8 @@ import { updateMyBelt, type ProfileActionResult } from './actions'
 
 const label = (name: string) => name.charAt(0).toUpperCase() + name.slice(1)
 
-/** Faixa e graus de contas sem atleta vinculado (ex.: organizador). Aparece como a faixa circular do menu. */
-export default function ProfileBeltForm({ faixa, grau }: { faixa: string | null; grau: number }) {
+/** Faixa e graus de contas sem atleta vinculado (ex.: organizador). Aparecem no aro do avatar. */
+export default function ProfileBeltForm({ faixa, grau, avatarUrl, initials }: { faixa: string | null; grau: number; avatarUrl: string | null; initials: string }) {
   const router = useRouter()
   const initial = normalizeBelt(faixa, grau)
   const [belt, setBelt] = useState(initial.belt)
@@ -40,12 +41,16 @@ export default function ProfileBeltForm({ faixa, grau }: { faixa: string | null;
     <section aria-labelledby="my-belt-title" className="rounded-mc-large border border-mc-border bg-mc-surface p-mc-16 sm:p-mc-24">
       <h2 id="my-belt-title" className="font-mc-display text-mc-h3 text-mc-text-primary">Minha faixa</h2>
       <p className="mt-mc-8 font-mc-interface text-sm text-mc-text-secondary">
-        Aparece como a faixa circular no topo do menu. Sem faixa informada, vale a faixa branca.
+        Aparece no aro do seu avatar: a cor é a faixa e os traços brancos são os graus. Sem faixa informada, o aro fica neutro.
       </p>
       <form onSubmit={handleSubmit} className="mt-mc-16 space-y-mc-16">
         {feedback ? <Alert variant={feedback.ok ? 'success' : 'error'} role="status">{feedback.message}</Alert> : null}
         <div className="flex flex-wrap items-end gap-mc-16">
-          <BeltBadge belt={belt} grau={degrees} size={56} />
+          <GraduationAvatar belt={{ belt, grau: degrees }} size={64}>
+            <span className="relative flex h-full w-full items-center justify-center bg-mc-action/10 text-sm font-bold text-mc-action" aria-hidden="true">
+              {avatarUrl ? <Image src={avatarUrl} alt="" fill sizes="64px" className="object-cover" /> : <span>{initials}</span>}
+            </span>
+          </GraduationAvatar>
           <FormField id="my-belt" label="Faixa">
             <Select name="faixa" value={belt} onChange={(e) => setBelt(normalizeBelt(e.target.value).belt)}>
               {RECOGNIZED_BELT_NAMES.map((name) => <option key={name} value={name}>{label(name)}</option>)}

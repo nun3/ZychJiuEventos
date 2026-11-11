@@ -2,6 +2,8 @@
 
 import { useRef, useState, useTransition } from 'react'
 import Image from 'next/image'
+import GraduationAvatar from '@/components/GraduationAvatar'
+import { useAthleteBelt } from '@/hooks/useAthleteBelt'
 import { useRouter } from 'next/navigation'
 import { Camera, ImagePlus, Pencil, Sparkles, Trash2 } from 'lucide-react'
 import { AvatarPhotoEditor } from './AvatarPhotoEditor'
@@ -121,6 +123,9 @@ export default function ProfileIdentityMedia({
   } | null
 }) {
   const router = useRouter()
+  // Aro de graduação: mesma fonte do menu (athletes/profiles) e atualiza com `meucamp:belt-updated`.
+  const athleteBelt = useAthleteBelt(true)
+  const ringBelt = athleteBelt?.declared ? athleteBelt : null
   const [feedback, setFeedback] = useState<ProfileActionResult | null>(null)
   const [isPending, startTransition] = useTransition()
   const [busyKind, setBusyKind] = useState<MediaKind | null>(null)
@@ -212,23 +217,20 @@ export default function ProfileIdentityMedia({
                 aria-label="Ver foto do perfil"
                 className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mc-focus focus-visible:ring-offset-2"
               >
-                {avatarUrl ? (
-                  <Image
-                    src={avatarUrl}
-                    alt={`Foto de ${name}`}
-                    width={80}
-                    height={80}
-                    sizes="80px"
-                    className="h-20 w-20 rounded-full border-4 border-mc-surface bg-mc-surface object-contain shadow-mc-subtle transition-transform hover:scale-[1.03]"
-                  />
-                ) : (
-                  <span
-                    className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-mc-surface bg-mc-action font-mc-display text-2xl font-semibold text-white shadow-mc-subtle"
-                    aria-hidden="true"
-                  >
-                    {initials}
-                  </span>
-                )}
+                <GraduationAvatar belt={ringBelt} size={80} className="rounded-full shadow-mc-subtle transition-transform hover:scale-[1.03]">
+                  {avatarUrl ? (
+                    <span className="relative block h-full w-full bg-mc-surface">
+                      <Image src={avatarUrl} alt={`Foto de ${name}`} fill sizes="80px" className="object-contain" />
+                    </span>
+                  ) : (
+                    <span
+                      className="flex h-full w-full items-center justify-center bg-mc-action font-mc-display text-2xl font-semibold text-white"
+                      aria-hidden="true"
+                    >
+                      {initials}
+                    </span>
+                  )}
+                </GraduationAvatar>
               </button>
               <div className="sm:hidden">
                 {avatarControls}

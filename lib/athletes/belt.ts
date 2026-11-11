@@ -1,4 +1,4 @@
-import { RECOGNIZED_BELT_NAMES } from '@/lib/categorization'
+import { RECOGNIZED_BELT_NAMES } from '../categorization'
 
 export type BeltName = (typeof RECOGNIZED_BELT_NAMES)[number]
 export type BeltInfo = { belt: BeltName; grau: number }
@@ -25,13 +25,41 @@ export function clampGrau(value: unknown): number {
   return Number.isFinite(n) ? Math.min(MAX_GRAU, Math.max(0, n)) : 0
 }
 
-export function normalizeBelt(faixa: string | null | undefined, grau?: unknown): BeltInfo {
+function parseBeltName(faixa: string | null | undefined): BeltName | null {
   const name = (faixa ?? '').trim().toLowerCase().replace(/^faixa\s+/, '').split(/\s+/)[0] as BeltName
-  if (!RECOGNIZED_BELT_NAMES.includes(name)) return DEFAULT_BELT
+  return RECOGNIZED_BELT_NAMES.includes(name) ? name : null
+}
+
+/** A faixa foi informada e é reconhecida (diferente de cair na faixa branca por padrão). */
+export function isDeclaredBelt(faixa: string | null | undefined): boolean {
+  return parseBeltName(faixa) !== null
+}
+
+export function normalizeBelt(faixa: string | null | undefined, grau?: unknown): BeltInfo {
+  const name = parseBeltName(faixa)
+  if (!name) return DEFAULT_BELT
   return { belt: name, grau: clampGrau(grau) }
 }
 
 export function beltLabel({ belt, grau }: BeltInfo) {
   const color = belt.charAt(0).toUpperCase() + belt.slice(1)
   return `Faixa ${color.toLowerCase()}${grau ? `, ${grau} ${grau === 1 ? 'grau' : 'graus'}` : ''}`
+}
+
+/** Cores do aro quando a faixa não foi informada: neutro, sem cortes (não se presume faixa nenhuma). */
+export const NEUTRAL_RING = { fill: '#e2e8f0', stroke: '#cbd5e1' } as const
+
+/** Espaçamento angular uniforme entre os traços de grau na tarja, em graus. */
+export const RING_MARK_STEP = 11
+
+/** Meia-abertura da tarja preta (segmento do aro à direita, centrado em 0° = 3 horas): cabe 4 traços com folga. */
+export const TARJA_HALF_ANGLE = ((MAX_GRAU - 1) / 2) * RING_MARK_STEP + 8
+
+/**
+ * Ângulos (graus, 0 = 3 horas, sentido horário) dos traços brancos de grau sobre a tarja: um por grau, uniformemente
+ * espaçados e simétricos em torno de 0. 0 graus → nenhum traço (a tarja aparece vazia).
+ */
+export function graduationMarkAngles(grau: number): number[] {
+  const n = clampGrau(grau)
+  return Array.from({ length: n }, (_, i) => (i - (n - 1) / 2) * RING_MARK_STEP)
 }
