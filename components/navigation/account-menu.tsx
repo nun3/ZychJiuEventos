@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Calendar, Compass, Files, GraduationCap, LayoutGrid, LogIn, LogOut, Newspaper, Plus, Trophy, User, Users, Workflow } from 'lucide-react'
+import { Calendar, Files, GraduationCap, LayoutGrid, LogIn, LogOut, Newspaper, Plus, Trophy, User, Users, Workflow } from 'lucide-react'
 import GraduationAvatar from '@/components/GraduationAvatar'
 import type { StaggeredMenuItem } from '@/components/react-bits/StaggeredMenu'
 import type { AthleteBeltState } from '@/hooks/useAthleteBelt'
@@ -36,7 +36,6 @@ export const INTERNAL_LINKS: StaggeredMenuItem[] = [
 /** Páginas públicas (as mesmas do antigo menu cinematográfico). */
 const PUBLIC_LINKS: StaggeredMenuItem[] = [
   { link: '/eventos', label: 'Eventos', icon: <Calendar {...ICON} />, section: 'Explorar' },
-  { link: '/demonstracao', label: 'Explorar demonstração', icon: <Compass {...ICON} /> },
   { link: '/academias', label: 'Academias e equipes', icon: <GraduationCap {...ICON} /> },
   { link: '/sistema', label: 'O sistema', icon: <Workflow {...ICON} /> },
   { link: '/noticias', label: 'Notícias', icon: <Newspaper {...ICON} /> },
