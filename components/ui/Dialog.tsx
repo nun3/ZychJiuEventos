@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react'
+import { createPortal } from 'react-dom'
 import { cn } from './utils'
 
 export type DialogProps = {
@@ -78,9 +79,10 @@ export function Dialog({ open, onClose, title, description, children, closeLabel
     }
   }, [open])
 
-  if (!open) return null
+  if (!open || typeof document === 'undefined') return null
 
-  return (
+  // Portal no body: um ancestral com transform/filter faria o `fixed` centralizar na página inteira, não na janela.
+  return createPortal(
     <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6" onMouseDown={event => event.target === event.currentTarget && onClose()}>
       <div className="fixed inset-0 bg-mc-structure/50 motion-safe:transition-opacity duration-mc-normal" aria-hidden="true" onMouseDown={onClose} />
       <div className="relative flex min-h-full items-center justify-center">
@@ -110,6 +112,7 @@ export function Dialog({ open, onClose, title, description, children, closeLabel
           {children && <div className="mt-6">{children}</div>}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

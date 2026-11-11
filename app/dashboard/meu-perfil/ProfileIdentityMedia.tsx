@@ -347,12 +347,14 @@ export default function ProfileIdentityMedia({
       />
       <Dialog open={avatarViewerOpen} onClose={() => setAvatarViewerOpen(false)} title="Foto do perfil" className="max-w-xl">
         <div className="flex flex-col items-center gap-6">
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarUrl} alt={`Foto de ${name}`} className="h-64 w-64 rounded-full bg-mc-surface-secondary object-cover sm:h-72 sm:w-72" />
-          ) : (
-            <span className="flex h-64 w-64 items-center justify-center rounded-full bg-mc-action font-mc-display text-7xl font-semibold text-white sm:h-72 sm:w-72" aria-hidden="true">{initials}</span>
-          )}
+          <GraduationAvatar belt={ringBelt} size={288} className="rounded-full">
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt={`Foto de ${name}`} className="h-full w-full bg-mc-surface-secondary object-cover" />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center bg-mc-action font-mc-display text-7xl font-semibold text-white" aria-hidden="true">{initials}</span>
+            )}
+          </GraduationAvatar>
           <div className="flex w-full flex-wrap items-center justify-between gap-2 font-mc-interface text-sm font-semibold text-mc-text-primary">
             <div className="flex gap-2">
               {avatarUrl ? (
