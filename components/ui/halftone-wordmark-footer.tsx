@@ -33,6 +33,22 @@ export interface FooterColumn {
   links: FooterLink[]
 }
 
+/** Uma silhueta vetorial impressa em pontos no lugar da palavra. Coordenadas no espaço do `viewBox`. */
+export interface HalftoneShape {
+  /** Identifica a silhueta; entra na chave que refaz a máscara. */
+  id: string
+  /** x, y, largura e altura da caixa que a silhueta ocupa. */
+  viewBox: readonly [number, number, number, number]
+  /** Caminhos SVG. Sem `stroke`, o caminho é preenchido; com `stroke`, é um traço dessa espessura. */
+  paths: readonly { d: string; stroke?: number }[]
+  /** Que fração da faixa livre (altura menos as reservas) a silhueta ocupa. 0,96 de fábrica. */
+  heightFit?: number
+  /** Espaço reservado em cima, em px de CSS, para cabeçalho ou texto. 0 de fábrica. */
+  insetTop?: number
+  /** Espaço reservado embaixo, em px de CSS, para texto ou botões. 0 de fábrica. */
+  insetBottom?: number
+}
+
 export interface HalftoneWordmarkFooterProps {
   /** A palavra gigante impressa em pontos. Em minúsculas fica melhor. */
   wordmark?: string
@@ -74,6 +90,8 @@ export interface HalftoneWordmarkFooterProps {
   align?: "bottom" | "center"
   /** Que fração da largura a palavra ocupa. 1.02 de fábrica. */
   widthFit?: number
+  /** Imprime esta silhueta em vez da palavra. A palavra continua como texto acessível. */
+  shape?: HalftoneShape
 }
 
 const PRESETS: { [K in HalftonePreset]: HalftonePalette } = {
@@ -204,15 +222,16 @@ export default function HalftoneWordmarkFooter({
   className = "",
   align = "bottom",
   widthFit = 1.02,
+  shape,
 }: HalftoneWordmarkFooterProps) {
   const colors = { ...(PRESETS[preset] || PRESETS.night), ...(palette || {}) }
   const rootRef = React.useRef(null as HTMLElement | null)
   const canvasRef = React.useRef(null as HTMLCanvasElement | null)
-  const opts = React.useRef({ colors, dotGap, radius, crop, grain, interactive, fontFamily, fontWeight, wordmark, align, widthFit })
+  const opts = React.useRef({ colors, dotGap, radius, crop, grain, interactive, fontFamily, fontWeight, wordmark, align, widthFit, shape })
   React.useLayoutEffect(() => {
-    opts.current = { colors, dotGap, radius, crop, grain, interactive, fontFamily, fontWeight, wordmark, align, widthFit }
+    opts.current = { colors, dotGap, radius, crop, grain, interactive, fontFamily, fontWeight, wordmark, align, widthFit, shape }
   })
-  const key = [wordmark, align, widthFit, dotGap, crop, grain, fontFamily, fontWeight, colors.background, colors.ink, colors.warm].join("|")
+  const key = [wordmark, shape?.id, align, widthFit, dotGap, crop, grain, fontFamily, fontWeight, colors.background, colors.ink, colors.warm].join("|")
 
   React.useEffect(() => {
     const root = rootRef.current
@@ -253,17 +272,40 @@ export default function HalftoneWordmarkFooter({
       mask.height = h
       const m = mask.getContext("2d", { willReadFrequently: true })
       if (!m) return
-      const face = o.fontWeight + " 100px " + o.fontFamily
-      m.font = face
-      const word = o.wordmark || " "
-      const fit = hwfFitSize(m.measureText(word).width, w * o.widthFit)
-      m.font = o.fontWeight + " " + fit + "px " + o.fontFamily
-      const box = m.measureText(word)
-      const cap = box.actualBoundingBoxAscent || fit * 0.72
-      const c = Math.max(0, Math.min(0.6, o.crop))
-      m.fillStyle = "#000"
-      m.textBaseline = "alphabetic"
-      m.fillText(word, (w - box.width) / 2, o.align === "center" ? (h + cap) / 2 : h + cap * c)
+      if (o.shape) {
+        // Silhueta vetorial: cabe na largura e na altura, centrada, e vira a mesma máscara que a palavra.
+        const [vx, vy, vw, vh] = o.shape.viewBox
+        const top = o.shape.insetTop ?? 0
+        const free = Math.max(1, h - top - (o.shape.insetBottom ?? 0))
+        const k = Math.min((w * o.widthFit) / vw, (free * (o.shape.heightFit ?? 0.96)) / vh)
+        const cy = top + free / 2
+        m.setTransform(k, 0, 0, k, (w - vw * k) / 2 - vx * k, cy - (vh * k) / 2 - vy * k)
+        m.fillStyle = "#000"
+        m.strokeStyle = "#000"
+        m.lineCap = "butt"
+        for (const part of o.shape.paths) {
+          const path = new Path2D(part.d)
+          if (part.stroke) {
+            m.lineWidth = part.stroke
+            m.stroke(path)
+          } else {
+            m.fill(path)
+          }
+        }
+        m.setTransform(1, 0, 0, 1, 0, 0)
+      } else {
+        const face = o.fontWeight + " 100px " + o.fontFamily
+        m.font = face
+        const word = o.wordmark || " "
+        const fit = hwfFitSize(m.measureText(word).width, w * o.widthFit)
+        m.font = o.fontWeight + " " + fit + "px " + o.fontFamily
+        const box = m.measureText(word)
+        const cap = box.actualBoundingBoxAscent || fit * 0.72
+        const c = Math.max(0, Math.min(0.6, o.crop))
+        m.fillStyle = "#000"
+        m.textBaseline = "alphabetic"
+        m.fillText(word, (w - box.width) / 2, o.align === "center" ? (h + cap) / 2 : h + cap * c)
+      }
       const img = m.getImageData(0, 0, w, h).data
 
       const gap = Math.max(3, o.dotGap)

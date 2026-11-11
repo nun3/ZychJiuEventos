@@ -44,7 +44,7 @@ export const MARTIAL_ARTS_HISTORICAL_DOSSIER: MartialTraditionEntry[] = [
     documentedFacts: [
       'Afrescos nas tumbas de Beni Hasan (Egito, c. 2000 a.C.) registram centenas de sequências de luta agarrada e projeções.',
       'O Pankration foi introduzido nos Jogos Olímpicos da Grécia Antiga em 648 a.C. (33ª Olimpíada), combinando luta e percussão sob arbitragem pública.',
-      'Na China da Dinastia Ming, o general Qi Jiguang documentou métodos de combate desarmado (Quanjing Jieyao) no manual militar Jixiao Xinshu (c. 1560).',
+      'Na China da dinastia Ming, o general Qi Jiguang documentou métodos de combate desarmado (Quanjing Jieyao) no manual militar Jixiao Xinshu (c. 1560).',
     ],
     historiographicalNotes: [
       'Historiadores contemporâneos (Green & Svinth, 2010; Henning, 1999) demonstram que práticas de luta surgem onde há organização social, treinamento militar e rituais agonísticos.',
@@ -82,7 +82,7 @@ export const MARTIAL_ARTS_HISTORICAL_DOSSIER: MartialTraditionEntry[] = [
   {
     id: 'okinawa-karate',
     region: 'Reino de Ryukyu (Okinawa) e Japão continental',
-    period: 'Séc. XVIII – décadas de 1920–1930',
+    period: 'séc. XVIII – décadas de 1920–1930',
     title: 'Okinawa Te, intercâmbio com Fujian e a difusão do Karatê-dō',
     disciplineContext: 'Karatê',
     summaryShort:
@@ -153,7 +153,7 @@ export const MARTIAL_ARTS_HISTORICAL_DOSSIER: MartialTraditionEntry[] = [
     region: 'Brasil (Belém, Rio de Janeiro e difusão nacional/global)',
     period: '1914 – presente',
     title: 'Da chegada de Mitsuyo Maeda (1914) ao Jiu-Jitsu Brasileiro e seus campeonatos',
-    disciplineContext: 'Jiu-Jitsu Brasileiro (Modalidade Operacional Atual do MEU CAMP)',
+    disciplineContext: 'Jiu-Jitsu Brasileiro (modalidade operacional atual do MEU CAMP)',
     summaryShort:
       'Trazido ao Brasil por diplomatas e lutadores japoneses como Mitsuyo Maeda em 1914, o Jiu-Jitsu desenvolveu no país múltiplas linhagens e um sistema próprio de competição por categorias de idade, faixa e peso.',
     documentedFacts: [
@@ -196,7 +196,7 @@ export const HISTORICAL_BIBLIOGRAPHY: HistoricalBibliographyItem[] = [
     year: 1999,
     title: 'Academia Encounters the Chinese Martial Arts',
     publisherOrJournal: 'China Review International, 6(2), 319–332',
-    relevance: 'Análise documental dos manuais da Dinastia Ming (Qi Jiguang) e crítica historiográfica aos mitos de origem única.',
+    relevance: 'Análise documental dos manuais da dinastia Ming (Qi Jiguang) e crítica historiográfica aos mitos de origem única.',
   },
   {
     id: 'vail-2014',

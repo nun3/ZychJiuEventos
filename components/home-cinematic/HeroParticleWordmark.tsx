@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import HalftoneWordmarkFooter from '@/components/ui/halftone-wordmark-footer'
+import { TORII_SHAPE } from '@/components/home-cinematic/torii-shape'
 import { MEUCAMP_FOOTER_FONT_FAMILY, MEUCAMP_FOOTER_FONT_WEIGHT } from '@/lib/footer/meucamp-footer'
 
-// Abertura da home: "meu camp" em retícula de partículas (o mesmo campo de pontos do rodapé), sem as colunas de links.
+// Abertura da home: torii em retícula de partículas (o mesmo campo de pontos do rodapé), sem as colunas de links.
 // O canvas não enxerga variáveis CSS, então lemos a família real da Space Grotesk, como o SiteFooter faz.
 const PALETTE = { background: '#ffffff', ink: '#0f172a', warm: '#2563eb' }
 
@@ -20,9 +21,10 @@ export function HeroParticleWordmark() {
   return (
     <section data-hero aria-label="MEU CAMP" className="relative isolate mt-16 h-[calc(100svh-4rem)] min-h-[520px] overflow-hidden bg-white text-mc-text-primary">
       <HalftoneWordmarkFooter
-        wordmark="MEU CAMP"
+        wordmark="Torii japonesa em retícula de partículas"
+        shape={TORII_SHAPE}
         label="Meu Camp"
-        meta="Passe o mouse ou toque no título para interagir"
+        meta="Passe o mouse ou toque na torii para interagir"
         columns={[]}
         backToTop={false}
         fontFamily={fontFamily}
@@ -30,8 +32,8 @@ export function HeroParticleWordmark() {
         palette={PALETTE}
         crop={0}
         align="center"
-        widthFit={0.9}
-        dotGap={6}
+        widthFit={0.94}
+        dotGap={5}
         height="calc(100svh - 4rem)"
         className="absolute inset-0"
       />
